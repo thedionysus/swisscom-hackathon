@@ -6,7 +6,7 @@ from swiss_grounding.registry.models import Source
 
 PAGE_A = """<html lang="de"><head><title>A</title></head><body><main><h1>A</h1><p>Seite A.</p></main>
 <nav><a href="/de/tiere/b.html">B</a><a href="/de/tiere/c.pdf">C</a><a href="/fr/x.html">FR</a>
-<a href="https://other.example/x">ext</a></nav></body></html>"""
+<a href="https://other.example/x">ext</a><a href="/de/tiere/download">DL</a></nav></body></html>"""
 PAGE_B = """<html lang="de"><head><title>B</title></head><body><main><h1>B</h1><p>Seite B.</p>
 <a href="/de/tiere/a.html">A</a></main></body></html>"""
 ROBOTS = "User-agent: *\nDisallow: /de/tiere/secret\n"
@@ -41,6 +41,8 @@ def routes(request, calls):
         return httpx.Response(200, text=PAGE_B, headers={"etag": '"b1"'})
     if path == "/de/tiere/gone.html":
         return httpx.Response(404)
+    if path == "/de/tiere/download":
+        return httpx.Response(200, content=b"%PDF-1.4", headers={"content-type": "application/pdf"})
     return httpx.Response(404)
 
 
@@ -82,6 +84,15 @@ def test_respects_robots_and_max_pages():
     result = fetcher.fetch(source(fetch_config={"path_allowlist": ["/de/tiere"], "start_paths": ["/de/tiere/a.html", "/de/tiere/secret/x.html"]}), known)
     assert len(result.documents) == 1
     assert not any("/secret/" in u for _, u, _ in calls)
+
+
+def test_non_html_content_type_is_fetched_but_not_parsed():
+    calls = []
+    fetcher, known = make(lambda r: routes(r, calls))
+    result = fetcher.fetch(source(), known)
+    assert any(u.endswith("/de/tiere/download") for _, u, _ in calls)
+    assert not any(d.url.endswith("/de/tiere/download") for d in result.documents)
+    assert not any(e.url.endswith("/de/tiere/download") for e in result.errors)
 
 
 def test_http_errors_become_fetch_errors_not_exceptions():

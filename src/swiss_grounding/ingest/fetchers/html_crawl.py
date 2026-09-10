@@ -12,6 +12,8 @@ from swiss_grounding.ingest.models import FetchedDocument, FetchError, FetchResu
 from swiss_grounding.registry.models import Source
 
 SKIP_SUFFIXES = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".zip", ".xml", ".json", ".ics", ".csv")
+NON_HTML_TYPES = ("application/pdf", "application/json", "application/octet-stream", "application/zip",
+                   "image/", "audio/", "video/")
 
 
 @dataclass(frozen=True)
@@ -101,9 +103,9 @@ class HtmlCrawlFetcher:
             return _Fetched(doc=None, links=(), status=304)
         if response.status_code >= 400:
             return _Fetched(doc=None, links=(), status=response.status_code)
-        # Non-HTML resources are filtered by path suffix before fetching (SKIP_SUFFIXES);
-        # content-type is not checked here because servers commonly omit or mis-set it,
-        # and httpx.MockTransport defaults to "text/plain" when no header is supplied.
+        content_type = response.headers.get("content-type", "").lower()
+        if content_type.startswith(NON_HTML_TYPES):
+            return _Fetched(doc=None, links=(), status=response.status_code)
         page = html_to_page(response.text, url=url, default_language=source.fetch_config.get("language", "de"))
         links = extract_links(response.text, base_url=url)
         if not page.sections:
