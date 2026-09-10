@@ -104,3 +104,13 @@ create table if not exists document_change (
     chunks_modified       bigint[] not null default '{}',
     changed_at            timestamptz not null default now()
 );
+
+create table if not exists fetch_state (
+    url            text primary key,
+    source_id      text not null references source(id),
+    etag           text,
+    last_modified  text,
+    content_hash   text not null,
+    last_seen_at   timestamptz not null default now()
+);
+create index if not exists fetch_state_source_idx on fetch_state(source_id);

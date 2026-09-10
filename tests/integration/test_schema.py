@@ -8,7 +8,7 @@ from swiss_grounding.db.migrate import apply_schema
 pytestmark = pytest.mark.integration
 
 EXPECTED_TABLES = {
-    "location", "source", "source_suggestion", "document", "chunk", "document_change",
+    "location", "source", "source_suggestion", "document", "chunk", "document_change", "fetch_state",
 }
 
 
