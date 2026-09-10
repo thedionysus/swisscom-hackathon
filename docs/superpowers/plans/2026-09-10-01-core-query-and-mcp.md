@@ -3631,3 +3631,12 @@ git commit -m "chore: lint fixes and verified quick start"
 **Deferred to Plan 3 (evals):** `eval_case` and `eval_run` tables, three suites, `eval generate`, `eval run`, `ask` command.
 
 **Type consistency checked:** `ChunkRecord`, `Hit`, `ScoredHit`, `Citation`, `QueryRequest`, `QueryResponse` defined in Task 10 and used unchanged in Tasks 12–18. `LocationTree.find/path/distance/by_bfs_id/get/all` defined in Task 4 and used in Tasks 5–17. `RerankWeights` defined in Task 13, used in 15 and 16. `load_fixture` returns `LoadReport` (Task 11), used in Task 18.
+
+## Post-review fixes (2026-09-10)
+
+- **Jurisdiction guessing from prose** — the question scan matched ordinary English words ("So", "Be", "AI", "City", "Hard", "Enge", "SG"); rewritten as pure functions in `locations/question_scan.py` with span, capitalization, abbreviation, PLZ, sentence-initial and neighborhood-ancestor guards, returning `None` on ambiguity. `3543f00`
+- **`diversify` force-insert broke the per-document cap** — the most specific chunk now displaces the last item whose removal frees a slot under the cap, and `limit <= 0` returns `()`. `427ead9`
+- **MCP response shapes** — `_json` injects the notice into every dict payload, serializes dates with `isoformat()`, `swiss_search` returns a structured `invalid_request` error for an unparseable `as_of`, `swiss_get_document` rejects a chunk belonging to another document, and `limit` is declared `Annotated[int, Field(ge=1, le=25)]`. `69eee08`
+- **Validation reported as `needs_location`** — `QueryResponse` gained the `invalid_request` status and a `field` marker; the CLI exits 1 for `invalid_request` and 2 for `needs_location`; limits are still clamped. `9f606ac`
+- **GeoAdmin fuzzy fallback** — a hit is accepted only when a normalized input token of length >= 3 prefixes a token of the hit label ("nowhere" no longer resolves to Nidwalden). `87534a8`
+- **Two unsynchronized status columns** — search filters on `document.status`; `chunk.document_status` stays as a cache with a CHECK constraint, and `authority` is constrained on both `document` and `chunk`. `59b530d`
