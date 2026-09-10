@@ -1936,7 +1936,7 @@ Each document has an extent, authority and categories; chunks are short. Basel d
   "documents": [
     {
       "source_id": "fedlex",
-      "url": "https://www.fedlex.admin.ch/eli/cc/2008/414/de#art_6",
+      "url": "https://www.fedlex.admin.ch/eli/cc/2008/414/de",
       "identifier": "SR 455 Art. 6",
       "title_original": "Tierschutzgesetz",
       "title_en": "Animal Welfare Act",
@@ -1953,7 +1953,7 @@ Each document has an extent, authority and categories; chunks are short. Basel d
     },
     {
       "source_id": "fedlex",
-      "url": "https://www.fedlex.admin.ch/eli/cc/1991/1052_1052_1052/de#art_1",
+      "url": "https://www.fedlex.admin.ch/eli/cc/1991/1052_1052_1052/de",
       "identifier": "SR 704 Art. 1",
       "title_original": "Bundesgesetz über Fuss- und Wanderwege",
       "title_en": "Federal Act on Footpaths and Hiking Trails",

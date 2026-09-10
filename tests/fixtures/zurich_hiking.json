@@ -2,36 +2,46 @@
   "documents": [
     {
       "source_id": "fedlex",
-      "url": "https://www.fedlex.admin.ch/eli/cc/2008/414/de#art_6",
+      "url": "https://www.fedlex.admin.ch/eli/cc/2008/414/de",
       "identifier": "SR 455 Art. 6",
       "title_original": "Tierschutzgesetz",
       "title_en": "Animal Welfare Act",
       "language": "de",
       "extent_id": "CH",
       "authority": "federal_law",
-      "categories": ["dogs"],
+      "categories": [
+        "dogs"
+      ],
       "valid_from": "2008-09-01",
       "chunks": [
-        {"heading_path": "Art. 6", "anchor": "art_6",
-         "text_original": "Wer ein Tier hält, muss es angemessen nähren, pflegen und ihm die für sein Wohlergehen notwendige Beschäftigung gewähren.",
-         "text_en": "Anyone who keeps an animal must feed and care for it appropriately and provide the activity necessary for its well-being. Dog owners must ensure the dog does not endanger people or other animals."}
+        {
+          "heading_path": "Art. 6",
+          "anchor": "art_6",
+          "text_original": "Wer ein Tier hält, muss es angemessen nähren, pflegen und ihm die für sein Wohlergehen notwendige Beschäftigung gewähren.",
+          "text_en": "Anyone who keeps an animal must feed and care for it appropriately and provide the activity necessary for its well-being. Dog owners must ensure the dog does not endanger people or other animals."
+        }
       ]
     },
     {
       "source_id": "fedlex",
-      "url": "https://www.fedlex.admin.ch/eli/cc/1991/1052_1052_1052/de#art_1",
+      "url": "https://www.fedlex.admin.ch/eli/cc/1991/1052_1052_1052/de",
       "identifier": "SR 704 Art. 1",
       "title_original": "Bundesgesetz über Fuss- und Wanderwege",
       "title_en": "Federal Act on Footpaths and Hiking Trails",
       "language": "de",
       "extent_id": "CH",
       "authority": "federal_law",
-      "categories": ["hiking"],
+      "categories": [
+        "hiking"
+      ],
       "valid_from": "1987-01-01",
       "chunks": [
-        {"heading_path": "Art. 1", "anchor": "art_1",
-         "text_original": "Dieses Gesetz regelt die Planung, Anlage und Erhaltung von Fuss- und Wanderwegnetzen.",
-         "text_en": "This Act governs the planning, construction and maintenance of footpath and hiking trail networks. Cantons are responsible for hiking trail networks and their signposting."}
+        {
+          "heading_path": "Art. 1",
+          "anchor": "art_1",
+          "text_original": "Dieses Gesetz regelt die Planung, Anlage und Erhaltung von Fuss- und Wanderwegnetzen.",
+          "text_en": "This Act governs the planning, construction and maintenance of footpath and hiking trail networks. Cantons are responsible for hiking trail networks and their signposting."
+        }
       ]
     },
     {
@@ -43,12 +53,18 @@
       "language": "de",
       "extent_id": "CH-ZH",
       "authority": "official_info",
-      "categories": ["dogs", "hiking"],
+      "categories": [
+        "dogs",
+        "hiking"
+      ],
       "valid_from": null,
       "chunks": [
-        {"heading_path": "Leinenpflicht", "anchor": "leinenpflicht",
-         "text_original": "Im Kanton Zürich gilt vom 1. April bis 31. Juli im Wald und am Waldrand Leinenpflicht für Hunde.",
-         "text_en": "In the Canton of Zurich, dogs must be kept on a leash in forests and at forest edges from 1 April to 31 July to protect wildlife. This applies on hiking trails through forest."}
+        {
+          "heading_path": "Leinenpflicht",
+          "anchor": "leinenpflicht",
+          "text_original": "Im Kanton Zürich gilt vom 1. April bis 31. Juli im Wald und am Waldrand Leinenpflicht für Hunde.",
+          "text_en": "In the Canton of Zurich, dogs must be kept on a leash in forests and at forest edges from 1 April to 31 July to protect wildlife. This applies on hiking trails through forest."
+        }
       ]
     },
     {
@@ -60,12 +76,17 @@
       "language": "de",
       "extent_id": "CH-ZH-261",
       "authority": "official_info",
-      "categories": ["dogs"],
+      "categories": [
+        "dogs"
+      ],
       "valid_from": null,
       "chunks": [
-        {"heading_path": "Parks", "anchor": null,
-         "text_original": "In den Parkanlagen der Stadt Zürich sind Hunde an der Leine zu führen. Ausgenommen sind markierte Hundefreilaufzonen.",
-         "text_en": "In the parks of the City of Zurich dogs must be kept on a leash, except in marked off-leash dog zones. A list of off-leash zones is published by Grün Stadt Zürich."}
+        {
+          "heading_path": "Parks",
+          "anchor": null,
+          "text_original": "In den Parkanlagen der Stadt Zürich sind Hunde an der Leine zu führen. Ausgenommen sind markierte Hundefreilaufzonen.",
+          "text_en": "In the parks of the City of Zurich dogs must be kept on a leash, except in marked off-leash dog zones. A list of off-leash zones is published by Grün Stadt Zürich."
+        }
       ]
     },
     {
@@ -77,12 +98,18 @@
       "language": "de",
       "extent_id": "CH-ZH-261-K3",
       "authority": "official_info",
-      "categories": ["dogs", "hiking"],
+      "categories": [
+        "dogs",
+        "hiking"
+      ],
       "valid_from": null,
       "chunks": [
-        {"heading_path": "Kreis 3 > Hundefreilaufzonen", "anchor": null,
-         "text_original": "Im Kreis 3 befindet sich eine Hundefreilaufzone im Fritschiwiese-Park in Wiedikon.",
-         "text_en": "In Kreis 3 there is an off-leash dog zone at Fritschiwiese park in Wiedikon. Dogs may run free there; on the Uetliberg hiking trails they must be leashed in the forest season."}
+        {
+          "heading_path": "Kreis 3 > Hundefreilaufzonen",
+          "anchor": null,
+          "text_original": "Im Kreis 3 befindet sich eine Hundefreilaufzone im Fritschiwiese-Park in Wiedikon.",
+          "text_en": "In Kreis 3 there is an off-leash dog zone at Fritschiwiese park in Wiedikon. Dogs may run free there; on the Uetliberg hiking trails they must be leashed in the forest season."
+        }
       ]
     },
     {
@@ -94,12 +121,18 @@
       "language": "de",
       "extent_id": "CH",
       "authority": "institutional",
-      "categories": ["hiking", "dogs"],
+      "categories": [
+        "hiking",
+        "dogs"
+      ],
       "valid_from": null,
       "chunks": [
-        {"heading_path": "Sicherheit", "anchor": null,
-         "text_original": "Auf Alpweiden mit Mutterkühen Hunde an die Leine nehmen und Abstand halten.",
-         "text_en": "On alpine pastures with suckler cows keep your dog on a leash and keep your distance. Leash rules on hiking trails differ by canton; check the cantonal rules before you go."}
+        {
+          "heading_path": "Sicherheit",
+          "anchor": null,
+          "text_original": "Auf Alpweiden mit Mutterkühen Hunde an die Leine nehmen und Abstand halten.",
+          "text_en": "On alpine pastures with suckler cows keep your dog on a leash and keep your distance. Leash rules on hiking trails differ by canton; check the cantonal rules before you go."
+        }
       ]
     },
     {
@@ -111,12 +144,18 @@
       "language": "en",
       "extent_id": "CH",
       "authority": "official_info",
-      "categories": ["dogs", "taxes"],
+      "categories": [
+        "dogs",
+        "taxes"
+      ],
       "valid_from": null,
       "chunks": [
-        {"heading_path": "Dog tax", "anchor": null,
-         "text_original": "Dog tax is levied by the cantons and communes; the amount varies by commune.",
-         "text_en": "Dog tax is levied by the cantons and communes; the amount varies by commune. Ask your commune for the rate and registration procedure."}
+        {
+          "heading_path": "Dog tax",
+          "anchor": null,
+          "text_original": "Dog tax is levied by the cantons and communes; the amount varies by commune.",
+          "text_en": "Dog tax is levied by the cantons and communes; the amount varies by commune. Ask your commune for the rate and registration procedure."
+        }
       ]
     },
     {
@@ -128,12 +167,17 @@
       "language": "de",
       "extent_id": "CH-BS",
       "authority": "official_info",
-      "categories": ["dogs"],
+      "categories": [
+        "dogs"
+      ],
       "valid_from": null,
       "chunks": [
-        {"heading_path": "Basel-Stadt", "anchor": null,
-         "text_original": "In Basel-Stadt gilt in allen öffentlichen Parks ganzjährig Leinenpflicht für Hunde.",
-         "text_en": "In Basel-Stadt dogs must be leashed in all public parks all year round. There are no seasonal exceptions on hiking trails in the canton."}
+        {
+          "heading_path": "Basel-Stadt",
+          "anchor": null,
+          "text_original": "In Basel-Stadt gilt in allen öffentlichen Parks ganzjährig Leinenpflicht für Hunde.",
+          "text_en": "In Basel-Stadt dogs must be leashed in all public parks all year round. There are no seasonal exceptions on hiking trails in the canton."
+        }
       ]
     }
   ]

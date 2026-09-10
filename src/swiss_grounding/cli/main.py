@@ -17,6 +17,14 @@ from swiss_grounding.registry.repository import upsert_sources
 from swiss_grounding.retrieval.embedder import build_embedder
 from swiss_grounding.retrieval.models import QueryRequest
 
+
+def _link(url: str, anchor: str | None) -> str:
+    """Append the anchor unless the URL already carries a fragment."""
+    if not anchor or "#" in url:
+        return url
+    return f"{url}#{anchor}"
+
+
 app = typer.Typer(help="Swiss Grounding MCP command line.", no_args_is_help=True)
 db_app = typer.Typer(help="Database commands.")
 app.add_typer(db_app, name="db")
@@ -80,7 +88,7 @@ def query_cmd(
             typer.echo(resp.message)
         for i, c in enumerate(resp.citations, 1):
             typer.echo(f"\n[{i}] {c.title_en} — {c.extent_label} / {c.authority} (score {c.score})")
-            typer.echo(f"    {c.url}{'#' + c.anchor if c.anchor else ''}")
+            typer.echo(f"    {_link(c.url, c.anchor)}")
             typer.echo(f"    {c.snippet_en}")
         typer.echo(f"\n{resp.notice}")
     if resp.status == "needs_location":
