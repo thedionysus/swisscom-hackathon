@@ -1,0 +1,11 @@
+id: fedlex
+name: Fedlex (Federal law, Classified Compilation)
+base_url: https://www.fedlex.admin.ch
+default_extent_id: CH
+authority: federal_law
+categories: [hiking, waste, dogs, safety, transport]
+fetch_strategy: fedlex_sparql
+fetch_config:
+  sr_numbers: ["451", "455", "741.01", "814.01", "921.0"]
+allow_narrowing: false
+license: "Fedlex terms for third-party users (commercial reuse permitted)"

@@ -1,0 +1,11 @@
+id: ch_ch
+name: ch.ch (Confederation, cantons and communes portal)
+base_url: https://www.ch.ch
+default_extent_id: CH
+authority: official_info
+categories: [dogs, waste, taxes, transport, schools, health]
+fetch_strategy: html_crawl
+fetch_config:
+  path_allowlist: ["/en/"]
+allow_narrowing: true
+license: "ch.ch terms of use"

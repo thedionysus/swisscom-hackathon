@@ -1,0 +1,11 @@
+id: stadt_zuerich
+name: Stadt Zürich
+base_url: https://www.stadt-zuerich.ch
+default_extent_id: CH-ZH-261
+authority: official_info
+categories: [hiking, dogs, waste, parking]
+fetch_strategy: html_crawl
+fetch_config:
+  path_allowlist: ["/de/umwelt-und-verkehr", "/de/stadtleben", "/de/politik-und-verwaltung/politik-und-recht/amtliche-sammlung"]
+allow_narrowing: true
+license: "stadt-zuerich.ch terms of use"

@@ -1,0 +1,11 @@
+id: schweizer_wanderwege
+name: Schweizer Wanderwege
+base_url: https://www.schweizer-wanderwege.ch
+default_extent_id: CH
+authority: institutional
+categories: [hiking, safety]
+fetch_strategy: html_crawl
+fetch_config:
+  path_allowlist: ["/de/wandern", "/de/sicherheit"]
+allow_narrowing: true
+license: "schweizer-wanderwege.ch terms of use"
