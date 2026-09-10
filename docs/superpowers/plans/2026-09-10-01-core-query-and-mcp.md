@@ -95,7 +95,7 @@ dependencies = [
     "pyyaml>=6.0",
     "httpx>=0.27",
     "typer>=0.12",
-    "mcp>=1.2",
+    "mcp>=1.2,<2",
     "numpy>=1.26",
 ]
 
@@ -3355,13 +3355,21 @@ def build_server(settings: Settings) -> FastMCP:
             path = list(resolved.path)
             resolved_id = resolved.location.id
         with connect(settings.database_url) as conn:
-            rows = conn.execute(
-                "select d.extent_id, d.source_id, count(*) as documents, max(d.retrieved_at) as last_retrieved "
-                "from document d where d.status = 'current' "
-                "and (%(path)s::text[] is null or d.extent_id = any(%(path)s)) "
-                "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
-                {"path": path},
-            ).fetchall()
+            if path is None:
+                rows = conn.execute(
+                    "select d.extent_id, d.source_id, count(*) as documents, "
+                    "max(d.retrieved_at) as last_retrieved "
+                    "from document d where d.status = 'current' "
+                    "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "select d.extent_id, d.source_id, count(*) as documents, "
+                    "max(d.retrieved_at) as last_retrieved "
+                    "from document d where d.status = 'current' and d.extent_id = any(%(path)s) "
+                    "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
+                    {"path": path},
+                ).fetchall()
         return _json({"resolved_location_id": resolved_id, "coverage": rows, "notice": NOTICE})
 
     return mcp
