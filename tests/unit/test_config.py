@@ -18,3 +18,24 @@ def test_settings_rejects_unknown_backend(monkeypatch):
 
     with pytest.raises(ValueError):
         Settings()
+
+
+def test_ingest_settings_defaults(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    s = Settings()
+    assert s.llm_backend == "fake"
+    assert s.llm_model == "claude-sonnet-5"
+    assert s.crawl_max_pages == 200
+    assert s.crawl_delay_seconds == 0.5
+    assert s.user_agent.startswith("swiss-grounding/")
+    assert s.anthropic_api_key is None
+
+
+def test_anthropic_backend_requires_key(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.setenv("LLM_BACKEND", "anthropic")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    import pytest
+
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
+        Settings()
