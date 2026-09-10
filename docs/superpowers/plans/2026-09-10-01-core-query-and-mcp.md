@@ -694,7 +694,9 @@ class LocationTree:
         alias_acc: dict[str, list[str]] = {}
         for loc in by_id.values():
             for name in loc.all_names():
-                alias_acc.setdefault(normalize(name), []).append(loc.id)
+                ids = alias_acc.setdefault(normalize(name), [])
+                if loc.id not in ids:          # en/de names may normalize identically
+                    ids.append(loc.id)
         alias_index = {k: tuple(v) for k, v in alias_acc.items()}
         bfs_index = {loc.bfs_id: loc.id for loc in by_id.values() if loc.bfs_id is not None}
         return cls(by_id=by_id, alias_index=alias_index, bfs_index=bfs_index)
