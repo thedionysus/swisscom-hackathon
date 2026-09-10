@@ -3,9 +3,30 @@ from typing import Protocol
 
 from swiss_grounding.locations.geoadmin import GeoAdminHit
 from swiss_grounding.locations.models import ResolvedLocation
-from swiss_grounding.locations.tree import LocationTree
+from swiss_grounding.locations.tree import LocationTree, normalize
 
 CANTON_IN_LABEL = re.compile(r"\(([A-Z]{2})\)\s*$")
+LABEL_PUNCTUATION = "()[],.-"
+MIN_OVERLAP_TOKEN_LENGTH = 3
+
+
+def _tokens(text: str) -> tuple[str, ...]:
+    return tuple(t for t in (w.strip(LABEL_PUNCTUATION) for w in normalize(text).split()) if t)
+
+
+def overlaps(text: str, label: str) -> bool:
+    """True when some input token of length >= 3 prefixes a token of the GeoAdmin label.
+
+    GeoAdmin is a fuzzy search: it answers "nowhere" with "Nidwalden". Requiring
+    a shared token stem keeps genuine hits ("uster" -> "Uster (ZH)") and drops
+    hallucinated ones.
+    """
+    label_tokens = _tokens(label)
+    return any(
+        len(token) >= MIN_OVERLAP_TOKEN_LENGTH
+        and any(candidate.startswith(token) for candidate in label_tokens)
+        for token in _tokens(text)
+    )
 
 
 class CommuneSearch(Protocol):
@@ -40,6 +61,8 @@ class LocationResolver:
         if not hits:
             return None
         hit = hits[0]
+        if not overlaps(text, hit.label):
+            return None
         exact = self._tree.by_bfs_id(hit.bfs_id)
         if exact is not None:
             return ResolvedLocation(
