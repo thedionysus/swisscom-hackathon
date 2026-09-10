@@ -1,6 +1,6 @@
 import unicodedata
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Iterable, Mapping
 
 from swiss_grounding.locations.models import LEVEL_DEPTH, Location
 

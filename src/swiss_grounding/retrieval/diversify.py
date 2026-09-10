@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from swiss_grounding.retrieval.models import ScoredHit
 

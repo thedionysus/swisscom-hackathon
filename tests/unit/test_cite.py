@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.locations.tree import LocationTree
@@ -14,7 +14,7 @@ def test_citation_copies_fields_and_labels_extent():
         anchor="leinenpflicht", extent_id="CH-ZH", authority=Authority.OFFICIAL_INFO,
         categories=("dogs",), url="https://www.zh.ch/x", identifier=None,
         title_original="Hunde", title_en="Dogs", language="de", valid_from=date(2020, 1, 1),
-        retrieved_at=datetime(2026, 9, 1), license="zh terms", source_id="zh_ch",
+        retrieved_at=datetime(2026, 9, 1, tzinfo=UTC), license="zh terms", source_id="zh_ch",
     )
     sh = ScoredHit(hit=Hit(chunk=chunk, rrf_score=0.0, dense_rank=1, lexical_rank=None),
                    score=0.7, specificity=0.5, category_overlap=1.0, authority_score=0.6)

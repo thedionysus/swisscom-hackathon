@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from swiss_grounding.registry.models import Authority
 from swiss_grounding.retrieval.diversify import diversify
@@ -10,7 +10,7 @@ def scored(chunk_id, document_id, extent_id, score, specificity):
         chunk_id=chunk_id, document_id=document_id, ordinal=0, text_original="o", text_en="e",
         heading_path="", anchor=None, extent_id=extent_id, authority=Authority.OFFICIAL_INFO,
         categories=(), url="u", identifier=None, title_original="t", title_en="t",
-        language="de", valid_from=None, retrieved_at=datetime(2026, 1, 1), license=None,
+        language="de", valid_from=None, retrieved_at=datetime(2026, 1, 1, tzinfo=UTC), license=None,
         source_id="s",
     )
     hit = Hit(chunk=chunk, rrf_score=0.0, dense_rank=None, lexical_rank=None)

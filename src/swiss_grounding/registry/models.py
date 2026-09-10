@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from enum import StrEnum
-from typing import Any, Mapping
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 

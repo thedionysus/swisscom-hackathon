@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from datetime import date
-from typing import Sequence
 
 import psycopg
 

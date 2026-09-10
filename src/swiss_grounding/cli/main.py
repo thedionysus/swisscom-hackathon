@@ -2,7 +2,6 @@ import json
 from dataclasses import asdict
 from datetime import date
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -57,9 +56,9 @@ def load_fixture_cmd(path: Path) -> None:
 @app.command("query")
 def query_cmd(
     question: str,
-    location: Optional[str] = typer.Option(None, "--location", "-l"),
-    categories: Optional[str] = typer.Option(None, "--categories", "-c", help="comma-separated"),
-    as_of: Optional[str] = typer.Option(None, "--as-of", help="ISO date"),
+    location: str | None = typer.Option(None, "--location", "-l"),
+    categories: str | None = typer.Option(None, "--categories", "-c", help="comma-separated"),
+    as_of: str | None = typer.Option(None, "--as-of", help="ISO date"),
     limit: int = typer.Option(8, "--limit"),
     as_json: bool = typer.Option(False, "--json"),
 ) -> None:

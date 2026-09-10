@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.models import AUTHORITY_RANK

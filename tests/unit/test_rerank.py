@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.locations.tree import LocationTree
@@ -12,7 +12,7 @@ def make_hit(chunk_id, extent_id, authority, categories, rrf=0.01):
         chunk_id=chunk_id, document_id=chunk_id, ordinal=0, text_original="o", text_en="e",
         heading_path="", anchor=None, extent_id=extent_id, authority=authority,
         categories=tuple(categories), url="https://x", identifier=None, title_original="t",
-        title_en="t", language="de", valid_from=None, retrieved_at=datetime(2026, 1, 1),
+        title_en="t", language="de", valid_from=None, retrieved_at=datetime(2026, 1, 1, tzinfo=UTC),
         license=None, source_id="s",
     )
     return Hit(chunk=chunk, rrf_score=rrf, dense_rank=1, lexical_rank=1)

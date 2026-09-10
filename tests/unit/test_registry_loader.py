@@ -1,7 +1,7 @@
 import pytest
 
 from swiss_grounding.registry.categories import CATEGORY_IDS
-from swiss_grounding.registry.loader import load_source_yaml, load_seed_sources
+from swiss_grounding.registry.loader import load_seed_sources, load_source_yaml
 from swiss_grounding.registry.models import Authority, FetchStrategy
 
 VALID = """

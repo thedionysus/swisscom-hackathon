@@ -81,7 +81,7 @@ class QueryCore:
         """
         words = WORD_RE.findall(question)
         for size in (3, 2, 1):
-            for start in range(0, max(0, len(words) - size + 1)):
+            for start in range(max(0, len(words) - size + 1)):
                 span = words[start:start + size]
                 candidate = " ".join(span).rstrip("?.,!")
                 if size == 1 and not (candidate[:1].isupper() or candidate.isdigit()):
