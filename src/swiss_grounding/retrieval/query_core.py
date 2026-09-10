@@ -22,6 +22,22 @@ NEEDS_LOCATION_MESSAGE = (
 )
 
 
+def _validate(request: QueryRequest) -> QueryResponse | None:
+    """Reject malformed requests up front. Out-of-range limits are clamped, not rejected."""
+    if not request.question.strip():
+        return QueryResponse(
+            status="invalid_request", field="question",
+            message="The question is empty. Provide the user's question text.",
+        )
+    unknown = sorted(c for c in request.categories if c not in CATEGORY_IDS)
+    if unknown:
+        return QueryResponse(
+            status="invalid_request", field="categories",
+            message=f"Unknown categories: {unknown}. Call swiss_list_categories for valid ids.",
+        )
+    return None
+
+
 @dataclass(frozen=True)
 class QueryCore:
     database_url: str
@@ -31,11 +47,9 @@ class QueryCore:
     weights: RerankWeights
 
     def query(self, request: QueryRequest) -> QueryResponse:
-        if not request.question.strip():
-            return QueryResponse(status="needs_location", message="The question is empty.")
-        unknown = [c for c in request.categories if c not in CATEGORY_IDS]
-        if unknown:
-            return QueryResponse(status="needs_location", message=f"Unknown categories: {unknown}")
+        invalid = _validate(request)
+        if invalid is not None:
+            return invalid
         resolved = self._resolve(request)
         if resolved is None:
             text = request.location or ""

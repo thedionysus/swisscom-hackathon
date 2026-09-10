@@ -31,3 +31,19 @@ def test_full_cli_flow():
     r = runner.invoke(app, ["query", "Can my dog run off leash?"])
     assert r.exit_code == 2
     assert "needs_location" in r.output
+
+
+def test_invalid_request_exits_with_code_one():
+    assert runner.invoke(app, ["db", "init"]).exit_code == 0
+    assert runner.invoke(app, ["db", "seed"]).exit_code == 0
+    r = runner.invoke(app, ["query", "dog rules", "--location", "Wiedikon", "--categories", "nope"])
+    assert r.exit_code == 1, r.output
+    assert "invalid_request" in r.output
+
+
+def test_needs_location_exits_with_code_two():
+    assert runner.invoke(app, ["db", "init"]).exit_code == 0
+    assert runner.invoke(app, ["db", "seed"]).exit_code == 0
+    r = runner.invoke(app, ["query", "Can my dog run off leash?"])
+    assert r.exit_code == 2
+    assert "needs_location" in r.output

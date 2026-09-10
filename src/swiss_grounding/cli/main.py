@@ -25,6 +25,8 @@ def _link(url: str, anchor: str | None) -> str:
     return f"{url}#{anchor}"
 
 
+EXIT_CODES = {"invalid_request": 1, "needs_location": 2}
+
 app = typer.Typer(help="Swiss Grounding MCP command line.", no_args_is_help=True)
 db_app = typer.Typer(help="Database commands.")
 app.add_typer(db_app, name="db")
@@ -70,7 +72,10 @@ def query_cmd(
     limit: int = typer.Option(8, "--limit"),
     as_json: bool = typer.Option(False, "--json"),
 ) -> None:
-    """Run the query core and print evidence. Exit code 2 when a location is needed."""
+    """Run the query core and print evidence.
+
+    Exit code 1 when the request is invalid, 2 when a location is needed.
+    """
     core = build_query_core(load_settings())
     request = QueryRequest(
         question=question, location=location,
@@ -91,8 +96,7 @@ def query_cmd(
             typer.echo(f"    {_link(c.url, c.anchor)}")
             typer.echo(f"    {c.snippet_en}")
         typer.echo(f"\n{resp.notice}")
-    if resp.status == "needs_location":
-        raise typer.Exit(code=2)
+    raise typer.Exit(code=EXIT_CODES.get(resp.status, 0))
 
 
 @app.command("serve")

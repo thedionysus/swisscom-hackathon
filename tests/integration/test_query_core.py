@@ -91,3 +91,29 @@ def test_location_in_question_is_detected(core):
     assert resp.status == "results"
     assert resp.resolved_location_id == "CH-BS"
     assert all(c.extent_id in {"CH", "CH-BS"} for c in resp.citations)
+
+
+def test_empty_question_is_invalid_request(core):
+    resp = core.query(QueryRequest(question="   ", location="Wiedikon"))
+    assert resp.status == "invalid_request"
+    assert resp.field == "question"
+    assert resp.citations == ()
+
+
+def test_unknown_categories_are_invalid_request(core):
+    resp = core.query(QueryRequest(question="dog rules", location="Wiedikon", categories=("nope",)))
+    assert resp.status == "invalid_request"
+    assert resp.field == "categories"
+    assert "nope" in resp.message
+
+
+def test_limit_above_maximum_is_clamped_not_rejected(core):
+    resp = core.query(QueryRequest(question="dog leash", location="Wiedikon", limit=999))
+    assert resp.status == "results"
+    assert resp.field is None
+
+
+def test_limit_below_minimum_is_clamped_not_rejected(core):
+    resp = core.query(QueryRequest(question="dog leash", location="Wiedikon", limit=0))
+    assert resp.status == "results"
+    assert len(resp.citations) == 1

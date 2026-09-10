@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal
 
@@ -84,12 +84,13 @@ NOTICE = "Retrieved public information from Swiss sources. Not legal advice."
 
 @dataclass(frozen=True)
 class QueryResponse:
-    status: Literal["results", "needs_location", "no_evidence"]
+    status: Literal["results", "needs_location", "no_evidence", "invalid_request"]
     citations: tuple[Citation, ...] = ()
     resolved_location_id: str | None = None
     resolved_location_label: str | None = None
     resolution_method: str | None = None
     alternatives: tuple[str, ...] = ()
     message: str = ""
+    field: str | None = None      # the offending request field when status is invalid_request
     notice: str = NOTICE
-    categories_used: tuple[str, ...] = field(default_factory=tuple)
+    categories_used: tuple[str, ...] = ()
