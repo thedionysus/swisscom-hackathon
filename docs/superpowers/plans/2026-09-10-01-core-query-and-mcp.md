@@ -998,7 +998,7 @@ from swiss_grounding.locations.tree import LocationTree
 
 UPSERT = """
 insert into location (id, parent_id, level, bfs_id, lindas_uri, names, path)
-values (%(id)s, %(parent_id)s, %(level)s, %(bfs_id)s, %(lindas_uri)s, %(names)s, %(path)s)
+values (%(id)s, %(parent_id)s, %(level)s, %(bfs_id)s, %(lindas_uri)s, %(names)s::jsonb, %(path)s)
 on conflict (id) do update set
     parent_id = excluded.parent_id, level = excluded.level, bfs_id = excluded.bfs_id,
     lindas_uri = excluded.lindas_uri, names = excluded.names, path = excluded.path
