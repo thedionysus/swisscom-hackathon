@@ -2999,11 +2999,20 @@ class QueryCore:
         return self._resolve_from_question(request.question)
 
     def _resolve_from_question(self, question: str) -> ResolvedLocation | None:
-        """Alias-only scan of the question text, longest n-gram first. Never calls GeoAdmin."""
+        """Alias-only scan of the question text, longest n-gram first. Never calls GeoAdmin.
+
+        1-gram candidates are restricted to words that are capitalized in the
+        original question or are all digits (postal codes), to avoid spurious
+        matches against short lowercase canton-abbreviation aliases (e.g. "be",
+        "so", "ai", "ur") that can appear as ordinary English words.
+        """
         words = WORD_RE.findall(question)
         for size in (3, 2, 1):
             for start in range(0, max(0, len(words) - size + 1)):
-                candidate = " ".join(words[start:start + size]).rstrip("?.,!")
+                span = words[start:start + size]
+                candidate = " ".join(span).rstrip("?.,!")
+                if size == 1 and not (candidate[:1].isupper() or candidate.isdigit()):
+                    continue
                 matches = self.tree.find(candidate)
                 if matches:
                     best = matches[0]
