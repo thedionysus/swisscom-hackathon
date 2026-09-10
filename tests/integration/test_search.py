@@ -71,3 +71,20 @@ def test_hit_carries_document_fields(url):
     assert h.chunk.url.startswith("https://")
     assert h.chunk.title_en
     assert h.chunk.retrieved_at is not None
+
+
+def test_search_uses_document_status_not_the_chunk_copy(url):
+    """chunk.document_status can drift; the document table is the single source of truth."""
+    with connect(url) as conn:
+        doc_id = conn.execute(
+            "select id from document where extent_id = 'CH' order by id limit 1"
+        ).fetchone()["id"]
+        conn.execute("update document set status = 'withdrawn' where id = %s", (doc_id,))
+        conn.execute(
+            "update chunk set document_status = 'current' where document_id = %s", (doc_id,)
+        )
+        hits = hybrid_search(
+            conn, FakeEmbedder(dim=8), question="leash dog hiking",
+            extent_path=("CH",), as_of=None, top_n=50,
+        )
+    assert doc_id not in {h.chunk.document_id for h in hits}

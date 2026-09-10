@@ -450,7 +450,8 @@ create table if not exists document (
     language        text not null,
     extent_id       text not null references location(id),
     extent_reason   text not null default 'source_default',
-    authority       text not null,
+    authority       text not null check (authority in
+        ('federal_law','cantonal_law','municipal_law','official_info','institutional')),
     categories      jsonb not null default '[]',
     valid_from      date,
     valid_to        date,
@@ -477,9 +478,12 @@ create table if not exists chunk (
     tsv              tsvector generated always as (to_tsvector('english', text_en)) stored,
     chunk_hash       text not null,
     extent_id        text not null references location(id),
-    authority        text not null,
+    authority        text not null check (authority in
+        ('federal_law','cantonal_law','municipal_law','official_info','institutional')),
     categories       text[] not null default '{}',
-    document_status  text not null default 'current'
+    -- denormalized copy, kept for now but never used as a query filter; document.status wins
+    document_status  text not null default 'current' check (document_status in
+        ('current','superseded','withdrawn','pending_enrichment'))
 );
 create index if not exists chunk_extent_idx on chunk(extent_id, document_status);
 create index if not exists chunk_tsv_idx on chunk using gin (tsv);
@@ -2392,7 +2396,7 @@ CHUNK_COLUMNS = """
 FILTER = """
     c.extent_id = any(%(path)s)
     and (
-        (%(as_of)s::date is null and c.document_status = 'current')
+        (%(as_of)s::date is null and d.status = 'current')
         or (%(as_of)s::date is not null
             and d.status in ('current', 'superseded')
             and (d.valid_from is null or d.valid_from <= %(as_of)s::date)

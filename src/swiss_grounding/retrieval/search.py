@@ -17,7 +17,7 @@ CHUNK_COLUMNS = """
 FILTER = """
     c.extent_id = any(%(path)s)
     and (
-        (%(as_of)s::date is null and c.document_status = 'current')
+        (%(as_of)s::date is null and d.status = 'current')
         or (%(as_of)s::date is not null
             and d.status in ('current', 'superseded')
             and (d.valid_from is null or d.valid_from <= %(as_of)s::date)
