@@ -1658,7 +1658,7 @@ UPSERT = """
 insert into source (id, name, base_url, default_extent_id, authority, categories,
                     fetch_strategy, fetch_config, allow_narrowing, license, origin)
 values (%(id)s, %(name)s, %(base_url)s, %(default_extent_id)s, %(authority)s, %(categories)s,
-        %(fetch_strategy)s, %(fetch_config)s, %(allow_narrowing)s, %(license)s, %(origin)s)
+        %(fetch_strategy)s, %(fetch_config)s::jsonb, %(allow_narrowing)s, %(license)s, %(origin)s)
 on conflict (id) do update set
     name = excluded.name, base_url = excluded.base_url,
     default_extent_id = excluded.default_extent_id, authority = excluded.authority,
