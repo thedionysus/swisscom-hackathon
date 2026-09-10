@@ -2219,7 +2219,7 @@ def load_fixture(conn: psycopg.Connection, path: Path, embedder: Embedder) -> Lo
             """
             insert into document (source_id, url, identifier, title_original, title_en, language,
                                   extent_id, authority, categories, valid_from, content_hash)
-            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning id
+            values (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s) returning id
             """,
             (doc.source_id, doc.url, doc.identifier, doc.title_original, doc.title_en,
              doc.language, doc.extent_id, doc.authority.value, json.dumps(doc.categories),
