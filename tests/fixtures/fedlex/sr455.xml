@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="act">
+    <meta><identification source="#fedlex"><FRBRWork><FRBRthis value="/akn/ch/act/2008/414/!main"/></FRBRWork></identification></meta>
+    <preface><p><docTitle>Tierschutzgesetz</docTitle></p></preface>
+    <body>
+      <chapter eId="chap_1"><num>1. Kapitel:</num><heading>Allgemeine Bestimmungen</heading>
+        <article eId="art_1"><num>Art. 1</num><heading>Zweck</heading>
+          <paragraph eId="art_1/para_1"><content><p>Zweck dieses Gesetzes ist es, die Würde und das Wohlergehen des Tieres zu schützen.</p></content></paragraph>
+        </article>
+        <article eId="art_6"><num>Art. 6</num><heading>Allgemeine Anforderungen</heading>
+          <paragraph eId="art_6/para_1"><num>1</num><content><p>Wer ein Tier hält, muss es angemessen nähren, pflegen und ihm die für sein Wohlergehen notwendige Beschäftigung gewähren.</p></content></paragraph>
+          <paragraph eId="art_6/para_2"><num>2</num><content><p>Der Bundesrat erlässt Vorschriften über die Tierhaltung.</p></content></paragraph>
+        </article>
+      </chapter>
+    </body>
+  </act>
+</akomaNtoso>

@@ -1,0 +1,12 @@
+{
+  "head": {"vars": ["abstract", "consolidation", "dateApplicability", "dateEndApplicability", "title", "fileUrl"]},
+  "results": {"bindings": [
+    {
+      "abstract": {"type": "uri", "value": "https://fedlex.data.admin.ch/eli/cc/2008/414"},
+      "consolidation": {"type": "uri", "value": "https://fedlex.data.admin.ch/eli/cc/2008/414/20220101"},
+      "dateApplicability": {"type": "literal", "datatype": "http://www.w3.org/2001/XMLSchema#date", "value": "2022-01-01"},
+      "title": {"type": "literal", "xml:lang": "de", "value": "Tierschutzgesetz (TSchG)"},
+      "fileUrl": {"type": "uri", "value": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/2008/414/20220101/de/xml/fedlex-data-admin-ch-eli-cc-2008-414-20220101-de-xml.xml"}
+    }
+  ]}
+}
