@@ -1,0 +1,107 @@
+from dataclasses import dataclass
+from urllib.parse import urldefrag, urljoin
+
+from bs4 import BeautifulSoup, Tag
+from markdownify import markdownify
+
+from swiss_grounding.ingest.models import Section
+
+DROP_TAGS = ("nav", "footer", "header", "script", "style", "noscript", "aside", "form")
+HEADING_TAGS = ("h1", "h2", "h3", "h4")
+MAIN_CANDIDATES = ("main", "article", "[role=main]", "body")
+
+
+@dataclass(frozen=True)
+class Page:
+    title: str
+    language: str
+    sections: tuple[Section, ...]
+
+
+def _content_root(soup: BeautifulSoup) -> Tag | None:
+    for selector in MAIN_CANDIDATES:
+        node = soup.select_one(selector)
+        if node is not None:
+            return node
+    return None
+
+
+def _clean(root: Tag) -> Tag:
+    for tag in root.find_all(DROP_TAGS):
+        tag.decompose()
+    return root
+
+
+def _title(soup: BeautifulSoup) -> str:
+    h1 = soup.find("h1")
+    if h1 and h1.get_text(strip=True):
+        return h1.get_text(" ", strip=True)
+    if soup.title and soup.title.string:
+        return soup.title.string.split("|")[0].strip()
+    return ""
+
+
+def _language(soup: BeautifulSoup, default: str) -> str:
+    html = soup.find("html")
+    lang = html.get("lang") if html else None
+    return lang.split("-")[0].lower() if lang else default
+
+
+def _to_text(nodes: list[Tag]) -> str:
+    html = "".join(str(n) for n in nodes)
+    return markdownify(html, heading_style="ATX", strip=["a", "img"]).strip()
+
+
+def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
+    sections: list[Section] = []
+    stack: list[tuple[int, str]] = []
+    anchor: str | None = None
+    buffer: list[Tag] = []
+    heading_seen = False
+
+    def flush() -> None:
+        text = _to_text(buffer)
+        if text:
+            path = " > ".join(name for _, name in stack) or title
+            sections.append(Section(heading_path=path, anchor=anchor, text=text))
+        buffer.clear()
+
+    for node in root.find_all(recursive=False):
+        if node.name in HEADING_TAGS:
+            flush()
+            heading_seen = True
+            level = int(node.name[1])
+            name = node.get_text(" ", strip=True)
+            while stack and stack[-1][0] >= level:
+                stack.pop()
+            stack.append((level, name))
+            anchor = node.get("id")
+        else:
+            buffer.append(node)
+    flush()
+    if not heading_seen and not sections:
+        return ()
+    return tuple(sections)
+
+
+def html_to_page(html: str, url: str, default_language: str) -> Page:
+    """Parse an HTML page into a title, a language, and heading-delimited sections."""
+    soup = BeautifulSoup(html, "lxml")
+    title = _title(soup)
+    language = _language(soup, default_language)
+    root = _content_root(soup)
+    if root is None:
+        return Page(title=title, language=language, sections=())
+    sections = _split_by_headings(_clean(root), title)
+    return Page(title=title, language=language, sections=sections)
+
+
+def extract_links(html: str, base_url: str) -> tuple[str, ...]:
+    """All absolute http(s) links on the page, fragments removed, order preserved, deduplicated."""
+    soup = BeautifulSoup(html, "lxml")
+    seen: dict[str, None] = {}
+    for a in soup.find_all("a", href=True):
+        absolute, _ = urldefrag(urljoin(base_url, a["href"]))
+        if absolute.startswith(("http://", "https://")):
+            seen.setdefault(absolute, None)
+    return tuple(seen)
