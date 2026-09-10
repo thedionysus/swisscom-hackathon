@@ -38,3 +38,35 @@ def test_guarantees_most_specific_extent_present():
 
 def test_empty_input():
     assert diversify((), limit=5, per_document_cap=2) == ()
+
+
+def test_force_insert_respects_per_document_cap():
+    items = (
+        scored(1, 100, "CH", 0.9, 0.25), scored(2, 100, "CH", 0.8, 0.25),
+        scored(3, 200, "CH", 0.7, 0.25), scored(4, 100, "CH-ZH-261-K3", 0.1, 1.0),
+    )
+    out = diversify(items, limit=3, per_document_cap=2)
+    ids = [s.hit.chunk.chunk_id for s in out]
+    assert 4 in ids
+    assert sum(1 for s in out if s.hit.chunk.document_id == 100) <= 2
+
+
+def test_swap_displaces_a_same_document_item_when_that_document_is_at_cap():
+    items = (
+        scored(1, 100, "CH", 0.9, 0.25), scored(2, 100, "CH", 0.8, 0.25),
+        scored(3, 100, "CH-ZH-261-K3", 0.1, 1.0),
+    )
+    out = diversify(items, limit=2, per_document_cap=2)
+    assert [s.hit.chunk.chunk_id for s in out] == [1, 3]
+
+
+def test_no_swap_possible_leaves_selection_unchanged():
+    items = (
+        scored(1, 100, "CH", 0.9, 0.25), scored(2, 200, "CH-ZH-261-K3", 0.1, 1.0),
+    )
+    assert diversify(items, limit=3, per_document_cap=0) == ()
+
+
+def test_zero_limit_returns_empty():
+    items = (scored(1, 100, "CH", 0.9, 0.25),)
+    assert diversify(items, limit=0, per_document_cap=2) == ()
