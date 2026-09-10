@@ -87,3 +87,72 @@ async def test_coverage(server):
     data = await call(server, "swiss_coverage", {"location": "Zurich"})
     extents = {row["extent_id"] for row in data["coverage"]}
     assert "CH-ZH-261" in extents and "CH-BS" not in extents
+
+
+async def test_resolve_location_not_found_carries_notice(server):
+    data = await call(server, "swiss_resolve_location", {"query": "Atlantis"})
+    assert data["found"] is False
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_resolve_location_found_carries_notice(server):
+    data = await call(server, "swiss_resolve_location", {"query": "8003"})
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_list_categories_carries_notice(server):
+    data = await call(server, "swiss_list_categories", {})
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_get_document_not_found_carries_notice(server):
+    data = await call(server, "swiss_get_document", {"document_id": 999999})
+    assert data["error"] == "document 999999 not found"
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_coverage_unresolvable_location_carries_notice(server):
+    data = await call(server, "swiss_coverage", {"location": "Atlantis"})
+    assert data["coverage"] == []
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_invalid_as_of_returns_structured_error(server):
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        result = await client.call_tool(
+            "swiss_search", {"question": "leash", "location": "Zurich", "as_of": "not-a-date"},
+        )
+    assert result.isError is False
+    data = json.loads(result.content[0].text)
+    assert data["status"] == "invalid_request"
+    assert data["field"] == "as_of"
+    assert "YYYY-MM-DD" in data["message"]
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_get_document_rejects_chunk_from_another_document(server):
+    search = await call(server, "swiss_search", {"question": "leash", "location": "Zurich", "limit": 8})
+    doc_id = search["citations"][0]["document_id"]
+    other = next(c for c in search["citations"] if c["document_id"] != doc_id)
+    data = await call(server, "swiss_get_document",
+                      {"document_id": doc_id, "chunk_id": other["chunk_id"]})
+    assert data["error"] == f"chunk {other['chunk_id']} is not part of document {doc_id}"
+    assert data["notice"].startswith("Retrieved public information")
+
+
+async def test_search_limit_is_constrained_by_schema(server):
+    schema = None
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    for tool in tools.tools:
+        if tool.name == "swiss_search":
+            schema = tool.inputSchema["properties"]["limit"]
+    assert schema["minimum"] == 1
+    assert schema["maximum"] == 25
+
+
+async def test_dates_are_serialized_as_iso(server):
+    data = await call(server, "swiss_search",
+                      {"question": "leash", "location": "Wiedikon", "response_format": "detailed"})
+    retrieved = data["citations"][0]["retrieved_at"]
+    assert "T" in retrieved

@@ -1,10 +1,11 @@
 import json
 from dataclasses import asdict
-from datetime import date
-from typing import Any, Literal
+from datetime import date, datetime
+from typing import Annotated, Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from swiss_grounding.app import build_query_core
 from swiss_grounding.config import Settings
@@ -15,10 +16,22 @@ from swiss_grounding.retrieval.query_core import QueryCore
 
 READ_ONLY = ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False)
 CONCISE_DROP = {"snippet_original", "title_original", "heading_path", "license", "retrieved_at"}
+MIN_LIMIT = 1
+MAX_LIMIT = 25
+AS_OF_ERROR = "Could not parse as_of {value!r}; expected ISO date YYYY-MM-DD."
+
+
+def _encode(value: Any) -> str:
+    """JSON fallback encoder: ISO 8601 for dates and datetimes, str for the rest."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    return str(value)
 
 
 def _json(obj: Any) -> str:
-    return json.dumps(obj, default=str, ensure_ascii=False)
+    """Serialize a tool response, ensuring every dict payload carries the notice."""
+    payload = {**obj, "notice": NOTICE} if isinstance(obj, dict) and "notice" not in obj else obj
+    return json.dumps(payload, default=_encode, ensure_ascii=False)
 
 
 def _response_to_dict(resp: QueryResponse, response_format: str) -> dict:
@@ -56,7 +69,7 @@ def build_server(settings: Settings) -> FastMCP:
         location: str | None = None,
         categories: list[str] | None = None,
         as_of: str | None = None,
-        limit: int = 8,
+        limit: Annotated[int, Field(ge=MIN_LIMIT, le=MAX_LIMIT)] = 8,
         response_format: Literal["concise", "detailed"] = "concise",
     ) -> str:
         """Search Swiss public sources (federal law, cantonal and municipal information,
@@ -73,7 +86,11 @@ def build_server(settings: Settings) -> FastMCP:
         as_of: ISO date to retrieve law as it stood on that date.
         Results are evidence with citations; write the answer from them and cite the URLs.
         Never invent URLs."""
-        parsed_as_of = date.fromisoformat(as_of) if as_of else None
+        try:
+            parsed_as_of = date.fromisoformat(as_of) if as_of else None
+        except ValueError:
+            return _json({"status": "invalid_request", "field": "as_of",
+                          "message": AS_OF_ERROR.format(value=as_of)})
         resp = core.query(QueryRequest(
             question=question, location=location, categories=tuple(categories or ()),
             as_of=parsed_as_of, limit=limit,
@@ -101,7 +118,12 @@ def build_server(settings: Settings) -> FastMCP:
                     "select id, ordinal, heading_path, anchor, text_en, text_original "
                     "from chunk where document_id = %s and id = %s", (document_id, chunk_id),
                 ).fetchall()
-        return _json({"document": doc, "chunks": chunks, "notice": NOTICE})
+                if not chunks:
+                    return _json({
+                        "error": f"chunk {chunk_id} is not part of document {document_id}",
+                        "document_id": document_id, "chunk_id": chunk_id,
+                    })
+        return _json({"document": doc, "chunks": chunks})
 
     @mcp.tool(annotations=READ_ONLY)
     def swiss_list_categories() -> str:
@@ -137,6 +159,6 @@ def build_server(settings: Settings) -> FastMCP:
                     "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
                     {"path": path},
                 ).fetchall()
-        return _json({"resolved_location_id": resolved_id, "coverage": rows, "notice": NOTICE})
+        return _json({"resolved_location_id": resolved_id, "coverage": rows})
 
     return mcp
