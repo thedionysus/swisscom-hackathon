@@ -3,6 +3,7 @@ from dataclasses import asdict
 from datetime import date, datetime
 from typing import Annotated, Any, Literal
 
+import httpx
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import Field
@@ -11,10 +12,19 @@ from swiss_grounding.app import build_query_core
 from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.registry.categories import CATEGORIES
+from swiss_grounding.registry.suggestions import list_suggestions, submit_suggestion
 from swiss_grounding.retrieval.models import NOTICE, QueryRequest, QueryResponse
 from swiss_grounding.retrieval.query_core import QueryCore
 
 READ_ONLY = ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False)
+WRITE = ToolAnnotations(readOnlyHint=False, idempotentHint=False, openWorldHint=True)
+SUGGESTION_TIMEOUT = 10.0
+SUGGESTION_USER_AGENT = "swiss-grounding-suggest/0.1"
+
+
+def _suggestion_http() -> httpx.Client:
+    """HTTP client used to check that a suggested URL is reachable (monkeypatched in tests)."""
+    return httpx.Client(timeout=SUGGESTION_TIMEOUT, headers={"user-agent": SUGGESTION_USER_AGENT})
 CONCISE_DROP = {"snippet_original", "title_original", "heading_path", "license", "retrieved_at"}
 MIN_LIMIT = 1
 MAX_LIMIT = 25
@@ -159,6 +169,37 @@ def build_server(settings: Settings) -> FastMCP:
                     "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
                     {"path": path},
                 ).fetchall()
-        return _json({"resolved_location_id": resolved_id, "coverage": rows})
+            pending = [asdict(s) for s in list_suggestions(conn, status="pending")]
+        return _json({"resolved_location_id": resolved_id, "coverage": rows, "pending_suggestions": pending})
+
+    @mcp.tool(annotations=WRITE)
+    def swiss_suggest_source(
+        url: str,
+        reason: str,
+        proposed_extent: str | None = None,
+        proposed_authority: str | None = None,
+        proposed_categories: list[str] | None = None,
+    ) -> str:
+        """Propose a Swiss public source for ingestion. Official government domains (admin.ch,
+        cantonal and city sites, ch.ch) are approved immediately as official information; every
+        other domain is queued for human review. Law authority levels are never assigned here.
+        Use when a question could not be answered and you know the authoritative site."""
+        try:
+            with connect(settings.database_url) as conn:
+                suggestion = submit_suggestion(
+                    conn, _suggestion_http(), url=url, reason=reason, suggested_by="mcp",
+                    proposed_extent_id=proposed_extent, proposed_authority=proposed_authority,
+                    proposed_categories=tuple(proposed_categories or ()),
+                )
+        except ValueError as exc:
+            field = "proposed_authority" if "law" in str(exc) else "url"
+            return _json({"status": "invalid_request", "field": field, "message": str(exc)})
+        approved = suggestion.status == "approved"
+        return _json({
+            "status": suggestion.status, "suggestion_id": suggestion.id, "url": suggestion.url,
+            "domain_class": suggestion.domain_class, "source_id": suggestion.source_id,
+            "message": ("Source approved and queued for the next ingestion run." if approved
+                        else "Suggestion recorded; awaiting human review."),
+        })
 
     return mcp

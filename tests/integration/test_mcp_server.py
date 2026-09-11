@@ -26,6 +26,8 @@ def server():
     apply_schema(url, embedding_dim=8)
     with connect(url) as conn:
         conn.execute("truncate chunk, document_change, document restart identity cascade")
+        conn.execute("truncate source_suggestion restart identity")
+        conn.execute("delete from source where origin <> 'seed'")
         upsert_locations(conn, seed_locations())
         upsert_sources(conn, load_seed_sources())
         load_fixture(conn, FIXTURE, FakeEmbedder(dim=8))
@@ -43,7 +45,7 @@ async def test_lists_expected_tools(server):
         tools = await client.list_tools()
     names = {t.name for t in tools.tools}
     assert names == {"swiss_resolve_location", "swiss_search", "swiss_get_document",
-                     "swiss_list_categories", "swiss_coverage"}
+                     "swiss_list_categories", "swiss_coverage", "swiss_suggest_source"}
 
 
 async def test_search_returns_results_with_notice(server):
@@ -156,3 +158,40 @@ async def test_dates_are_serialized_as_iso(server):
                       {"question": "leash", "location": "Wiedikon", "response_format": "detailed"})
     retrieved = data["citations"][0]["retrieved_at"]
     assert "T" in retrieved
+
+
+def _ok_http():
+    import httpx
+
+    return httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200)))
+
+
+async def test_tool_list_includes_suggest_source(server):
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    suggest = next(t for t in tools.tools if t.name == "swiss_suggest_source")
+    assert suggest.annotations.readOnlyHint is False
+
+
+async def test_suggest_official_source_is_auto_approved(server, monkeypatch):
+    from swiss_grounding.mcp_server import server as server_module
+
+    monkeypatch.setattr(server_module, "_suggestion_http", _ok_http)
+    data = await call(server, "swiss_suggest_source", {"url": "https://www.bs.ch/hunde", "reason": "Basel dogs"})
+    assert data["status"] == "approved" and data["domain_class"] == "official"
+    assert data["source_id"] == "bs_ch"
+    assert data["notice"]
+
+
+async def test_suggest_invalid_url_is_structured_error(server):
+    data = await call(server, "swiss_suggest_source", {"url": "nope", "reason": "r"})
+    assert data["status"] == "invalid_request" and data["field"] == "url"
+
+
+async def test_coverage_lists_pending_suggestions(server, monkeypatch):
+    from swiss_grounding.mcp_server import server as server_module
+
+    monkeypatch.setattr(server_module, "_suggestion_http", _ok_http)
+    await call(server, "swiss_suggest_source", {"url": "https://www.sac-cas.ch/de/huetten", "reason": "huts"})
+    data = await call(server, "swiss_coverage", {})
+    assert data["pending_suggestions"][0]["url"] == "https://www.sac-cas.ch/de/huetten"
