@@ -53,3 +53,16 @@ def test_missing_template_field_is_error_not_crash():
     http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
     result = ApiFetcher(http=http).fetch(source(), {})
     assert result.documents == () and "type" in result.errors[0].reason
+
+
+def test_id_template_builds_composite_ids():
+    feed = {"result": [{"date": "2026-10-02", "waste_type": "cardboard", "zip": 8003},
+                       {"date": "2026-10-02", "waste_type": "paper", "zip": 8003}]}
+    cfg = {"url": "https://erz.example/api", "records_path": "result", "id_template": "{waste_type}-{date}",
+           "title_template": "{waste_type} in {zip}", "text_template": "{waste_type} on {date}", "language": "en"}
+    src = Source(id="erz", name="ERZ", base_url="https://erz.example", default_extent_id="CH-ZH-261",
+                 authority="official_info", categories=("waste",), fetch_strategy="api", fetch_config=cfg)
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
+    result = ApiFetcher(http=http).fetch(src, {})
+    assert [d.url for d in result.documents] == ["https://erz.example/api#cardboard-2026-10-02",
+                                                 "https://erz.example/api#paper-2026-10-02"]

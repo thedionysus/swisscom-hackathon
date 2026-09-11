@@ -1,0 +1,16 @@
+id: open_erz
+name: Open ERZ waste calendar (Stadt Zürich, PLZ 8003)
+base_url: https://openerz.metaodi.ch
+default_extent_id: CH-ZH-261-K3
+authority: official_info
+categories: [waste]
+fetch_strategy: api
+fetch_config:
+  url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&limit=100
+  records_path: result
+  id_template: "{waste_type}-{date}"
+  title_template: "Waste collection {waste_type} in {zip} on {date}"
+  text_template: "Collection of {waste_type} in Zurich postal code {zip} on {date}. Put it out before 7:00 on collection day. {station}"
+  language: en
+allow_narrowing: false
+license: "Open ERZ API (openerz.metaodi.ch), data by Entsorgung + Recycling Zürich"

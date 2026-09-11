@@ -32,6 +32,13 @@ def _render(template: str, record: dict) -> str:
         raise ValueError(f"record is missing template field {exc}") from exc
 
 
+def _record_id(cfg: dict, record: dict) -> str:
+    """Composite id via id_template ("{waste_type}-{date}") or a single id_field (default "id")."""
+    if "id_template" in cfg:
+        return _render(cfg["id_template"], record)
+    return str(record.get(cfg.get("id_field", "id"), ""))
+
+
 class ApiFetcher:
     """Turn each record of a JSON feed into a small document, keyed by feed URL + record id."""
 
@@ -49,15 +56,16 @@ class ApiFetcher:
             return FetchResult(documents=(), errors=(FetchError(url=feed_url, reason=str(exc)),))
         documents, errors = [], []
         for record in records:
-            record_id = str(record.get(cfg.get("id_field", "id"), ""))
-            if not record_id:
-                continue
-            url = f"{feed_url}#{record_id}"
+            url = None
             try:
+                record_id = _record_id(cfg, record)
+                if not record_id:
+                    continue
+                url = f"{feed_url}#{record_id}"
                 title = _render(cfg["title_template"], record)
                 text = _render(cfg["text_template"], record)
             except ValueError as exc:
-                errors.append(FetchError(url=url, reason=str(exc)))
+                errors.append(FetchError(url=url or feed_url, reason=str(exc)))
                 continue
             documents.append(FetchedDocument(
                 source_id=source.id, url=url, identifier=record_id, title=title,
