@@ -49,6 +49,14 @@ def test_needs_location_exits_with_code_two():
     assert "needs_location" in r.output
 
 
+def _reset_documents():
+    from swiss_grounding.config import load_settings
+    from swiss_grounding.db.connection import connect
+
+    with connect(load_settings().database_url) as conn:
+        conn.execute("truncate chunk, document_change, document, fetch_state restart identity cascade")
+
+
 def test_ingest_with_stub_fetcher_and_sources_commands(monkeypatch):
     from swiss_grounding.cli import main as cli
     from swiss_grounding.ingest.models import FetchedDocument, FetchResult, Section
@@ -62,6 +70,7 @@ def test_ingest_with_stub_fetcher_and_sources_commands(monkeypatch):
     monkeypatch.setattr(cli, "build_fetcher", lambda strategy, settings: Stub())
     assert runner.invoke(app, ["db", "init"]).exit_code == 0
     assert runner.invoke(app, ["db", "seed"]).exit_code == 0
+    _reset_documents()
     r = runner.invoke(app, ["ingest", "--source", "zh_ch"])
     assert r.exit_code == 0, r.output
     assert "added=1" in r.output
