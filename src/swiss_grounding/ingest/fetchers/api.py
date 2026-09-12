@@ -1,4 +1,5 @@
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from datetime import date
 from typing import Any
 
 import httpx
@@ -39,21 +40,32 @@ def _record_id(cfg: dict, record: dict) -> str:
     return str(record.get(cfg.get("id_field", "id"), ""))
 
 
-class ApiFetcher:
-    """Turn each record of a JSON feed into a small document, keyed by feed URL + record id."""
+def _request_url(template: str, today: date) -> str:
+    """Render date placeholders ({today} as ISO date) so calendar feeds anchor to the present."""
+    return template.replace("{today}", today.isoformat())
 
-    def __init__(self, http: httpx.Client):
+
+class ApiFetcher:
+    """Turn each record of a JSON feed into a small document, keyed by feed URL + record id.
+
+    The configured URL may contain ``{today}``; it is rendered for the HTTP request only.
+    Document identity uses the unrendered template so records stay stable as the window moves.
+    """
+
+    def __init__(self, http: httpx.Client, today: Callable[[], date] = date.today):
         self._http = http
+        self._today = today
 
     def fetch(self, source: Source, known: Mapping[str, KnownUrl]) -> FetchResult:
         cfg = source.fetch_config
         feed_url = cfg["url"]
+        request_url = _request_url(feed_url, self._today())
         try:
-            response = self._http.get(feed_url)
+            response = self._http.get(request_url)
             response.raise_for_status()
             records = _dig(response.json(), cfg.get("records_path", ""))
         except (httpx.HTTPError, ValueError, TypeError) as exc:
-            return FetchResult(documents=(), errors=(FetchError(url=feed_url, reason=str(exc)),))
+            return FetchResult(documents=(), errors=(FetchError(url=request_url, reason=str(exc)),))
         documents, errors = [], []
         for record in records:
             url = None

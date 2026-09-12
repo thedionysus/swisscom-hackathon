@@ -1,3 +1,5 @@
+from datetime import date
+
 import httpx
 
 from swiss_grounding.ingest.fetchers.api import ApiFetcher
@@ -66,3 +68,32 @@ def test_id_template_builds_composite_ids():
     result = ApiFetcher(http=http).fetch(src, {})
     assert [d.url for d in result.documents] == ["https://erz.example/api#cardboard-2026-10-02",
                                                  "https://erz.example/api#paper-2026-10-02"]
+
+
+def _dated_source():
+    return Source(id="erz", name="ERZ", base_url="https://erz.example", default_extent_id="CH-ZH-261",
+                  authority="official_info", categories=("waste",), fetch_strategy="api",
+                  fetch_config={"url": "https://erz.example/api?start={today}&limit=5", "records_path": "result",
+                                "id_template": "{waste_type}-{date}", "title_template": "{waste_type}",
+                                "text_template": "{waste_type} on {date}", "language": "en"})
+
+
+def test_today_placeholder_is_rendered_into_the_request_url():
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, json={"result": []})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    ApiFetcher(http=http, today=lambda: date(2026, 9, 12)).fetch(_dated_source(), {})
+    assert calls == ["https://erz.example/api?start=2026-09-12&limit=5"]
+
+
+def test_document_identity_does_not_change_with_the_date():
+    feed = {"result": [{"date": "2026-09-17", "waste_type": "cardboard"}]}
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
+    known = {"https://erz.example/api?start={today}&limit=5#paper-2026-09-01": KnownUrl(None, None, "h")}
+    result = ApiFetcher(http=http, today=lambda: date(2026, 9, 12)).fetch(_dated_source(), known)
+    assert result.documents[0].url == "https://erz.example/api?start={today}&limit=5#cardboard-2026-09-17"
+    assert result.gone_urls == ("https://erz.example/api?start={today}&limit=5#paper-2026-09-01",)

@@ -6,7 +6,7 @@ authority: official_info
 categories: [waste]
 fetch_strategy: api
 fetch_config:
-  url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&limit=100
+  url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&start={today}&sort=date&limit=100
   records_path: result
   id_template: "{waste_type}-{date}"
   title_template: "Waste collection {waste_type} in {zip} on {date}"
