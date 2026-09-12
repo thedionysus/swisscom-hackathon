@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from dataclasses import replace
+from datetime import UTC, date, datetime
 
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.locations.tree import LocationTree
@@ -68,3 +69,22 @@ def test_weights_zero_specificity_leaves_rrf_order():
     w = RerankWeights(specificity=0.0, category=0.0, authority=0.0, rrf=1.0)
     ranked = rerank(hits, TREE, QUERY_NODE, (), w)
     assert ranked[0].hit.chunk.chunk_id == 1
+
+
+def make_event_hit(chunk_id, event_date):
+    hit = make_hit(chunk_id, "CH-ZH-261-K3", Authority.OFFICIAL_INFO, ["waste"])
+    return replace(hit, chunk=replace(hit.chunk, event_date=event_date))
+
+
+def test_past_event_ranks_below_upcoming_event_all_else_equal():
+    hits = (
+        make_event_hit(1, date(2026, 1, 22)),     # already happened
+        make_event_hit(2, date(2026, 9, 17)),     # upcoming
+        make_event_hit(3, date(2026, 9, 12)),     # today: not past
+        make_event_hit(4, None),                  # not an event
+    )
+    ranked = rerank(hits, TREE, QUERY_NODE, ("waste",), RerankWeights(), today=lambda: date(2026, 9, 12))
+    ids = [s.hit.chunk.chunk_id for s in ranked]
+    assert ids[-1] == 1                                        # penalised, not dropped
+    assert ranked[0].score == ranked[1].score == ranked[2].score
+    assert ranked[-1].score < ranked[0].score

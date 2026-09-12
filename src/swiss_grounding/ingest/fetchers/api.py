@@ -1,6 +1,7 @@
 from collections.abc import Callable, Mapping
 from datetime import date
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import httpx
 
@@ -45,11 +46,34 @@ def _request_url(template: str, today: date) -> str:
     return template.replace("{today}", today.isoformat())
 
 
+def _is_placeholder(value: str) -> bool:
+    return "{" in value and "}" in value
+
+
+def _identity_url(template: str) -> str:
+    """The feed URL with placeholder query parameters removed: stable across days and a working link."""
+    parts = urlsplit(template)
+    kept = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if not _is_placeholder(v)]
+    return urlunsplit(parts._replace(query=urlencode(kept)))
+
+
+def _event_date(cfg: dict, record: dict) -> date | None:
+    """ISO date from the configured event_date_field; None when absent or unparseable."""
+    field = cfg.get("event_date_field")
+    if not field:
+        return None
+    try:
+        return date.fromisoformat(str(record.get(field, "")))
+    except ValueError:
+        return None
+
+
 class ApiFetcher:
     """Turn each record of a JSON feed into a small document, keyed by feed URL + record id.
 
     The configured URL may contain ``{today}``; it is rendered for the HTTP request only.
-    Document identity uses the unrendered template so records stay stable as the window moves.
+    Document identity uses the URL without placeholder parameters so records stay stable as the
+    window moves and the stored url remains a working link.
     """
 
     def __init__(self, http: httpx.Client, today: Callable[[], date] = date.today):
@@ -58,8 +82,8 @@ class ApiFetcher:
 
     def fetch(self, source: Source, known: Mapping[str, KnownUrl]) -> FetchResult:
         cfg = source.fetch_config
-        feed_url = cfg["url"]
-        request_url = _request_url(feed_url, self._today())
+        request_url = _request_url(cfg["url"], self._today())
+        feed_url = _identity_url(cfg["url"])
         try:
             response = self._http.get(request_url)
             response.raise_for_status()
@@ -83,6 +107,7 @@ class ApiFetcher:
                 source_id=source.id, url=url, identifier=record_id, title=title,
                 language=cfg.get("language", "en"),
                 sections=(Section(heading_path=title, anchor=None, text=text),),
+                event_date=_event_date(cfg, record),
             ))
         present = {d.url for d in documents}
         gone = tuple(u for u in known if u.startswith(feed_url + "#") and u not in present)

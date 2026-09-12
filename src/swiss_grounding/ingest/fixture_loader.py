@@ -31,6 +31,7 @@ class FixtureDocument(BaseModel):
     authority: Authority
     categories: list[str] = []
     valid_from: date | None = None
+    event_date: date | None = None
     chunks: list[FixtureChunk] = []
 
 
@@ -71,12 +72,12 @@ def load_fixture(conn: psycopg.Connection, path: Path, embedder: Embedder) -> Lo
         row = conn.execute(
             """
             insert into document (source_id, url, identifier, title_original, title_en, language,
-                                  extent_id, authority, categories, valid_from, content_hash)
-            values (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s) returning id
+                                  extent_id, authority, categories, valid_from, event_date, content_hash)
+            values (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s) returning id
             """,
             (doc.source_id, doc.url, doc.identifier, doc.title_original, doc.title_en,
              doc.language, doc.extent_id, doc.authority.value, json.dumps(doc.categories),
-             doc.valid_from, content_hash),
+             doc.valid_from, doc.event_date, content_hash),
         ).fetchone()
         document_id = row["id"]
         docs_written += 1

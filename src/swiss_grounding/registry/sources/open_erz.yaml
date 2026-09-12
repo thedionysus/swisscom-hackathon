@@ -9,6 +9,7 @@ fetch_config:
   url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&start={today}&sort=date&limit=100
   records_path: result
   id_template: "{waste_type}-{date}"
+  event_date_field: date
   title_template: "Waste collection {waste_type} in {zip} on {date}"
   text_template: "Collection of {waste_type} in Zurich postal code {zip} on {date}. Put it out before 7:00 on collection day. {station}"
   language: en

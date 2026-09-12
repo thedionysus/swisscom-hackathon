@@ -95,7 +95,9 @@ def build_server(settings: Settings) -> FastMCP:
         categories: optional hints from swiss_list_categories; they rerank, never exclude.
         as_of: ISO date to retrieve law as it stood on that date.
         Results are evidence with citations; write the answer from them and cite the URLs.
-        Never invent URLs."""
+        Calendar-style citations (e.g. waste collections) carry event_date: the day the event
+        happens. Treat an event_date before today as already passed; do not present it as the
+        next occurrence. Never invent URLs."""
         try:
             parsed_as_of = date.fromisoformat(as_of) if as_of else None
         except ValueError:

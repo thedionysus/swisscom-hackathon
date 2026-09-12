@@ -18,5 +18,5 @@ def build_citation(scored: ScoredHit, tree: LocationTree) -> Citation:
         heading_path=c.heading_path, extent_id=c.extent_id,
         extent_label=tree.get(c.extent_id).label("en"), authority=c.authority.value,
         categories=c.categories, valid_from=c.valid_from, retrieved_at=c.retrieved_at,
-        license=c.license, score=round(scored.score, 4),
+        license=c.license, score=round(scored.score, 4), event_date=c.event_date,
     )

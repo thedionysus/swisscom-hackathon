@@ -32,14 +32,14 @@ def _insert_document(conn: psycopg.Connection, doc: EnrichedDocument, chash: str
         """
         insert into document (source_id, url, identifier, title_original, title_en, language, extent_id,
                               extent_reason, authority, categories, valid_from, valid_to, in_force,
-                              published_at, content_hash, version)
-        select %s, %s, %s, %s, %s, %s, %s, %s, s.authority, %s::jsonb, %s, %s, %s, %s, %s, %s
+                              event_date, published_at, content_hash, version)
+        select %s, %s, %s, %s, %s, %s, %s, %s, s.authority, %s::jsonb, %s, %s, %s, %s, %s, %s, %s
         from source s where s.id = %s
         returning id
         """,
         (f.source_id, f.url, f.identifier, f.title, doc.title_en, f.language, doc.extent_id,
          doc.extent_reason, json.dumps([{"id": t.id, "confidence": t.confidence} for t in doc.categories]),
-         f.valid_from, f.valid_to, f.in_force, f.published_at, chash, version, f.source_id),
+         f.valid_from, f.valid_to, f.in_force, f.event_date, f.published_at, chash, version, f.source_id),
     ).fetchone()
     if row is None:
         raise ValueError(f"unknown source id {f.source_id!r}")

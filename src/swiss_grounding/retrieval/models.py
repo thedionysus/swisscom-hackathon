@@ -27,6 +27,7 @@ class ChunkRecord:
     retrieved_at: datetime
     license: str | None
     source_id: str
+    event_date: date | None = None
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,7 @@ class Citation:
     retrieved_at: datetime
     license: str | None
     score: float
+    event_date: date | None = None      # calendar-style records: the date the event happens
 
 
 @dataclass(frozen=True)

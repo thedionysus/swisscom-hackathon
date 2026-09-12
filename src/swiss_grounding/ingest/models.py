@@ -23,6 +23,7 @@ class FetchedDocument:
     valid_from: date | None = None
     valid_to: date | None = None
     in_force: bool | None = None
+    event_date: date | None = None      # when the described event happens (calendar-style records)
     etag: str | None = None
     last_modified: str | None = None
 

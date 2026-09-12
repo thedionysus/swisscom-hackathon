@@ -93,7 +93,32 @@ def test_today_placeholder_is_rendered_into_the_request_url():
 def test_document_identity_does_not_change_with_the_date():
     feed = {"result": [{"date": "2026-09-17", "waste_type": "cardboard"}]}
     http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
-    known = {"https://erz.example/api?start={today}&limit=5#paper-2026-09-01": KnownUrl(None, None, "h")}
+    known = {"https://erz.example/api?limit=5#paper-2026-09-01": KnownUrl(None, None, "h")}
     result = ApiFetcher(http=http, today=lambda: date(2026, 9, 12)).fetch(_dated_source(), known)
-    assert result.documents[0].url == "https://erz.example/api?start={today}&limit=5#cardboard-2026-09-17"
-    assert result.gone_urls == ("https://erz.example/api?start={today}&limit=5#paper-2026-09-01",)
+    # Placeholder parameters are dropped from the stored url: stable identity and a working link.
+    assert result.documents[0].url == "https://erz.example/api?limit=5#cardboard-2026-09-17"
+    assert result.gone_urls == ("https://erz.example/api?limit=5#paper-2026-09-01",)
+
+
+def _event_source(**cfg):
+    base = source()
+    return Source(**{**base.__dict__, "fetch_config": {**base.fetch_config, **cfg}})
+
+
+def test_event_date_field_is_parsed_into_event_date():
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=FEED)))
+    result = ApiFetcher(http=http).fetch(_event_source(event_date_field="date"), {})
+    assert [d.event_date for d in result.documents] == [date(2026, 10, 2), date(2026, 10, 9)]
+
+
+def test_event_date_is_none_when_missing_or_malformed():
+    feed = {"result": {"records": [
+        {"id": "a", "zip": "8003", "type": "paper", "date": "not-a-date", "note": ""},
+        {"id": "b", "zip": "8003", "type": "paper", "date": "2026-01-01", "note": ""},
+    ]}}
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
+    result = ApiFetcher(http=http).fetch(_event_source(event_date_field="date"), {})
+    assert [d.event_date for d in result.documents] == [None, date(2026, 1, 1)]
+    assert result.errors == ()
+    plain = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=FEED)))
+    assert ApiFetcher(http=plain).fetch(source(), {}).documents[0].event_date is None

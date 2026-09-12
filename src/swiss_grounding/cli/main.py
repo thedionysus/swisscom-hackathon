@@ -99,7 +99,8 @@ def query_cmd(
         if resp.message:
             typer.echo(resp.message)
         for i, c in enumerate(resp.citations, 1):
-            typer.echo(f"\n[{i}] {c.title_en} — {c.extent_label} / {c.authority} (score {c.score})")
+            when = f" — event on {c.event_date.isoformat()}" if c.event_date else ""
+            typer.echo(f"\n[{i}] {c.title_en} — {c.extent_label} / {c.authority} (score {c.score}){when}")
             typer.echo(f"    {_link(c.url, c.anchor)}")
             typer.echo(f"    {c.snippet_en}")
         typer.echo(f"\n{resp.notice}")

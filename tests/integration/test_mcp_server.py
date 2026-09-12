@@ -113,6 +113,21 @@ async def test_get_document_not_found_carries_notice(server):
     assert data["notice"].startswith("Retrieved public information")
 
 
+EVENTS = Path(__file__).parent.parent / "fixtures" / "waste_events.json"
+
+
+async def test_event_citations_carry_event_date_and_rank_upcoming_first(server):
+    with connect(os.environ["DATABASE_URL"]) as conn:
+        load_fixture(conn, EVENTS, FakeEmbedder(dim=8))
+    query = {"question": "When is cardboard collected?", "location": "8003", "categories": ["waste"]}
+    concise = await call(server, "swiss_search", query)
+    events = [c for c in concise["citations"] if c["source_id"] == "open_erz"]
+    assert [c["event_date"] for c in events] == ["2099-12-30", "2020-01-22"]
+    detailed = await call(server, "swiss_search", {**query, "response_format": "detailed"})
+    assert detailed["citations"][0]["event_date"] == "2099-12-30"
+    assert detailed["citations"][0]["event_date"] and "retrieved_at" in detailed["citations"][0]
+
+
 async def test_coverage_unresolvable_location_carries_notice(server):
     data = await call(server, "swiss_coverage", {"location": "Atlantis"})
     assert data["coverage"] == []

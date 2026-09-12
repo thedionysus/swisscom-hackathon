@@ -60,6 +60,7 @@ create table if not exists document (
     valid_from      date,
     valid_to        date,
     in_force        boolean,
+    event_date      date,
     published_at    timestamptz,
     retrieved_at    timestamptz not null default now(),
     content_hash    text not null,
@@ -67,6 +68,8 @@ create table if not exists document (
     superseded_by   bigint references document(id),
     status          text not null default 'current' check (status in ('current','superseded','withdrawn','pending_enrichment'))
 );
+-- Databases created before event_date existed pick it up on the next db init.
+alter table document add column if not exists event_date date;
 create index if not exists document_url_idx on document(url);
 create index if not exists document_status_idx on document(status);
 

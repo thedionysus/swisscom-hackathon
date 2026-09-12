@@ -11,7 +11,7 @@ CHUNK_COLUMNS = """
     c.id as chunk_id, c.document_id, c.ordinal, c.text_original, c.text_en, c.heading_path,
     c.anchor, c.extent_id, c.authority, c.categories,
     d.url, d.identifier, d.title_original, d.title_en, d.language, d.valid_from, d.retrieved_at,
-    d.source_id, s.license
+    d.source_id, s.license, d.event_date
 """
 
 FILTER = """
@@ -73,6 +73,7 @@ def _record(row: dict) -> ChunkRecord:
         url=row["url"], identifier=row["identifier"], title_original=row["title_original"],
         title_en=row["title_en"], language=row["language"], valid_from=row["valid_from"],
         retrieved_at=row["retrieved_at"], license=row["license"], source_id=row["source_id"],
+        event_date=row["event_date"],
     )
 
 

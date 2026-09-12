@@ -15,6 +15,7 @@ def test_citation_copies_fields_and_labels_extent():
         categories=("dogs",), url="https://www.zh.ch/x", identifier=None,
         title_original="Hunde", title_en="Dogs", language="de", valid_from=date(2020, 1, 1),
         retrieved_at=datetime(2026, 9, 1, tzinfo=UTC), license="zh terms", source_id="zh_ch",
+        event_date=date(2026, 9, 17),
     )
     sh = ScoredHit(hit=Hit(chunk=chunk, rrf_score=0.0, dense_rank=1, lexical_rank=None),
                    score=0.7, specificity=0.5, category_overlap=1.0, authority_score=0.6)
@@ -26,3 +27,4 @@ def test_citation_copies_fields_and_labels_extent():
     assert c.snippet_original.startswith("Im Kanton")
     assert c.score == 0.7
     assert c.license == "zh terms"
+    assert c.event_date == date(2026, 9, 17)
