@@ -77,6 +77,7 @@ async def test_get_document(server):
     doc_id = search["citations"][0]["document_id"]
     data = await call(server, "swiss_get_document", {"document_id": doc_id})
     assert data["document"]["id"] == doc_id
+    assert "event_date" in data["document"]
     assert len(data["chunks"]) >= 1
 
 

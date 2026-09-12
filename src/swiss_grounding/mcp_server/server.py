@@ -115,7 +115,7 @@ def build_server(settings: Settings) -> FastMCP:
         with connect(settings.database_url) as conn:
             doc = conn.execute(
                 "select id, source_id, url, identifier, title_original, title_en, language, "
-                "extent_id, authority, categories, valid_from, valid_to, retrieved_at, status "
+                "extent_id, authority, categories, valid_from, valid_to, event_date, retrieved_at, status "
                 "from document where id = %s", (document_id,),
             ).fetchone()
             if doc is None:
