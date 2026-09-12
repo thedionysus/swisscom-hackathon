@@ -66,10 +66,13 @@ create table if not exists document (
     content_hash    text not null,
     version         integer not null default 1,
     superseded_by   bigint references document(id),
-    status          text not null default 'current' check (status in ('current','superseded','withdrawn','pending_enrichment'))
+    status          text not null default 'current' check (status in ('current','superseded','withdrawn','pending_enrichment')),
+    -- 'crawl' for documents fetched from the source, 'fixture' for offline demo data
+    origin          text not null default 'crawl' check (origin in ('crawl','fixture'))
 );
--- Databases created before event_date existed pick it up on the next db init.
+-- Databases created before these columns existed pick them up on the next db init.
 alter table document add column if not exists event_date date;
+alter table document add column if not exists origin text not null default 'crawl';
 create index if not exists document_url_idx on document(url);
 create index if not exists document_status_idx on document(status);
 
@@ -117,3 +120,18 @@ create table if not exists fetch_state (
     last_seen_at   timestamptz not null default now()
 );
 create index if not exists fetch_state_source_idx on fetch_state(source_id);
+
+-- One row per (run, source): the ingest report that the CLI prints, kept so coverage can show fetch health.
+create table if not exists ingest_run (
+    run_id       text not null,
+    source_id    text not null references source(id),
+    started_at   timestamptz not null,
+    finished_at  timestamptz not null,
+    added        integer not null default 0,
+    modified     integer not null default 0,
+    unchanged    integer not null default 0,
+    withdrawn    integer not null default 0,
+    failed       integer not null default 0,
+    primary key (run_id, source_id)
+);
+create index if not exists ingest_run_source_idx on ingest_run(source_id, finished_at desc);

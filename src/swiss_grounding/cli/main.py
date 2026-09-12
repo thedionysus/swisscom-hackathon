@@ -1,7 +1,7 @@
 import json
 import uuid
 from dataclasses import asdict
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import typer
@@ -14,6 +14,7 @@ from swiss_grounding.ingest.fetchers import build_fetcher
 from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import build_llm
 from swiss_grounding.ingest.pipeline import run_ingest
+from swiss_grounding.ingest.run_log import record_run
 from swiss_grounding.locations.repository import load_tree, upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
@@ -143,7 +144,9 @@ def ingest_cmd(
             raise typer.Exit(code=1)
         for source in selected:
             fetcher = build_fetcher(source.fetch_strategy, settings)
+            started_at = datetime.now(UTC)
             report = run_ingest(conn, source, fetcher, llm, embedder, tree, run_id=run_id)
+            record_run(conn, report, started_at=started_at, finished_at=datetime.now(UTC))
             typer.echo(
                 f"{source.id}: added={report.added} modified={report.modified} unchanged={report.unchanged} "
                 f"withdrawn={report.withdrawn} failed={report.failed} run={run_id}"

@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,8 @@ from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.db.migrate import apply_schema
 from swiss_grounding.ingest.fixture_loader import load_fixture
+from swiss_grounding.ingest.pipeline import IngestReport
+from swiss_grounding.ingest.run_log import record_run
 from swiss_grounding.locations.repository import upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.mcp_server.server import build_server
@@ -18,6 +21,8 @@ from swiss_grounding.retrieval.embedder import FakeEmbedder
 
 pytestmark = pytest.mark.integration
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "zurich_hiking.json"
+T1 = datetime(2026, 9, 10, 1, tzinfo=UTC)
+T2 = datetime(2026, 9, 11, 1, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -90,6 +95,20 @@ async def test_coverage(server):
     data = await call(server, "swiss_coverage", {"location": "Zurich"})
     extents = {row["extent_id"] for row in data["coverage"]}
     assert "CH-ZH-261" in extents and "CH-BS" not in extents
+
+
+async def test_coverage_reports_fetch_health_and_fixture_origin(server):
+    with connect(os.environ["DATABASE_URL"]) as conn:
+        conn.execute("truncate ingest_run")
+        record_run(conn, IngestReport(source_id="zh_ch", run_id="r1", added=2), started_at=T1, finished_at=T1)
+        record_run(conn, IngestReport(source_id="zh_ch", run_id="r2", failed=3), started_at=T2, finished_at=T2)
+    data = await call(server, "swiss_coverage", {"location": "Zurich"})
+    zh = next(row for row in data["coverage"] if row["source_id"] == "zh_ch")
+    assert zh["health"] == "failing" and zh["last_run_failed"] == 3
+    assert zh["last_run_at"].startswith("2026-09-11") and zh["last_successful_run_at"].startswith("2026-09-10")
+    assert zh["fixture_only"] is True
+    other = next(row for row in data["coverage"] if row["source_id"] != "zh_ch")
+    assert other["health"] == "unknown" and other["last_run_at"] is None
 
 
 async def test_resolve_location_not_found_carries_notice(server):

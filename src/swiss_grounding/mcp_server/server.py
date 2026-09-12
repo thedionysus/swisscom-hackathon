@@ -11,6 +11,7 @@ from pydantic import Field
 from swiss_grounding.app import build_query_core
 from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
+from swiss_grounding.ingest.run_log import SourceHealth, load_source_health
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.registry.suggestions import list_suggestions, submit_suggestion
 from swiss_grounding.retrieval.models import NOTICE, QueryRequest, QueryResponse
@@ -29,6 +30,20 @@ CONCISE_DROP = {"snippet_original", "title_original", "heading_path", "license",
 MIN_LIMIT = 1
 MAX_LIMIT = 25
 AS_OF_ERROR = "Could not parse as_of {value!r}; expected ISO date YYYY-MM-DD."
+COVERAGE_SQL = (
+    "select d.extent_id, d.source_id, count(*) as documents, max(d.retrieved_at) as last_retrieved, "
+    "bool_and(d.origin = 'fixture') as fixture_only "
+    "from document d where d.status = 'current' {extent_filter} "
+    "group by d.extent_id, d.source_id order by d.extent_id, d.source_id"
+)
+UNKNOWN_HEALTH = SourceHealth(source_id="", last_run_at=None, last_successful_run_at=None,
+                              last_run_failed=0, health="unknown")
+
+
+def _with_health(row: dict[str, Any], health: SourceHealth) -> dict[str, Any]:
+    """Coverage row plus the fetch-health fields of its source. Returns a new dict."""
+    return {**row, "last_run_at": health.last_run_at, "last_successful_run_at": health.last_successful_run_at,
+            "last_run_failed": health.last_run_failed, "health": health.health}
 
 
 def _encode(value: Any) -> str:
@@ -144,9 +159,13 @@ def build_server(settings: Settings) -> FastMCP:
 
     @mcp.tool(annotations=READ_ONLY)
     def swiss_coverage(location: str | None = None) -> str:
-        """Report which sources and jurisdictions are indexed, with document counts and the
-        latest retrieval date. Use it to tell the user when a place has no coverage instead
-        of guessing."""
+        """Report which sources and jurisdictions are indexed, with document counts, the latest
+        retrieval date, and the fetch health of each source. Use it to tell the user when a place
+        has no coverage instead of guessing. Per row: `health` is ok, degraded (last ingest run had
+        some failures), failing (last run fetched nothing), or unknown (never run); `last_run_at`,
+        `last_successful_run_at` and `last_run_failed` back it up. `fixture_only` is true when every
+        document in the row is offline demo data rather than fetched from the source. Treat a row
+        that is failing or fixture_only as NOT covered by live data, even if documents is non-zero."""
         path: list[str] | None = None
         resolved_id = None
         if location:
@@ -155,24 +174,13 @@ def build_server(settings: Settings) -> FastMCP:
                 return _json({"coverage": [], "message": f"Could not resolve {location!r}"})
             path = list(resolved.path)
             resolved_id = resolved.location.id
+        extent_filter = "" if path is None else "and d.extent_id = any(%(path)s)"
         with connect(settings.database_url) as conn:
-            if path is None:
-                rows = conn.execute(
-                    "select d.extent_id, d.source_id, count(*) as documents, "
-                    "max(d.retrieved_at) as last_retrieved "
-                    "from document d where d.status = 'current' "
-                    "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
-                ).fetchall()
-            else:
-                rows = conn.execute(
-                    "select d.extent_id, d.source_id, count(*) as documents, "
-                    "max(d.retrieved_at) as last_retrieved "
-                    "from document d where d.status = 'current' and d.extent_id = any(%(path)s) "
-                    "group by d.extent_id, d.source_id order by d.extent_id, d.source_id",
-                    {"path": path},
-                ).fetchall()
+            rows = conn.execute(COVERAGE_SQL.format(extent_filter=extent_filter), {"path": path}).fetchall()
+            health = load_source_health(conn)
             pending = [asdict(s) for s in list_suggestions(conn, status="pending")]
-        return _json({"resolved_location_id": resolved_id, "coverage": rows, "pending_suggestions": pending})
+        coverage = [_with_health(dict(row), health.get(row["source_id"], UNKNOWN_HEALTH)) for row in rows]
+        return _json({"resolved_location_id": resolved_id, "coverage": coverage, "pending_suggestions": pending})
 
     @mcp.tool(annotations=WRITE)
     def swiss_suggest_source(
