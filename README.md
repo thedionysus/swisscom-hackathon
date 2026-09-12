@@ -43,7 +43,8 @@ domains are approved automatically as `official_info`; everything else waits for
 
     uv run pytest tests/unit
     DATABASE_URL=postgresql://swiss:swiss@localhost:5433/swiss_grounding uv run pytest -m integration
-    # the integration suite shares one database and must run serially (no pytest -n)
+    # the suite creates a throwaway swiss_grounding_test_* database on that server and drops it
+    # afterwards, so it is safe to point at the quick-start database; run serially (no pytest -n)
 
 Design: `docs/superpowers/specs/2026-09-10-swiss-grounding-mcp-design.md`
 Plans: `docs/superpowers/plans/`
