@@ -49,3 +49,13 @@ def test_page_without_headings_is_one_section_titled_by_title():
 def test_empty_body_yields_no_sections():
     page = html_to_page("<html><body></body></html>", url="https://x/", default_language="en")
     assert page.sections == ()
+
+
+def test_extract_links_reads_href_from_custom_elements_but_not_head_resources():
+    html = """<html><head><link rel="stylesheet" href="/static/site.css"><base href="/"></head><body>
+    <stzh-card-navigation href="/de/stadtleben/kultur.html">Kultur</stzh-card-navigation>
+    <stzh-link href="/de/service/impressum.html" label="Impressum"></stzh-link>
+    </body></html>"""
+    links = extract_links(html, base_url="https://www.stadt-zuerich.ch/de/stadtleben.html")
+    assert links == ("https://www.stadt-zuerich.ch/de/stadtleben/kultur.html",
+                     "https://www.stadt-zuerich.ch/de/service/impressum.html")

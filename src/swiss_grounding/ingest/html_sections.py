@@ -96,12 +96,21 @@ def html_to_page(html: str, url: str, default_language: str) -> Page:
     return Page(title=title, language=language, sections=sections)
 
 
+NON_NAVIGATIONAL_HREF_TAGS = frozenset({"link", "base", "script", "style"})
+
+
 def extract_links(html: str, base_url: str) -> tuple[str, ...]:
-    """All absolute http(s) links on the page, fragments removed, order preserved, deduplicated."""
+    """All absolute http(s) links on the page, fragments removed, order preserved, deduplicated.
+
+    Reads ``href`` from any element, not just ``<a>``: sites built on web components
+    (e.g. stadt-zuerich.ch's ``<stzh-link>``) carry navigation on custom tags.
+    """
     soup = BeautifulSoup(html, "lxml")
     seen: dict[str, None] = {}
-    for a in soup.find_all("a", href=True):
-        absolute, _ = urldefrag(urljoin(base_url, a["href"]))
+    for element in soup.find_all(href=True):
+        if element.name in NON_NAVIGATIONAL_HREF_TAGS:
+            continue
+        absolute, _ = urldefrag(urljoin(base_url, element["href"]))
         if absolute.startswith(("http://", "https://")):
             seen.setdefault(absolute, None)
     return tuple(seen)
