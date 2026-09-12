@@ -1,7 +1,7 @@
 import httpx
 
 from swiss_grounding.ingest.fetchers.html_crawl import CrawlLimits, HtmlCrawlFetcher
-from swiss_grounding.ingest.models import KnownUrl
+from swiss_grounding.ingest.models import FetchError, KnownUrl
 from swiss_grounding.registry.models import Source
 
 PAGE_A = """<html lang="de"><head><title>A</title></head><body><main><h1>A</h1><p>Seite A.</p></main>
@@ -105,3 +105,23 @@ def test_http_errors_become_fetch_errors_not_exceptions():
     result = fetcher.fetch(source(), known)
     assert result.documents == ()
     assert result.errors and "down" in result.errors[0].reason
+
+
+def test_blocked_start_path_is_reported_as_error():
+    def handler(request):
+        if request.url.path == "/robots.txt":
+            return httpx.Response(200, text=ROBOTS)
+        return httpx.Response(403)
+
+    fetcher, known = make(handler)
+    result = fetcher.fetch(source(fetch_config={"path_allowlist": ["/de/tiere"], "start_paths": ["/de/tiere"]}), known)
+    assert result.documents == ()
+    assert result.errors == (FetchError(url="https://www.zh.ch/de/tiere", reason="HTTP 403"),)
+
+
+def test_first_time_404_is_reported_as_error_not_gone():
+    calls = []
+    fetcher, known = make(lambda r: routes(r, calls))
+    result = fetcher.fetch(source(fetch_config={"path_allowlist": ["/de/tiere"], "start_paths": ["/de/tiere/gone.html"]}), known)
+    assert result.gone_urls == ()
+    assert result.errors == (FetchError(url="https://www.zh.ch/de/tiere/gone.html", reason="HTTP 404"),)

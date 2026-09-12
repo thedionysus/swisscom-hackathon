@@ -62,9 +62,10 @@ class HtmlCrawlFetcher:
                 continue
             if fetched.status == 304:
                 unchanged.append(url)
-            elif fetched.status in (404, 410):
-                if url in known:
-                    gone.append(url)
+            elif fetched.status in (404, 410) and url in known:
+                gone.append(url)
+            elif fetched.status >= 400:
+                errors.append(FetchError(url=url, reason=f"HTTP {fetched.status}"))
             elif fetched.doc is not None:
                 documents.append(fetched.doc)
             queue.extend(link for link in fetched.links if link not in seen)
