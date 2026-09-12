@@ -6,6 +6,6 @@ authority: institutional
 categories: [hiking, safety]
 fetch_strategy: html_crawl
 fetch_config:
-  path_allowlist: ["/de/wandern", "/de/sicherheit"]
+  path_allowlist: ["/de/wandern", "/de/wissen"]
 allow_narrowing: true
 license: "schweizer-wanderwege.ch terms of use"

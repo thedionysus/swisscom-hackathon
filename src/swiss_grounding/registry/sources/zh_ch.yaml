@@ -6,6 +6,8 @@ authority: official_info
 categories: [hiking, dogs, waste, safety]
 fetch_strategy: html_crawl
 fetch_config:
-  path_allowlist: ["/de/umwelt-tiere", "/de/sicherheit", "/de/planen-bauen"]
+  path_allowlist: ["/de/umwelt-tiere", "/de/sicherheit-justiz", "/de/planen-bauen"]
+  # zh.ch answers the bare section path with a redirect to a 403; the .html form serves the page.
+  start_paths: ["/de/umwelt-tiere.html", "/de/sicherheit-justiz.html", "/de/planen-bauen.html"]
 allow_narrowing: true
 license: "zh.ch terms of use"

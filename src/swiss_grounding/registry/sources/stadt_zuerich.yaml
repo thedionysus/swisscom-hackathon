@@ -6,6 +6,7 @@ authority: official_info
 categories: [hiking, dogs, waste, parking]
 fetch_strategy: html_crawl
 fetch_config:
-  path_allowlist: ["/de/umwelt-und-verkehr", "/de/stadtleben", "/de/politik-und-verwaltung/politik-und-recht/amtliche-sammlung"]
+  path_allowlist: ["/de/umwelt-und-energie", "/de/mobilitaet", "/de/stadtleben", "/de/politik-und-verwaltung/politik-und-recht/amtliche-sammlung"]
+  start_paths: ["/de/umwelt-und-energie.html", "/de/mobilitaet.html", "/de/stadtleben.html", "/de/politik-und-verwaltung/politik-und-recht/amtliche-sammlung.html"]
 allow_narrowing: true
 license: "stadt-zuerich.ch terms of use"
