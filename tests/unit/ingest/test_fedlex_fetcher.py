@@ -5,7 +5,8 @@ from pathlib import Path
 import httpx
 
 from swiss_grounding.ingest.fetchers.fedlex import FedlexFetcher, parse_akoma_ntoso
-from swiss_grounding.ingest.models import KnownUrl
+from swiss_grounding.ingest.fetchers.retry import RetryPolicy
+from swiss_grounding.ingest.models import FetchError, KnownUrl
 from swiss_grounding.registry.models import Source
 
 FIX = Path(__file__).parent.parent.parent / "fixtures" / "fedlex"
@@ -64,5 +65,65 @@ def test_known_consolidation_is_unchanged_without_refetching_xml():
 
 def test_sparql_failure_is_error():
     http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503)))
-    result = FedlexFetcher(http=http).fetch(source(), {})
+    result = FedlexFetcher(http=http, retry=NO_SLEEP).fetch(source(), {})
     assert result.documents == () and result.errors[0].url.endswith("sparqlendpoint")
+
+
+EMPTY = {"results": {"bindings": []}}
+NO_SLEEP = RetryPolicy(attempts=3, backoff_seconds=0)
+
+
+def handler_xml(request):
+    if str(request.url).endswith(".xml"):
+        return httpx.Response(200, text=XML, headers={"content-type": "application/xml"})
+    return httpx.Response(404)
+
+
+def flaky_sparql(responses):
+    """SPARQL replies are served from `responses` in order; XML is always served."""
+    calls = []
+    queue = list(responses)
+
+    def handler(request):
+        if "sparqlendpoint" in str(request.url):
+            calls.append("sparql")
+            return queue.pop(0)
+        return handler_xml(request)
+
+    return handler, calls
+
+
+def test_empty_sparql_result_is_retried_then_succeeds():
+    handler, calls = flaky_sparql([httpx.Response(200, json=EMPTY), httpx.Response(200, json=EMPTY),
+                                   httpx.Response(200, json=SPARQL)])
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    result = FedlexFetcher(http=http, retry=NO_SLEEP).fetch(source(), {})
+    assert result.errors == () and len(result.documents) == 1
+    assert calls.count("sparql") == 3
+
+
+def test_persistently_empty_sparql_result_is_reported_distinctly():
+    handler, calls = flaky_sparql([httpx.Response(200, json=EMPTY)] * 3)
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    result = FedlexFetcher(http=http, retry=NO_SLEEP).fetch(source(), {})
+    assert result.documents == ()
+    assert result.errors == (FetchError(
+        url="https://fedlex.data.admin.ch/sparqlendpoint",
+        reason="SR 455: empty SPARQL result after 3 attempts (upstream outage or no current consolidation)"),)
+    assert calls.count("sparql") == 3
+
+
+def test_server_error_is_retried_then_succeeds():
+    handler, calls = flaky_sparql([httpx.Response(503), httpx.Response(200, json=SPARQL)])
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    result = FedlexFetcher(http=http, retry=NO_SLEEP).fetch(source(), {})
+    assert result.errors == () and len(result.documents) == 1
+    assert calls.count("sparql") == 2
+
+
+def test_retry_backoff_uses_injected_sleep():
+    slept = []
+    handler, _ = flaky_sparql([httpx.Response(200, json=EMPTY), httpx.Response(200, json=SPARQL)])
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    FedlexFetcher(http=http, retry=RetryPolicy(attempts=3, backoff_seconds=0.25), sleep=slept.append).fetch(source(), {})
+    assert slept == [0.25]

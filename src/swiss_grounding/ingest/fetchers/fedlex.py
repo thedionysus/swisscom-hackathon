@@ -1,3 +1,4 @@
+import time
 from collections.abc import Mapping
 from datetime import date
 from typing import Any
@@ -5,6 +6,7 @@ from typing import Any
 import httpx
 from bs4 import BeautifulSoup
 
+from swiss_grounding.ingest.fetchers.retry import DEFAULT_RETRY_POLICY, RetryPolicy, Sleep, retry
 from swiss_grounding.ingest.models import (
     FetchedDocument,
     FetchError,
@@ -76,21 +78,28 @@ def _page_url(abstract_uri: str, date_applicability: str, lang: str) -> str:
 class FedlexFetcher:
     """Resolve SR numbers to their current consolidation and parse the Akoma Ntoso XML."""
 
-    def __init__(self, http: httpx.Client, endpoint: str = SPARQL_ENDPOINT):
+    def __init__(self, http: httpx.Client, endpoint: str = SPARQL_ENDPOINT,
+                 retry: RetryPolicy = DEFAULT_RETRY_POLICY, sleep: Sleep = time.sleep):
         self._http = http
         self._endpoint = endpoint
+        self.retry = retry
+        self._sleep = sleep
 
     def fetch(self, source: Source, known: Mapping[str, KnownUrl]) -> FetchResult:
         lang = source.fetch_config.get("language", "de")
         documents, unchanged, errors = [], [], []
         for sr in source.fetch_config.get("sr_numbers", ()):
             try:
-                binding = self._current(sr, lang)
+                binding = self._current_with_retry(sr, lang)
             except (httpx.HTTPError, ValueError) as exc:
                 errors.append(FetchError(url=self._endpoint, reason=f"SR {sr}: {exc}"))
                 continue
             if binding is None:
-                errors.append(FetchError(url=self._endpoint, reason=f"SR {sr}: no current consolidation"))
+                # The endpoint answers an empty set both for a transient outage and for a law with no
+                # consolidation, so after exhausting retries we can only say the result stayed empty.
+                errors.append(FetchError(url=self._endpoint, reason=(
+                    f"SR {sr}: empty SPARQL result after {self.retry.attempts} attempts "
+                    "(upstream outage or no current consolidation)")))
                 continue
             date_app = _value(binding, "dateApplicability")
             url = _page_url(_value(binding, "abstract"), date_app, lang)
@@ -116,12 +125,29 @@ class FedlexFetcher:
             ))
         return FetchResult(documents=tuple(documents), unchanged_urls=tuple(unchanged), errors=tuple(errors))
 
+    def _current_with_retry(self, sr: str, lang: str) -> dict[str, Any] | None:
+        """Retry the SPARQL lookup on transport errors, 5xx, timeouts, and empty result sets."""
+        return retry(
+            lambda: self._current(sr, lang),
+            policy=self.retry,
+            retry_on=(httpx.TransportError, _ServerError),
+            retry_if=lambda binding: binding is None,
+            sleep=self._sleep,
+        )
+
     def _current(self, sr: str, lang: str) -> dict[str, Any] | None:
         query = QUERY % {"sr": sr, "lang": LANGUAGE_URI[lang], "xml": XML_FORMAT_URI}
         response = self._http.post(
             self._endpoint, data={"query": query},
             headers={"accept": "application/sparql-results+json"},
         )
+        if response.is_server_error:
+            raise _ServerError(f"SPARQL endpoint returned HTTP {response.status_code}", request=response.request,
+                               response=response)
         response.raise_for_status()
         bindings = response.json().get("results", {}).get("bindings", [])
         return bindings[0] if bindings else None
+
+
+class _ServerError(httpx.HTTPStatusError):
+    """A 5xx from the SPARQL endpoint: transient by assumption, hence retried."""

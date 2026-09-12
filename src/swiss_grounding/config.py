@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     crawl_max_pages: int = 200
     crawl_delay_seconds: float = 0.5
     fetch_timeout_seconds: float = 20.0
+    fetch_retry_attempts: int = 3
+    fetch_retry_backoff_seconds: float = 0.5
     user_agent: str = "swiss-grounding/0.1 (+https://github.com/thedionysus/swisscom-hackathon)"
 
     @model_validator(mode="after")
