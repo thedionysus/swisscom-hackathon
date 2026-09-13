@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurisdiction hierarchy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f5f5f5;
+      --color-ink:     #2d3142;
+      --color-muted:   #4f5d75;
+      --color-accent:  #eb6c36;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Tree · Swiss Grounding MCP</p>
+    <h1>The jurisdiction hierarchy a query is scoped to</h1>
+
+    <svg viewBox="0 0 1000 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sg-tree-title sg-tree-desc">
+      <title id="sg-tree-title">Jurisdiction hierarchy</title>
+      <desc id="sg-tree-desc">Tree showing Switzerland at the root, its cantons below, the city of Zurich under canton Zurich, and the city districts that carry postal codes — the path a resolved location walks when retrieval is scoped.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+      <!-- Connectors (before nodes) -->
+      <line x1="500" y1="96" x2="500" y2="136" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="212" y1="136" x2="788" y2="136" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="212" y1="136" x2="212" y2="168" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="404" y1="136" x2="404" y2="168" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="596" y1="136" x2="596" y2="168" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="788" y1="136" x2="788" y2="168" stroke="#4f5d75" stroke-width="1"/>
+
+      <line x1="404" y1="216" x2="404" y2="288" stroke="#4f5d75" stroke-width="1"/>
+
+      <line x1="404" y1="336" x2="404" y2="376" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="308" y1="376" x2="500" y2="376" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="308" y1="376" x2="308" y2="408" stroke="#4f5d75" stroke-width="1"/>
+      <line x1="500" y1="376" x2="500" y2="408" stroke="#4f5d75" stroke-width="1"/>
+
+      <!-- Root: Switzerland -->
+      <rect x="412" y="48" width="176" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="412" y="48" width="176" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="500" y="72" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Switzerland</text>
+      <text x="500" y="86" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH · country</text>
+
+      <!-- Tier 1: cantons -->
+      <rect x="132" y="168" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="132" y="168" width="160" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="212" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Bern</text>
+      <text x="212" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-BE · canton</text>
+
+      <rect x="324" y="168" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="324" y="168" width="160" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="404" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Zürich</text>
+      <text x="404" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-ZH · canton</text>
+
+      <rect x="516" y="168" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="516" y="168" width="160" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="596" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Vaud</text>
+      <text x="596" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-VD · canton</text>
+
+      <rect x="708" y="168" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="708" y="168" width="160" height="48" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="788" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">23 more cantons</text>
+      <text x="788" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">seeded from CANTONS</text>
+
+      <!-- Tier 2: municipality -->
+      <rect x="324" y="288" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="324" y="288" width="160" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="404" y="312" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Zürich (city)</text>
+      <text x="404" y="326" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-ZH-261 · bfs 261</text>
+
+      <!-- Tier 3: districts -->
+      <rect x="228" y="408" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="228" y="408" width="160" height="48" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+      <text x="308" y="432" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Kreis 3</text>
+      <text x="308" y="446" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">8003 · 8045 · 8055</text>
+
+      <rect x="420" y="408" width="160" height="48" rx="6" fill="#f5f5f5"/>
+      <rect x="420" y="408" width="160" height="48" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="500" y="432" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Kreis 1 … 12</text>
+      <text x="500" y="446" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">quartiere below</text>
+
+      <!-- Editorial callout -->
+      <text x="32" y="492" fill="#eb6c36" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">an 8003 question still matches its ancestors</text>
+      <path d="M 140,468 Q 180,452 226,434" fill="none" stroke="rgba(235,108,54,0.50)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="226" cy="434" r="2" fill="#eb6c36"/>
+
+      <!-- Legend -->
+      <line x1="32" y1="524" x2="968" y2="524" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+      <text x="32" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+
+      <rect x="128" y="532" width="16" height="12" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="152" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">SEEDED JURISDICTION</text>
+
+      <rect x="360" y="532" width="16" height="12" rx="4" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+      <text x="384" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">RESOLVED QUERY EXTENT</text>
+
+      <rect x="640" y="532" width="16" height="12" rx="4" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="664" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">COLLAPSED FOR LEGIBILITY</text>
+    </svg>
+  </div>
+</body>
+</html>
