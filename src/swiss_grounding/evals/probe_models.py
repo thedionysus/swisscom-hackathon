@@ -3,7 +3,10 @@ what it returned. Evidence is named by source, URL fragment, or extent, never by
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from swiss_grounding.registry.categories import CATEGORY_IDS
+from swiss_grounding.retrieval.models import ResponseStatus
 
 FailureClass = Literal[
     "jurisdiction_confusion",
@@ -16,7 +19,6 @@ FailureClass = Literal[
 ProbeKind = Literal["structural", "ranking"]
 ProbeStatus = Literal["red", "green"]
 Tier = Literal["city", "communes", "lookalikes"]
-ResponseStatus = Literal["results", "needs_location", "no_evidence", "invalid_request"]
 FirstEventRule = Literal["nearest_future"]
 
 
@@ -26,10 +28,10 @@ class _Strict(BaseModel):
 
 class EvidenceRule(_Strict):
     """Selects citations. All given selectors must match one citation for the rule to hit."""
-    source: str | None = None
-    url_contains: str | None = None
-    extent: str | None = None          # extent id, or "off_path" for any extent off the resolved path
-    authority: str | None = None
+    source: str | None = Field(default=None, min_length=1)
+    url_contains: str | None = Field(default=None, min_length=1)
+    extent: str | None = Field(default=None, min_length=1)  # extent id, or "off_path" for off-path
+    authority: str | None = Field(default=None, min_length=1)
 
     @model_validator(mode="after")
     def _at_least_one(self) -> "EvidenceRule":
@@ -94,7 +96,7 @@ class Probe(_Strict):
     location: str | None = None
     categories: tuple[str, ...] = ()
     as_of: date | None = None
-    limit: int = 8
+    limit: int = Field(default=8, ge=1)
     kind: ProbeKind
     failure_class: FailureClass
     status: ProbeStatus
@@ -103,10 +105,18 @@ class Probe(_Strict):
     expect: Expectation
     observed: Observed | None = None
 
+    @field_validator("categories")
+    @classmethod
+    def _known_categories(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        unknown = [c for c in value if c not in CATEGORY_IDS]
+        if unknown:
+            raise ValueError(f"unknown categories: {sorted(unknown)}")
+        return value
+
 
 class ProbeFile(_Strict):
     tier: Tier
-    probes: tuple[Probe, ...]
+    probes: tuple[Probe, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
     def _unique_ids(self) -> "ProbeFile":

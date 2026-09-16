@@ -83,10 +83,12 @@ class QueryRequest:
 
 NOTICE = "Retrieved public information from Swiss sources. Not legal advice."
 
+ResponseStatus = Literal["results", "needs_location", "no_evidence", "invalid_request"]
+
 
 @dataclass(frozen=True)
 class QueryResponse:
-    status: Literal["results", "needs_location", "no_evidence", "invalid_request"]
+    status: ResponseStatus
     citations: tuple[Citation, ...] = ()
     resolved_location_id: str | None = None
     resolved_location_label: str | None = None

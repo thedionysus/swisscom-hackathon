@@ -1,9 +1,12 @@
+from datetime import date
+
 import pytest
 from pydantic import ValidationError
 
 from swiss_grounding.evals.probe_models import (
     EvidenceRule,
     Expectation,
+    Observed,
     ProbeFile,
     ResolvedExpectation,
 )
@@ -68,3 +71,56 @@ def test_expectation_defaults_are_empty():
     assert e.must_include == ()
     assert e.coverage_empty == ()
     assert e.first_event is None
+
+
+def test_resolved_expectation_requires_id_or_label():
+    with pytest.raises(ValidationError):
+        ResolvedExpectation(level="municipality")
+
+
+def test_resolved_expectation_roundtrips_label_level_parent():
+    r = ResolvedExpectation(label="Winterthur", level="municipality", parent="CH-ZH")
+    assert r.label == "Winterthur"
+    assert r.level == "municipality"
+    assert r.parent == "CH-ZH"
+
+
+def test_observed_block_roundtrips_with_citation_and_event_date():
+    obs = Observed.model_validate(
+        {
+            "recorded_at": "2026-09-16T12:00:00+00:00",
+            "status": "results",
+            "citations": [
+                {
+                    "source": "open_erz",
+                    "extent": "CH-ZH-261-K3",
+                    "url": "https://x",
+                    "authority": "official_info",
+                    "event_date": "2026-09-17",
+                }
+            ],
+            "failures": [],
+        }
+    )
+    assert obs.citations[0].event_date == date(2026, 9, 17)
+    assert obs.recorded_at.tzinfo is not None
+
+
+def test_evidence_rule_rejects_empty_string_selectors():
+    with pytest.raises(ValidationError):
+        EvidenceRule(url_contains="")
+
+
+def test_unknown_category_rejected():
+    with pytest.raises(ValidationError):
+        ProbeFile.model_validate({"tier": "city", "probes": [_probe(categories=["wast"])]})
+
+
+def test_limit_must_be_positive():
+    with pytest.raises(ValidationError):
+        ProbeFile.model_validate({"tier": "city", "probes": [_probe(limit=0)]})
+
+
+def test_empty_probe_file_rejected():
+    with pytest.raises(ValidationError):
+        ProbeFile.model_validate({"tier": "city", "probes": []})
