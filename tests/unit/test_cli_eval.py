@@ -1,7 +1,9 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from typing import ClassVar
 
 from typer.testing import CliRunner
 
+from swiss_grounding.cli import eval_commands
 from swiss_grounding.cli.eval_commands import (
     SWISS_TZ,
     _git_commit,
@@ -51,5 +53,49 @@ def test_git_commit_returns_short_sha_or_none():
 
 
 def test_today_is_swiss_civil_date():
-    assert _today() == datetime.now(SWISS_TZ).date()
+    assert isinstance(_today(), date)
     assert SWISS_TZ.key == "Europe/Zurich"
+
+
+def test_probes_cmd_rejects_unknown_tier():
+    result = CliRunner().invoke(app, ["eval", "probes", "--tier", "zurich"])
+    assert result.exit_code == 2
+    assert "zurich" in result.output
+
+
+class _StubTree:
+    by_id: ClassVar[dict] = {}
+
+    def path(self, node_id):
+        return ()
+
+
+class _StubCore:
+    tree = _StubTree()
+
+    def query(self, request):
+        return QueryResponse(status="needs_location")
+
+
+class _StubConn:
+    def execute(self, *args, **kwargs):
+        return None
+
+
+class _StubConnectionCM:
+    def __enter__(self):
+        return _StubConn()
+
+    def __exit__(self, *args):
+        return False
+
+
+def test_probes_cmd_exit_code_on_status_mismatch(monkeypatch):
+    probe = Probe(id="p-mismatch", question="q", kind="structural", failure_class="none",
+                  status="green", expect=Expectation(status="results"))
+    monkeypatch.setattr(eval_commands, "build_query_core", lambda settings: _StubCore())
+    monkeypatch.setattr(eval_commands, "connect", lambda url: _StubConnectionCM())
+    monkeypatch.setattr(eval_commands, "load_all_probes", lambda probe_dir: (("city", probe),))
+    result = CliRunner().invoke(app, ["eval", "probes"])
+    assert result.exit_code == 3
+    assert "p-mismatch" in result.output

@@ -185,4 +185,6 @@ Probes are hand-written adversarial questions under `evals/probes/`, one YAML fi
     uv run swiss-grounding eval probes --record                  # all probes on the live database, writes observed blocks
     uv run swiss-grounding eval judge                            # judge cases across models, needs the claude CLI
 
+The probes command exits 3 when a probe's red or green status disagrees with the live result.
+
 Red probes run as strict expected failures. When a fix makes one pass, pytest reports it and the probe's `status` must be flipped to green in its YAML file.
