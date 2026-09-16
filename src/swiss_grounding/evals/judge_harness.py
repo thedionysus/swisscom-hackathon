@@ -1,7 +1,7 @@
 """Judge cases: answer with a model through claude -p and the MCP server, grade with a fixed judge."""
 import json
-import re
 import subprocess
+import sys
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -20,8 +20,8 @@ ANSWER_SYSTEM = (
     "Answer the user's question using only the swiss-grounding tools. Cite the URLs the tools "
     "return. If the tools say a location has no local data, say so."
 )
-JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
 STDERR_PREVIEW = 500
+CLAUDE_TIMEOUT_SECONDS = 600
 
 
 def _claude(prompt: str, model: str, *, mcp: bool, stream: bool) -> str:
@@ -29,9 +29,16 @@ def _claude(prompt: str, model: str, *, mcp: bool, stream: bool) -> str:
     if mcp:
         cmd += ["--mcp-config", str(MCP_CONFIG), "--allowedTools", "mcp__swiss-grounding__*",
                 "--append-system-prompt", ANSWER_SYSTEM]
+    else:
+        cmd += ["--disallowedTools", "*"]
     if stream:
         cmd += ["--output-format", "stream-json", "--verbose"]
-    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    try:
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, check=False, timeout=CLAUDE_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(
+            f"claude timed out after {CLAUDE_TIMEOUT_SECONDS}s for model {model}") from exc
     if proc.returncode != 0:
         raise RuntimeError(
             f"claude exited {proc.returncode} for model {model}: {proc.stderr[:STDERR_PREVIEW]}")
@@ -73,42 +80,89 @@ def build_judge_prompt(rubric: str, question: str, evidence: Sequence[str], answ
                   .replace("{answer}", answer))
 
 
-def parse_verdict(text: str) -> dict[str, bool]:
-    match = JSON_OBJECT.search(text)
-    try:
-        raw = json.loads(match.group(0)) if match else {}
-    except json.JSONDecodeError:
-        raw = {}
-    return {k: bool(raw.get(k, False)) for k in VERDICT_KEYS}
+def _last_json_object(text: str) -> dict | None:
+    """Scan every '{' for a decodable JSON object; keep the last one that decodes to a dict."""
+    decoder = json.JSONDecoder()
+    found: dict | None = None
+    for pos, char in enumerate(text):
+        if char != "{":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(text, pos)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict):
+            found = obj
+    return found
 
 
+def _is_true(value: object) -> bool:
+    if value is True:
+        return True
+    if isinstance(value, str):
+        return value.strip().lower() == "true"
+    return False
+
+
+def parse_verdict(text: str) -> tuple[dict[str, bool], bool]:
+    """Verdict keyed True/False, and whether a JSON object was found at all (last-object-wins)."""
+    raw = _last_json_object(text)
+    parsed = raw is not None
+    raw = raw or {}
+    return {k: _is_true(raw.get(k)) for k in VERDICT_KEYS}, parsed
+
+
+# NOTE: as_of and categories are not passed to the answering model (only the question and
+# location are). If a probe with as_of is ever flagged judge: true, this needs extending so the
+# model has the same temporal frame the checker uses, or temporal_misapplication cases will be
+# unfair to grade.
 def _question_text(probe: Probe) -> str:
     return f"{probe.question} (location: {probe.location})" if probe.location else probe.question
 
 
 def run_case(probe: Probe, model: str, rubric: str) -> dict:
-    stream = _claude(_question_text(probe), model, mcp=True, stream=True)
-    evidence, answer = extract_tool_results(stream)
-    verdict_text = _claude(build_judge_prompt(rubric, _question_text(probe), evidence, answer),
-                           JUDGE_MODEL, mcp=False, stream=False)
-    return {"probe_id": probe.id, "model": model, "answer": answer, "evidence": evidence,
-            "verdict": parse_verdict(verdict_text)}
+    try:
+        stream = _claude(_question_text(probe), model, mcp=True, stream=True)
+        evidence, answer = extract_tool_results(stream)
+        verdict_text = _claude(build_judge_prompt(rubric, _question_text(probe), evidence, answer),
+                               JUDGE_MODEL, mcp=False, stream=False)
+        verdict, parsed = parse_verdict(verdict_text)
+        return {"probe_id": probe.id, "model": model, "answer": answer, "evidence": evidence,
+                "verdict": verdict, "verdict_parsed": parsed, "error": None}
+    except RuntimeError as exc:
+        return {"probe_id": probe.id, "model": model, "answer": "", "evidence": [],
+                "verdict": dict.fromkeys(VERDICT_KEYS, False), "verdict_parsed": False,
+                "error": str(exc)}
 
 
-def summary_table(verdicts_by_model: Mapping[str, Sequence[Mapping[str, bool]]]) -> str:
+def summary_table(records: Sequence[Mapping]) -> str:
+    scored = [r for r in records if not r.get("error") and r.get("verdict_parsed")]
+    models = list(dict.fromkeys(r["model"] for r in records))
     header = f"{'model':<32} " + " ".join(f"{k[:14]:<14}" for k in VERDICT_KEYS)
     rows = [header]
-    for model, verdicts in verdicts_by_model.items():
-        cells = [f"{sum(1 for v in verdicts if v.get(k))}/{len(verdicts)}".ljust(14) for k in VERDICT_KEYS]
+    for model in models:
+        verdicts = [r["verdict"] for r in scored if r["model"] == model]
+        if not verdicts:
+            cells = ["0/0".ljust(14) for _ in VERDICT_KEYS]
+        else:
+            cells = [f"{sum(1 for v in verdicts if v.get(k))}/{len(verdicts)}".ljust(14)
+                      for k in VERDICT_KEYS]
         rows.append(f"{model:<32} " + " ".join(cells))
+    unscored = len(records) - len(scored)
+    rows.append(f"unscored: {unscored} of {len(records)} (errors or unparseable verdicts)")
     return "\n".join(rows)
 
 
 def run_judge_suite(cases: Sequence[Probe], models: Sequence[str], out: Path) -> str:
     rubric = RUBRIC.read_text()
-    records = [run_case(p, m, rubric) for m in models for p in cases]
+    jobs = [(m, p) for m in models for p in cases]
+    total = len(jobs)
+    records: list[dict] = []
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"ran_at": datetime.now(UTC).isoformat(), "judge": JUDGE_MODEL,
-                               "records": records}, indent=2, ensure_ascii=False))
-    by_model = {m: [r["verdict"] for r in records if r["model"] == m] for m in models}
-    return summary_table(by_model)
+    for i, (model, probe) in enumerate(jobs, start=1):
+        print(f"[{i}/{total}] {model} {probe.id}", file=sys.stderr)
+        records.append(run_case(probe, model, rubric))
+        out.write_text(json.dumps(
+            {"ran_at": datetime.now(UTC).isoformat(), "judge": JUDGE_MODEL, "models": list(models),
+             "records": records}, indent=None, ensure_ascii=False))
+    return summary_table(records)
