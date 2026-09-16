@@ -7,6 +7,7 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.retrieval.models import Citation, QueryResponse
 
 OFF_PATH = "off_path"
+RESOLVED = "resolved"
 
 
 def _rule_label(rule: EvidenceRule) -> str:
@@ -71,6 +72,8 @@ def _check_first(exp: Expectation, citations: Sequence[Citation], today: date) -
 
 
 def _check_nearest_future(first: Citation, citations: Sequence[Citation], today: date) -> Iterable[str]:
+    """Ordering among the citations that were returned. It cannot see an event the search never
+    retrieved, so probes pair it with an absolute must_include or first_url_contains."""
     future = sorted(c.event_date for c in citations if c.event_date and c.event_date >= today)
     if first.event_date is None:
         yield "first_event: first citation carries no event_date"
@@ -96,7 +99,15 @@ def _coverage_counts(signal: Iterable[object]) -> dict[str, int] | None:
     return counts
 
 
+def _coverage_extent(name: str, resp: QueryResponse) -> str | None:
+    """Map a probe's coverage entry to an extent id; RESOLVED names the resolved location itself."""
+    return resp.resolved_location_id if name == RESOLVED else name
+
+
 def _check_coverage(exp: Expectation, resp: QueryResponse) -> Iterable[str]:
+    """Coverage entries are extent ids, or the word `resolved` for whatever node the response
+    resolved to. The latter lets a probe assert "the asked place itself is empty" before that
+    place has a node in the tree."""
     if not (exp.coverage_empty or exp.coverage_present):
         return
     signal = getattr(resp, "coverage", None)
@@ -107,13 +118,19 @@ def _check_coverage(exp: Expectation, resp: QueryResponse) -> Iterable[str]:
     if counts is None:
         yield "coverage: signal rows are not shaped {extent_id, documents}"
         return
-    for extent in exp.coverage_empty:
-        if extent not in counts:
+    for name in exp.coverage_empty:
+        extent = _coverage_extent(name, resp)
+        if extent is None:
+            yield "coverage: no resolved location to check emptiness for"
+        elif extent not in counts:
             yield f"coverage: {extent} not listed in signal"
         elif counts[extent] != 0:
             yield f"coverage: expected {extent} empty, has {counts[extent]} documents"
-    for extent in exp.coverage_present:
-        if extent not in counts:
+    for name in exp.coverage_present:
+        extent = _coverage_extent(name, resp)
+        if extent is None:
+            yield "coverage: no resolved location to check presence for"
+        elif extent not in counts:
             yield f"coverage: {extent} not listed in signal"
         elif counts[extent] == 0:
             yield f"coverage: expected {extent} present, has 0 documents"

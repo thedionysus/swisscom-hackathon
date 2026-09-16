@@ -10,7 +10,8 @@ probes:
     status: red
     judge: true
     note: With a frozen clock of 2026-09-16 the nearest future event is 2026-09-17. Today the reranker only penalises past
-      events, so ordering among future events is arbitrary and the first page can start in December.
+      events, so ordering among future events is arbitrary and the first page can start in December. The 2026-09-17 anchor
+      is absolute and will read as past once the wall clock passes it; give this probe an as_of when as_of reaches the reranker.
     expect:
       status: results
       resolved:
@@ -20,8 +21,8 @@ probes:
           url_contains: '#cardboard-2026-09-17'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-16T16:01:44.481987Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:10.874227Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -97,8 +98,8 @@ probes:
       coverage_present:
         - CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:01:44.545985Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:10.952991Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K4
       method: alias
@@ -168,8 +169,8 @@ probes:
         - source: open_erz
           url_contains: '#cardboard-2026-09-10'
     observed:
-      recorded_at: '2026-09-16T16:01:44.622134Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.041586Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -321,8 +322,8 @@ probes:
       first_url_contains: '#paper-'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-16T16:01:44.709972Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.115281Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -388,8 +389,8 @@ probes:
         - extent: off_path
         - extent: CH-BS
     observed:
-      recorded_at: '2026-09-16T16:01:44.806014Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.198254Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3-ALT-WIEDIKON
       method: alias
@@ -462,8 +463,8 @@ probes:
         - CH-ZH-261-K8-SEEFELD
         - CH-ZH-261-K8
     observed:
-      recorded_at: '2026-09-16T16:01:44.890522Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.276943Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K8-SEEFELD
       method: alias
@@ -537,8 +538,8 @@ probes:
         - authority: institutional
           extent: CH
     observed:
-      recorded_at: '2026-09-16T16:01:44.970850Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.375821Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -612,8 +613,8 @@ probes:
         - CH-ZH-261
         - CH
     observed:
-      recorded_at: '2026-09-16T16:01:45.078672Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.470226Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -680,8 +681,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-16T16:01:45.146493Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.532348Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -745,8 +746,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-16T16:01:45.248119Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.615274Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias_in_question
@@ -810,8 +811,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-16T16:01:45.355634Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.694231Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -872,8 +873,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-16T16:01:45.434479Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.783578Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K1-CITY
       method: alias
@@ -936,8 +937,8 @@ probes:
       resolved:
         id: CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:01:45.514273Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.884479Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -998,8 +999,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-16T16:01:45.514419Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.884615Z'
+      git_commit: 2fff5b7
       status: needs_location
       resolved_id: null
       method: null
@@ -1023,8 +1024,8 @@ probes:
       resolved:
         id: CH-ZH-261-K4-HARD
     observed:
-      recorded_at: '2026-09-16T16:01:45.631862Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:11.966454Z'
+      git_commit: 2fff5b7
       status: needs_location
       resolved_id: null
       method: null
@@ -1050,8 +1051,8 @@ probes:
       must_exclude:
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:01:45.717670Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.046738Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K5-ESCHER-WYSS
       method: alias
@@ -1122,8 +1123,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:01:45.802011Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.114833Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -1190,8 +1191,8 @@ probes:
       first_url_contains: '#cardboard-2026-09-10'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-16T16:01:45.876239Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.183294Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -1255,8 +1256,8 @@ probes:
       resolved:
         id: CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:01:45.947259Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.254339Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -1325,8 +1326,8 @@ probes:
         - source: fedlex
           url_contains: 1991/1052
     observed:
-      recorded_at: '2026-09-16T16:01:46.029323Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.311966Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias

@@ -187,4 +187,6 @@ Probes are hand-written adversarial questions under `evals/probes/`, one YAML fi
 
 The probes command exits 3 when a probe's red or green status disagrees with the live result.
 
+The judge is always Fable 5.1, which is also one of the four answering models, so that row of the judge table is self-graded.
+
 Red probes run as strict expected failures. When a fix makes one pass, pytest reports it and the probe's `status` must be flipped to green in its YAML file.

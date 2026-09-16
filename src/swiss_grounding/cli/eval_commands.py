@@ -3,6 +3,7 @@ import subprocess
 import uuid
 from collections import defaultdict
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
@@ -111,7 +112,8 @@ def probes_cmd(
         typer.echo("no probes match --tier/--kind", err=True)
         raise typer.Exit(code=1)
     settings = load_settings()
-    core = build_query_core(settings)
+    # The reranker must judge "past" with the same civil date the checker uses.
+    core = replace(build_query_core(settings), today=_today)
     commit = _git_commit()
     run_id = uuid.uuid4().hex[:RUN_ID_LENGTH]
     today = _today()

@@ -230,3 +230,15 @@ def test_multiple_citations_matching_one_exclude_rule():
         "must_exclude: citation matched source=fedlex (https://www.fedlex.admin.ch/eli/cc/2008/414/de)",
         "must_exclude: citation matched source=fedlex (https://www.fedlex.admin.ch/eli/cc/2009/1/de)",
     )
+
+
+def test_coverage_resolved_sentinel_names_the_resolved_node():
+    probe = _probe(status="results", coverage_empty=("resolved",), coverage_present=("CH",))
+    resp = _resp()
+    object.__setattr__(resp, "coverage", (
+        {"extent_id": "CH", "documents": 3}, {"extent_id": "CH-ZH-261-K4", "documents": 0}))
+    assert check(probe, resp, _tree(), TODAY) == ()
+    unresolved = _resp(resolved_location_id=None)
+    object.__setattr__(unresolved, "coverage", ({"extent_id": "CH", "documents": 3},))
+    assert check(probe, unresolved, _tree(), TODAY) == (
+        "coverage: no resolved location to check emptiness for",)
