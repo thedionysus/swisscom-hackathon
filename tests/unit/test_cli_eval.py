@@ -2,7 +2,13 @@ from datetime import UTC, datetime
 
 from typer.testing import CliRunner
 
-from swiss_grounding.cli.eval_commands import _git_commit, _print_table, _status_mismatches
+from swiss_grounding.cli.eval_commands import (
+    SWISS_TZ,
+    _git_commit,
+    _print_table,
+    _status_mismatches,
+    _today,
+)
 from swiss_grounding.cli.main import app
 from swiss_grounding.evals.probe_models import Expectation, Observed, Probe
 from swiss_grounding.evals.runner import ProbeResult
@@ -42,3 +48,8 @@ def test_print_table_lists_failures(capsys):
 def test_git_commit_returns_short_sha_or_none():
     sha = _git_commit()
     assert sha is None or (len(sha) >= 7 and all(c in "0123456789abcdef" for c in sha))
+
+
+def test_today_is_swiss_civil_date():
+    assert _today() == datetime.now(SWISS_TZ).date()
+    assert SWISS_TZ.key == "Europe/Zurich"

@@ -3,8 +3,9 @@ import subprocess
 import uuid
 from collections import defaultdict
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import typer
 
@@ -22,8 +23,14 @@ DEFAULT_MODELS = "claude-fable-5-1,claude-opus-5,claude-sonnet-5,claude-haiku-4-
 DEFAULT_JUDGE_OUT = Path("evals/judge/results.json")
 EXIT_STATUS_MISMATCH = 3
 RUN_ID_LENGTH = 12
+SWISS_TZ = ZoneInfo("Europe/Zurich")
 
 TierResults = Sequence[tuple[str, ProbeResult]]
+
+
+def _today() -> date:
+    """Civil date in Switzerland; calendar evidence is dated in local time."""
+    return datetime.now(SWISS_TZ).date()
 
 
 def _git_commit() -> str | None:
@@ -76,8 +83,7 @@ def probes_cmd(
         (t, p) for t, p in load_all_probes(resolved_probe_dir)
         if (tier is None or t == tier) and (kind is None or p.kind == kind)
     ]
-    today = datetime.now(UTC).date()
-    results = [(t, run_probe(p, core, today, git_commit=commit)) for t, p in selected]
+    results = [(t, run_probe(p, core, _today(), git_commit=commit)) for t, p in selected]
     _print_table(results)
     grouped = _by_tier(results)
     with connect(settings.database_url) as conn:
