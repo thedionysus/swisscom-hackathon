@@ -124,3 +124,10 @@ def test_limit_must_be_positive():
 def test_empty_probe_file_rejected():
     with pytest.raises(ValidationError):
         ProbeFile.model_validate({"tier": "city", "probes": []})
+
+
+def test_expectation_rejects_empty_first_and_message_selectors():
+    with pytest.raises(ValidationError):
+        Expectation(status="results", first_extent="")
+    with pytest.raises(ValidationError):
+        Expectation(status="results", message_contains="")

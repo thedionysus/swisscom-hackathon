@@ -61,13 +61,13 @@ class Expectation(_Strict):
     alternatives_include: tuple[str, ...] = ()
     must_include: tuple[EvidenceRule, ...] = ()
     must_exclude: tuple[EvidenceRule, ...] = ()
-    first_extent: str | None = None
-    first_authority: str | None = None
-    first_url_contains: str | None = None
+    first_extent: str | None = Field(default=None, min_length=1)
+    first_authority: str | None = Field(default=None, min_length=1)
+    first_url_contains: str | None = Field(default=None, min_length=1)
     first_event: FirstEventRule | None = None
     coverage_empty: tuple[str, ...] = ()
     coverage_present: tuple[str, ...] = ()
-    message_contains: str | None = None
+    message_contains: str | None = Field(default=None, min_length=1)
 
 
 class ObservedCitation(_Strict):
