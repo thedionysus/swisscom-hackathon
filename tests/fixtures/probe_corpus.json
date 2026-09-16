@@ -118,7 +118,7 @@
       "title_original": "Hunde im Kanton Zürich",
       "title_en": "Dogs in the Canton of Zurich",
       "language": "de",
-      "extent_id": "CH-ZH",
+      "extent_id": "CH-ZH-261",
       "authority": "official_info",
       "categories": [
         "dogs",
@@ -141,7 +141,7 @@
       "title_original": "Abfall und Rohstoffe",
       "title_en": "Waste and raw materials",
       "language": "de",
-      "extent_id": "CH-ZH",
+      "extent_id": "CH-ZH-261",
       "authority": "official_info",
       "categories": [
         "waste"
@@ -219,29 +219,6 @@
           "anchor": "freilauf",
           "text_original": "In der Hundezone Wiedikon dürfen Hunde frei laufen.",
           "text_en": "In the Wiedikon dog zone in District 3, dogs may run off leash."
-        }
-      ]
-    },
-    {
-      "source_id": "open_erz",
-      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-10",
-      "identifier": "cardboard-2026-09-10",
-      "title_original": "Waste collection cardboard in 8003 on 2026-09-10",
-      "title_en": "Waste collection cardboard in 8003 on 2026-09-10",
-      "language": "en",
-      "extent_id": "CH-ZH-261-K3",
-      "authority": "official_info",
-      "categories": [
-        "waste"
-      ],
-      "valid_from": null,
-      "event_date": "2026-09-10",
-      "chunks": [
-        {
-          "heading_path": "Waste collection cardboard in 8003",
-          "anchor": null,
-          "text_original": "Collection of cardboard in Zurich postal code 8003 on 2026-09-10.",
-          "text_en": "Collection of cardboard in Zurich postal code 8003 on 2026-09-10. Put it out before 7:00 on collection day."
         }
       ]
     },

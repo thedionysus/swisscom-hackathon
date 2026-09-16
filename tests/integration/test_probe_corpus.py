@@ -26,6 +26,6 @@ def test_probe_corpus_loads_and_covers_every_level():
         report = load_fixture(conn, CORPUS, FakeEmbedder(dim=8))
         extents = {r["extent_id"] for r in conn.execute("select distinct extent_id from document").fetchall()}
         events = conn.execute("select count(*) from document where event_date is not null").fetchone()["count"]
-    assert report.documents == 15
-    assert {"CH", "CH-ZH", "CH-ZH-261", "CH-ZH-261-K3", "CH-BS"} <= extents
-    assert events == 4
+    assert report.documents == 14  # mirrors live: no past events, zh_ch narrowed to the city
+    assert {"CH", "CH-ZH-261", "CH-ZH-261-K3", "CH-BS"} <= extents
+    assert events == 3
