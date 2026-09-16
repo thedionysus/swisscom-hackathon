@@ -38,3 +38,12 @@ def test_commune_probes_never_expect_an_exact_commune_id():
     for tier, p in load_all_probes(PROBE_DIR):
         if tier == "communes" and p.expect.resolved is not None:
             assert p.expect.resolved.id is None or p.expect.resolved.id in {"CH-ZH", "CH-ZH-261"}, p.id
+
+
+def test_lookalikes_tier_has_twelve_probes():
+    tiers = Counter(t for t, _ in load_all_probes(PROBE_DIR))
+    assert tiers["lookalikes"] == 12
+
+
+def test_fifteen_judge_cases():
+    assert sum(1 for _, p in load_all_probes(PROBE_DIR) if p.judge) == 15
