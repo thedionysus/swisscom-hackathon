@@ -176,3 +176,13 @@ serially (no `pytest -n`).
 Design: `docs/superpowers/specs/2026-09-10-swiss-grounding-mcp-design.md`
 Plans: `docs/superpowers/plans/`
 Research: `research/README.md`
+
+## Evals
+
+Probes are hand-written adversarial questions under `evals/probes/`, one YAML file per location tier (city, communes, lookalikes). Each probe states the expected tool response and, once recorded, the observed one. `status: red` marks a probe the server fails today. See `CONTEXT.md` for the failure classes and `docs/adr/` for the decisions behind the expectations.
+
+    uv run pytest tests/integration/test_probes_structural.py   # structural probes on fixtures, frozen clock
+    uv run swiss-grounding eval probes --record                  # all probes on the live database, writes observed blocks
+    uv run swiss-grounding eval judge                            # judge cases across models, needs the claude CLI
+
+Red probes run as strict expected failures. When a fix makes one pass, pytest reports it and the probe's `status` must be flipped to green in its YAML file.
