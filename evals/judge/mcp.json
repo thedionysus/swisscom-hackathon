@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "swiss-grounding": {
+      "command": "uv",
+      "args": ["run", "swiss-grounding", "serve"]
+    }
+  }
+}
