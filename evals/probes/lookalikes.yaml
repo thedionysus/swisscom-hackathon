@@ -1,0 +1,171 @@
+tier: lookalikes
+probes:
+  - id: look-001
+    question: Do I need to leash my dog in the forest?
+    location: Zürich Oberland
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    judge: true
+    note: Today resolves to the canton via geoadmin_approximate because GeoAdmin fuzzy-matches the first word. Expected is the canton by design, but as an explicit approximate resolution that the coverage signal explains; the region itself is not a jurisdiction. Red until the acceptance rule requires every input token to be covered.
+    expect:
+      status: results
+      resolved: {id: CH-ZH}
+      method: geoadmin_approximate
+      must_exclude:
+        - {extent: CH-ZH-261}
+        - {extent: off_path}
+
+  - id: look-002
+    question: Do I need to leash my dog in the forest?
+    location: Zug
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: green
+    note: Neighbouring canton. No Zurich documents at any level.
+    expect:
+      status: results
+      resolved: {id: CH-ZG}
+      must_exclude:
+        - {extent: CH-ZH}
+        - {extent: CH-ZH-261}
+        - {extent: off_path}
+
+  - id: look-003
+    question: Do I need to leash my dog in the forest?
+    location: ZH
+    categories: [dogs]
+    kind: structural
+    failure_class: none
+    status: green
+    note: Bare canton abbreviation.
+    expect:
+      status: results
+      resolved: {id: CH-ZH}
+      method: alias
+
+  - id: look-004
+    question: Do I need to leash my dog in the forest?
+    location: Zurigo
+    categories: [dogs]
+    kind: structural
+    failure_class: none
+    status: green
+    note: Italian name; shared by canton and city, most specific wins with the canton as alternative.
+    expect:
+      status: results
+      resolved: {id: CH-ZH-261}
+      alternatives_include: [CH-ZH]
+
+  - id: look-005
+    question: Do I need to leash my dog in the forest?
+    location: Zurich Airport
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    judge: true
+    note: The airport lies in Kloten, not in the city. Today GeoAdmin overlap on "zurich" gives the city exactly. Expected is Kloten once the register exists.
+    expect:
+      status: results
+      resolved: {label: Kloten, level: municipality, parent: CH-ZH}
+      must_exclude:
+        - {extent: CH-ZH-261}
+
+  - id: look-006
+    question: Do I need to leash my dog in the forest?
+    location: Zürichsee
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    note: A lake, not a jurisdiction. Must not resolve. Today it resolves approximately to the canton.
+    expect:
+      status: needs_location
+
+  - id: look-007
+    question: Do I need to leash my dog in the forest?
+    location: Zurzach
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    note: Canton Aargau commune whose name starts like Zurich. Expected is a municipality under CH-AG once the register exists. Today it resolves approximately to canton Aargau, which is at least the right canton.
+    expect:
+      status: results
+      resolved: {label: Zurzach, level: municipality, parent: CH-AG}
+      must_exclude:
+        - {extent: CH-ZH}
+        - {extent: CH-ZH-261}
+
+  - id: look-008
+    question: Do I need to leash my dog in the forest?
+    location: Basel
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: green
+    note: Control. The Basel alias resolves to Basel-Stadt; the CH-BS fixture document must appear, nothing from Zurich.
+    expect:
+      status: results
+      resolved: {id: CH-BS}
+      must_include:
+        - {extent: CH-BS}
+      must_exclude:
+        - {extent: CH-ZH}
+        - {extent: CH-ZH-261}
+
+  - id: look-009
+    question: Muss ich meinen Hund im Wald anleinen?
+    location: Kanton Zürich
+    categories: [dogs]
+    kind: structural
+    failure_class: none
+    status: green
+    note: German question with a marked canton. Routing only on fixtures.
+    expect:
+      status: results
+      resolved: {id: CH-ZH}
+
+  - id: look-010
+    question: Do I need to leash my dog in the forest?
+    location: Zürich, Switzerland
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    note: Trailing country name. Today the exact alias lookup fails on the whole string, the scanner finds both names and settles on Switzerland, so the question is answered at country level. Expected is the city with the canton alternative, as for bare Zürich.
+    expect:
+      status: results
+      resolved: {id: CH-ZH-261}
+      alternatives_include: [CH-ZH]
+
+  - id: look-011
+    question: Do I need to leash my dog in the forest?
+    location: Nowhere
+    categories: [dogs]
+    kind: structural
+    failure_class: none
+    status: green
+    note: Control. GeoAdmin fuzzy-matches "Nowhere" to Nidwalden; the overlap check rejects it.
+    expect:
+      status: needs_location
+      message_contains: Nowhere
+
+  - id: look-012
+    question: Where can I dispose of cardboard?
+    location: Zürich
+    categories: [waste]
+    kind: ranking
+    failure_class: entity_substitution
+    status: green
+    judge: true
+    note: Bare Zürich resolves to the city. The Kreis 3 calendar is not on the city path and must not appear; a city waste page must be first. Passes live today, though the first hit is a navigation page rather than the cardboard page itself.
+    expect:
+      status: results
+      resolved: {id: CH-ZH-261}
+      must_exclude:
+        - {source: open_erz}
+      first_url_contains: stadt-zuerich.ch

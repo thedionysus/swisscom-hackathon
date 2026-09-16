@@ -56,9 +56,9 @@ probes:
     categories: [waste]
     kind: ranking
     failure_class: entity_substitution
-    status: red
+    status: green
     judge: true
-    note: Paper and cardboard are different collections. The first citation must be a paper event, not cardboard. Ranking probe, live database only.
+    note: Paper and cardboard are different collections. The first citation must be a paper event, not cardboard. Ranking probe, live database only. Passes live today because the lexical leg matches the word paper.
     expect:
       status: results
       resolved: {id: CH-ZH-261-K3}
@@ -288,7 +288,7 @@ probes:
     failure_class: authority_hierarchy
     status: red
     judge: true
-    note: Federal law assigns trails to cantons. On the live corpus the institutional Schweizer Wanderwege pages dominate hiking; the federal act must still be in the results. Ranking probe, live database only.
+    note: Federal law assigns trails to cantons. The Federal Act on Footpaths and Hiking Trails (SR 704) is not in the source registry, so this probe cannot pass until credits allow ingesting it. It documents a source gap, not a ranking bug. Ranking probe, live database only.
     expect:
       status: results
       resolved: {id: CH-ZH-261}
