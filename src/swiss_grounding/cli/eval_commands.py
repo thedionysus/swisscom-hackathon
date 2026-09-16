@@ -140,11 +140,12 @@ def judge_cmd(
     models: str = typer.Option(DEFAULT_MODELS, "--models", help="comma-separated model ids"),
     out: Annotated[Path, typer.Option("--out")] = DEFAULT_JUDGE_OUT,
     probe_dir: Annotated[Path, typer.Option("--probe-dir")] = PROBE_DIR,
+    resume: Annotated[bool, typer.Option("--resume", help="keep clean records in --out, rerun the rest")] = False,
 ) -> None:
     """Answer every judge case with each model via claude -p and grade with a fixed Fable judge."""
     from swiss_grounding.evals.judge_harness import run_judge_suite
 
     all_probes = _load_probes_or_exit(probe_dir)
     cases = [p for _, p in all_probes if p.judge]
-    table = run_judge_suite(cases, tuple(m.strip() for m in models.split(",")), out)
+    table = run_judge_suite(cases, tuple(m.strip() for m in models.split(",")), out, resume=resume)
     typer.echo(table)
