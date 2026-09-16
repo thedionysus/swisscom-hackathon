@@ -9,8 +9,8 @@ from swiss_grounding.retrieval.models import Citation, QueryResponse
 TODAY = date(2026, 9, 16)
 
 
-def _loc(id, parent, level, name, bfs=None):
-    return Location(id=id, parent_id=parent, level=level, bfs_id=bfs, lindas_uri=None,
+def _loc(node_id, parent, level, name, bfs=None):
+    return Location(id=node_id, parent_id=parent, level=level, bfs_id=bfs, lindas_uri=None,
                     names={"en": name}, aliases=())
 
 
@@ -82,7 +82,7 @@ def test_method_and_alternatives():
     probe = _probe(status="results", method="geoadmin", alternatives_include=("CH-ZH",))
     failures = check(probe, _resp(), _tree(), TODAY)
     assert "method: expected geoadmin, got alias" in failures
-    assert "alternatives: CH-ZH missing from ()" in failures
+    assert "alternatives: CH-ZH missing; none returned" in failures
 
 
 def test_must_include_reports_missing_rule():
@@ -128,11 +128,19 @@ def test_first_event_nearest_future():
                            _cit(source="open_erz", event_date=date(2026, 9, 17))))
     assert check(probe, bad, _tree(), TODAY) == (
         "first_event: expected nearest future 2026-09-17, first citation has 2026-12-31",)
-    past = _resp(citations=(_cit(source="open_erz", event_date=date(2026, 9, 10)),))
+    past = _resp(citations=(_cit(source="open_erz", event_date=date(2026, 9, 10)),
+                            _cit(source="open_erz", event_date=date(2026, 12, 31))))
     assert check(probe, past, _tree(), TODAY) == (
         "first_event: first citation 2026-09-10 is before today 2026-09-16",)
     dateless = _resp(citations=(_cit(),))
     assert check(probe, dateless, _tree(), TODAY) == ("first_event: first citation carries no event_date",)
+
+
+def test_first_event_with_only_past_events():
+    probe = _probe(status="results", first_event="nearest_future")
+    resp = _resp(citations=(_cit(source="open_erz", event_date=date(2026, 9, 10)),))
+    assert check(probe, resp, _tree(), TODAY) == (
+        "first_event: no citation carries a future event date (nearest is 2026-09-10)",)
 
 
 def test_coverage_signal_missing_is_a_failure():
@@ -143,11 +151,12 @@ def test_coverage_signal_missing_is_a_failure():
 def test_coverage_signal_checked_when_present():
     probe = _probe(status="results", coverage_empty=("CH-ZH-261-K4",), coverage_present=("CH", "CH-ZH"))
     resp = _resp()
+    # QueryResponse is frozen; coverage is a future field, so attach it the way the fix pass will.
     object.__setattr__(resp, "coverage", (
         {"extent_id": "CH", "documents": 3}, {"extent_id": "CH-ZH-261-K4", "documents": 2}))
     assert check(probe, resp, _tree(), TODAY) == (
         "coverage: expected CH-ZH-261-K4 empty, has 2 documents",
-        "coverage: expected CH-ZH present, has 0 documents",
+        "coverage: CH-ZH not listed in signal",
     )
 
 
@@ -158,8 +167,66 @@ def test_coverage_empty_extent_not_listed():
     assert check(probe, resp, _tree(), TODAY) == ("coverage: CH-ZH-261-K4 not listed in signal",)
 
 
+def test_coverage_rows_of_unexpected_shape_do_not_crash():
+    probe = _probe(status="results", coverage_empty=("CH-ZH-261-K4",))
+    resp = _resp()
+    object.__setattr__(resp, "coverage", ({"extent": "CH", "docs": 3},))
+    assert check(probe, resp, _tree(), TODAY) == (
+        "coverage: signal rows are not shaped {extent_id, documents}",)
+
+
+def test_coverage_rows_as_objects_are_accepted():
+    from dataclasses import dataclass
+
+    @dataclass(frozen=True)
+    class CoverageRow:
+        extent_id: str
+        documents: int
+
+    probe = _probe(status="results", coverage_empty=("CH-ZH-261-K4",), coverage_present=("CH",))
+    resp = _resp()
+    object.__setattr__(resp, "coverage", (
+        CoverageRow(extent_id="CH", documents=3), CoverageRow(extent_id="CH-ZH-261-K4", documents=0)))
+    assert check(probe, resp, _tree(), TODAY) == ()
+
+
 def test_message_contains():
     probe = _probe(status="needs_location", message_contains="Atlantis")
     resp = QueryResponse(status="needs_location", message="Could not resolve location 'Nowhere'.")
     assert check(probe, resp, _tree(), TODAY) == (
         "message: 'Atlantis' not in \"Could not resolve location 'Nowhere'.\"",)
+
+
+def test_off_path_with_unresolved_location():
+    probe = _probe(status="results", must_exclude=(EvidenceRule(extent="off_path"),))
+    resp = _resp(resolved_location_id=None)
+    assert check(probe, resp, _tree(), TODAY) == (
+        "off_path: response resolved no location, so no extent path to judge against",)
+
+
+def test_must_include_off_path_positive_direction():
+    probe = _probe(status="results", must_include=(EvidenceRule(extent="off_path"),))
+    leak = _resp(citations=(_cit(source="open_erz", extent="CH-ZH-261-K3", url="https://openerz.metaodi.ch/x"),))
+    assert check(probe, leak, _tree(), TODAY) == ()
+    assert check(probe, _resp(), _tree(), TODAY) == (
+        "must_include: no citation matched extent=off_path",)
+
+
+def test_resolved_level_only_mismatch():
+    probe = _probe(status="results", resolved=ResolvedExpectation(
+        label="District 4", level="municipality", parent="CH-ZH-261"))
+    failures = check(probe, _resp(), _tree(), TODAY)
+    assert any(f.startswith(
+        "resolved: expected District 4 (municipality under CH-ZH-261), got CH-ZH-261-K4") for f in failures)
+
+
+def test_multiple_citations_matching_one_exclude_rule():
+    probe = _probe(status="results", must_exclude=(EvidenceRule(source="fedlex"),))
+    resp = _resp(citations=(
+        _cit(source="fedlex", url="https://www.fedlex.admin.ch/eli/cc/2008/414/de"),
+        _cit(source="fedlex", url="https://www.fedlex.admin.ch/eli/cc/2009/1/de"),
+    ))
+    assert check(probe, resp, _tree(), TODAY) == (
+        "must_exclude: citation matched source=fedlex (https://www.fedlex.admin.ch/eli/cc/2008/414/de)",
+        "must_exclude: citation matched source=fedlex (https://www.fedlex.admin.ch/eli/cc/2009/1/de)",
+    )
