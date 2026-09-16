@@ -1,4 +1,7 @@
 """Composition root: builds fully wired objects from settings."""
+from collections.abc import Callable
+from datetime import date
+
 from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.locations.geoadmin import GeoAdminClient
@@ -9,7 +12,8 @@ from swiss_grounding.retrieval.query_core import QueryCore
 from swiss_grounding.retrieval.rerank import RerankWeights
 
 
-def build_query_core(settings: Settings) -> QueryCore:
+def build_query_core(settings: Settings, today: Callable[[], date] = date.today) -> QueryCore:
+    """today is the clock the reranker uses to tell past calendar events from upcoming ones."""
     with connect(settings.database_url) as conn:
         tree = load_tree(conn)
     if not tree.by_id:
@@ -19,4 +23,5 @@ def build_query_core(settings: Settings) -> QueryCore:
     return QueryCore(
         database_url=settings.database_url, tree=tree,
         resolver=LocationResolver(tree, geo), embedder=embedder, weights=RerankWeights(),
+        today=today,
     )
