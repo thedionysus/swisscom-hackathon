@@ -93,7 +93,7 @@ class _StubConnectionCM:
 def test_probes_cmd_exit_code_on_status_mismatch(monkeypatch):
     probe = Probe(id="p-mismatch", question="q", kind="structural", failure_class="none",
                   status="green", expect=Expectation(status="results"))
-    monkeypatch.setattr(eval_commands, "build_query_core", lambda settings: _StubCore())
+    monkeypatch.setattr(eval_commands, "build_query_core", lambda settings, today: _StubCore())
     monkeypatch.setattr(eval_commands, "connect", lambda url: _StubConnectionCM())
     monkeypatch.setattr(eval_commands, "load_all_probes", lambda probe_dir: (("city", probe),))
     result = CliRunner().invoke(app, ["eval", "probes"])
