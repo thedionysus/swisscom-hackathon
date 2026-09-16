@@ -1,0 +1,225 @@
+tier: communes
+probes:
+  - id: com-001
+    question: Do I need to leash my dog in the forest?
+    location: Winterthur
+    categories: [dogs]
+    kind: structural
+    failure_class: silent_under_coverage
+    status: red
+    judge: true
+    note: Today resolves to the canton via geoadmin_approximate. Expected is the Winterthur node itself with canton and federal evidence and a signal that Winterthur is empty.
+    expect:
+      status: results
+      resolved: {label: Winterthur, level: municipality, parent: CH-ZH}
+      must_include:
+        - {source: zh_ch, extent: CH-ZH}
+        - {source: fedlex}
+      must_exclude:
+        - {extent: CH-ZH-261}
+        - {extent: off_path}
+      coverage_empty: [Winterthur]
+      coverage_present: [CH-ZH]
+
+  - id: com-002
+    question: When is cardboard collected?
+    location: Uster
+    categories: [waste]
+    kind: structural
+    failure_class: silent_under_coverage
+    status: red
+    judge: true
+    note: No calendar for Uster. Must not return the 8003 calendar. Canton guidance applies. Today resolves to the canton and carries no coverage signal.
+    expect:
+      status: results
+      resolved: {label: Uster, level: municipality, parent: CH-ZH}
+      must_exclude:
+        - {source: open_erz}
+        - {extent: CH-ZH-261}
+      must_include:
+        - {source: zh_ch, url_contains: abfall}
+      coverage_empty: [Uster]
+
+  - id: com-003
+    question: When is cardboard collected in Dübendorf?
+    categories: [waste]
+    kind: structural
+    failure_class: silent_under_coverage
+    status: red
+    note: Location only in the question, with an umlaut. Today the question scanner knows no communes, so the response is needs_location.
+    expect:
+      status: results
+      resolved: {label: Dübendorf, level: municipality, parent: CH-ZH}
+      must_exclude:
+        - {source: open_erz}
+      coverage_empty: [Dübendorf]
+
+  - id: com-004
+    question: Do I need to leash my dog in the forest?
+    location: Kloten
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    note: Kloten must not receive city of Zurich park rules. Today it resolves to the canton, so the node expectation fails.
+    expect:
+      status: results
+      resolved: {label: Kloten, level: municipality, parent: CH-ZH}
+      must_exclude:
+        - {extent: CH-ZH-261}
+        - {extent: CH-ZH-261-K3}
+
+  - id: com-005
+    question: Do I need to leash my dog in the forest?
+    location: Wetzikon
+    categories: [dogs]
+    kind: structural
+    failure_class: silent_under_coverage
+    status: red
+    note: Same shape as Winterthur; a second commune guards against a fix that special-cases one name. Today resolves to the canton.
+    expect:
+      status: results
+      resolved: {label: Wetzikon, level: municipality, parent: CH-ZH}
+      must_include:
+        - {source: zh_ch, extent: CH-ZH}
+      coverage_empty: [Wetzikon]
+
+  - id: com-006
+    question: Do I need to leash my dog in the forest?
+    location: Wil ZH
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    note: Wil exists in both ZH and SG. The canton suffix must pin it to the Zurich commune. Today it resolves approximately to the canton.
+    expect:
+      status: results
+      resolved: {label: Wil, level: municipality, parent: CH-ZH}
+      must_include:
+        - {source: zh_ch, extent: CH-ZH}
+
+  - id: com-007
+    question: Do I need to leash my dog in the forest?
+    location: Wil
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    judge: true
+    note: Bare "Wil" is ambiguous between cantons and must be asked back, not guessed. Today GeoAdmin picks one and the resolver settles on canton Zurich.
+    expect:
+      status: needs_location
+      message_contains: Wil
+
+  - id: com-008
+    question: Do I need to leash my dog in the forest?
+    location: Affoltern am Albis
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: red
+    judge: true
+    note: A Zurich commune, not the Affoltern Quartier in Kreis 11. Today GeoAdmin returns a different Affoltern and the resolver lands on canton Bern, which is a jurisdiction leak across cantons.
+    expect:
+      status: results
+      resolved: {label: Affoltern am Albis, level: municipality, parent: CH-ZH}
+      must_exclude:
+        - {extent: CH-ZH-261}
+        - {extent: CH-ZH-261-K11}
+        - {extent: CH-BE}
+
+  - id: com-009
+    question: Do I need to leash my dog in the forest?
+    location: Affoltern
+    categories: [dogs]
+    kind: structural
+    failure_class: entity_substitution
+    status: red
+    note: Bare "Affoltern" matches a Quartier of the city and a commune of the canton. It must be asked back. Today it resolves straight to the Quartier.
+    expect:
+      status: needs_location
+
+  - id: com-010
+    question: Do I need to leash my dog in the forest?
+    location: Gemeinde Winterthur
+    categories: [dogs]
+    kind: structural
+    failure_class: none
+    status: red
+    note: Marked commune input. Same node as com-001; checks that the marker is accepted by the alias lookup rather than falling through to GeoAdmin. Today resolves approximately to the canton.
+    expect:
+      status: results
+      resolved: {label: Winterthur, level: municipality, parent: CH-ZH}
+      method: alias
+
+  - id: com-011
+    question: Do I need to leash my dog in the forest?
+    location: "8400"
+    categories: [dogs]
+    kind: structural
+    failure_class: silent_under_coverage
+    status: red
+    note: Postal code of Winterthur. The register carries postal codes for communes; today 8400 is unknown and the response is needs_location.
+    expect:
+      status: results
+      resolved: {label: Winterthur, level: municipality, parent: CH-ZH}
+      coverage_empty: [Winterthur]
+
+  - id: com-012
+    question: Do I need to leash my dog in the forest?
+    location: Winterthurr
+    categories: [dogs]
+    kind: structural
+    failure_class: none
+    status: red
+    note: One-character typo. Accepted under the per-token edit-distance rule, resolved to Winterthur via GeoAdmin. Today the response is needs_location.
+    expect:
+      status: results
+      resolved: {label: Winterthur, level: municipality, parent: CH-ZH}
+      method: geoadmin
+
+  - id: com-013
+    question: Do I need to leash my dog in the forest?
+    location: Bülach
+    categories: [dogs]
+    kind: structural
+    failure_class: silent_under_coverage
+    status: red
+    note: Commune with an umlaut passed as the location. Today resolves approximately to the canton with no coverage signal.
+    expect:
+      status: results
+      resolved: {label: Bülach, level: municipality, parent: CH-ZH}
+      coverage_empty: [Bülach]
+      coverage_present: [CH]
+
+  - id: com-014
+    question: What applies to dogs everywhere in the canton?
+    location: Kanton Zürich
+    categories: [dogs]
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: green
+    note: Control probe. Canton-level answer must carry canton documents and no commune or city ones.
+    expect:
+      status: results
+      resolved: {id: CH-ZH}
+      must_include:
+        - {source: zh_ch, extent: CH-ZH}
+      must_exclude:
+        - {extent: CH-ZH-261}
+        - {extent: off_path}
+
+  - id: com-015
+    question: Do I need to leash my dog in the forest?
+    location: Dietikon
+    categories: [dogs]
+    kind: ranking
+    failure_class: authority_hierarchy
+    status: red
+    judge: true
+    note: With no local data, the canton leash rule must outrank institutional trail advice. Live corpus only. Today the canton level holds no zh.ch documents at all because narrowing moved them to the city.
+    expect:
+      status: results
+      resolved: {label: Dietikon, level: municipality, parent: CH-ZH}
+      first_extent: CH-ZH
+      first_authority: official_info
