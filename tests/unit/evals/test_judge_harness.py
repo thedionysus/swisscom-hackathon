@@ -71,6 +71,13 @@ def test_parse_verdict_string_false_is_false():
     assert verdict["jurisdiction_confusion"] is True
 
 
+def test_parse_verdict_ignores_trailing_nested_object():
+    raw = {**dict.fromkeys(VERDICT_KEYS, True), "notes": {"why": "ok"}}
+    verdict, parsed = parse_verdict(json.dumps(raw))
+    assert parsed is True
+    assert all(verdict[k] is True for k in VERDICT_KEYS)
+
+
 def test_build_judge_prompt_includes_question_evidence_and_answer():
     prompt = build_judge_prompt("rubric {question} {evidence} {answer}", "Q?", ["E1", "E2"], "A.")
     assert "Q?" in prompt and "E1" in prompt and "E2" in prompt and "A." in prompt
@@ -159,6 +166,24 @@ def test_claude_raises_runtime_error_on_timeout(monkeypatch):
     monkeypatch.setattr(judge_harness.subprocess, "run", fake_run)
     with pytest.raises(RuntimeError, match="timed out"):
         judge_harness._claude("q", "m", mcp=True, stream=True)
+
+
+def test_run_case_records_error_when_claude_fails(monkeypatch):
+    def fake_claude(prompt, model, *, mcp, stream):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(judge_harness, "_claude", fake_claude)
+
+    class FakeProbe:
+        id = "p1"
+        question = "Q"
+        location = None
+
+    record = judge_harness.run_case(FakeProbe(), "claude-sonnet-5", "rubric")
+    assert record["error"] == "boom"
+    assert record["verdict_parsed"] is False
+    assert record["answer"] == ""
+    assert all(v is False for v in record["verdict"].values())
 
 
 def test_run_judge_suite_writes_file_and_reports_unscored(monkeypatch, tmp_path):

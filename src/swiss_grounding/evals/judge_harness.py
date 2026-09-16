@@ -1,5 +1,6 @@
 """Judge cases: answer with a model through claude -p and the MCP server, grade with a fixed judge."""
 import json
+import os
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
@@ -81,7 +82,8 @@ def build_judge_prompt(rubric: str, question: str, evidence: Sequence[str], answ
 
 
 def _last_json_object(text: str) -> dict | None:
-    """Scan every '{' for a decodable JSON object; keep the last one that decodes to a dict."""
+    """Scan every '{' for a decodable JSON object; prefer the last one carrying a verdict key,
+    falling back to the last dict decoded at all when none does."""
     decoder = json.JSONDecoder()
     found: dict | None = None
     for pos, char in enumerate(text):
@@ -91,7 +93,7 @@ def _last_json_object(text: str) -> dict | None:
             obj, _ = decoder.raw_decode(text, pos)
         except json.JSONDecodeError:
             continue
-        if isinstance(obj, dict):
+        if isinstance(obj, dict) and (found is None or any(k in obj for k in VERDICT_KEYS)):
             found = obj
     return found
 
@@ -153,16 +155,23 @@ def summary_table(records: Sequence[Mapping]) -> str:
     return "\n".join(rows)
 
 
+def _write_atomically(path: Path, text: str) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
 def run_judge_suite(cases: Sequence[Probe], models: Sequence[str], out: Path) -> str:
     rubric = RUBRIC.read_text()
     jobs = [(m, p) for m in models for p in cases]
     total = len(jobs)
     records: list[dict] = []
+    ran_at = datetime.now(UTC).isoformat()
     out.parent.mkdir(parents=True, exist_ok=True)
     for i, (model, probe) in enumerate(jobs, start=1):
         print(f"[{i}/{total}] {model} {probe.id}", file=sys.stderr)
         records.append(run_case(probe, model, rubric))
-        out.write_text(json.dumps(
-            {"ran_at": datetime.now(UTC).isoformat(), "judge": JUDGE_MODEL, "models": list(models),
-             "records": records}, indent=None, ensure_ascii=False))
+        _write_atomically(out, json.dumps(
+            {"ran_at": ran_at, "judge": JUDGE_MODEL, "models": list(models), "records": records},
+            indent=None, ensure_ascii=False))
     return summary_table(records)
