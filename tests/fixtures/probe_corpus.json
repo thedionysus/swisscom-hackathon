@@ -1,0 +1,340 @@
+{
+  "documents": [
+    {
+      "source_id": "fedlex",
+      "url": "https://www.fedlex.admin.ch/eli/cc/2008/414/de",
+      "identifier": "SR 455 Art. 6",
+      "title_original": "Tierschutzgesetz",
+      "title_en": "Animal Welfare Act",
+      "language": "de",
+      "extent_id": "CH",
+      "authority": "federal_law",
+      "categories": [
+        "dogs"
+      ],
+      "valid_from": "2008-09-01",
+      "chunks": [
+        {
+          "heading_path": "Art. 6",
+          "anchor": "art_6",
+          "text_original": "Wer ein Tier hält, muss es angemessen nähren und pflegen.",
+          "text_en": "Anyone who keeps an animal must feed and care for it appropriately. Dog owners must ensure the dog does not endanger people or other animals."
+        }
+      ]
+    },
+    {
+      "source_id": "fedlex",
+      "url": "https://www.fedlex.admin.ch/eli/cc/1991/1052_1052_1052/de",
+      "identifier": "SR 704 Art. 1",
+      "title_original": "Bundesgesetz über Fuss- und Wanderwege",
+      "title_en": "Federal Act on Footpaths and Hiking Trails",
+      "language": "de",
+      "extent_id": "CH",
+      "authority": "federal_law",
+      "categories": [
+        "hiking"
+      ],
+      "valid_from": "1987-01-01",
+      "chunks": [
+        {
+          "heading_path": "Art. 1",
+          "anchor": "art_1",
+          "text_original": "Dieses Gesetz regelt die Planung von Fuss- und Wanderwegnetzen.",
+          "text_en": "This Act governs the planning, construction and maintenance of hiking trail networks. Cantons are responsible for hiking trails and their signposting."
+        }
+      ]
+    },
+    {
+      "source_id": "fedlex",
+      "url": "https://www.fedlex.admin.ch/eli/cc/1983/1205_1205_1205/de",
+      "identifier": "SR 814.01 Art. 30",
+      "title_original": "Umweltschutzgesetz",
+      "title_en": "Environmental Protection Act",
+      "language": "de",
+      "extent_id": "CH",
+      "authority": "federal_law",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": "1985-01-01",
+      "chunks": [
+        {
+          "heading_path": "Art. 30",
+          "anchor": "art_30",
+          "text_original": "Abfälle sind soweit möglich zu vermeiden und zu verwerten.",
+          "text_en": "Waste must be avoided where possible and recycled. Cantons and communes organise the collection of household waste, paper and cardboard."
+        }
+      ]
+    },
+    {
+      "source_id": "ch_ch",
+      "url": "https://www.ch.ch/en/animals/dogs/",
+      "identifier": null,
+      "title_original": "Dogs",
+      "title_en": "Dogs",
+      "language": "en",
+      "extent_id": "CH",
+      "authority": "official_info",
+      "categories": [
+        "dogs"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Dog tax",
+          "anchor": "tax",
+          "text_original": "Every dog must be registered with the commune. Communes levy a dog tax.",
+          "text_en": "Every dog must be registered with the commune. Communes levy a dog tax; the amount is set by each canton or commune."
+        }
+      ]
+    },
+    {
+      "source_id": "schweizer_wanderwege",
+      "url": "https://www.schweizer-wanderwege.ch/de/wissen/sicherheit",
+      "identifier": null,
+      "title_original": "Sicher unterwegs",
+      "title_en": "Safe on the trail",
+      "language": "de",
+      "extent_id": "CH",
+      "authority": "institutional",
+      "categories": [
+        "hiking",
+        "safety"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Hunde",
+          "anchor": "hunde",
+          "text_original": "Wir empfehlen, Hunde auf Wanderwegen an der Leine zu führen.",
+          "text_en": "We recommend keeping dogs on a leash on hiking trails, especially near grazing cattle."
+        }
+      ]
+    },
+    {
+      "source_id": "zh_ch",
+      "url": "https://www.zh.ch/de/umwelt-tiere/tiere/hunde.html",
+      "identifier": null,
+      "title_original": "Hunde im Kanton Zürich",
+      "title_en": "Dogs in the Canton of Zurich",
+      "language": "de",
+      "extent_id": "CH-ZH",
+      "authority": "official_info",
+      "categories": [
+        "dogs",
+        "hiking"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Leinenpflicht",
+          "anchor": "leinenpflicht",
+          "text_original": "Im Kanton Zürich gilt vom 1. April bis 31. Juli im Wald Leinenpflicht.",
+          "text_en": "In the Canton of Zurich, dogs must be kept on a leash in forests and at forest edges from 1 April to 31 July. This applies on hiking trails through forest."
+        }
+      ]
+    },
+    {
+      "source_id": "zh_ch",
+      "url": "https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html",
+      "identifier": null,
+      "title_original": "Abfall und Rohstoffe",
+      "title_en": "Waste and raw materials",
+      "language": "de",
+      "extent_id": "CH-ZH",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Sammlung",
+          "anchor": "sammlung",
+          "text_original": "Die Gemeinden organisieren die Sammlung von Papier und Karton.",
+          "text_en": "Communes in the Canton of Zurich organise the collection of paper and cardboard. Check your commune's calendar."
+        }
+      ]
+    },
+    {
+      "source_id": "stadt_zuerich",
+      "url": "https://www.stadt-zuerich.ch/de/stadtleben/parks/hunde.html",
+      "identifier": null,
+      "title_original": "Hunde in städtischen Parks",
+      "title_en": "Dogs in city parks",
+      "language": "de",
+      "extent_id": "CH-ZH-261",
+      "authority": "official_info",
+      "categories": [
+        "dogs"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Leinenpflicht",
+          "anchor": "leinenpflicht",
+          "text_original": "In städtischen Parks gilt Leinenpflicht für Hunde.",
+          "text_en": "Dogs must be kept on a leash in city parks of Zurich. Off-leash areas are marked."
+        }
+      ]
+    },
+    {
+      "source_id": "stadt_zuerich",
+      "url": "https://www.stadt-zuerich.ch/de/umwelt-und-energie/abfall/karton.html",
+      "identifier": null,
+      "title_original": "Karton",
+      "title_en": "Cardboard",
+      "language": "de",
+      "extent_id": "CH-ZH-261",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Karton bereitstellen",
+          "anchor": "bereitstellen",
+          "text_original": "Karton gebündelt bis 7 Uhr am Sammeltag bereitstellen.",
+          "text_en": "Bundle cardboard and put it out by 7:00 on collection day. Collection days depend on your district; see the collection calendar."
+        }
+      ]
+    },
+    {
+      "source_id": "stadt_zuerich",
+      "url": "https://www.stadt-zuerich.ch/de/stadtleben/hundezone-wiedikon.html",
+      "identifier": null,
+      "title_original": "Hundezone Wiedikon",
+      "title_en": "Dog zone Wiedikon",
+      "language": "de",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "dogs"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Freilauf",
+          "anchor": "freilauf",
+          "text_original": "In der Hundezone Wiedikon dürfen Hunde frei laufen.",
+          "text_en": "In the Wiedikon dog zone in District 3, dogs may run off leash."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
+      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-10",
+      "identifier": "cardboard-2026-09-10",
+      "title_original": "Waste collection cardboard in 8003 on 2026-09-10",
+      "title_en": "Waste collection cardboard in 8003 on 2026-09-10",
+      "language": "en",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "event_date": "2026-09-10",
+      "chunks": [
+        {
+          "heading_path": "Waste collection cardboard in 8003",
+          "anchor": null,
+          "text_original": "Collection of cardboard in Zurich postal code 8003 on 2026-09-10.",
+          "text_en": "Collection of cardboard in Zurich postal code 8003 on 2026-09-10. Put it out before 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
+      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-17",
+      "identifier": "cardboard-2026-09-17",
+      "title_original": "Waste collection cardboard in 8003 on 2026-09-17",
+      "title_en": "Waste collection cardboard in 8003 on 2026-09-17",
+      "language": "en",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "event_date": "2026-09-17",
+      "chunks": [
+        {
+          "heading_path": "Waste collection cardboard in 8003",
+          "anchor": null,
+          "text_original": "Collection of cardboard in Zurich postal code 8003 on 2026-09-17.",
+          "text_en": "Collection of cardboard in Zurich postal code 8003 on 2026-09-17. Put it out before 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
+      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-31",
+      "identifier": "cardboard-2026-12-31",
+      "title_original": "Waste collection cardboard in 8003 on 2026-12-31",
+      "title_en": "Waste collection cardboard in 8003 on 2026-12-31",
+      "language": "en",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "event_date": "2026-12-31",
+      "chunks": [
+        {
+          "heading_path": "Waste collection cardboard in 8003",
+          "anchor": null,
+          "text_original": "Collection of cardboard in Zurich postal code 8003 on 2026-12-31.",
+          "text_en": "Collection of cardboard in Zurich postal code 8003 on 2026-12-31. Put it out before 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
+      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-09-29",
+      "identifier": "paper-2026-09-29",
+      "title_original": "Waste collection paper in 8003 on 2026-09-29",
+      "title_en": "Waste collection paper in 8003 on 2026-09-29",
+      "language": "en",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "event_date": "2026-09-29",
+      "chunks": [
+        {
+          "heading_path": "Waste collection paper in 8003",
+          "anchor": null,
+          "text_original": "Collection of paper in Zurich postal code 8003 on 2026-09-29.",
+          "text_en": "Collection of paper in Zurich postal code 8003 on 2026-09-29. Put it out before 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "ch_ch",
+      "url": "https://www.bs.ch/hunde",
+      "identifier": null,
+      "title_original": "Hunde in Basel-Stadt",
+      "title_en": "Dogs in Basel-Stadt",
+      "language": "de",
+      "extent_id": "CH-BS",
+      "authority": "official_info",
+      "categories": [
+        "dogs"
+      ],
+      "valid_from": null,
+      "chunks": [
+        {
+          "heading_path": "Leinenpflicht",
+          "anchor": null,
+          "text_original": "In Basel-Stadt gilt ganzjährig Leinenpflicht im Wald.",
+          "text_en": "In Basel-Stadt, dogs must be leashed in forests all year round."
+        }
+      ]
+    }
+  ]
+}
