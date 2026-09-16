@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass, replace
+from datetime import date
 
 from swiss_grounding.db.connection import connect
 from swiss_grounding.locations.models import ResolvedLocation
@@ -45,6 +47,7 @@ class QueryCore:
     resolver: LocationResolver
     embedder: Embedder
     weights: RerankWeights
+    today: Callable[[], date] = date.today
 
     def query(self, request: QueryRequest) -> QueryResponse:
         invalid = _validate(request)
@@ -74,7 +77,8 @@ class QueryCore:
         if not hits:
             label = resolved.location.label("en")
             return replace(base, message=f"No indexed evidence for {label} or its parent jurisdictions.")
-        ranked = rerank(hits, self.tree, resolved.location.id, request.categories, self.weights)
+        ranked = rerank(hits, self.tree, resolved.location.id, request.categories, self.weights,
+                        today=self.today)
         chosen = diversify(ranked, limit=limit, per_document_cap=PER_DOCUMENT_CAP)
         citations = tuple(build_citation(s, self.tree) for s in chosen)
         return replace(base, status="results", citations=citations)
