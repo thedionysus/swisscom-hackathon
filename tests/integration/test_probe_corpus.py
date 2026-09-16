@@ -1,3 +1,12 @@
+"""Loads the structural probe corpus.
+
+The corpus deliberately mirrors two live defects so probe statuses agree between fixtures and the
+live database. Revert both when the fix pass lands the matching change:
+- the two zh_ch documents are filed at CH-ZH-261 instead of CH-ZH (narrowing, ADR 0002): move
+  them back to CH-ZH once re-narrowing runs;
+- there is no past-dated calendar event, because live ingestion fetches from today onward: add
+  one (and restore city-003 to green) once the calendar fetch keeps a trailing window.
+"""
 import os
 from pathlib import Path
 

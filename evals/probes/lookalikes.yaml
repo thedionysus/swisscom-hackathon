@@ -9,9 +9,9 @@ probes:
     failure_class: jurisdiction_confusion
     status: red
     judge: true
-    note: Today resolves to the canton via geoadmin_approximate because GeoAdmin fuzzy-matches the first word. Expected is
-      the canton by design, but as an explicit approximate resolution that the coverage signal explains; the region itself
-      is not a jurisdiction. Red until the acceptance rule requires every input token to be covered.
+    note: Today GeoAdmin fuzzy-matches the first word and returns the city of Zurich, which the resolver accepts as an exact
+      match because one token overlaps. The region is not a jurisdiction; expected is the canton by explicit approximate resolution
+      that the coverage signal explains. Red until the acceptance rule requires every input token to be covered.
     expect:
       status: results
       resolved:
@@ -21,8 +21,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:01:47.710135Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.661447Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: geoadmin
@@ -92,8 +92,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:01:47.765554Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.761244Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZG
       method: alias
@@ -156,8 +156,8 @@ probes:
         id: CH-ZH
       method: alias
     observed:
-      recorded_at: '2026-09-16T16:01:47.827683Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.869772Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -221,8 +221,8 @@ probes:
       alternatives_include:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:01:47.892761Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.943546Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -291,8 +291,8 @@ probes:
       must_exclude:
         - extent: CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:01:47.977299Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.129517Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: geoadmin
@@ -355,8 +355,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-16T16:01:48.062080Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.270375Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -425,8 +425,8 @@ probes:
         - extent: CH-ZH
         - extent: CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:01:48.191992Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.388018Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-AG
       method: geoadmin_approximate
@@ -493,8 +493,8 @@ probes:
         - extent: CH-ZH
         - extent: CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:01:48.264658Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.446382Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-BS
       method: alias
@@ -556,8 +556,8 @@ probes:
       resolved:
         id: CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:01:48.352570Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.538438Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -623,8 +623,8 @@ probes:
       alternatives_include:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:01:48.414862Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.622964Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH
       method: alias_scan
@@ -687,8 +687,8 @@ probes:
       status: needs_location
       message_contains: Nowhere
     observed:
-      recorded_at: '2026-09-16T16:01:48.444578Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.655945Z'
+      git_commit: 2fff5b7
       status: needs_location
       resolved_id: null
       method: null
@@ -715,8 +715,8 @@ probes:
         - source: open_erz
       first_url_contains: stadt-zuerich.ch
     observed:
-      recorded_at: '2026-09-16T16:01:48.534882Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:15.773044Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261
       method: alias

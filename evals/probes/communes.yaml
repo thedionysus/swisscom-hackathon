@@ -25,12 +25,12 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
       coverage_empty:
-        - Winterthur
+        - resolved
       coverage_present:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:01:46.162386Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.520618Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -105,10 +105,10 @@ probes:
         - source: zh_ch
           url_contains: abfall
       coverage_empty:
-        - Uster
+        - resolved
     observed:
-      recorded_at: '2026-09-16T16:01:46.302007Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.673651Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -177,10 +177,10 @@ probes:
       must_exclude:
         - source: open_erz
       coverage_empty:
-        - Dübendorf
+        - resolved
     observed:
-      recorded_at: '2026-09-16T16:01:46.302122Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.673772Z'
+      git_commit: 2fff5b7
       status: needs_location
       resolved_id: null
       method: null
@@ -211,8 +211,8 @@ probes:
         - extent: CH-ZH-261
         - extent: CH-ZH-261-K3
     observed:
-      recorded_at: '2026-09-16T16:01:46.429232Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:12.795423Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -281,10 +281,10 @@ probes:
         - source: zh_ch
           extent: CH-ZH
       coverage_empty:
-        - Wetzikon
+        - resolved
     observed:
-      recorded_at: '2026-09-16T16:01:46.559965Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.053448Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -355,8 +355,8 @@ probes:
         - source: zh_ch
           extent: CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:01:46.684826Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.159835Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -421,8 +421,8 @@ probes:
       status: needs_location
       message_contains: Wil
     observed:
-      recorded_at: '2026-09-16T16:01:46.812227Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.280691Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -494,8 +494,8 @@ probes:
         - extent: CH-ZH-261-K11
         - extent: CH-BE
     observed:
-      recorded_at: '2026-09-16T16:01:46.993414Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.564972Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-BE
       method: geoadmin
@@ -557,8 +557,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-16T16:01:47.059334Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.675450Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH-261-K11-AFFOLTERN
       method: alias
@@ -625,8 +625,8 @@ probes:
         parent: CH-ZH
       method: alias
     observed:
-      recorded_at: '2026-09-16T16:01:47.170099Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.859898Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -693,10 +693,10 @@ probes:
         level: municipality
         parent: CH-ZH
       coverage_empty:
-        - Winterthur
+        - resolved
     observed:
-      recorded_at: '2026-09-16T16:01:47.198862Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.894774Z'
+      git_commit: 2fff5b7
       status: needs_location
       resolved_id: null
       method: null
@@ -724,8 +724,8 @@ probes:
         level: municipality
         parent: CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:01:47.251202Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:13.990381Z'
+      git_commit: 2fff5b7
       status: needs_location
       resolved_id: null
       method: null
@@ -751,12 +751,12 @@ probes:
         level: municipality
         parent: CH-ZH
       coverage_empty:
-        - Bülach
+        - resolved
       coverage_present:
         - CH
     observed:
-      recorded_at: '2026-09-16T16:01:47.462997Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.197943Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -827,8 +827,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:01:47.536293Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.273003Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -897,8 +897,8 @@ probes:
       first_extent: CH-ZH
       first_authority: official_info
     observed:
-      recorded_at: '2026-09-16T16:01:47.618546Z'
-      git_commit: 0c88e11
+      recorded_at: '2026-09-16T16:47:14.435486Z'
+      git_commit: 2fff5b7
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
