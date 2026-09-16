@@ -13,9 +13,11 @@ from swiss_grounding.db.migrate import apply_schema
 from swiss_grounding.evals.probe_loader import PROBE_DIR, load_all_probes
 from swiss_grounding.evals.runner import run_probe
 from swiss_grounding.ingest.fixture_loader import load_fixture
+from swiss_grounding.locations.geoadmin import GeoAdminHit
 from swiss_grounding.locations.repository import load_tree, upsert_locations
 from swiss_grounding.locations.resolver import LocationResolver
 from swiss_grounding.locations.seed import seed_locations
+from swiss_grounding.locations.tree import normalize
 from swiss_grounding.registry.loader import load_seed_sources
 from swiss_grounding.registry.repository import upsert_sources
 from swiss_grounding.retrieval.embedder import FakeEmbedder
@@ -27,12 +29,32 @@ CORPUS = Path(__file__).parent.parent / "fixtures" / "probe_corpus.json"
 FROZEN_TODAY = date(2026, 9, 16)
 EMBEDDING_DIM = 8
 
+# What the live GeoAdmin SearchServer answers for the probe inputs, captured on 2026-09-16.
+# Communes are real BFS numbers; labels with a canton suffix drive the resolver's approximate fallback.
+CANNED_GEOADMIN: dict[str, tuple[GeoAdminHit, ...]] = {
+    "winterthur": (GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),),
+    "gemeinde winterthur": (GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),),
+    "uster": (GeoAdminHit(bfs_id=198, label="Uster (ZH)"),),
+    "kloten": (GeoAdminHit(bfs_id=62, label="Kloten (ZH)"),),
+    "wetzikon": (GeoAdminHit(bfs_id=121, label="Wetzikon (ZH)"),),
+    "bulach": (GeoAdminHit(bfs_id=53, label="Bülach (ZH)"),),
+    "dietikon": (GeoAdminHit(bfs_id=243, label="Dietikon (ZH)"),),
+    "wil": (GeoAdminHit(bfs_id=27, label="Wil (ZH)"),),
+    "wil zh": (GeoAdminHit(bfs_id=27, label="Wil (ZH)"),),
+    "affoltern am albis": (GeoAdminHit(bfs_id=951, label="Affoltern im Emmental (BE)"),),
+    "zurich oberland": (GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),),
+    "zurichsee": (GeoAdminHit(bfs_id=0, label="Zürichsee (ZH)"),),
+    "zurich airport": (GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),),
+    "zurzach": (GeoAdminHit(bfs_id=4324, label="Zurzach (AG)"),),
+    "nowhere": (GeoAdminHit(bfs_id=1502, label="Nidwalden (NW)"),),
+}
 
-class NoGeo:
-    """Structural probes never call GeoAdmin; anything not in the tree must be unresolvable."""
 
-    def search_communes(self, text):
-        return ()
+class CannedGeo:
+    """Replays live GeoAdmin answers so resolver acceptance rules are exercised on fixtures."""
+
+    def search_communes(self, text: str) -> tuple[GeoAdminHit, ...]:
+        return CANNED_GEOADMIN.get(normalize(text), ())
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +68,7 @@ def core():
         load_fixture(conn, CORPUS, FakeEmbedder(dim=EMBEDDING_DIM))
         tree = load_tree(conn)
     return QueryCore(
-        database_url=url, tree=tree, resolver=LocationResolver(tree, NoGeo()),
+        database_url=url, tree=tree, resolver=LocationResolver(tree, CannedGeo()),
         embedder=FakeEmbedder(dim=EMBEDDING_DIM), weights=RerankWeights(),
         today=lambda: FROZEN_TODAY,
     )

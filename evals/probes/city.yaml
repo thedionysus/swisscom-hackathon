@@ -40,10 +40,11 @@ probes:
     question: Did I miss last week's cardboard collection?
     location: "8003"
     categories: [waste]
+    limit: 25
     kind: structural
     failure_class: temporal_misapplication
     status: green
-    note: Past events must stay reachable, just not first.
+    note: Past events must stay reachable, just not first. They sink to the bottom, so the probe asks for the maximum page.
     expect:
       status: results
       resolved: {id: CH-ZH-261-K3}
@@ -254,18 +255,18 @@ probes:
         - {extent: off_path}
 
   - id: city-018
-    question: When is cardboard collected?
+    question: What was the next cardboard collection as of 8 September?
     location: "8003"
     categories: [waste]
-    as_of: "2026-09-12"
+    as_of: "2026-09-08"
     kind: structural
     failure_class: temporal_misapplication
     status: red
-    note: With as_of 2026-09-12, the nearest event at or after that date is 2026-09-17, so it must be first. The runner evaluates nearest_future against as_of when a probe sets one. Today as_of only filters law validity and does not order calendar evidence.
+    note: With as_of 2026-09-08 the next collection is 2026-09-10, so it must rank first. Today the reranker penalises 2026-09-10 as past because it uses the real clock rather than as_of, and as_of only filters law validity.
     expect:
       status: results
       resolved: {id: CH-ZH-261-K3}
-      first_url_contains: "#cardboard-2026-09-17"
+      first_url_contains: "#cardboard-2026-09-10"
       first_event: nearest_future
 
   - id: city-019
