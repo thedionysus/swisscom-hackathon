@@ -135,3 +135,19 @@ create table if not exists ingest_run (
     primary key (run_id, source_id)
 );
 create index if not exists ingest_run_source_idx on ingest_run(source_id, finished_at desc);
+
+-- One row per probe per eval run. observed is the probe's Observed block as JSON.
+create table if not exists eval_run (
+    id             bigserial primary key,
+    run_id         text not null,
+    ran_at         timestamptz not null default now(),
+    git_commit     text,
+    tier           text not null,
+    probe_id       text not null,
+    kind           text not null,
+    failure_class  text not null,
+    passed         boolean not null,
+    failures       jsonb not null default '[]',
+    observed       jsonb not null default '{}'
+);
+create index if not exists eval_run_run_idx on eval_run(run_id, tier, probe_id);
