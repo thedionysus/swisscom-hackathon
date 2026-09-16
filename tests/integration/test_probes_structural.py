@@ -29,8 +29,10 @@ CORPUS = Path(__file__).parent.parent / "fixtures" / "probe_corpus.json"
 FROZEN_TODAY = date(2026, 9, 16)
 EMBEDDING_DIM = 8
 
-# What the live GeoAdmin SearchServer answers for the probe inputs, captured on 2026-09-16.
-# Communes are real BFS numbers; labels with a canton suffix drive the resolver's approximate fallback.
+# What the live GeoAdmin SearchServer answered for each probe input on 2026-09-16.
+# Two entries are constructed rather than captured: zurichsee uses bfs_id 0 as a
+# no-commune sentinel so the resolver falls back to the (ZH) label, and nowhere
+# pairs a canton label with a commune-range id to exercise the overlap rejection.
 CANNED_GEOADMIN: dict[str, tuple[GeoAdminHit, ...]] = {
     "winterthur": (GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),),
     "gemeinde winterthur": (GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),),
@@ -47,14 +49,24 @@ CANNED_GEOADMIN: dict[str, tuple[GeoAdminHit, ...]] = {
     "zurich airport": (GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),),
     "zurzach": (GeoAdminHit(bfs_id=4324, label="Zurzach (AG)"),),
     "nowhere": (GeoAdminHit(bfs_id=1502, label="Nidwalden (NW)"),),
+    "8400": (),
+    "winterthurr": (),
+    "quartier hard": (),
 }
 
 
 class CannedGeo:
-    """Replays live GeoAdmin answers so resolver acceptance rules are exercised on fixtures."""
+    """Replays what the live GeoAdmin SearchServer answered for each probe input on 2026-09-16.
+    Two entries are constructed rather than captured: zurichsee uses bfs_id 0 as a no-commune
+    sentinel so the resolver falls back to the (ZH) label, and nowhere pairs a canton label
+    with a commune-range id to exercise the overlap rejection. Unlisted inputs raise so gaps
+    are loud."""
 
     def search_communes(self, text: str) -> tuple[GeoAdminHit, ...]:
-        return CANNED_GEOADMIN.get(normalize(text), ())
+        key = normalize(text)
+        if key not in CANNED_GEOADMIN:
+            raise KeyError(f"no canned GeoAdmin answer for {text!r}; capture it from the live service and add it")
+        return CANNED_GEOADMIN[key]
 
 
 @pytest.fixture(scope="module")
@@ -79,7 +91,10 @@ def _params():
         if probe.kind != "structural":
             continue
         marks = (
-            [pytest.mark.xfail(strict=True, reason=f"red: {probe.failure_class}")]
+            [pytest.mark.xfail(
+                strict=True,
+                reason=f"red: {probe.failure_class if probe.failure_class != 'none' else probe.id}",
+            )]
             if probe.status == "red" else []
         )
         yield pytest.param(probe, id=f"{tier}/{probe.id}", marks=marks)
