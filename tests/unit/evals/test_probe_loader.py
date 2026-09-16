@@ -59,3 +59,22 @@ def test_default_probe_dir_is_repo_evals_probes():
     assert PROBE_DIR.name == "probes"
     assert PROBE_DIR.parent.name == "evals"
     assert (PROBE_DIR.parent.parent / "pyproject.toml").exists()
+
+
+def test_load_probe_file_names_the_file_on_bad_yaml(tmp_path: Path):
+    path = tmp_path / "broken.yaml"
+    path.write_text("probes: [unclosed\n")
+    with pytest.raises(ValueError, match="broken.yaml"):
+        load_probe_file(path)
+
+
+def test_load_probe_file_names_the_file_on_validation_failure(tmp_path: Path):
+    path = tmp_path / "invalid.yaml"
+    path.write_text("tier: city\nprobes: []\n")
+    with pytest.raises(ValueError, match="invalid.yaml"):
+        load_probe_file(path)
+
+
+def test_load_all_probes_rejects_empty_directory(tmp_path: Path):
+    with pytest.raises(ValueError, match="no probe files"):
+        load_all_probes(tmp_path)
