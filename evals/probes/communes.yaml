@@ -172,11 +172,10 @@ probes:
     kind: structural
     failure_class: none
     status: red
-    note: One-character typo. Accepted under the per-token edit-distance rule, resolved to Winterthur via GeoAdmin. Today the response is needs_location.
+    note: One-character typo. GeoAdmin returns nothing for it, so the resolver must tolerate a single edit against the commune register and resolve to Winterthur itself. Today the response is needs_location.
     expect:
       status: results
       resolved: {label: Winterthur, level: municipality, parent: CH-ZH}
-      method: geoadmin
 
   - id: com-013
     question: Do I need to leash my dog in the forest?
