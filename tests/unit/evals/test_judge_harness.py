@@ -214,3 +214,27 @@ def test_run_judge_suite_writes_file_and_reports_unscored(monkeypatch, tmp_path)
     assert written["models"] == ["claude-sonnet-5"]
     assert len(written["records"]) == 2
     assert "unscored: 1 of 2" in table
+
+
+def test_extract_tool_results_tolerates_string_message_content():
+    lines = [
+        json.dumps({"type": "assistant", "message": {"content": "just text"}}),
+        json.dumps({"type": "system", "message": "not even a mapping"}),
+        json.dumps({"type": "result", "result": "done"}),
+    ]
+    assert extract_tool_results("\n".join(lines)) == ([], "done")
+
+
+def test_run_case_records_any_exception(monkeypatch):
+    from swiss_grounding.evals import judge_harness
+    from swiss_grounding.evals.probe_models import Expectation, Probe
+
+    def boom(*args, **kwargs):
+        raise AttributeError("'str' object has no attribute 'get'")
+
+    monkeypatch.setattr(judge_harness, "_claude", boom)
+    probe = Probe(id="p", question="q", kind="structural", failure_class="none", status="green",
+                  expect=Expectation(status="results"))
+    record = judge_harness.run_case(probe, "m", "rubric")
+    assert "no attribute" in record["error"]
+    assert record["verdict_parsed"] is False

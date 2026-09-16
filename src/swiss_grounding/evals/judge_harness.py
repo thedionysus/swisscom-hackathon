@@ -68,7 +68,11 @@ def extract_tool_results(stream: str) -> tuple[list[str], str]:
         if event.get("type") == "result":
             final = event.get("result", "")
             continue
-        for block in event.get("message", {}).get("content", []):
+        message = event.get("message")
+        content = message.get("content") if isinstance(message, Mapping) else None
+        if not isinstance(content, list):
+            continue  # a bare string message carries no tool results
+        for block in content:
             if isinstance(block, Mapping) and block.get("type") == "tool_result":
                 results.extend(_texts(block.get("content", [])))
     return results, final
@@ -131,7 +135,7 @@ def run_case(probe: Probe, model: str, rubric: str) -> dict:
         verdict, parsed = parse_verdict(verdict_text)
         return {"probe_id": probe.id, "model": model, "answer": answer, "evidence": evidence,
                 "verdict": verdict, "verdict_parsed": parsed, "error": None}
-    except RuntimeError as exc:
+    except Exception as exc:  # noqa: BLE001 - one bad case must not end a paid run
         return {"probe_id": probe.id, "model": model, "answer": "", "evidence": [],
                 "verdict": dict.fromkeys(VERDICT_KEYS, False), "verdict_parsed": False,
                 "error": str(exc)}
