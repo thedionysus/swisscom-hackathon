@@ -165,13 +165,31 @@ def _write_atomically(path: Path, text: str) -> None:
     os.replace(tmp, path)
 
 
-def run_judge_suite(cases: Sequence[Probe], models: Sequence[str], out: Path) -> str:
+def load_clean_records(out: Path) -> list[dict]:
+    """Records from a previous run at out that scored without error; empty when there is none."""
+    if not out.exists():
+        return []
+    try:
+        previous = json.loads(out.read_text()).get("records", [])
+    except (json.JSONDecodeError, AttributeError):
+        return []
+    return [r for r in previous if isinstance(r, Mapping) and not r.get("error") and r.get("verdict_parsed")]
+
+
+def run_judge_suite(cases: Sequence[Probe], models: Sequence[str], out: Path,
+                    resume: bool = False) -> str:
+    """Run every (model, case) pair; with resume, keep clean records already in out and only
+    run the pairs that are missing or errored."""
     rubric = RUBRIC.read_text()
-    jobs = [(m, p) for m in models for p in cases]
+    kept = load_clean_records(out) if resume else []
+    done = {(r["model"], r["probe_id"]) for r in kept}
+    jobs = [(m, p) for m in models for p in cases if (m, p.id) not in done]
     total = len(jobs)
-    records: list[dict] = []
+    records: list[dict] = list(kept)
     ran_at = datetime.now(UTC).isoformat()
     out.parent.mkdir(parents=True, exist_ok=True)
+    if resume:
+        print(f"resuming: {len(kept)} clean records kept, {total} to run", file=sys.stderr)
     for i, (model, probe) in enumerate(jobs, start=1):
         print(f"[{i}/{total}] {model} {probe.id}", file=sys.stderr)
         records.append(run_case(probe, model, rubric))

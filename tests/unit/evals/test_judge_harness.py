@@ -238,3 +238,33 @@ def test_run_case_records_any_exception(monkeypatch):
     record = judge_harness.run_case(probe, "m", "rubric")
     assert "no attribute" in record["error"]
     assert record["verdict_parsed"] is False
+
+
+def test_run_judge_suite_resume_keeps_clean_records_and_reruns_errors(monkeypatch, tmp_path):
+    from swiss_grounding.evals.probe_models import Expectation, Probe
+
+    all_true = dict.fromkeys(VERDICT_KEYS, True)
+    out = tmp_path / "results.json"
+    previous = {"records": [
+        {"probe_id": "a", "model": "m", "answer": "ok", "evidence": [], "verdict": all_true,
+         "verdict_parsed": True, "error": None},
+        {"probe_id": "b", "model": "m", "answer": "", "evidence": [],
+         "verdict": dict.fromkeys(VERDICT_KEYS, False), "verdict_parsed": False, "error": "boom"},
+    ]}
+    out.write_text(json.dumps(previous))
+    ran: list[str] = []
+
+    def fake_run_case(probe, model, rubric):
+        ran.append(probe.id)
+        return {"probe_id": probe.id, "model": model, "answer": "ok", "evidence": [],
+                "verdict": all_true, "verdict_parsed": True, "error": None}
+
+    monkeypatch.setattr(judge_harness, "run_case", fake_run_case)
+    monkeypatch.setattr(judge_harness, "RUBRIC", tmp_path / "rubric.md")
+    (tmp_path / "rubric.md").write_text("r")
+    cases = [Probe(id=i, question="q", kind="structural", failure_class="none", status="green",
+                   expect=Expectation(status="results")) for i in ("a", "b")]
+    table = judge_harness.run_judge_suite(cases, ("m",), out, resume=True)
+    assert ran == ["b"]
+    assert "unscored: 0 of 2" in table
+    assert len(json.loads(out.read_text())["records"]) == 2
