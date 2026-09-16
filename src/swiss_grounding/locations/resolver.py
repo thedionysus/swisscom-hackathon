@@ -1,10 +1,13 @@
 import re
+from dataclasses import replace
 from typing import Protocol
 
 from swiss_grounding.locations.geoadmin import GeoAdminHit
 from swiss_grounding.locations.models import ResolvedLocation
+from swiss_grounding.locations.question_scan import resolve_from_question
 from swiss_grounding.locations.tree import LocationTree, normalize
 
+SCAN_METHOD = "alias_scan"
 CANTON_IN_LABEL = re.compile(r"\(([A-Z]{2})\)\s*$")
 LABEL_PUNCTUATION = "()[],.-"
 MIN_OVERLAP_TOKEN_LENGTH = 3
@@ -34,7 +37,8 @@ class CommuneSearch(Protocol):
 
 
 class LocationResolver:
-    """Alias match against the tree first; GeoAdmin as fallback. Never guesses."""
+    """Exact alias, then aliases found inside the text (e.g. a postal code next to a city
+    name), then GeoAdmin. Never guesses."""
 
     def __init__(self, tree: LocationTree, geo: CommuneSearch):
         self._tree = tree
@@ -51,6 +55,9 @@ class LocationResolver:
                 location=best, path=self._tree.path(best.id), method="alias",
                 input_text=cleaned, alternatives=tuple(matches[1:]),
             )
+        scanned = resolve_from_question(self._tree, cleaned)
+        if scanned is not None:
+            return replace(scanned, method=SCAN_METHOD, input_text=cleaned)
         return self._resolve_via_geoadmin(cleaned)
 
     def _resolve_via_geoadmin(self, text: str) -> ResolvedLocation | None:

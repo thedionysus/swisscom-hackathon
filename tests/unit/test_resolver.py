@@ -78,3 +78,23 @@ def test_geoadmin_failure_returns_none():
 
 def test_empty_input_returns_none():
     assert LocationResolver(tree(), FakeGeo(())).resolve("   ") is None
+
+
+def test_postal_code_inside_text_wins_over_city_name():
+    geo = FakeGeo(())
+    r = LocationResolver(tree(), geo).resolve("Zurich 8003")
+    assert r.location.id == "CH-ZH-261-K3"
+    assert r.method == "alias_scan"
+    assert geo.calls == []
+
+
+def test_postal_code_with_filler_words_resolves():
+    r = LocationResolver(tree(), FakeGeo(())).resolve("Zurich postal code 8003")
+    assert r.location.id == "CH-ZH-261-K3"
+
+
+def test_scan_with_conflicting_places_falls_through_to_geoadmin():
+    geo = FakeGeo(())
+    r = LocationResolver(tree(), geo).resolve("Kreis 3 or Kreis 4")
+    assert r is None
+    assert geo.calls == ["Kreis 3 or Kreis 4"]

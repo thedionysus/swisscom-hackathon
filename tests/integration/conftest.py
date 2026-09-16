@@ -3,7 +3,8 @@
 The suite provisions its own throwaway database on the server named by DATABASE_URL
 and points DATABASE_URL at it for the whole session. This keeps the 8-dimension test
 schema from colliding with a quick-start database created by `db init` (vector(1024)),
-and leaves the developer's demo data untouched.
+and leaves the developer's demo data untouched. It also forces the fake LLM and
+embedding backends so a developer's .env with real API keys never leaks into tests.
 """
 
 import os
@@ -14,6 +15,8 @@ import psycopg
 import pytest
 
 TEST_DB_PREFIX = "swiss_grounding_test_"
+# Environment variables override .env, so the suite never uses a developer's real backends.
+FAKE_BACKENDS = {"LLM_BACKEND": "fake", "EMBEDDING_BACKEND": "fake", "EMBEDDING_DIM": "8"}
 
 
 def pytest_collection_modifyitems(config, items):
@@ -45,6 +48,8 @@ def isolated_database_url() -> Iterator[str | None]:
     test_url = _test_database_url(base_url, name)
     with pytest.MonkeyPatch.context() as patch:
         patch.setenv("DATABASE_URL", test_url)
+        for key, value in FAKE_BACKENDS.items():
+            patch.setenv(key, value)
         try:
             yield test_url
         finally:
