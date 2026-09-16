@@ -85,6 +85,21 @@ def test_record_observed_leaves_file_untouched_when_result_would_be_invalid(tmp_
     path.write_text(SRC)
     before = path.read_text()
     bad = _observed().model_copy(update={"status": 12345})
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning), pytest.raises(ValueError):
         record_observed(path, {"city-001": bad})
     assert path.read_text() == before
+
+
+def test_record_observed_indents_list_items(tmp_path: Path):
+    path = tmp_path / "city.yaml"
+    path.write_text(SRC)
+    record_observed(path, {"city-001": _observed()})
+    assert "\n  - id: city-001" in path.read_text()
+
+
+def test_record_observed_empty_mapping_leaves_file_untouched(tmp_path: Path):
+    path = tmp_path / "city.yaml"
+    path.write_text(SRC)
+    before = path.read_bytes()
+    record_observed(path, {})
+    assert path.read_bytes() == before
