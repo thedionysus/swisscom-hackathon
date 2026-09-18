@@ -1,0 +1,11 @@
+HistoricalCode,BfsCode,ValidFrom,ValidTo,Level,Parent,Name,ShortName,Inscription,Radiation,Rec_Type_fr,Rec_Type_de
+1,1,12.09.1848,,1,,Zürich,ZH,,,,
+17,17,12.09.1848,,1,,St. Gallen,SG,,,,
+10053,101,12.09.1848,,2,1,Bezirk Affoltern,Affoltern,100,,,
+10054,102,12.09.1848,,2,1,Bezirk Winterthur,Winterthur,100,,,
+10080,1721,12.09.1848,,2,17,Wahlkreis Wil,Wil,100,,,
+11001,230,12.09.1848,,3,10054,Winterthur,Winterthur,1000,,,
+11002,2,12.09.1848,,3,10053,Affoltern am Albis,Affoltern am Albis,1000,,,
+11003,3427,12.09.1848,,3,10080,Wil (SG),Wil (SG),1000,,,
+11004,71,12.09.1848,,3,10054,Wil (ZH),Wil (ZH),1000,,,
+11005,261,12.09.1848,,3,10054,Zürich,Zürich,1000,,,
