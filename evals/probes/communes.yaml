@@ -413,10 +413,10 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     judge: true
-    note: Bare "Wil" is ambiguous between cantons and must be asked back, not guessed. Today GeoAdmin picks one and the resolver
-      settles on canton Zurich.
+    note: Bare "Wil" matches communes in both ZH and SG, which are not on a single path, so the resolver returns them as
+      ambiguous candidates and needs_location instead of guessing one.
     expect:
       status: needs_location
       message_contains: Wil
@@ -551,9 +551,10 @@ probes:
       - dogs
     kind: structural
     failure_class: entity_substitution
-    status: red
-    note: Bare "Affoltern" matches a Quartier of the city and a commune of the canton. It must be asked back. Today it resolves
-      straight to the Quartier.
+    status: green
+    note: Bare "Affoltern" matches only the Zurich Quartier by exact alias, but it is a common word that also names the
+      nearby commune Affoltern am Albis, so the resolver treats it as ambiguous and needs_location rather than guessing
+      the Quartier.
     expect:
       status: needs_location
     observed:
