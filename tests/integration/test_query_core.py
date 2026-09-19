@@ -64,6 +64,13 @@ def test_unresolvable_location_returns_needs_location_with_reason(core):
     assert "Atlantis" in resp.message
 
 
+def test_ambiguous_location_message_names_the_cantons(core):
+    resp = core.query(QueryRequest(question="dog rules", location="Wil"))
+    assert resp.status == "needs_location"
+    assert "Zurich" in resp.message
+    assert "St. Gallen" in resp.message
+
+
 def test_country_question_returns_only_country_scoped(core):
     resp = core.query(QueryRequest(question="Who is responsible for hiking trails?", location="Switzerland"))
     assert resp.status == "results"

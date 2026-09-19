@@ -15,8 +15,17 @@ FUZZY_METHOD = "alias_fuzzy"
 CANTON_IN_LABEL = re.compile(r"\(([A-Z]{2})\)\s*$")
 LABEL_PUNCTUATION = "()[],.-"
 MIN_OVERLAP_TOKEN_LENGTH = 3
-COMMON_WORD_NEIGHBORHOODS = frozenset({"city", "hard", "werd", "enge", "affoltern"})
+COMMON_WORD_NEIGHBORHOODS = frozenset({"city", "hard", "werd", "enge"})
 Resolution = ResolvedLocation | AmbiguousLocation | None
+
+
+def canton_label(tree: LocationTree, location: Location) -> str:
+    """The English label of the canton on ``location``'s path, or its own id when there is none."""
+    for node_id in tree.path(location.id):
+        node = tree.get(node_id)
+        if node.level is Level.CANTON:
+            return node.label("en")
+    return location.id
 
 
 def _on_one_path(tree: LocationTree, nodes: Sequence[Location]) -> bool:
@@ -63,6 +72,10 @@ class LocationResolver:
         matches = self._tree.find(name)
         if level is not None:
             matches = tuple(m for m in matches if m.level is level)
+            if not matches:
+                # A marker names an explicit level ("Kanton Wil"); when nothing at that
+                # level matches, that's a dead end, not licence to guess at another level.
+                return None
         if matches:
             return self._from_alias_matches(cleaned, name, level, matches)
         scanned = resolve_from_question(self._tree, cleaned, prose=False)
@@ -73,12 +86,14 @@ class LocationResolver:
     def _from_alias_matches(
         self, cleaned: str, name: str, level: Level | None, matches: tuple[Location, ...],
     ) -> Resolution:
-        if (
-            level is None
-            and normalize(name) in COMMON_WORD_NEIGHBORHOODS
-            and all(m.level is Level.NEIGHBORHOOD for m in matches)
-        ):
-            return AmbiguousLocation(cleaned, matches, "a common word; say Quartier <name> to mean the district")
+        if level is None and all(m.level is Level.NEIGHBORHOOD for m in matches):
+            communes = self._communes_starting_with(name)
+            if communes:
+                return AmbiguousLocation(cleaned, matches + communes, "also the start of a commune name")
+            if normalize(name) in COMMON_WORD_NEIGHBORHOODS:
+                return AmbiguousLocation(
+                    cleaned, matches, f"a common word; say Quartier {name} to mean the district",
+                )
         if len(matches) > 1 and not _on_one_path(self._tree, matches):
             return AmbiguousLocation(cleaned, matches, "several places share this name")
         best = matches[0]
@@ -86,6 +101,20 @@ class LocationResolver:
             location=best, path=self._tree.path(best.id), method="alias",
             input_text=cleaned, alternatives=tuple(matches[1:]),
         )
+
+    def _communes_starting_with(self, name: str) -> tuple[Location, ...]:
+        """Municipalities whose normalised name starts with ``name + " "`` (e.g. "affoltern"
+        matching "Affoltern am Albis"), so a neighbourhood-only match doesn't hide a commune
+        it collides with the start of."""
+        prefix = normalize(name) + " "
+        node_ids = {
+            node_id
+            for alias, ids in self._tree.alias_index.items()
+            if alias.startswith(prefix)
+            for node_id in ids
+        }
+        nodes = (self._tree.get(node_id) for node_id in node_ids)
+        return tuple(n for n in nodes if n.level is Level.MUNICIPALITY)
 
     def _resolve_via_geoadmin(self, text: str) -> Resolution:
         try:

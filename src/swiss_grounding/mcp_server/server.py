@@ -13,6 +13,7 @@ from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.ingest.run_log import SourceHealth, load_source_health
 from swiss_grounding.locations.models import AmbiguousLocation
+from swiss_grounding.locations.resolver import canton_label
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.registry.suggestions import list_suggestions, submit_suggestion
 from swiss_grounding.retrieval.models import NOTICE, QueryRequest, QueryResponse
@@ -84,7 +85,7 @@ def build_server(settings: Settings) -> FastMCP:
                 "found": False, "ambiguous": True, "query": query,
                 "candidates": [
                     {"location_id": c.id, "label": c.label("en"), "level": c.level.value,
-                     "path": list(core.tree.path(c.id))}
+                     "canton": canton_label(core.tree, c), "path": list(core.tree.path(c.id))}
                     for c in resolved.candidates
                 ],
                 "message": f"{resolved.input_text!r} is ambiguous ({resolved.reason}). Ask the user which one they mean.",
