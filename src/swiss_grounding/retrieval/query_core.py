@@ -80,7 +80,7 @@ class QueryCore:
             )
             rows = coverage_rows(conn, self.tree, resolved.path)
         note = resolution_note(
-            rows, resolved.method, [f"{a.label('en')} ({a.level.value})" for a in resolved.alternatives],
+            rows, self.tree, resolved.input_text, resolved.location, resolved.method, resolved.alternatives,
         )
         base = QueryResponse(
             status="no_evidence", resolved_location_id=resolved.location.id,

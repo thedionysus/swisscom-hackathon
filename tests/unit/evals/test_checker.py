@@ -144,8 +144,8 @@ def test_first_event_with_only_past_events():
 
 
 def test_coverage_signal_missing_is_a_failure():
-    probe = _probe(status="results", coverage_empty=("CH-ZH-261-K4",), coverage_present=("CH",))
-    resp = _resp(coverage=None)
+    probe = _probe(status="needs_location", coverage_empty=("CH-ZH-261-K4",), coverage_present=("CH",))
+    resp = QueryResponse(status="needs_location", message="needs location")
     assert check(probe, resp, _tree(), TODAY) == ("coverage: response carries no coverage signal",)
 
 

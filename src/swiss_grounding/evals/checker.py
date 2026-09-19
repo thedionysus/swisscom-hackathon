@@ -111,7 +111,7 @@ def _check_coverage(exp: Expectation, resp: QueryResponse) -> Iterable[str]:
     if not (exp.coverage_empty or exp.coverage_present):
         return
     signal = getattr(resp, "coverage", None)
-    if signal is None:
+    if signal is None or (not signal and resp.resolved_location_id is None):
         yield "coverage: response carries no coverage signal"
         return
     counts = _coverage_counts(signal)
