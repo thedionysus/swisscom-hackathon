@@ -138,14 +138,10 @@ class LocationResolver:
         canton_match = CANTON_IN_LABEL.search(hit.label)
         if canton_match and _shares_a_token(text, hit.label):
             bare_label = hit.label[:canton_match.start()].strip()
-            if (
-                exact is None
-                and not hit.bfs_id
-                and normalize(text) == normalize(bare_label)
-            ):
-                # bfs 0 is GeoAdmin's sentinel for a non-commune feature (a lake, say);
-                # when the input names exactly that feature, don't paper over it with a
-                # canton guess, unlike a genuinely unlisted commune (nonzero bfs).
+            if exact is None and normalize(text) == normalize(bare_label):
+                # The hit's bfs isn't a commune in our tree at all (a lake, a region, an
+                # airport...) and the input names exactly that feature (not, say, a real but
+                # unlisted commune plus a qualifier); don't paper over it with a canton guess.
                 return None
             canton = self._tree.find(canton_match.group(1))
             if canton:
