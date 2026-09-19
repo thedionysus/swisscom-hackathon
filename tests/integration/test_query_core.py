@@ -83,7 +83,7 @@ def test_no_evidence_when_nothing_indexed_for_path(core):
     resp = core.query(QueryRequest(question="dog leash", location="Genève"))
     assert resp.status == "no_evidence"
     assert resp.resolved_location_id == "CH-GE-6621"  # city of Geneva; the canton is the alternative reading
-    assert "Geneva" in resp.message
+    assert "Genève" in resp.message  # the register carries the German-language label
 
 
 def test_location_in_question_is_detected(core):
