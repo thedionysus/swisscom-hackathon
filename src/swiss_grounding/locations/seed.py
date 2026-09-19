@@ -1,4 +1,5 @@
 from swiss_grounding.locations.models import Level, Location
+from swiss_grounding.locations.register import commune_locations, load_register
 
 # (bfs_id, abbreviation, de, fr, it, en, extra aliases)
 CANTONS: tuple[tuple[int, str, str, str, str, str, tuple[str, ...]], ...] = (
@@ -103,4 +104,5 @@ def seed_locations() -> tuple[Location, ...]:
                 names={"de": name},
                 aliases=QUARTIER_ALIASES.get(name, ()),
             ))
-    return (country,) + cantons + (city,) + tuple(kreise) + tuple(quartiere)
+    communes = commune_locations(load_register(), skip_bfs_ids={city.bfs_id})
+    return (country,) + cantons + (city,) + tuple(kreise) + tuple(quartiere) + communes

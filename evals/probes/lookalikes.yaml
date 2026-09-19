@@ -412,9 +412,9 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
-    note: Canton Aargau commune whose name starts like Zurich. Expected is a municipality under CH-AG once the register exists.
-      Today it resolves approximately to canton Aargau, which is at least the right canton.
+    status: green
+    note: Canton Aargau commune whose name starts like Zurich. Resolves to its own municipality node under CH-AG now that the
+      commune register is seeded, instead of falling back approximately to the canton.
     expect:
       status: results
       resolved:
