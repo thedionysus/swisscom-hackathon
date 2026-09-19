@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from swiss_grounding.locations.models import Level
 from swiss_grounding.locations.register import (
     Commune,
@@ -69,3 +71,25 @@ def test_shared_postal_codes_are_not_aliases():
     nodes = {n.id: n for n in commune_locations(communes, skip_bfs_ids=set())}
     assert "8000" not in nodes["CH-ZH-1"].aliases and "8000" not in nodes["CH-ZH-2"].aliases
     assert "8001" in nodes["CH-ZH-2"].aliases
+
+
+def test_parse_agvch_reports_missing_parent():
+    text = (
+        "HistoricalCode,BfsCode,ValidFrom,ValidTo,Level,Parent,Name,ShortName,"
+        "Inscription,Radiation,Rec_Type_fr,Rec_Type_de\n"
+        "11099,999,12.09.1848,,3,99999,Ghost Town,Ghost Town,1000,,,\n"
+    )
+    with pytest.raises(ValueError, match="999.*Ghost Town.*99999"):
+        parse_agvch(text)
+
+
+def test_parse_register_csv_tolerates_short_rows():
+    text = "bfs_id,name,canton,district,postal_codes\n230,Winterthur,ZH,Bezirk Winterthur\n"
+    communes = parse_register_csv(text)
+    assert communes[0].postal_codes == ()
+
+
+def test_parse_lindas_plz_skips_empty_codes():
+    text = "id,postalCode\n230,8400\n230,\n"
+    plz = parse_lindas_plz(text)
+    assert plz[230] == ("8400",)
