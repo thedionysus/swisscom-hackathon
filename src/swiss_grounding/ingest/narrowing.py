@@ -44,23 +44,34 @@ KREIS = re.compile(r"\b(Kreis|District)\s+(\d{1,2})\b", re.IGNORECASE)
 MAX_NGRAM = 3
 
 
-def _names(tree: LocationTree) -> dict[str, str]:
-    """normalized name -> location id; deeper nodes win duplicate names (city over canton)."""
+def _build_indexes(tree: LocationTree) -> tuple[dict[str, str], dict[Level, dict[str, tuple[str, ...]]]]:
+    """One pass over the tree building both name indexes:
+
+    - a global normalized-name -> id map where deeper nodes win duplicate names (city over canton),
+      used for bare mentions;
+    - a per-level normalized-name -> ids map (a name may be shared by several nodes at the same
+      level, e.g. several communes called "Wald"), used for markers, which are disambiguated
+      against the default extent's path.
+    """
     names: dict[str, str] = {}
+    by_level: dict[Level, dict[str, list[str]]] = {}
     for loc in sorted(tree.all(), key=lambda l: LEVEL_DEPTH[l.level]):
         for name in loc.all_names():
-            names[normalize(name)] = loc.id
-    return names
+            key = normalize(name)
+            names[key] = loc.id
+            ids = by_level.setdefault(loc.level, {}).setdefault(key, [])
+            if loc.id not in ids:
+                ids.append(loc.id)
+    by_level_tuples = {level: {k: tuple(v) for k, v in level_names.items()} for level, level_names in by_level.items()}
+    return names, by_level_tuples
 
 
-def _names_by_level(tree: LocationTree) -> dict[Level, dict[str, str]]:
-    """normalized name -> location id, indexed per level, so a marker only resolves within its own level."""
-    by_level: dict[Level, dict[str, str]] = {}
-    for loc in tree.all():
-        level_names = by_level.setdefault(loc.level, {})
-        for name in loc.all_names():
-            level_names[normalize(name)] = loc.id
-    return by_level
+def _resolve_within(tree: LocationTree, default_extent_id: str, candidates: tuple[str, ...] | None) -> str | None:
+    """Keep only candidates on the default extent's path; use one when exactly one remains."""
+    if not candidates:
+        return None
+    matching = tuple(c for c in candidates if default_extent_id in tree.path(c))
+    return matching[0] if len(matching) == 1 else None
 
 
 def _ngrams(text: str) -> list[str]:
@@ -81,22 +92,27 @@ def _marker_spans(text: str) -> list[tuple[int, int]]:
     return [m.span() for m in MARKED.finditer(text)] + [m.span() for m in KREIS.finditer(text)]
 
 
-def _overlaps(start: int, end: int, spans: list[tuple[int, int]]) -> bool:
+def _overlaps(start: int, end: int, spans: Sequence[tuple[int, int]]) -> bool:
     return any(start < s_end and s_start < end for s_start, s_end in spans)
 
 
-def _marker_mentions(names_by_level: dict[Level, dict[str, str]], text: str) -> list[tuple[str, str]]:
+def _marker_mentions(tree: LocationTree, names_by_level: dict[Level, dict[str, tuple[str, ...]]], text: str,
+                     default_extent_id: str) -> list[tuple[str, str]]:
     found: list[tuple[str, str]] = []
     for m in MARKED.finditer(text):
         level = MARKER_WORDS[m.group(1).lower()]
         level_names = names_by_level.get(level, {})
         for gram in _ngrams(m.group(2)):
-            node_id = level_names.get(normalize(gram))
+            candidates = level_names.get(normalize(gram))
+            if not candidates:
+                continue
+            node_id = _resolve_within(tree, default_extent_id, candidates)
             if node_id:
                 found.append((node_id, f"marker:{m.group(1)} {gram}"))
-                break
+            break
     for m in KREIS.finditer(text):
-        node_id = names_by_level.get(Level.NEIGHBORHOOD, {}).get(normalize(f"Kreis {m.group(2)}"))
+        candidates = names_by_level.get(Level.NEIGHBORHOOD, {}).get(normalize(f"Kreis {m.group(2)}"))
+        node_id = _resolve_within(tree, default_extent_id, candidates)
         if node_id:
             found.append((node_id, f"marker:{m.group(1)} {m.group(2)}"))
     return found
@@ -108,7 +124,7 @@ def _plz_context_mentions(names: dict[str, str], text: str) -> list[tuple[str, s
     for m in PLZ_CONTEXT.finditer(text):
         node_id = names.get(m.group(1))
         if node_id:
-            found.append((node_id, f"marker:plz:{m.group(1)}"))
+            found.append((node_id, f"plz:{m.group(1)}"))
     return found
 
 
@@ -123,10 +139,11 @@ def _plz_bare_mentions(names: dict[str, str], text: str, where: str) -> list[tup
 
 
 def _bare_mentions(tree: LocationTree, names: dict[str, str], text: str, where: str,
-                    ancestors: set[str], exclude_spans: list[tuple[int, int]] = ()) -> list[tuple[str, str]]:
+                    ancestors: set[str], exclude_spans: Sequence[tuple[int, int]] = ()) -> list[tuple[str, str]]:
     found: list[tuple[str, str]] = []
+    accepted_spans: list[tuple[int, int]] = []
     for gram, start, end in _ngram_spans(text):
-        if _overlaps(start, end, exclude_spans):
+        if _overlaps(start, end, exclude_spans) or _overlaps(start, end, accepted_spans):
             continue
         key = normalize(gram)
         node_id = names.get(key)
@@ -140,6 +157,7 @@ def _bare_mentions(tree: LocationTree, names: dict[str, str], text: str, where: 
         if any(normalize(n) == key for a in ancestors for n in tree.get(a).all_names()):
             continue
         found.append((node_id, f"{where}:{gram}"))
+        accepted_spans.append((start, end))
     return found
 
 
@@ -154,19 +172,18 @@ def _deepest_common_ancestor(tree: LocationTree, ids: tuple[str, ...]) -> str:
 def narrow_extent(tree: LocationTree, default_extent_id: str, title: str, headings: Sequence[str],
                   text: str) -> tuple[str, str]:
     """Narrow to a descendant of the default extent; never widen, never move sideways."""
-    names = _names(tree)
-    names_by_level = _names_by_level(tree)
+    names, names_by_level = _build_indexes(tree)
     ancestors = set(tree.path(default_extent_id))
 
     mentions: list[tuple[str, str]] = []
-    mentions += _marker_mentions(names_by_level, title)
+    mentions += _marker_mentions(tree, names_by_level, title, default_extent_id)
     mentions += _bare_mentions(tree, names, title, "title", ancestors, _marker_spans(title))
     mentions += _plz_bare_mentions(names, title, "title")
     for h in headings:
-        mentions += _marker_mentions(names_by_level, h)
+        mentions += _marker_mentions(tree, names_by_level, h, default_extent_id)
         mentions += _bare_mentions(tree, names, h, "heading", ancestors, _marker_spans(h))
         mentions += _plz_bare_mentions(names, h, "heading")
-    mentions += _marker_mentions(names_by_level, text)
+    mentions += _marker_mentions(tree, names_by_level, text, default_extent_id)
     mentions += _plz_context_mentions(names, text)
     below = [(n, why) for n, why in mentions if default_extent_id in tree.path(n) and n != default_extent_id]
     if not below:

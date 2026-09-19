@@ -28,6 +28,7 @@ def tree():
         _loc("CH-ZH-241", "CH-ZH", Level.MUNICIPALITY, "Affoltern am Albis"),
         _loc("CH-ZH-261-K11", "CH-ZH-261", Level.NEIGHBORHOOD, "Kreis 11"),
         _loc("CH-ZH-261-K11-AFFOLTERN", "CH-ZH-261-K11", Level.NEIGHBORHOOD, "Affoltern"),
+        _loc("CH-BE-940", "CH-BE", Level.MUNICIPALITY, "Wald"),
     ]
     return LocationTree.from_locations(locations)
 
@@ -97,6 +98,21 @@ def test_three_word_marker_name_beats_one_word_quartier(tree):
     extent, reason = narrow_extent(tree, "CH-ZH", title="Gemeinde Affoltern am Albis", headings=(), text="")
     assert extent == "CH-ZH-241"
     assert "marker:Gemeinde Affoltern am Albis" in reason
+
+
+def test_duplicate_commune_name_resolves_within_default_extent(tree):
+    extent, reason = narrow_extent(tree, "CH-ZH", title="Gemeinde Wald", headings=(), text="")
+    assert extent == "CH-ZH-295"
+    assert "marker:Gemeinde Wald" in reason
+
+    extent2, reason2 = narrow_extent(tree, "CH", title="Gemeinde Wald", headings=(), text="")
+    assert extent2 == "CH" and reason2 == "source_default"
+
+
+def test_bare_multiword_name_suppresses_nested_gram(tree):
+    extent, reason = narrow_extent(tree, "CH-ZH", title="Affoltern am Albis Hundezone", headings=(), text="")
+    assert extent == "CH-ZH-241"
+    assert reason == "narrowed:title:Affoltern am Albis"
 
 
 def test_two_mentions_narrow_to_common_ancestor(tree):
