@@ -1,4 +1,5 @@
 """Compare a QueryResponse against a probe's expectation. Pure; returns failure strings."""
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from datetime import date
 
@@ -7,6 +8,7 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.retrieval.models import Citation, QueryResponse
 
 OFF_PATH = "off_path"
+EVENT_DATE_SUFFIX = re.compile(r"-\d{4}-\d{2}-\d{2}$")
 RESOLVED = "resolved"
 
 
@@ -71,10 +73,21 @@ def _check_first(exp: Expectation, citations: Sequence[Citation], today: date) -
         yield from _check_nearest_future(first, citations, today)
 
 
+def _series(c: Citation) -> str | None:
+    """Calendar records carry identifiers like `cardboard-2026-09-24`; the series is the part
+    before the date, so paper and cardboard collections are compared only with their own kind."""
+    if not c.identifier:
+        return None
+    return EVENT_DATE_SUFFIX.sub("", c.identifier)
+
+
 def _check_nearest_future(first: Citation, citations: Sequence[Citation], today: date) -> Iterable[str]:
-    """Ordering among the citations that were returned. It cannot see an event the search never
-    retrieved, so probes pair it with an absolute must_include or first_url_contains."""
-    future = sorted(c.event_date for c in citations if c.event_date and c.event_date >= today)
+    """Ordering among the citations that were returned, within the first citation's calendar
+    series. It cannot see an event the search never retrieved, so probes pair it with an
+    absolute must_include or first_url_contains."""
+    series = _series(first)
+    same_series = [c for c in citations if series is None or _series(c) == series]
+    future = sorted(c.event_date for c in same_series if c.event_date and c.event_date >= today)
     if first.event_date is None:
         yield "first_event: first citation carries no event_date"
     elif not future:
