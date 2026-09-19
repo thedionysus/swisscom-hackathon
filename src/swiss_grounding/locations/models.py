@@ -42,3 +42,11 @@ class ResolvedLocation:
     method: str            # "alias" | "geoadmin" | "geoadmin_approximate"
     input_text: str
     alternatives: tuple[Location, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AmbiguousLocation:
+    """The input names more than one place that is not on a single path; ask, do not guess."""
+    input_text: str
+    candidates: tuple[Location, ...]
+    reason: str

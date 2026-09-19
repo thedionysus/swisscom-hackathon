@@ -867,9 +867,9 @@ probes:
       - dogs
     kind: structural
     failure_class: entity_substitution
-    status: red
-    note: '"City" is a Quartier name in Kreis 1. A bare "City" as a location must not resolve to that Quartier; it is ambiguous
-      and should need a location. Today it resolves to CH-ZH-261-K1-CITY.'
+    status: green
+    note: '"City" is a Quartier name in Kreis 1. A bare "City" as a location does not resolve to that Quartier; it is a
+      common word, so the resolver returns it as ambiguous and needs_location. Say "Quartier City" to mean the district.'
     expect:
       status: needs_location
     observed:
@@ -1016,9 +1016,9 @@ probes:
       - dogs
     kind: structural
     failure_class: none
-    status: red
-    note: Marked Quartier input. The alias index has "Hard" but not "Quartier Hard", so the exact lookup fails and the scanner
-      or GeoAdmin decides. Expected is the Quartier node.
+    status: green
+    note: Marked Quartier input. The resolver strips the "Quartier" marker, restricts the alias lookup to neighborhood-level
+      matches, and resolves directly to the Quartier node.
     expect:
       status: results
       resolved:

@@ -1,9 +1,11 @@
 import re
+from collections.abc import Sequence
 from dataclasses import replace
 from typing import Protocol
 
 from swiss_grounding.locations.geoadmin import GeoAdminHit
-from swiss_grounding.locations.models import ResolvedLocation
+from swiss_grounding.locations.markers import strip_marker
+from swiss_grounding.locations.models import AmbiguousLocation, Level, Location, ResolvedLocation
 from swiss_grounding.locations.question_scan import resolve_from_question
 from swiss_grounding.locations.tree import LocationTree, normalize
 
@@ -11,6 +13,14 @@ SCAN_METHOD = "alias_scan"
 CANTON_IN_LABEL = re.compile(r"\(([A-Z]{2})\)\s*$")
 LABEL_PUNCTUATION = "()[],.-"
 MIN_OVERLAP_TOKEN_LENGTH = 3
+COMMON_WORD_NEIGHBORHOODS = frozenset({"city", "hard", "werd", "enge", "affoltern"})
+Resolution = ResolvedLocation | AmbiguousLocation | None
+
+
+def _on_one_path(tree: LocationTree, nodes: Sequence[Location]) -> bool:
+    deepest = max(nodes, key=lambda n: len(tree.path(n.id)))
+    path = tree.path(deepest.id)
+    return all(n.id in path for n in nodes)
 
 
 def _tokens(text: str) -> tuple[str, ...]:
@@ -44,21 +54,37 @@ class LocationResolver:
         self._tree = tree
         self._geo = geo
 
-    def resolve(self, text: str) -> ResolvedLocation | None:
+    def resolve(self, text: str) -> Resolution:
         cleaned = text.strip()
         if not cleaned:
             return None
-        matches = self._tree.find(cleaned)
+        level, name = strip_marker(cleaned)
+        matches = self._tree.find(name)
+        if level is not None:
+            matches = tuple(m for m in matches if m.level is level)
         if matches:
-            best = matches[0]
-            return ResolvedLocation(
-                location=best, path=self._tree.path(best.id), method="alias",
-                input_text=cleaned, alternatives=tuple(matches[1:]),
-            )
+            return self._from_alias_matches(cleaned, name, level, matches)
         scanned = resolve_from_question(self._tree, cleaned)
         if scanned is not None:
             return replace(scanned, method=SCAN_METHOD, input_text=cleaned)
         return self._resolve_via_geoadmin(cleaned)
+
+    def _from_alias_matches(
+        self, cleaned: str, name: str, level: Level | None, matches: tuple[Location, ...],
+    ) -> Resolution:
+        if (
+            level is None
+            and normalize(name) in COMMON_WORD_NEIGHBORHOODS
+            and all(m.level is Level.NEIGHBORHOOD for m in matches)
+        ):
+            return AmbiguousLocation(cleaned, matches, "a common word; say Quartier <name> to mean the district")
+        if len(matches) > 1 and not _on_one_path(self._tree, matches):
+            return AmbiguousLocation(cleaned, matches, "several places share this name")
+        best = matches[0]
+        return ResolvedLocation(
+            location=best, path=self._tree.path(best.id), method="alias",
+            input_text=cleaned, alternatives=tuple(matches[1:]),
+        )
 
     def _resolve_via_geoadmin(self, text: str) -> ResolvedLocation | None:
         try:

@@ -3,9 +3,9 @@ from dataclasses import dataclass, replace
 from datetime import date
 
 from swiss_grounding.db.connection import connect
-from swiss_grounding.locations.models import ResolvedLocation
+from swiss_grounding.locations.models import AmbiguousLocation, ResolvedLocation
 from swiss_grounding.locations.question_scan import resolve_from_question
-from swiss_grounding.locations.resolver import LocationResolver
+from swiss_grounding.locations.resolver import LocationResolver, Resolution
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORY_IDS
 from swiss_grounding.retrieval.cite import build_citation
@@ -54,6 +54,13 @@ class QueryCore:
         if invalid is not None:
             return invalid
         resolved = self._resolve(request)
+        if isinstance(resolved, AmbiguousLocation):
+            labels = ", ".join(f"{c.label('en')} ({c.id})" for c in resolved.candidates)
+            return QueryResponse(
+                status="needs_location",
+                message=f"{resolved.input_text!r} is ambiguous ({resolved.reason}): {labels}. "
+                        "Ask the user which one they mean, then search again.",
+            )
         if resolved is None:
             text = request.location or ""
             message = (
@@ -83,7 +90,7 @@ class QueryCore:
         citations = tuple(build_citation(s, self.tree) for s in chosen)
         return replace(base, status="results", citations=citations)
 
-    def _resolve(self, request: QueryRequest) -> ResolvedLocation | None:
+    def _resolve(self, request: QueryRequest) -> Resolution:
         if request.location and request.location.strip():
             return self.resolver.resolve(request.location)
         return self._resolve_from_question(request.question)

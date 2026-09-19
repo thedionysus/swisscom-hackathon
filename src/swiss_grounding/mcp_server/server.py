@@ -12,6 +12,7 @@ from swiss_grounding.app import build_query_core
 from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.ingest.run_log import SourceHealth, load_source_health
+from swiss_grounding.locations.models import AmbiguousLocation
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.registry.suggestions import list_suggestions, submit_suggestion
 from swiss_grounding.retrieval.models import NOTICE, QueryRequest, QueryResponse
@@ -78,6 +79,16 @@ def build_server(settings: Settings) -> FastMCP:
         Use this to confirm the location with the user before calling swiss_search when the
         user's wording is ambiguous."""
         resolved = core.resolver.resolve(query)
+        if isinstance(resolved, AmbiguousLocation):
+            return _json({
+                "found": False, "ambiguous": True, "query": query,
+                "candidates": [
+                    {"location_id": c.id, "label": c.label("en"), "level": c.level.value,
+                     "path": list(core.tree.path(c.id))}
+                    for c in resolved.candidates
+                ],
+                "message": f"{resolved.input_text!r} is ambiguous ({resolved.reason}). Ask the user which one they mean.",
+            })
         if resolved is None:
             return _json({"found": False, "query": query,
                           "message": "No Swiss location matched. Ask for a city, canton, or postal code."})
@@ -170,7 +181,7 @@ def build_server(settings: Settings) -> FastMCP:
         resolved_id = None
         if location:
             resolved = core.resolver.resolve(location)
-            if resolved is None:
+            if resolved is None or isinstance(resolved, AmbiguousLocation):
                 return _json({"coverage": [], "message": f"Could not resolve {location!r}"})
             path = list(resolved.path)
             resolved_id = resolved.location.id
