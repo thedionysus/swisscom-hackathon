@@ -16,6 +16,7 @@ from swiss_grounding.ingest.fetchers import build_fetcher
 from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import build_llm
 from swiss_grounding.ingest.pipeline import run_ingest
+from swiss_grounding.ingest.renarrow import renarrow_all
 from swiss_grounding.ingest.run_log import record_run
 from swiss_grounding.locations.repository import load_tree, upsert_locations
 from swiss_grounding.locations.seed import seed_locations
@@ -159,6 +160,16 @@ def ingest_cmd(
             )
             for error in report.errors:
                 typer.echo(f"  ! {error.url}: {error.reason}", err=True)
+
+
+@app.command("renarrow")
+def renarrow_cmd() -> None:
+    """Re-run extent narrowing over every stored document using its stored English text."""
+    settings = load_settings()
+    with connect(settings.database_url) as conn:
+        tree = load_tree(conn)
+        report = renarrow_all(conn, tree)
+    typer.echo(f"examined {report.examined}, moved {report.moved}")
 
 
 @sources_app.command("list")

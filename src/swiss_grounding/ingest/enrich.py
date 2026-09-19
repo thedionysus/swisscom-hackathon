@@ -37,7 +37,8 @@ def enrich(
     text_en = SECTION_SEPARATOR.join(s.text for s in sections_en)
     tags = _merge_tags(source.categories, llm.classify(title_en, text_en, categories))
     if source.allow_narrowing:
-        extent_id, reason = narrow_extent(tree, source.default_extent_id, text_en)
+        headings = tuple(s.heading_path for s in sections_en)
+        extent_id, reason = narrow_extent(tree, source.default_extent_id, title_en, headings, text_en)
     else:
         extent_id, reason = source.default_extent_id, SOURCE_DEFAULT
     return EnrichedDocument(fetched=doc, title_en=title_en, sections_en=sections_en,
