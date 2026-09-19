@@ -22,15 +22,22 @@ UPDATE_CHUNKS = "update chunk set extent_id = %s where document_id = %s"
 class RenarrowReport:
     examined: int
     moved: int
+    skipped: int = 0
 
 
 def renarrow_all(conn: psycopg.Connection, tree: LocationTree) -> RenarrowReport:
-    """Re-narrow every current document from its stored title, headings, and English text."""
+    """Re-narrow every current document from its stored title, headings, and English text.
+
+    A document whose source has since been removed from the registry is skipped, not fatal.
+    """
     sources = {s.id: s for s in load_sources(conn)}
-    examined = moved = 0
+    examined = moved = skipped = 0
     for row in conn.execute(SELECT).fetchall():
         examined += 1
-        source = sources[row["source_id"]]
+        source = sources.get(row["source_id"])
+        if source is None:
+            skipped += 1
+            continue
         if not source.allow_narrowing:
             target, reason = source.default_extent_id, SOURCE_DEFAULT
         else:
@@ -41,4 +48,4 @@ def renarrow_all(conn: psycopg.Connection, tree: LocationTree) -> RenarrowReport
             conn.execute(UPDATE_DOC, (target, reason, row["id"]))
             conn.execute(UPDATE_CHUNKS, (target, row["id"]))
             moved += 1
-    return RenarrowReport(examined=examined, moved=moved)
+    return RenarrowReport(examined=examined, moved=moved, skipped=skipped)
