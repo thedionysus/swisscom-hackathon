@@ -9,9 +9,10 @@ probes:
     failure_class: jurisdiction_confusion
     status: green
     judge: true
-    note: Today GeoAdmin fuzzy-matches the first word and returns the city of Zurich, which the resolver accepts as an exact
-      match because one token overlaps. The region is not a jurisdiction; expected is the canton by explicit approximate resolution
-      that the coverage signal explains. Red until the acceptance rule requires every input token to be covered.
+    note: Today GeoAdmin fuzzy-matches the first word and returns the city of Zurich, which the resolver accepted as an exact
+      match because one token overlapped. "Oberland" is a region, not a commune, so it can never be covered by GeoAdmin's
+      city label; the resolver now requires every input token to be covered before accepting an exact hit, falls short of
+      that here, and reports the canton via geoadmin_approximate instead.
     expect:
       status: results
       resolved:
@@ -353,7 +354,9 @@ probes:
     kind: structural
     failure_class: jurisdiction_confusion
     status: green
-    note: A lake, not a jurisdiction. Must not resolve. Today it resolves approximately to the canton.
+    note: A lake, not a jurisdiction. Today it resolved approximately to the canton. GeoAdmin answers with bfs 0, its sentinel
+      for a non-commune feature, and the whole input names exactly that feature; the resolver now recognises the sentinel
+      and returns needs_location instead of guessing a canton for it.
     expect:
       status: needs_location
     observed:
@@ -618,8 +621,9 @@ probes:
     failure_class: jurisdiction_confusion
     status: green
     note: Trailing country name. Today the exact alias lookup fails on the whole string, the scanner finds both names and
-      settles on Switzerland, so the question is answered at country level. Expected is the city with the canton alternative,
-      as for bare Zürich.
+      settled on Switzerland, so the question was answered at country level. The scan now skips the sentence-initial guard
+      for a bare location string, matches both "Zürich" and "Switzerland", and keeps the most specific, so it resolves to
+      the city with the canton as alternative, as for bare Zürich.
     expect:
       status: results
       resolved:
