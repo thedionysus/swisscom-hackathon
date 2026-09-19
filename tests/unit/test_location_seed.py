@@ -32,5 +32,23 @@ def test_seed_aliases_resolve():
     assert tree.find("Wiedikon")[0].id == "CH-ZH-261-K3-ALT-WIEDIKON"
     assert tree.find("Kreis 3")[0].id == "CH-ZH-261-K3"
     assert tree.find("8003")[0].id == "CH-ZH-261-K3"
-    assert tree.find("Genève")[0].id == "CH-GE"
-    assert tree.find("Basel")[0].id == "CH-BS"
+    assert tree.find("Genève")[0].id == "CH-GE-6621"
+    assert tree.find("Kanton Genf")[0].id == "CH-GE"
+    assert tree.find("Basel")[0].id == "CH-BS-2701"
+    assert tree.find("Kanton Basel-Stadt")[0].id == "CH-BS"
+
+
+def test_seed_includes_every_commune_under_its_canton():
+    from swiss_grounding.locations.register import load_register
+    from swiss_grounding.locations.seed import seed_locations
+    locs = {l.id: l for l in seed_locations()}
+    register = load_register()
+    assert len(register) > 2000
+    for c in register:
+        if c.bfs_id == 261:
+            assert locs["CH-ZH-261"].level.value == "municipality"
+            continue
+        node = locs[f"CH-{c.canton}-{c.bfs_id}"]
+        assert node.parent_id == f"CH-{c.canton}"
+    assert locs["CH-ZH-230"].names["de"] == "Winterthur"
+    assert "8400" in locs["CH-ZH-230"].aliases

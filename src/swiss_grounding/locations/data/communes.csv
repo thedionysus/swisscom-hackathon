@@ -1,0 +1,2111 @@
+bfs_id,name,canton,district,postal_codes
+1,Aeugst am Albis,ZH,Bezirk Affoltern,8914
+2,Affoltern am Albis,ZH,Bezirk Affoltern,8909|8910
+3,Bonstetten,ZH,Bezirk Affoltern,8906
+4,Hausen am Albis,ZH,Bezirk Affoltern,6340|8915|8925
+5,Hedingen,ZH,Bezirk Affoltern,8908
+6,Kappel am Albis,ZH,Bezirk Affoltern,8926
+7,Knonau,ZH,Bezirk Affoltern,8934
+8,Maschwanden,ZH,Bezirk Affoltern,8933
+9,Mettmenstetten,ZH,Bezirk Affoltern,8932
+10,Obfelden,ZH,Bezirk Affoltern,8910|8912
+11,Ottenbach,ZH,Bezirk Affoltern,8913
+12,Rifferswil,ZH,Bezirk Affoltern,8911
+13,Stallikon,ZH,Bezirk Affoltern,8134|8143
+14,Wettswil am Albis,ZH,Bezirk Affoltern,8907
+22,Benken (ZH),ZH,Bezirk Andelfingen,8463
+23,Berg am Irchel,ZH,Bezirk Andelfingen,8415
+24,Buch am Irchel,ZH,Bezirk Andelfingen,8414
+25,Dachsen,ZH,Bezirk Andelfingen,8447
+26,Dorf,ZH,Bezirk Andelfingen,8458
+27,Feuerthalen,ZH,Bezirk Andelfingen,8245|8246
+28,Flaach,ZH,Bezirk Andelfingen,8416
+29,Flurlingen,ZH,Bezirk Andelfingen,8247
+31,Henggart,ZH,Bezirk Andelfingen,8444
+33,Kleinandelfingen,ZH,Bezirk Andelfingen,8451|8453|8461
+34,Laufen-Uhwiesen,ZH,Bezirk Andelfingen,8212|8248|8447
+35,Marthalen,ZH,Bezirk Andelfingen,8460|8464
+37,Ossingen,ZH,Bezirk Andelfingen,8466|8475
+38,Rheinau,ZH,Bezirk Andelfingen,8462|8464
+39,Thalheim an der Thur,ZH,Bezirk Andelfingen,8478
+40,Trüllikon,ZH,Bezirk Andelfingen,8465|8466
+41,Truttikon,ZH,Bezirk Andelfingen,8467
+43,Volken,ZH,Bezirk Andelfingen,8459
+51,Bachenbülach,ZH,Bezirk Bülach,8180|8184
+52,Bassersdorf,ZH,Bezirk Bülach,8303
+53,Bülach,ZH,Bezirk Bülach,8180|8192
+54,Dietlikon,ZH,Bezirk Bülach,8305|8600
+55,Eglisau,ZH,Bezirk Bülach,8193|8197
+56,Embrach,ZH,Bezirk Bülach,8424
+57,Freienstein-Teufen,ZH,Bezirk Bülach,8427|8428
+58,Glattfelden,ZH,Bezirk Bülach,8192|8193
+59,Hochfelden,ZH,Bezirk Bülach,8182|8192
+60,Höri,ZH,Bezirk Bülach,8181
+61,Hüntwangen,ZH,Bezirk Bülach,8194
+62,Kloten,ZH,Bezirk Bülach,8302|8309
+63,Lufingen,ZH,Bezirk Bülach,8426
+64,Nürensdorf,ZH,Bezirk Bülach,8309
+65,Oberembrach,ZH,Bezirk Bülach,8425
+66,Opfikon,ZH,Bezirk Bülach,8052|8152
+67,Rafz,ZH,Bezirk Bülach,8197
+68,Rorbas,ZH,Bezirk Bülach,8427|8428
+69,Wallisellen,ZH,Bezirk Bülach,8304
+70,Wasterkingen,ZH,Bezirk Bülach,8195|8196
+71,Wil (ZH),ZH,Bezirk Bülach,8196|8197
+72,Winkel,ZH,Bezirk Bülach,8180|8185
+81,Bachs,ZH,Bezirk Dielsdorf,8164
+82,Boppelsen,ZH,Bezirk Dielsdorf,8113|8158
+83,Buchs (ZH),ZH,Bezirk Dielsdorf,8107
+84,Dällikon,ZH,Bezirk Dielsdorf,8108
+85,Dänikon,ZH,Bezirk Dielsdorf,8114
+86,Dielsdorf,ZH,Bezirk Dielsdorf,8157
+87,Hüttikon,ZH,Bezirk Dielsdorf,8115
+88,Neerach,ZH,Bezirk Dielsdorf,8162|8164|8173|8174
+89,Niederglatt,ZH,Bezirk Dielsdorf,8155|8172
+90,Niederhasli,ZH,Bezirk Dielsdorf,8155|8156
+91,Niederweningen,ZH,Bezirk Dielsdorf,8166
+92,Oberglatt,ZH,Bezirk Dielsdorf,8154
+93,Oberweningen,ZH,Bezirk Dielsdorf,5462|8165
+94,Otelfingen,ZH,Bezirk Dielsdorf,8107|8112
+95,Regensberg,ZH,Bezirk Dielsdorf,8158
+96,Regensdorf,ZH,Bezirk Dielsdorf,8105|8106
+97,Rümlang,ZH,Bezirk Dielsdorf,8052|8152|8153
+98,Schleinikon,ZH,Bezirk Dielsdorf,8165
+99,Schöfflisdorf,ZH,Bezirk Dielsdorf,8165
+100,Stadel,ZH,Bezirk Dielsdorf,8174|8175
+101,Steinmaur,ZH,Bezirk Dielsdorf,8155|8162
+102,Weiach,ZH,Bezirk Dielsdorf,8187
+111,Bäretswil,ZH,Bezirk Hinwil,8340|8344|8345|8498
+112,Bubikon,ZH,Bezirk Hinwil,8608|8633
+113,Dürnten,ZH,Bezirk Hinwil,8340|8608|8630|8632|8635|8636
+114,Fischenthal,ZH,Bezirk Hinwil,8340|8494|8496|8497|8498
+115,Gossau (ZH),ZH,Bezirk Hinwil,8614|8617|8624|8625|8626|8627
+116,Grüningen,ZH,Bezirk Hinwil,8627
+117,Hinwil,ZH,Bezirk Hinwil,8340|8342|8498
+118,Rüti (ZH),ZH,Bezirk Hinwil,8630|8636
+119,Seegräben,ZH,Bezirk Hinwil,8607
+120,Wald (ZH),ZH,Bezirk Hinwil,8497|8636|8637
+121,Wetzikon (ZH),ZH,Bezirk Hinwil,8345|8620|8623
+131,Adliswil,VS,Vionnaz,8041|8134
+135,Kilchberg (ZH),VS,Vionnaz,8802|8803
+136,Langnau am Albis,VS,Vionnaz,8135
+137,Oberrieden,VS,Vionnaz,8942
+138,Richterswil,VS,Vionnaz,8805|8833
+139,Rüschlikon,VS,Vionnaz,8803
+141,Thalwil,VS,Vionnaz,8136|8800
+151,Erlenbach (ZH),ZH,Bezirk Meilen,8703
+152,Herrliberg,ZH,Bezirk Meilen,8703|8704
+153,Hombrechtikon,ZH,Bezirk Meilen,8627|8634|8714
+154,Küsnacht (ZH),ZH,Bezirk Meilen,8127|8700
+155,Männedorf,ZH,Bezirk Meilen,8618|8708
+156,Meilen,ZH,Bezirk Meilen,8706
+157,Oetwil am See,ZH,Bezirk Meilen,8618
+158,Stäfa,ZH,Bezirk Meilen,8634|8712|8713
+159,Uetikon am See,ZH,Bezirk Meilen,8707
+160,Zumikon,ZH,Bezirk Meilen,8126
+161,Zollikon,ZH,Bezirk Meilen,8125|8702
+172,Fehraltorf,ZH,Bezirk Pfäffikon,8308|8320
+173,Hittnau,ZH,Bezirk Pfäffikon,8335
+176,Lindau,ZH,Bezirk Pfäffikon,8310|8312|8315|8317
+177,Pfäffikon,ZH,Bezirk Pfäffikon,8330|8331|8623
+178,Russikon,ZH,Bezirk Pfäffikon,8322|8332
+180,Weisslingen,ZH,Bezirk Pfäffikon,8308|8484|8486
+181,Wila,ZH,Bezirk Pfäffikon,8492|8493
+182,Wildberg,ZH,Bezirk Pfäffikon,8322|8488|8489
+191,Dübendorf,ZH,Bezirk Uster,8044|8051|8600|8603
+192,Egg,ZH,Bezirk Uster,8127|8132|8133
+193,Fällanden,ZH,Bezirk Uster,8117|8118|8121
+194,Greifensee,ZH,Bezirk Uster,8606
+195,Maur,ZH,Bezirk Uster,8122|8123|8124|8127|8132
+196,Mönchaltorf,ZH,Bezirk Uster,8607|8617
+197,Schwerzenbach,ZH,Bezirk Uster,8600|8603
+198,Uster,ZH,Bezirk Uster,8605|8606|8610|8614|8615|8616|8617
+199,Volketswil,ZH,Bezirk Uster,8307|8604|8605
+200,Wangen-Brüttisellen,ZH,Bezirk Uster,8306|8602
+211,Altikon,ZH,Bezirk Winterthur,8479
+213,Brütten,ZH,Bezirk Winterthur,8311
+214,Dägerlen,ZH,Bezirk Winterthur,8471
+215,Dättlikon,ZH,Bezirk Winterthur,8421
+216,Dinhard,ZH,Bezirk Winterthur,8474
+218,Ellikon an der Thur,ZH,Bezirk Winterthur,8548
+219,Elsau,ZH,Bezirk Winterthur,8352
+220,Hagenbuch,ZH,Bezirk Winterthur,8500|8523
+221,Hettlingen,ZH,Bezirk Winterthur,8442
+223,Neftenbach,ZH,Bezirk Winterthur,8412|8413
+224,Pfungen,ZH,Bezirk Winterthur,8422
+225,Rickenbach (ZH),ZH,Bezirk Winterthur,8545
+226,Schlatt (ZH),ZH,Bezirk Winterthur,8354|8405|8418
+227,Seuzach,ZH,Bezirk Winterthur,8472
+228,Turbenthal,ZH,Bezirk Winterthur,8363|8488|8492|8495
+230,Winterthur,ZH,Bezirk Winterthur,8310|8352|8400|8404|8405|8406|8408|8409|8482|8542|8545
+231,Zell (ZH),ZH,Bezirk Winterthur,8483|8486|8487
+241,Aesch (ZH),ZH,Bezirk Dietikon,8904
+242,Birmensdorf (ZH),ZH,Bezirk Dietikon,8142|8903
+243,Dietikon,ZH,Bezirk Dietikon,8953
+244,Geroldswil,ZH,Bezirk Dietikon,8951|8954
+245,Oberengstringen,ZH,Bezirk Dietikon,8102
+246,Oetwil an der Limmat,ZH,Bezirk Dietikon,8955
+247,Schlieren,ZH,Bezirk Dietikon,8902|8952
+248,Uitikon,ZH,Bezirk Dietikon,8142|8143
+249,Unterengstringen,ZH,Bezirk Dietikon,8103|8951
+250,Urdorf,ZH,Bezirk Dietikon,8902
+251,Weiningen (ZH),ZH,Bezirk Dietikon,8104|8951
+261,Zürich,ZH,Bezirk Zürich,8001|8002|8003|8004|8005|8006|8008|8032|8037|8038|8041|8044|8045|8046|8047|8048|8049|8050|8051|8052|8053|8055|8057|8064|8125|8134|8142|8143|8152|8952
+291,Andelfingen,ZH,Bezirk Andelfingen,8450|8452|8457
+292,Stammheim,ZH,Bezirk Andelfingen,8468|8476|8477|8525
+293,Wädenswil,VS,Vionnaz,8804|8820|8824|8825
+294,Elgg,ZH,Bezirk Winterthur,8353|8354|8355|8523
+295,Horgen,VS,Vionnaz,6340|8135|8810|8815|8816
+296,Illnau-Effretikon,ZH,Bezirk Pfäffikon,8307|8308|8314|8482|8483
+297,Bauma,ZH,Bezirk Pfäffikon,8493|8494|8499
+298,Wiesendangen,ZH,Bezirk Winterthur,8542|8543|8544|8546
+301,Aarberg,BE,Verwaltungskreis Seeland,3250|3267|3270|3273
+302,Bargen (BE),BE,Verwaltungskreis Seeland,3282|3283
+303,Grossaffoltern,BE,Verwaltungskreis Seeland,3257|3262
+304,Kallnach,BE,Verwaltungskreis Seeland,3207|3226|3283
+305,Kappelen,BE,Verwaltungskreis Seeland,3250|3252|3273
+306,Lyss,BE,Verwaltungskreis Seeland,2557|3250|3292
+307,Meikirch,BE,Verwaltungskreis Bern-Mittelland,3042|3045|3046
+309,Radelfingen,BE,Verwaltungskreis Seeland,3036|3271
+310,Rapperswil (BE),BE,Verwaltungskreis Seeland,3053|3251|3254|3255|3256
+311,Schüpfen,BE,Verwaltungskreis Seeland,3053|3054
+312,Seedorf (BE),BE,Verwaltungskreis Seeland,3035|3266|3267|3268|3270
+321,Aarwangen,BE,Verwaltungskreis Oberaargau,4912|4922
+322,Auswil,BE,Verwaltungskreis Oberaargau,4938|4944
+323,Bannwil,BE,Verwaltungskreis Oberaargau,4912|4913
+324,Bleienbach,BE,Verwaltungskreis Oberaargau,3368
+325,Busswil bei Melchnau,BE,Verwaltungskreis Oberaargau,4917
+326,Gondiswil,BE,Verwaltungskreis Oberaargau,4955
+329,Langenthal,BE,Verwaltungskreis Oberaargau,4900|4916|4924
+331,Lotzwil,BE,Verwaltungskreis Oberaargau,3368|4932
+332,Madiswil,BE,Verwaltungskreis Oberaargau,4919|4932|4934|4935|4936
+333,Melchnau,BE,Verwaltungskreis Oberaargau,4917|6146|6147
+335,Oeschenbach,BE,Verwaltungskreis Oberaargau,4943
+336,Reisiswil,BE,Verwaltungskreis Oberaargau,4919
+337,Roggwil (BE),BE,Verwaltungskreis Oberaargau,4914
+338,Rohrbach,BE,Verwaltungskreis Oberaargau,4938
+339,Rohrbachgraben,BE,Verwaltungskreis Oberaargau,4938
+340,Rütschelen,BE,Verwaltungskreis Oberaargau,4933
+341,Schwarzhäusern,BE,Verwaltungskreis Oberaargau,4911
+342,Thunstetten,BE,Verwaltungskreis Oberaargau,4922
+344,Ursenbach,BE,Verwaltungskreis Oberaargau,4936|4937|4942|4943
+345,Wynau,BE,Verwaltungskreis Oberaargau,4923
+351,Bern,BE,Verwaltungskreis Bern-Mittelland,3004|3005|3006|3007|3008|3010|3011|3012|3013|3014|3015|3018|3019|3020|3027|3032|3037|3048|3063|3072|3073|3084|3097|3172
+352,Bolligen,BE,Verwaltungskreis Bern-Mittelland,3065|3066|3326
+353,Bremgarten bei Bern,BE,Verwaltungskreis Bern-Mittelland,3047
+354,Kirchlindach,BE,Verwaltungskreis Bern-Mittelland,3037|3038|3042
+355,Köniz,BE,Verwaltungskreis Bern-Mittelland,3007|3084|3095|3097|3098|3144|3145|3147|3172|3173|3174
+356,Muri bei Bern,BE,Verwaltungskreis Bern-Mittelland,3073|3074|3076
+357,Oberbalm,BE,Verwaltungskreis Bern-Mittelland,3086|3096|3145|3147
+358,Stettlen,BE,Verwaltungskreis Bern-Mittelland,3066|3067|3076
+359,Vechigen,BE,Verwaltungskreis Bern-Mittelland,3066|3067|3068|3076|3513
+360,Wohlen bei Bern,BE,Verwaltungskreis Bern-Mittelland,3032|3033|3034|3035|3036|3037|3042|3043|3044|3045|3049
+361,Zollikofen,BE,Verwaltungskreis Bern-Mittelland,3052
+362,Ittigen,BE,Verwaltungskreis Bern-Mittelland,3048|3063
+363,Ostermundigen,BE,Verwaltungskreis Bern-Mittelland,3063|3065|3066|3072|3073
+371,Biel/Bienne,BE,Verwaltungskreis Biel/Bienne,2502|2503|2504|2505|2532
+372,Evilard,BE,Verwaltungskreis Biel/Bienne,2532|2533
+381,Arch,BE,Verwaltungskreis Seeland,3296
+382,Büetigen,BE,Verwaltungskreis Seeland,2557|3263
+383,Büren an der Aare,BE,Verwaltungskreis Seeland,3294
+385,Diessbach bei Büren,BE,Verwaltungskreis Seeland,3264
+386,Dotzigen,BE,Verwaltungskreis Seeland,3293|3294
+387,Lengnau (BE),BE,Verwaltungskreis Biel/Bienne,2543
+388,Leuzigen,BE,Verwaltungskreis Seeland,3297
+389,Meienried,BE,Verwaltungskreis Seeland,3294
+390,Meinisberg,BE,Verwaltungskreis Biel/Bienne,2554
+391,Oberwil bei Büren,BE,Verwaltungskreis Seeland,3298
+392,Pieterlen,BE,Verwaltungskreis Biel/Bienne,2542
+393,Rüti bei Büren,BE,Verwaltungskreis Seeland,3295
+394,Wengi,BE,Verwaltungskreis Seeland,3251|3257
+401,Aefligen,BE,Verwaltungskreis Emmental,3426
+402,Alchenstorf,BE,Verwaltungskreis Emmental,3473
+403,Bäriswil,BE,Verwaltungskreis Bern-Mittelland,3323
+404,Burgdorf,BE,Verwaltungskreis Emmental,3400|3413|3414|3472
+405,Ersigen,BE,Verwaltungskreis Emmental,3422|3423|3424|3425|3472
+406,Hasle bei Burgdorf,BE,Verwaltungskreis Emmental,3415|3419|3432|3433|3513
+407,Heimiswil,BE,Verwaltungskreis Emmental,3412|3413|3415|3416|3418|3472
+408,Hellsau,BE,Verwaltungskreis Emmental,3429
+409,Hindelbank,BE,Verwaltungskreis Emmental,3324|3325|3421
+410,Höchstetten,BE,Verwaltungskreis Emmental,3429
+411,Kernenried,BE,Verwaltungskreis Emmental,3309
+412,Kirchberg (BE),BE,Verwaltungskreis Emmental,3400|3422
+413,Koppigen,BE,Verwaltungskreis Emmental,3425
+414,Krauchthal,BE,Verwaltungskreis Emmental,3325|3326
+415,Lyssach,BE,Verwaltungskreis Emmental,3324|3421|3422
+418,Oberburg,BE,Verwaltungskreis Emmental,3414|3421
+420,Rüdtligen-Alchenflüh,BE,Verwaltungskreis Emmental,3422
+421,Rumendingen,BE,Verwaltungskreis Emmental,3472
+422,Rüti bei Lyssach,BE,Verwaltungskreis Emmental,3421
+423,Willadingen,BE,Verwaltungskreis Emmental,3425
+424,Wynigen,BE,Verwaltungskreis Emmental,3464|3472|3474
+431,Corgémont,BE,Arrondissement administratif Jura bernois,2534|2606|2608|2720
+432,Cormoret,BE,Arrondissement administratif Jura bernois,2608|2610|2612|2613
+433,Cortébert,BE,Arrondissement administratif Jura bernois,2607|2608|2723
+434,Courtelary,BE,Arrondissement administratif Jura bernois,2608|2610|2723
+435,La Ferrière,BE,Arrondissement administratif Jura bernois,2333|2610
+437,Mont-Tramelan,BE,Arrondissement administratif Jura bernois,2720|2723
+438,Orvin,BE,Arrondissement administratif Jura bernois,2534|2535
+441,Renan (BE),BE,Arrondissement administratif Jura bernois,2616
+442,Romont (BE),BE,Arrondissement administratif Jura bernois,2536|2538|2603
+443,Saint-Imier,BE,Arrondissement administratif Jura bernois,2345|2610
+444,Sonceboz-Sombeval,BE,Arrondissement administratif Jura bernois,2605|2606|2720
+445,Sonvilier,BE,Arrondissement administratif Jura bernois,2333|2345|2610|2615
+446,Tramelan,BE,Arrondissement administratif Jura bernois,2720|2722|2723
+448,Villeret,BE,Arrondissement administratif Jura bernois,2345|2610|2613
+449,Sauge,BE,Arrondissement administratif Jura bernois,2535|2536|2537
+450,Péry-La Heutte,BE,Arrondissement administratif Jura bernois,2535|2603|2604|2732|2735
+491,Brüttelen,BE,Verwaltungskreis Seeland,3237
+492,Erlach,BE,Verwaltungskreis Seeland,3232|3233|3235
+493,Finsterhennen,BE,Verwaltungskreis Seeland,2577
+494,Gals,BE,Verwaltungskreis Seeland,2525|3235|3238
+495,Gampelen,BE,Verwaltungskreis Seeland,3236
+496,Ins,BE,Verwaltungskreis Seeland,3232|3236
+497,Lüscherz,BE,Verwaltungskreis Seeland,2575|2576
+498,Müntschemier,BE,Verwaltungskreis Seeland,3225
+499,Siselen,BE,Verwaltungskreis Seeland,2577
+500,Treiten,BE,Verwaltungskreis Seeland,3226
+501,Tschugg,BE,Verwaltungskreis Seeland,3233
+502,Vinelz,BE,Verwaltungskreis Seeland,2576|3234
+533,Bätterkinden,BE,Verwaltungskreis Emmental,3314|3315|4573
+535,Deisswil bei Münchenbuchsee,BE,Verwaltungskreis Bern-Mittelland,3053
+538,Fraubrunnen,BE,Verwaltungskreis Bern-Mittelland,3306|3308|3309|3312|3313|3314|3317
+540,Jegenstorf,BE,Verwaltungskreis Bern-Mittelland,3303|3305
+541,Iffwil,BE,Verwaltungskreis Bern-Mittelland,3305
+543,Mattstetten,BE,Verwaltungskreis Bern-Mittelland,3322
+544,Moosseedorf,BE,Verwaltungskreis Bern-Mittelland,3053|3302|3322
+546,Münchenbuchsee,BE,Verwaltungskreis Bern-Mittelland,3052|3053
+551,Urtenen-Schönbühl,BE,Verwaltungskreis Bern-Mittelland,3322
+552,Utzenstorf,BE,Verwaltungskreis Emmental,3427
+553,Wiggiswil,BE,Verwaltungskreis Bern-Mittelland,3053
+554,Wiler bei Utzenstorf,BE,Verwaltungskreis Emmental,3427|3428
+556,Zielebach,BE,Verwaltungskreis Emmental,4564
+557,Zuzwil (BE),BE,Verwaltungskreis Bern-Mittelland,3303
+561,Adelboden,BE,Verwaltungskreis Frutigen-Niedersimmental,3715|3725
+562,Aeschi bei Spiez,BE,Verwaltungskreis Frutigen-Niedersimmental,3702|3703|3704|3711
+563,Frutigen,BE,Verwaltungskreis Frutigen-Niedersimmental,3713|3714|3715|3716|3724|3725
+564,Kandergrund,BE,Verwaltungskreis Frutigen-Niedersimmental,3716|3717
+565,Kandersteg,BE,Verwaltungskreis Frutigen-Niedersimmental,3718
+566,Krattigen,BE,Verwaltungskreis Frutigen-Niedersimmental,3704|3705
+567,Reichenbach im Kandertal,BE,Verwaltungskreis Frutigen-Niedersimmental,3711|3713|3714|3722|3723
+571,Beatenberg,BE,Verwaltungskreis Interlaken-Oberhasli,3800|3803
+572,Bönigen,BE,Verwaltungskreis Interlaken-Oberhasli,3806
+573,Brienz (BE),BE,Verwaltungskreis Interlaken-Oberhasli,3855
+574,Brienzwiler,BE,Verwaltungskreis Interlaken-Oberhasli,3856|3860
+575,Därligen,BE,Verwaltungskreis Interlaken-Oberhasli,3707
+576,Grindelwald,BE,Verwaltungskreis Interlaken-Oberhasli,3816|3818|3823
+577,Gsteigwiler,BE,Verwaltungskreis Interlaken-Oberhasli,3812|3814
+578,Gündlischwand,BE,Verwaltungskreis Interlaken-Oberhasli,3812|3815
+579,Habkern,BE,Verwaltungskreis Interlaken-Oberhasli,3804|6197
+580,Hofstetten bei Brienz,BE,Verwaltungskreis Interlaken-Oberhasli,3858
+581,Interlaken,BE,Verwaltungskreis Interlaken-Oberhasli,3800
+582,Iseltwald,BE,Verwaltungskreis Interlaken-Oberhasli,3807
+584,Lauterbrunnen,BE,Verwaltungskreis Interlaken-Oberhasli,3801|3822|3823|3824|3825|3826
+585,Leissigen,BE,Verwaltungskreis Interlaken-Oberhasli,3706
+586,Lütschental,BE,Verwaltungskreis Interlaken-Oberhasli,3816
+587,Matten bei Interlaken,BE,Verwaltungskreis Interlaken-Oberhasli,3800|3812
+588,Niederried bei Interlaken,BE,Verwaltungskreis Interlaken-Oberhasli,3853
+589,Oberried am Brienzersee,BE,Verwaltungskreis Interlaken-Oberhasli,3854|3855
+590,Ringgenberg (BE),BE,Verwaltungskreis Interlaken-Oberhasli,3805|3852
+591,Saxeten,BE,Verwaltungskreis Interlaken-Oberhasli,3813
+592,Schwanden bei Brienz,BE,Verwaltungskreis Interlaken-Oberhasli,3855
+593,Unterseen,BE,Verwaltungskreis Interlaken-Oberhasli,3800
+594,Wilderswil,BE,Verwaltungskreis Interlaken-Oberhasli,3812
+602,Arni (BE),BE,Verwaltungskreis Bern-Mittelland,3507|3508
+603,Biglen,BE,Verwaltungskreis Bern-Mittelland,3507
+605,Bowil,BE,Verwaltungskreis Bern-Mittelland,3531|3533|3534|3538|3673
+606,Brenzikofen,BE,Verwaltungskreis Bern-Mittelland,3671
+607,Freimettigen,BE,Verwaltungskreis Bern-Mittelland,3510
+608,Grosshöchstetten,BE,Verwaltungskreis Bern-Mittelland,3082|3506
+609,Häutligen,BE,Verwaltungskreis Bern-Mittelland,3510
+610,Herbligen,BE,Verwaltungskreis Bern-Mittelland,3671
+611,Kiesen,BE,Verwaltungskreis Bern-Mittelland,3114|3629
+612,Konolfingen,BE,Verwaltungskreis Bern-Mittelland,3503|3510
+613,Landiswil,BE,Verwaltungskreis Bern-Mittelland,3434|3508
+614,Linden,BE,Verwaltungskreis Bern-Mittelland,3538|3615|3672|3673
+615,Mirchel,BE,Verwaltungskreis Bern-Mittelland,3506|3532
+616,Münsingen,BE,Verwaltungskreis Bern-Mittelland,3083|3110|3111
+617,Niederhünigen,BE,Verwaltungskreis Bern-Mittelland,3504
+619,Oberdiessbach,BE,Verwaltungskreis Bern-Mittelland,3672|3674
+620,Oberthal,BE,Verwaltungskreis Bern-Mittelland,3506|3508|3531
+622,Oppligen,BE,Verwaltungskreis Bern-Mittelland,3629
+623,Rubigen,BE,Verwaltungskreis Bern-Mittelland,3112|3113
+626,Walkringen,BE,Verwaltungskreis Bern-Mittelland,3068|3415|3512|3513
+627,Worb,BE,Verwaltungskreis Bern-Mittelland,3068|3075|3076|3077|3078|3082|3113
+628,Zäziwil,BE,Verwaltungskreis Bern-Mittelland,3506|3531|3532|3533
+629,Oberhünigen,BE,Verwaltungskreis Bern-Mittelland,3504|3532|3533|3673
+630,Allmendingen,BE,Verwaltungskreis Bern-Mittelland,3073|3112
+632,Wichtrach,BE,Verwaltungskreis Bern-Mittelland,3114|3510
+662,Ferenbalm,BE,Verwaltungskreis Bern-Mittelland,3177|3205|3206|3207
+663,Frauenkappelen,BE,Verwaltungskreis Bern-Mittelland,3020|3033|3202
+665,Gurbrü,BE,Verwaltungskreis Bern-Mittelland,3208|3210
+666,Kriechenwil,BE,Verwaltungskreis Bern-Mittelland,3179
+667,Laupen,BE,Verwaltungskreis Bern-Mittelland,3177
+668,Mühleberg,BE,Verwaltungskreis Bern-Mittelland,3202|3203|3204|3205
+669,Münchenwiler,BE,Verwaltungskreis Bern-Mittelland,1797
+670,Neuenegg,BE,Verwaltungskreis Bern-Mittelland,3174|3176|3177|3204
+671,Wileroltigen,BE,Verwaltungskreis Bern-Mittelland,3207
+681,Belprahon,BE,Arrondissement administratif Jura bernois,2744
+683,Champoz,BE,Arrondissement administratif Jura bernois,2735
+687,Corcelles (BE),BE,Arrondissement administratif Jura bernois,2747
+690,Court,BE,Arrondissement administratif Jura bernois,2735|2738
+691,Crémines,BE,Arrondissement administratif Jura bernois,2746|4716
+692,Eschert,BE,Arrondissement administratif Jura bernois,2743
+694,Grandval,BE,Arrondissement administratif Jura bernois,2745
+696,Loveresse,BE,Arrondissement administratif Jura bernois,2732|2733
+701,Perrefitte,BE,Arrondissement administratif Jura bernois,2742
+703,Reconvilier,BE,Arrondissement administratif Jura bernois,2710|2732
+704,Roches (BE),BE,Arrondissement administratif Jura bernois,2740|2762
+706,Saicourt,BE,Arrondissement administratif Jura bernois,2712|2713|2720|2732
+707,Saules (BE),BE,Arrondissement administratif Jura bernois,2732
+708,Schelten,BE,Arrondissement administratif Jura bernois,2827
+709,Seehof,BE,Arrondissement administratif Jura bernois,2747
+711,Sorvilier,BE,Arrondissement administratif Jura bernois,2736
+713,Tavannes,BE,Arrondissement administratif Jura bernois,2710|2720
+715,Rebévelier,BE,Arrondissement administratif Jura bernois,2717
+716,Petit-Val,BE,Arrondissement administratif Jura bernois,2712|2715|2716|2717|2748
+717,Valbirse,BE,Arrondissement administratif Jura bernois,2733|2735
+723,La Neuveville,BE,Arrondissement administratif Jura bernois,2514|2520|2523
+724,Nods,BE,Arrondissement administratif Jura bernois,2518|2523|2534
+726,Plateau de Diesse,BE,Arrondissement administratif Jura bernois,2515|2516|2517
+731,Aegerten,BE,Verwaltungskreis Biel/Bienne,2558
+732,Bellmund,BE,Verwaltungskreis Biel/Bienne,2562|2563|2564
+733,Brügg,BE,Verwaltungskreis Biel/Bienne,2503|2504|2552|2555
+734,Bühl,BE,Verwaltungskreis Seeland,3274
+735,Epsach,BE,Verwaltungskreis Seeland,3272
+736,Hagneck,BE,Verwaltungskreis Seeland,2575
+737,Hermrigen,BE,Verwaltungskreis Seeland,3274
+738,Jens,BE,Verwaltungskreis Seeland,2565
+739,Ipsach,BE,Verwaltungskreis Biel/Bienne,2563
+740,Ligerz,BE,Verwaltungskreis Biel/Bienne,2513|2514
+741,Merzligen,BE,Verwaltungskreis Seeland,3274
+742,Mörigen,BE,Verwaltungskreis Biel/Bienne,2572
+743,Nidau,BE,Verwaltungskreis Biel/Bienne,2503|2560
+744,Orpund,BE,Verwaltungskreis Biel/Bienne,2504|2552
+745,Port,BE,Verwaltungskreis Biel/Bienne,2560|2562
+746,Safnern,BE,Verwaltungskreis Biel/Bienne,2553
+747,Scheuren,BE,Verwaltungskreis Biel/Bienne,2556
+748,Schwadernau,BE,Verwaltungskreis Biel/Bienne,2556
+749,Studen (BE),BE,Verwaltungskreis Seeland,2557
+750,Sutz-Lattrigen,BE,Verwaltungskreis Biel/Bienne,2572
+751,Täuffelen,BE,Verwaltungskreis Seeland,2575
+754,Walperswil,BE,Verwaltungskreis Seeland,3272
+755,Worben,BE,Verwaltungskreis Seeland,3252
+756,Twann-Tüscherz,BE,Verwaltungskreis Biel/Bienne,2505|2512|2513|2516|3235
+761,Därstetten,BE,Verwaltungskreis Frutigen-Niedersimmental,3763|3764
+762,Diemtigen,BE,Verwaltungskreis Frutigen-Niedersimmental,3753|3754|3755|3756|3757
+763,Erlenbach im Simmental,BE,Verwaltungskreis Frutigen-Niedersimmental,3754|3758|3762
+766,Oberwil im Simmental,BE,Verwaltungskreis Frutigen-Niedersimmental,3764|3765|3766
+767,Reutigen,BE,Verwaltungskreis Thun,3645|3647
+768,Spiez,BE,Verwaltungskreis Frutigen-Niedersimmental,3645|3646|3700|3702|3704|3705
+769,Wimmis,BE,Verwaltungskreis Frutigen-Niedersimmental,3711|3752
+770,Stocken-Höfen,BE,Verwaltungskreis Thun,3631|3632
+782,Guttannen,BE,Verwaltungskreis Interlaken-Oberhasli,3864
+783,Hasliberg,BE,Verwaltungskreis Interlaken-Oberhasli,6083|6084|6085|6086
+784,Innertkirchen,BE,Verwaltungskreis Interlaken-Oberhasli,3862|3863
+785,Meiringen,BE,Verwaltungskreis Interlaken-Oberhasli,3856|3857|3860
+786,Schattenhalb,BE,Verwaltungskreis Interlaken-Oberhasli,3860
+791,Boltigen,BE,Verwaltungskreis Obersimmental-Saanen,1657|3766|3770
+792,Lenk,BE,Verwaltungskreis Obersimmental-Saanen,3773|3775
+793,St. Stephan,BE,Verwaltungskreis Obersimmental-Saanen,3772|3773
+794,Zweisimmen,BE,Verwaltungskreis Obersimmental-Saanen,3770|3771|3776|3777
+841,Gsteig,BE,Verwaltungskreis Obersimmental-Saanen,3784|3785
+842,Lauenen,BE,Verwaltungskreis Obersimmental-Saanen,3782
+843,Saanen,BE,Verwaltungskreis Obersimmental-Saanen,1657|3777|3778|3780|3781|3783|3792
+852,Guggisberg,BE,Verwaltungskreis Bern-Mittelland,1738|3150|3156|3157|3158|3159
+853,Rüschegg,BE,Verwaltungskreis Bern-Mittelland,1738|3099|3152|3153|3154|3156|3157
+855,Schwarzenburg,BE,Verwaltungskreis Bern-Mittelland,3148|3150|3152|3154|3157|3183
+861,Belp,BE,Verwaltungskreis Bern-Mittelland,3086|3115|3122|3123|3124|3125
+863,Burgistein,BE,Verwaltungskreis Thun,3664|3665
+866,Gerzensee,BE,Verwaltungskreis Bern-Mittelland,3115
+867,Gurzelen,BE,Verwaltungskreis Thun,3663|3664
+868,Jaberg,BE,Verwaltungskreis Bern-Mittelland,3629
+869,Kaufdorf,BE,Verwaltungskreis Bern-Mittelland,3126
+870,Kehrsatz,BE,Verwaltungskreis Bern-Mittelland,3122|3123
+872,Kirchdorf (BE),BE,Verwaltungskreis Bern-Mittelland,3115|3116|3125|3126|3629
+877,Niedermuhlern,BE,Verwaltungskreis Bern-Mittelland,3086|3087
+879,Riggisberg,BE,Verwaltungskreis Bern-Mittelland,3099|3128|3132|3664
+880,Rüeggisberg,BE,Verwaltungskreis Bern-Mittelland,3087|3088|3089|3099|3132|3154|3155
+883,Seftigen,BE,Verwaltungskreis Thun,3662
+884,Toffen,BE,Verwaltungskreis Bern-Mittelland,3123|3125
+885,Uttigen,BE,Verwaltungskreis Thun,3628
+886,Wattenwil,BE,Verwaltungskreis Thun,3664|3665
+888,Wald (BE),BE,Verwaltungskreis Bern-Mittelland,3086|3087|3096
+889,Thurnen,BE,Verwaltungskreis Bern-Mittelland,3127|3128
+901,Eggiwil,BE,Verwaltungskreis Emmental,3536|3537|3550|3618|6197
+902,Langnau im Emmental,BE,Verwaltungskreis Emmental,3535|3543|3550|3551|3552|3553|3555
+903,Lauperswil,BE,Verwaltungskreis Emmental,3434|3436|3438|3543|3550|3551
+904,Röthenbach im Emmental,BE,Verwaltungskreis Emmental,3533|3537|3538|3615|3618
+905,Rüderswil,BE,Verwaltungskreis Emmental,3432|3433|3436|3437|3438|3439|3453
+906,Schangnau,BE,Verwaltungskreis Emmental,6197
+907,Signau,BE,Verwaltungskreis Emmental,3534|3535|3543
+908,Trub,BE,Verwaltungskreis Emmental,3537|3552|3555|3556|3557
+909,Trubschachen,BE,Verwaltungskreis Emmental,3537|3555|3556
+921,Amsoldingen,BE,Verwaltungskreis Thun,3633
+922,Blumenstein,BE,Verwaltungskreis Thun,3638
+923,Buchholterberg,BE,Verwaltungskreis Thun,3614|3615|3618|3674
+924,Eriz,BE,Verwaltungskreis Thun,3616|3619|6197
+925,Fahrni,BE,Verwaltungskreis Thun,3612|3617
+927,Heiligenschwendi,BE,Verwaltungskreis Thun,3625
+928,Heimberg,BE,Verwaltungskreis Thun,3613|3627|3671
+929,Hilterfingen,BE,Verwaltungskreis Thun,3600|3625|3626|3652
+931,Homberg,BE,Verwaltungskreis Thun,3622|3624
+932,Horrenbach-Buchen,BE,Verwaltungskreis Thun,3619|3623
+934,Oberhofen am Thunersee,BE,Verwaltungskreis Thun,3652|3653|3654
+935,Oberlangenegg,BE,Verwaltungskreis Thun,3616|3618
+936,Pohlern,BE,Verwaltungskreis Thun,3638
+938,Sigriswil,BE,Verwaltungskreis Thun,3619|3623|3654|3655|3656|3657|3658
+939,Steffisburg,BE,Verwaltungskreis Thun,3612|3613|3617|3624|3627
+940,Teuffenthal (BE),BE,Verwaltungskreis Thun,3623
+941,Thierachern,BE,Verwaltungskreis Thun,3633|3634|3635|3636
+942,Thun,BE,Verwaltungskreis Thun,3600|3603|3604|3608|3612|3624|3626|3645
+943,Uebeschi,BE,Verwaltungskreis Thun,3631|3635
+944,Uetendorf,BE,Verwaltungskreis Thun,3603|3661
+945,Unterlangenegg,BE,Verwaltungskreis Thun,3614|3616
+946,Wachseldorn,BE,Verwaltungskreis Thun,3618
+948,Forst-Längenbühl,BE,Verwaltungskreis Thun,3636|3663|3665
+951,Affoltern im Emmental,BE,Verwaltungskreis Emmental,3413|3416|3418|3462|3463|3464
+952,Dürrenroth,BE,Verwaltungskreis Emmental,3463|3464|3465|4942
+953,Eriswil,BE,Verwaltungskreis Oberaargau,4950|4952
+954,Huttwil,BE,Verwaltungskreis Oberaargau,4938|4950|4952|4953
+955,Lützelflüh,BE,Verwaltungskreis Emmental,3414|3415|3418|3419|3432|3433|3434|3435|3439|3452|3453|3454|3456
+956,Rüegsau,BE,Verwaltungskreis Emmental,3415|3416|3417|3418|3454
+957,Sumiswald,BE,Verwaltungskreis Emmental,3416|3454|3455|3457|3462|4952|4954
+958,Trachselwald,BE,Verwaltungskreis Emmental,3453|3456|3551
+959,Walterswil (BE),BE,Verwaltungskreis Oberaargau,3463|3464|4938|4942|4943
+960,Wyssachen,BE,Verwaltungskreis Oberaargau,3457|4953|4954
+971,Attiswil,BE,Verwaltungskreis Oberaargau,4536
+972,Berken,BE,Verwaltungskreis Oberaargau,3376
+973,Bettenhausen,BE,Verwaltungskreis Oberaargau,3366
+975,Farnern,BE,Verwaltungskreis Oberaargau,4539
+976,Graben,BE,Verwaltungskreis Oberaargau,3376
+977,Heimenhausen,BE,Verwaltungskreis Oberaargau,3372|3373
+979,Herzogenbuchsee,BE,Verwaltungskreis Oberaargau,3360|3363
+980,Inkwil,BE,Verwaltungskreis Oberaargau,3375
+981,Niederbipp,BE,Verwaltungskreis Oberaargau,4704
+982,Niederönz,BE,Verwaltungskreis Oberaargau,3362|4556
+983,Oberbipp,BE,Verwaltungskreis Oberaargau,4538
+985,Ochlenberg,BE,Verwaltungskreis Oberaargau,3367|3476
+987,Rumisberg,BE,Verwaltungskreis Oberaargau,4539
+988,Seeberg,BE,Verwaltungskreis Oberaargau,3365|3474|3475|3476|4943
+989,Thörigen,BE,Verwaltungskreis Oberaargau,3360|3367|3476
+990,Walliswil bei Niederbipp,BE,Verwaltungskreis Oberaargau,3380
+991,Walliswil bei Wangen,BE,Verwaltungskreis Oberaargau,3377
+992,Wangen an der Aare,BE,Verwaltungskreis Oberaargau,3374|3380|4536
+995,Wiedlisbach,BE,Verwaltungskreis Oberaargau,3380|4537|4539
+1001,Doppleschwand,AG,Würenlos,6110|6112
+1002,Entlebuch,AG,Würenlos,6105|6110|6162|6163|6166|6170
+1004,Flühli,AG,Würenlos,6170|6173|6174|6192|6197
+1005,Hasle (LU),AG,Würenlos,6162|6166|6170
+1007,Romoos,AG,Würenlos,6110|6113|6166|6167|6170
+1008,Schüpfheim,AG,Würenlos,6170
+1009,Werthenstein,AG,Würenlos,6105|6106|6110
+1010,Escholzmatt-Marbach,AG,Würenlos,3555|6170|6173|6182|6192|6196|6197
+1021,Aesch (LU),LU,Wahlkreis Hochdorf,6287
+1023,Ballwil,LU,Wahlkreis Hochdorf,6034|6274|6275
+1024,Emmen,LU,Wahlkreis Hochdorf,6020|6023|6032|6206
+1025,Ermensee,LU,Wahlkreis Hochdorf,6294
+1026,Eschenbach (LU),LU,Wahlkreis Hochdorf,6026|6034|6274
+1030,Hitzkirch,LU,Wahlkreis Hochdorf,6284|6285|6286|6288|6289|6295
+1031,Hochdorf,LU,Wahlkreis Hochdorf,6274|6275|6280|6283
+1032,Hohenrain,LU,Wahlkreis Hochdorf,6275|6276|6277|6280|6283
+1033,Inwil,LU,Wahlkreis Hochdorf,6034|6038
+1037,Rain,LU,Wahlkreis Hochdorf,6026
+1039,Römerswil,LU,Wahlkreis Hochdorf,6026|6027|6028|6280|6283
+1040,Rothenburg,LU,Wahlkreis Hochdorf,6023|6026|6206
+1041,Schongau,LU,Wahlkreis Hochdorf,6287|6288
+1051,Adligenswil,LU,Wahlkreis Luzern-Land,6030|6043
+1052,Buchrain,LU,Wahlkreis Luzern-Land,6030|6033|6035
+1053,Dierikon,LU,Wahlkreis Luzern-Land,6036|6037
+1054,Ebikon,LU,Wahlkreis Luzern-Land,6004|6006|6020|6030|6032
+1055,Gisikon,LU,Wahlkreis Luzern-Land,6038
+1056,Greppen,LU,Wahlkreis Luzern-Land,6353|6404
+1058,Horw,LU,Wahlkreis Luzern-Land,6005|6047|6048|6052
+1059,Kriens,LU,Wahlkreis Luzern-Land,6005|6010|6012|6013|6048
+1061,Luzern,LU,Wahlkreis Luzern-Stadt,6003|6004|6005|6006|6014|6015|6016|6020|6365
+1062,Malters,LU,Wahlkreis Luzern-Land,6014|6016|6019|6102
+1063,Meggen,LU,Wahlkreis Luzern-Land,6006|6045
+1064,Meierskappel,LU,Wahlkreis Luzern-Land,6344
+1065,Root,LU,Wahlkreis Luzern-Land,6035|6037|6038|6039|6044
+1066,Schwarzenberg,LU,Wahlkreis Luzern-Land,6013|6103
+1067,Udligenswil,LU,Wahlkreis Luzern-Land,6044
+1068,Vitznau,LU,Wahlkreis Luzern-Land,6354|6356
+1069,Weggis,LU,Wahlkreis Luzern-Land,6353|6354|6356
+1081,Beromünster,AG,Zetzwil,6025|6028|6215|6221|6222
+1082,Büron,AG,Zetzwil,6233
+1083,Buttisholz,AG,Zetzwil,6018|6022
+1084,Eich,AG,Zetzwil,6205|6214
+1085,Geuensee,AG,Zetzwil,6232
+1086,Grosswangen,AG,Zetzwil,6022
+1088,Hildisrieden,AG,Zetzwil,6024
+1089,Knutwil,AG,Zetzwil,6212|6213
+1091,Mauensee,AG,Zetzwil,6210|6212|6216|6242
+1093,Neuenkirch,AG,Zetzwil,6016|6023|6024|6203|6204|6206|6207
+1094,Nottwil,AG,Zetzwil,6207
+1095,Oberkirch,AG,Zetzwil,6018|6207|6208|6210|6216
+1097,Rickenbach (LU),AG,Zetzwil,5735|6221
+1098,Ruswil,AG,Zetzwil,6016|6017|6018|6019|6105|6106|6110|6206|6207
+1099,Schenkon,AG,Zetzwil,6210|6214|6222
+1100,Schlierbach,AG,Zetzwil,6231
+1102,Sempach,AG,Zetzwil,6024|6204
+1103,Sursee,AG,Zetzwil,6210
+1104,Triengen,AG,Zetzwil,6213|6234|6235|6236
+1107,Wolhusen,AG,Würenlos,6110|6114|6122
+1121,Alberswil,LU,Wahlkreis Willisau,6248
+1122,Altbüron,LU,Wahlkreis Willisau,6147
+1123,Altishofen,LU,Wahlkreis Willisau,6144|6244|6245|6246|6247|6263
+1125,Dagmersellen,LU,Wahlkreis Willisau,6211|6235|6246|6252|6253|6260
+1127,Egolzwil,LU,Wahlkreis Willisau,6243|6244
+1128,Ettiswil,LU,Wahlkreis Willisau,6022|6217|6218|6248
+1129,Fischbach,LU,Wahlkreis Willisau,6145|6152|6153
+1131,Grossdietwil,LU,Wahlkreis Willisau,6145|6146|6147|6245
+1132,Hergiswil bei Willisau,LU,Wahlkreis Willisau,6125|6130|6132|6133|6156
+1135,Luthern,LU,Wahlkreis Willisau,4952|6153|6154|6156
+1136,Menznau,LU,Wahlkreis Willisau,6110|6122|6123|6125|6130
+1137,Nebikon,LU,Wahlkreis Willisau,6244
+1139,Pfaffnau,LU,Wahlkreis Willisau,4915|6147|6264|6265
+1140,Reiden,LU,Wahlkreis Willisau,6252|6260|6262|6263
+1142,Roggliswil,LU,Wahlkreis Willisau,6265
+1143,Schötz,LU,Wahlkreis Willisau,6143|6247
+1145,Ufhusen,LU,Wahlkreis Willisau,4952|4955|6153
+1146,Wauwil,LU,Wahlkreis Willisau,6242
+1147,Wikon,LU,Wahlkreis Willisau,4806|6260
+1150,Zell (LU),LU,Wahlkreis Willisau,6144|6152|6153
+1151,Willisau,LU,Wahlkreis Willisau,6122|6125|6126|6130|6132|6133|6142|6143|6144|6154|6156|6248
+1201,Altdorf (UR),UR,Kanton Uri,6460
+1202,Andermatt,UR,Kanton Uri,6490
+1203,Attinghausen,UR,Kanton Uri,6390|6468
+1205,Bürglen (UR),UR,Kanton Uri,6436|6460|6463|6464|6469
+1206,Erstfeld,UR,Kanton Uri,6472
+1207,Flüelen,UR,Kanton Uri,6454|6460
+1208,Göschenen,UR,Kanton Uri,6487
+1209,Gurtnellen,UR,Kanton Uri,6473|6474|6476|6482
+1210,Hospental,UR,Kanton Uri,6493
+1211,Isenthal,UR,Kanton Uri,6461
+1212,Realp,UR,Kanton Uri,6491
+1213,Schattdorf,UR,Kanton Uri,6467|6469
+1214,Seedorf (UR),UR,Kanton Uri,6462|6466
+1215,Seelisberg,UR,Kanton Uri,6377|6441
+1216,Silenen,UR,Kanton Uri,6472|6473|6474|6475|6476
+1217,Sisikon,UR,Kanton Uri,6452
+1218,Spiringen,UR,Kanton Uri,6464|8751
+1219,Unterschächen,UR,Kanton Uri,6436|6465
+1220,Wassen,UR,Kanton Uri,6484|6485
+1301,Einsiedeln,SZ,Bezirk Einsiedeln,8836|8840|8841|8844|8846|8847
+1311,Gersau,SZ,Bezirk Gersau,6410|6442
+1321,Feusisberg,SZ,Bezirk Höfe,8832|8834|8835|8836|8847
+1322,Freienbach,SZ,Bezirk Höfe,8640|8806|8807|8808|8832
+1323,Wollerau,SZ,Bezirk Höfe,8806|8832|8833|8834
+1331,Küssnacht (SZ),SZ,Bezirk Küssnacht (SZ),6402|6403|6405
+1341,Altendorf,SZ,Bezirk March,8846|8852
+1342,Galgenen,SZ,Bezirk March,8853|8854
+1343,Innerthal,SZ,Bezirk March,8858
+1344,Lachen,SZ,Bezirk March,8853
+1345,Reichenburg,SZ,Bezirk March,8864
+1346,Schübelbach,SZ,Bezirk March,8854|8855|8862|8863
+1347,Tuggen,SZ,Bezirk March,8730|8855|8856
+1348,Vorderthal,SZ,Bezirk March,8857
+1349,Wangen (SZ),SZ,Bezirk March,8853|8854|8855
+1361,Alpthal,SZ,Bezirk Schwyz,8849
+1362,Arth,SZ,Bezirk Schwyz,6318|6356|6410|6414|6415|6416
+1363,Illgau,SZ,Bezirk Schwyz,6434
+1364,Ingenbohl,SZ,Bezirk Schwyz,6423|6440
+1365,Lauerz,SZ,Bezirk Schwyz,6424
+1366,Morschach,SZ,Bezirk Schwyz,6433|6440|6443|6452
+1367,Muotathal,SZ,Bezirk Schwyz,6433|6436|8750
+1368,Oberiberg,SZ,Bezirk Schwyz,8842|8843
+1369,Riemenstalden,SZ,Bezirk Schwyz,6452
+1370,Rothenthurm,SZ,Bezirk Schwyz,6418
+1371,Sattel,SZ,Bezirk Schwyz,6315|6417|6418|6422
+1372,Schwyz,SZ,Bezirk Schwyz,6417|6423|6430|6432|6438|8842|8843
+1373,Steinen,SZ,Bezirk Schwyz,6422
+1374,Steinerberg,SZ,Bezirk Schwyz,6416
+1375,Unteriberg,SZ,Bezirk Schwyz,8842|8844|8845
+1401,Alpnach,OW,Kanton Obwalden,6010|6053|6055|6064
+1402,Engelberg,OW,Kanton Obwalden,6388|6390
+1403,Giswil,OW,Kanton Obwalden,6074|6174
+1404,Kerns,OW,Kanton Obwalden,6064|6066|6067|6068
+1405,Lungern,OW,Kanton Obwalden,6078
+1406,Sachseln,OW,Kanton Obwalden,6067|6072|6073|6074
+1407,Sarnen,OW,Kanton Obwalden,6056|6060|6062|6063
+1501,Beckenried,NW,Kanton Nidwalden,6375|6376
+1502,Buochs,NW,Kanton Nidwalden,6374
+1503,Dallenwil,NW,Kanton Nidwalden,6383
+1504,Emmetten,NW,Kanton Nidwalden,6376|6377
+1505,Ennetbürgen,NW,Kanton Nidwalden,6363|6373|6374
+1506,Ennetmoos,NW,Kanton Nidwalden,6362|6370|6372
+1507,Hergiswil (NW),NW,Kanton Nidwalden,6010|6013|6052
+1508,Oberdorf (NW),NW,Kanton Nidwalden,6370|6374|6382|6383
+1509,Stans,NW,Kanton Nidwalden,6370|6372|6373
+1510,Stansstad,NW,Kanton Nidwalden,6362|6363|6365
+1511,Wolfenschiessen,NW,Kanton Nidwalden,6383|6386|6387|6388|6390
+1630,Glarus Nord,GL,Kanton Glarus,8752|8753|8754|8757|8758|8865|8866|8867|8868|8872|8874
+1631,Glarus Süd,GL,Kanton Glarus,8750|8755|8756|8762|8765|8766|8767|8772|8773|8774|8775|8777|8782|8783|8784
+1632,Glarus,GL,Kanton Glarus,8750|8754|8755
+1701,Baar,ZG,Kanton Zug,6300|6312|6314|6319|6340|6345
+1702,Cham,ZG,Kanton Zug,6330|6331|6332
+1703,Hünenberg,ZG,Kanton Zug,5642|6331|6332|6333
+1704,Menzingen,ZG,Kanton Zug,6313|6314|6315
+1705,Neuheim,ZG,Kanton Zug,6313|6340|6345
+1706,Oberägeri,ZG,Kanton Zug,6314|6315|6417|6418|8836
+1707,Risch,ZG,Kanton Zug,6343
+1708,Steinhausen,ZG,Kanton Zug,6312|6330
+1709,Unterägeri,ZG,Kanton Zug,6314|6315
+1710,Walchwil,ZG,Kanton Zug,6318
+1711,Zug,ZG,Kanton Zug,6300|6314|6317|6318|6330|6340
+2008,Châtillon (FR),FR,District de la Broye,1473
+2011,Cugy (FR),FR,District de la Broye,1482|1483
+2022,Gletterens,FR,District de la Broye,1544
+2025,Lully (FR),FR,District de la Broye,1470
+2029,Montagny (FR),FR,District de la Broye,1562|1774|1775|1776
+2035,Nuvilly,FR,District de la Broye,1485
+2038,Prévondavaux,FR,District de la Broye,1410
+2041,Saint-Aubin (FR),FR,District de la Broye,1566
+2043,Sévaz,FR,District de la Broye,1541
+2044,Surpierre,FR,District de la Broye,1525|1527|1528|1529|1534
+2045,Vallon,FR,District de la Broye,1565
+2050,Les Montets,FR,District de la Broye,1483|1484|1534
+2051,Delley-Portalban,FR,District de la Broye,1567|1568
+2053,Belmont-Broye,FR,District de la Broye,1563|1564|1580|1772|1773|1776
+2054,Estavayer,FR,District de la Broye,1470|1473|1475|1486|1489|1541|1542
+2055,Cheyres-Châbles,FR,District de la Broye,1468|1474
+2056,Fétigny-Ménières,FR,District de la Broye,1532|1533
+2063,Billens-Hennens,FR,District de la Glâne,1681
+2067,Le Châtelard,FR,District de la Glâne,1689
+2068,Châtonnaye,FR,District de la Glâne,1553
+2079,Grangettes,FR,District de la Glâne,1686
+2086,Massonnens,FR,District de la Glâne,1692
+2087,Mézières (FR),FR,District de la Glâne,1680|1684
+2096,Romont (FR),FR,District de la Glâne,1680
+2097,Rue,FR,District de la Glâne,1085|1608|1673|1675
+2099,Siviriez,FR,District de la Glâne,1676|1677|1678|1679|1680
+2102,Ursy,FR,District de la Glâne,1670|1674|1675
+2113,Vuisternens-devant-Romont,FR,District de la Glâne,1685|1686|1687|1688|1697
+2114,Villorsonnens,FR,District de la Glâne,1690|1694
+2115,Torny,FR,District de la Glâne,1748|1749
+2117,Villaz,FR,District de la Glâne,1680|1690|1691
+2121,Haut-Intyamon,FR,District de la Gruyère,1669
+2122,Pont-en-Ogoz,FR,District de la Gruyère,1643|1644|1645
+2123,Botterens,FR,District de la Gruyère,1652
+2124,Broc,FR,District de la Gruyère,1636|1653
+2125,Bulle,FR,District de la Gruyère,1630|1635|1661
+2128,Châtel-sur-Montsalvens,FR,District de la Gruyère,1653
+2129,Corbières,FR,District de la Gruyère,1646|1647|1651
+2130,Crésuz,FR,District de la Gruyère,1653
+2131,Echarlens,FR,District de la Gruyère,1628|1646
+2134,Grandvillard,FR,District de la Gruyère,1666
+2135,Gruyères,FR,District de la Gruyère,1635|1636|1661|1663
+2137,Hauteville,FR,District de la Gruyère,1634|1647|1648
+2138,Jaun,FR,District de la Gruyère,1637|1656|1657|1716
+2140,Marsens,FR,District de la Gruyère,1633
+2143,Morlon,FR,District de la Gruyère,1638
+2145,Le Pâquier (FR),FR,District de la Gruyère,1635|1661
+2147,Pont-la-Ville,FR,District de la Gruyère,1649
+2148,Riaz,FR,District de la Gruyère,1628|1632
+2149,La Roche,FR,District de la Gruyère,1634|1733
+2152,Sâles,FR,District de la Gruyère,1625|1626|1627
+2153,Sorens,FR,District de la Gruyère,1642
+2155,Vaulruz,FR,District de la Gruyère,1627|1628|1630
+2160,Vuadens,FR,District de la Gruyère,1628|1630
+2162,Bas-Intyamon,FR,District de la Gruyère,1663|1665|1666|1667
+2163,Val-de-Charmey,FR,District de la Gruyère,1637|1654|1716
+2173,Autigny,FR,District de la Sarine,1742|1745
+2174,Avry,FR,District de la Sarine,1754
+2175,Belfaux,FR,District de la Sarine,1720|1782
+2177,Chénens,FR,District de la Sarine,1744
+2183,Corminboeuf,FR,District de la Sarine,1720|1753
+2186,Cottens (FR),FR,District de la Sarine,1741
+2194,Ferpicloz,FR,District de la Sarine,1724
+2196,Fribourg,FR,District de la Sarine,1700|1722
+2197,Givisiez,FR,District de la Sarine,1762
+2198,Granges-Paccot,FR,District de la Sarine,1763
+2206,Marly,FR,District de la Sarine,1723|1725
+2208,Matran,FR,District de la Sarine,1753
+2211,Neyruz (FR),FR,District de la Sarine,1740
+2216,Pierrafortscha,FR,District de la Sarine,1723
+2220,Le Mouret,FR,District de la Sarine,1724|1734
+2226,Treyvaux,FR,District de la Sarine,1724|1733
+2228,Villars-sur-Glâne,FR,District de la Sarine,1752
+2230,Villarsel-sur-Marly,FR,District de la Sarine,1723|1724
+2233,Hauterive (FR),FR,District de la Sarine,1725|1730
+2234,La Brillaz,FR,District de la Sarine,1745|1754|1756
+2235,La Sonnaz,FR,District de la Sarine,1782
+2236,Gibloux,FR,District de la Sarine,1695|1696|1726|1727|1728
+2237,Prez,FR,District de la Sarine,1746|1747|1754|1757
+2238,Bois-d'Amont,FR,District de la Sarine,1724|1725|1731|1732
+2239,Grolley-Ponthaux,FR,District de la Sarine,1772
+2250,Courgevaux,FR,Bezirk See / District du Lac,1796|3280
+2254,Courtepin,FR,Bezirk See / District du Lac,1583|1783|1784|1791|1795|3212
+2257,Cressier (FR),FR,Bezirk See / District du Lac,1785
+2258,Fräschels,FR,Bezirk See / District du Lac,3284
+2261,Greng,FR,Bezirk See / District du Lac,3280
+2262,Gurmels,FR,Bezirk See / District du Lac,1792|3179|3205|3206|3212|3213|3214
+2265,Kerzers,FR,Bezirk See / District du Lac,3207|3210
+2266,Kleinbösingen,FR,Bezirk See / District du Lac,3213
+2271,Meyriez,FR,Bezirk See / District du Lac,3280
+2272,Misery-Courtion,FR,Bezirk See / District du Lac,1721
+2274,Muntelier,FR,Bezirk See / District du Lac,3286
+2275,Murten,FR,Bezirk See / District du Lac,1595|1793|1794|1795|3215|3280|3285
+2276,Ried bei Kerzers,FR,Bezirk See / District du Lac,3210|3216
+2284,Mont-Vully,FR,Bezirk See / District du Lac,1786|1787|1788|1789|3236
+2292,Brünisried,FR,Bezirk Sense,1719
+2293,Düdingen,FR,Bezirk Sense,1700|3186
+2294,Giffers,FR,Bezirk Sense,1735
+2295,Bösingen,FR,Bezirk Sense,3178|3184|3185
+2296,Heitenried,FR,Bezirk Sense,1714
+2299,Plaffeien,FR,Bezirk Sense,1716|1719|1738
+2300,Plasselb,FR,Bezirk Sense,1716|1737
+2301,Rechthalten,FR,Bezirk Sense,1718|1735
+2303,St. Silvester,FR,Bezirk Sense,1724|1734|1736
+2304,St. Ursen,FR,Bezirk Sense,1715|1717|1718
+2305,Schmitten (FR),FR,Bezirk Sense,1712|1713|3182|3185
+2306,Tafers,FR,Bezirk Sense,1700|1712|1713|1714|1715|1717|3182|3185
+2307,Tentlingen,FR,Bezirk Sense,1734
+2308,Ueberstorf,FR,Bezirk Sense,3175|3182
+2309,Wünnewil-Flamatt,FR,Bezirk Sense,3175|3184|3185
+2321,Attalens,FR,District de la Veveyse,1616|1617|1808
+2323,Bossonnens,FR,District de la Veveyse,1615
+2325,Châtel-Saint-Denis,FR,District de la Veveyse,1618|1619
+2328,Granges (Veveyse),FR,District de la Veveyse,1614
+2333,Remaufens,FR,District de la Veveyse,1617|1618
+2335,Saint-Martin (FR),FR,District de la Veveyse,1609
+2336,Semsales,FR,District de la Veveyse,1623|1627|1630
+2337,Le Flon,FR,District de la Veveyse,1699
+2338,La Verrerie,FR,District de la Veveyse,1611|1624
+2401,Egerkingen,SO,Bezirk Gäu,4622
+2402,Härkingen,SO,Bezirk Gäu,4624
+2403,Kestenholz,SO,Bezirk Gäu,4703
+2404,Neuendorf,SO,Bezirk Gäu,4622|4623
+2405,Niederbuchsiten,SO,Bezirk Gäu,4626
+2406,Oberbuchsiten,SO,Bezirk Gäu,4623|4625|4626|4718
+2407,Oensingen,SO,Bezirk Gäu,4702|4710
+2408,Wolfwil,SO,Bezirk Gäu,4628
+2421,Aedermannsdorf,SO,Bezirk Thal,2747|4714|4717|4719
+2422,Balsthal,SO,Bezirk Thal,4710|4717
+2424,Herbetswil,SO,Bezirk Thal,4715|4716
+2425,Holderbank (SO),SO,Bezirk Thal,4438|4718
+2426,Laupersdorf,SO,Bezirk Thal,4712|4717
+2427,Matzendorf,SO,Bezirk Thal,4713|4717
+2428,Mümliswil-Ramiswil,SO,Bezirk Thal,4229|4418|4717|4719
+2430,Welschenrohr-Gänsbrunnen,SO,Bezirk Thal,4716
+2445,Biezwil,SO,Bezirk Bucheggberg,4585
+2455,Lüterkofen-Ichertswil,SO,Bezirk Bucheggberg,4571
+2457,Messen,SO,Bezirk Bucheggberg,3254|3307|4588
+2461,Schnottwil,SO,Bezirk Bucheggberg,3253
+2463,Unterramsern,SO,Bezirk Bucheggberg,4588
+2464,Lüsslingen-Nennigkofen,SO,Bezirk Bucheggberg,4574
+2465,Buchegg,SO,Bezirk Bucheggberg,4576|4577|4578|4579|4581|4582|4583|4584|4586|4587|4588
+2471,Bättwil,SO,Bezirk Dorneck,4105|4112
+2472,Büren (SO),SO,Bezirk Dorneck,4413
+2473,Dornach,SO,Bezirk Dorneck,4143
+2474,Gempen,SO,Bezirk Dorneck,4145
+2475,Hochwald,SO,Bezirk Dorneck,4146
+2476,Hofstetten-Flüh,SO,Bezirk Dorneck,4112|4114|4115
+2477,Metzerlen-Mariastein,SO,Bezirk Dorneck,4115|4116
+2478,Nuglar-St. Pantaleon,SO,Bezirk Dorneck,4412|4421
+2479,Rodersdorf,SO,Bezirk Dorneck,4118
+2480,Seewen,SO,Bezirk Dorneck,4204|4206
+2481,Witterswil,SO,Bezirk Dorneck,4108|4112
+2491,Hauenstein-Ifenthal,SO,Bezirk Gösgen,4633
+2492,Kienberg,SO,Bezirk Gösgen,4468
+2493,Lostorf,SO,Bezirk Gösgen,4634|4654
+2495,Niedergösgen,SO,Bezirk Gösgen,5013
+2497,Obergösgen,SO,Bezirk Gösgen,4652|4653
+2499,Stüsslingen,SO,Bezirk Gösgen,4655
+2500,Trimbach,SO,Bezirk Gösgen,4600|4632|4634
+2501,Winznau,SO,Bezirk Gösgen,4652
+2502,Wisen (SO),SO,Bezirk Gösgen,4634
+2503,Erlinsbach (SO),SO,Bezirk Gösgen,5015|5017
+2511,Aeschi (SO),SO,Bezirk Wasseramt,3365|4556
+2513,Biberist,SO,Bezirk Wasseramt,4500|4528|4562|4574
+2514,Bolken,SO,Bezirk Wasseramt,4556
+2516,Deitingen,SO,Bezirk Wasseramt,4542|4543
+2517,Derendingen,SO,Bezirk Wasseramt,4552|4553
+2518,Etziken,SO,Bezirk Wasseramt,4554
+2519,Gerlafingen,SO,Bezirk Wasseramt,4563
+2523,Horriwil,SO,Bezirk Wasseramt,4557
+2524,Hüniken,SO,Bezirk Wasseramt,4554
+2525,Kriegstetten,SO,Bezirk Wasseramt,4563|4566
+2526,Lohn-Ammannsegg,SO,Bezirk Wasseramt,4573
+2527,Luterbach,SO,Bezirk Wasseramt,4542|4552
+2528,Obergerlafingen,SO,Bezirk Wasseramt,4563|4564
+2530,Recherswil,SO,Bezirk Wasseramt,4565
+2532,Subingen,SO,Bezirk Wasseramt,4553
+2534,Zuchwil,SO,Bezirk Wasseramt,4500|4528
+2535,Drei Höfe,SO,Bezirk Wasseramt,4558
+2541,Balm bei Günsberg,SO,Bezirk Lebern,4524|4525
+2542,Bellach,SO,Bezirk Lebern,4500|4512
+2543,Bettlach,SO,Bezirk Lebern,2544
+2544,Feldbrunnen-St. Niklaus,SO,Bezirk Lebern,4532
+2545,Flumenthal,SO,Bezirk Lebern,4534|4543
+2546,Grenchen,SO,Bezirk Lebern,2540
+2547,Günsberg,SO,Bezirk Lebern,4524|4715
+2548,Hubersdorf,SO,Bezirk Lebern,4535
+2549,Kammersrohr,SO,Bezirk Lebern,4535
+2550,Langendorf,SO,Bezirk Lebern,4513|4522
+2551,Lommiswil,SO,Bezirk Lebern,4512|4514
+2553,Oberdorf (SO),SO,Bezirk Lebern,4515|4522
+2554,Riedholz,SO,Bezirk Lebern,4523|4533
+2555,Rüttenen,SO,Bezirk Lebern,4500|4522|4532
+2556,Selzach,SO,Bezirk Lebern,2545|4512|4574
+2571,Boningen,SO,Bezirk Olten,4618|4663
+2572,Däniken,SO,Bezirk Olten,4658
+2573,Dulliken,SO,Bezirk Olten,4657|5746
+2574,Eppenberg-Wöschnau,SO,Bezirk Olten,5012
+2575,Fulenbach,SO,Bezirk Olten,4629
+2576,Gretzenbach,SO,Bezirk Olten,4658|5014
+2578,Gunzgen,SO,Bezirk Olten,4614|4616|4617
+2579,Hägendorf,SO,Bezirk Olten,4438|4614|4615
+2580,Kappel (SO),SO,Bezirk Olten,4616|4618
+2581,Olten,SO,Bezirk Olten,4600|4612|4663
+2582,Rickenbach (SO),SO,Bezirk Olten,4613
+2583,Schönenwerd,SO,Bezirk Olten,5012
+2584,Starrkirch-Wil,SO,Bezirk Olten,4600|4656|4657
+2585,Walterswil (SO),SO,Bezirk Olten,5746
+2586,Wangen bei Olten,SO,Bezirk Olten,4612|4632
+2601,Solothurn,SO,Bezirk Solothurn,4500
+2611,Bärschwil,SO,Bezirk Thierstein,4252|4253
+2612,Beinwil (SO),SO,Bezirk Thierstein,2827|4229|4719
+2613,Breitenbach,SO,Bezirk Thierstein,4226|4232
+2614,Büsserach,SO,Bezirk Thierstein,4227
+2615,Erschwil,SO,Bezirk Thierstein,4228|4233
+2616,Fehren,SO,Bezirk Thierstein,4232
+2617,Grindel,SO,Bezirk Thierstein,4247
+2618,Himmelried,SO,Bezirk Thierstein,4204|4206
+2619,Kleinlützel,SO,Bezirk Thierstein,2814|4245
+2620,Meltingen,SO,Bezirk Thierstein,4229|4233
+2621,Nunningen,SO,Bezirk Thierstein,4204|4208
+2622,Zullwil,SO,Bezirk Thierstein,4233|4234
+2701,Basel,BS,Kanton Basel-Stadt,4001|4031|4051|4052|4053|4054|4055|4056|4057|4058|4059
+2702,Bettingen,BS,Kanton Basel-Stadt,4126
+2703,Riehen,BS,Kanton Basel-Stadt,4058|4125
+2761,Aesch (BL),BL,Bezirk Arlesheim,4147|4153|4202
+2762,Allschwil,BL,Bezirk Arlesheim,4123
+2763,Arlesheim,BL,Bezirk Arlesheim,4144
+2764,Biel-Benken,BL,Bezirk Arlesheim,4105
+2765,Binningen,BL,Bezirk Arlesheim,4053|4101|4102
+2766,Birsfelden,BL,Bezirk Arlesheim,4127
+2767,Bottmingen,BL,Bezirk Arlesheim,4101|4102|4103
+2768,Ettingen,BL,Bezirk Arlesheim,4107
+2769,Münchenstein,BL,Bezirk Arlesheim,4052|4142|4153
+2770,Muttenz,BL,Bezirk Arlesheim,4127|4132|4133|4142
+2771,Oberwil (BL),BL,Bezirk Arlesheim,4104
+2772,Pfeffingen,BL,Bezirk Arlesheim,4147|4148
+2773,Reinach (BL),BL,Bezirk Arlesheim,4144|4153
+2774,Schönenbuch,BL,Bezirk Arlesheim,4124
+2775,Therwil,BL,Bezirk Arlesheim,4106|4153
+2781,Blauen,BL,Bezirk Laufen,4223
+2782,Brislach,BL,Bezirk Laufen,4225|4242
+2783,Burg im Leimental,BL,Bezirk Laufen,4117
+2784,Dittingen,BL,Bezirk Laufen,4243
+2785,Duggingen,BL,Bezirk Laufen,4202
+2786,Grellingen,BL,Bezirk Laufen,4203
+2787,Laufen,BL,Bezirk Laufen,4242|4246|4252
+2788,Liesberg,BL,Bezirk Laufen,4253|4254
+2789,Nenzlingen,BL,Bezirk Laufen,4224
+2790,Roggenburg,BL,Bezirk Laufen,2814|4245
+2791,Röschenz,BL,Bezirk Laufen,4244
+2792,Wahlen,BL,Bezirk Laufen,4246
+2793,Zwingen,BL,Bezirk Laufen,4222|4242
+2821,Arisdorf,BL,Bezirk Liestal,4305|4422
+2822,Augst,BL,Bezirk Liestal,4133|4302|4303
+2823,Bubendorf,BL,Bezirk Liestal,4410|4416
+2824,Frenkendorf,BL,Bezirk Liestal,4133|4402
+2825,Füllinsdorf,BL,Bezirk Liestal,4414
+2826,Giebenach,BL,Bezirk Liestal,4303|4304
+2827,Hersberg,BL,Bezirk Liestal,4423
+2828,Lausen,BL,Bezirk Liestal,4415
+2829,Liestal,BL,Bezirk Liestal,4410|4415|4422
+2830,Lupsingen,BL,Bezirk Liestal,4419
+2831,Pratteln,BL,Bezirk Liestal,4133|4302|4402
+2832,Ramlinsburg,BL,Bezirk Liestal,4433
+2833,Seltisberg,BL,Bezirk Liestal,4411|4412
+2834,Ziefen,BL,Bezirk Liestal,4417
+2841,Anwil,BL,Bezirk Sissach,4469
+2842,Böckten,BL,Bezirk Sissach,4450|4461
+2843,Buckten,BL,Bezirk Sissach,4444|4445|4446|4447
+2844,Buus,BL,Bezirk Sissach,4462|4463
+2845,Diepflingen,BL,Bezirk Sissach,4442
+2846,Gelterkinden,BL,Bezirk Sissach,4444|4460
+2847,Häfelfingen,BL,Bezirk Sissach,4445|4448
+2848,Hemmiken,BL,Bezirk Sissach,4316|4465|4466
+2849,Itingen,BL,Bezirk Sissach,4450|4452
+2850,Känerkinden,BL,Bezirk Sissach,4447
+2851,Kilchberg (BL),BL,Bezirk Sissach,4493|4496
+2852,Läufelfingen,BL,Bezirk Sissach,4446|4448|4458|4634
+2853,Maisprach,BL,Bezirk Sissach,4451|4464
+2854,Nusshof,BL,Bezirk Sissach,4453
+2855,Oltingen,BL,Bezirk Sissach,4494
+2856,Ormalingen,BL,Bezirk Sissach,4460|4465|4466
+2857,Rickenbach (BL),BL,Bezirk Sissach,4462
+2858,Rothenfluh,BL,Bezirk Sissach,4467
+2859,Rümlingen,BL,Bezirk Sissach,4444
+2860,Rünenberg,BL,Bezirk Sissach,4445|4497
+2861,Sissach,BL,Bezirk Sissach,4450
+2862,Tecknau,BL,Bezirk Sissach,4492
+2863,Tenniken,BL,Bezirk Sissach,4443|4456
+2864,Thürnen,BL,Bezirk Sissach,4441|4450
+2865,Wenslingen,BL,Bezirk Sissach,4493|4495
+2866,Wintersingen,BL,Bezirk Sissach,4451
+2867,Wittinsburg,BL,Bezirk Sissach,4442|4443|4444
+2868,Zeglingen,BL,Bezirk Sissach,4495
+2869,Zunzgen,BL,Bezirk Sissach,4455
+2881,Arboldswil,BL,Bezirk Waldenburg,4424|4425
+2882,Bennwil,BL,Bezirk Waldenburg,4431|4434|4457
+2883,Bretzwil,BL,Bezirk Waldenburg,4207
+2884,Diegten,BL,Bezirk Waldenburg,4447|4448|4456|4457
+2885,Eptingen,BL,Bezirk Waldenburg,4458
+2886,Hölstein,BL,Bezirk Waldenburg,4434|4457
+2887,Lampenberg,BL,Bezirk Waldenburg,4432
+2888,Langenbruck,BL,Bezirk Waldenburg,4438
+2889,Lauwil,BL,Bezirk Waldenburg,4229|4418|4426|4719
+2890,Liedertswil,BL,Bezirk Waldenburg,4436
+2891,Niederdorf,BL,Bezirk Waldenburg,4431|4435|4436
+2892,Oberdorf (BL),BL,Bezirk Waldenburg,4435|4436
+2893,Reigoldswil,BL,Bezirk Waldenburg,4418
+2894,Titterten,BL,Bezirk Waldenburg,4425
+2895,Waldenburg,BL,Bezirk Waldenburg,4418|4437|4438
+2901,Gächlingen,SH,Bezirk Oberklettgau,8214|8225|8226
+2903,Löhningen,SH,Bezirk Oberklettgau,8223|8224
+2904,Neunkirch,SH,Bezirk Oberklettgau,8213|8217|8223|8224
+2914,Büttenhardt,SH,Bezirk Reiat,8200|8236
+2915,Dörflingen,SH,Bezirk Reiat,8239
+2917,Lohn (SH),SH,Bezirk Reiat,8235
+2919,Stetten (SH),SH,Bezirk Reiat,8234
+2920,Thayngen,SH,Bezirk Reiat,8236|8240|8241|8242|8243
+2931,Bargen (SH),SH,Bezirk Schaffhausen,8233
+2932,Beringen,SH,Bezirk Schaffhausen,8222|8223
+2933,Buchberg,SH,Bezirk Schaffhausen,8454|8455
+2936,Merishausen,SH,Bezirk Schaffhausen,8232
+2937,Neuhausen am Rheinfall,SH,Bezirk Schaffhausen,8200|8212
+2938,Rüdlingen,SH,Bezirk Schaffhausen,8455
+2939,Schaffhausen,SH,Bezirk Schaffhausen,8200|8203|8207|8208|8212|8222|8231
+2951,Beggingen,SH,Bezirk Schleitheim,8226|8228
+2952,Schleitheim,SH,Bezirk Schleitheim,8226
+2953,Siblingen,SH,Bezirk Schleitheim,8225
+2961,Buch (SH),SH,Bezirk Stein,8263
+2962,Hemishofen,SH,Bezirk Stein,8261
+2963,Ramsen,SH,Bezirk Stein,8262
+2964,Stein am Rhein,SH,Bezirk Stein,8260
+2971,Hallau,SH,Bezirk Unterklettgau,8215
+2972,Oberhallau,SH,Bezirk Unterklettgau,8216
+2973,Trasadingen,SH,Bezirk Unterklettgau,8217|8219
+2974,Wilchingen,SH,Bezirk Unterklettgau,8217|8218
+3001,Herisau,AR,Bezirk Hinterland,9100|9112|9200
+3002,Hundwil,AR,Bezirk Hinterland,9063|9064|9107|9108
+3003,Schönengrund,AR,Bezirk Hinterland,9105|9107
+3004,Schwellbrunn,AR,Bezirk Hinterland,9100|9103|9104|9105|9113
+3005,Stein (AR),AR,Bezirk Hinterland,9014|9063
+3006,Urnäsch,AR,Bezirk Hinterland,9103|9104|9107
+3007,Waldstatt,AR,Bezirk Hinterland,9100|9103|9104
+3021,Bühler,AR,Bezirk Mittelland,9043|9055
+3022,Gais,AR,Bezirk Mittelland,9043|9055|9056|9450
+3023,Speicher,AR,Bezirk Mittelland,9037|9042
+3024,Teufen (AR),AR,Bezirk Mittelland,9012|9042|9052|9053|9055|9062
+3025,Trogen,AR,Bezirk Mittelland,9043
+3031,Grub (AR),AR,Bezirk Vorderland,9035|9038
+3032,Heiden,AR,Bezirk Vorderland,9036|9038|9410|9413|9427
+3033,Lutzenberg,AR,Bezirk Vorderland,9405|9426|9427
+3034,Rehetobel,AR,Bezirk Vorderland,9034|9037|9038
+3035,Reute (AR),AR,Bezirk Vorderland,9411|9437
+3036,Wald (AR),AR,Bezirk Vorderland,9043|9044
+3037,Walzenhausen,AR,Bezirk Vorderland,9427|9428
+3038,Wolfhalden,AR,Bezirk Vorderland,9410|9425|9427|9428
+3101,Appenzell,AI,Kanton Appenzell Innerrhoden,9050|9056
+3102,Gonten,AI,Kanton Appenzell Innerrhoden,9050|9108
+3104,Schlatt-Haslen,AI,Kanton Appenzell Innerrhoden,9050|9052|9053|9054|9055|9056|9108
+3111,Oberegg,AI,Kanton Appenzell Innerrhoden,9413|9427|9428|9442|9450
+3112,Schwende-Rüte,AI,Kanton Appenzell Innerrhoden,9050|9057|9058|9107|9108|9467
+3201,Häggenschwil,SG,Wahlkreis St. Gallen,9308|9312|9315
+3202,Muolen,SG,Wahlkreis St. Gallen,8580|9220|9308|9313
+3203,St. Gallen,SG,Wahlkreis St. Gallen,9000|9008|9010|9011|9012|9014|9015|9016|9030|9037|9042|9300
+3204,Wittenbach,SG,Wahlkreis St. Gallen,9008|9300|9308
+3211,Berg (SG),SG,Wahlkreis Rorschach,9300|9305|9306
+3212,Eggersriet,SG,Wahlkreis St. Gallen,9034|9035|9036|9037|9405
+3213,Goldach,SG,Wahlkreis Rorschach,9400|9403
+3214,Mörschwil,SG,Wahlkreis Rorschach,9327|9402
+3215,Rorschach,SG,Wahlkreis Rorschach,9400
+3216,Rorschacherberg,SG,Wahlkreis Rorschach,9404|9405|9422
+3217,Steinach,SG,Wahlkreis Rorschach,9305|9323
+3218,Tübach,SG,Wahlkreis Rorschach,9326|9327
+3219,Untereggen,SG,Wahlkreis Rorschach,9033|9404
+3231,Au (SG),SG,Wahlkreis Rheintal,9434|9435
+3232,Balgach,SG,Wahlkreis Rheintal,9435|9436|9445
+3233,Berneck,SG,Wahlkreis Rheintal,9411|9434|9435|9442
+3234,Diepoldsau,SG,Wahlkreis Rheintal,9436|9443|9444
+3235,Rheineck,SG,Wahlkreis Rheintal,9424|9425|9426
+3236,St. Margrethen,SG,Wahlkreis Rheintal,9424|9428|9430
+3237,Thal,SG,Wahlkreis Rorschach,9404|9422|9423|9425
+3238,Widnau,SG,Wahlkreis Rheintal,9435|9443
+3251,Altstätten,SG,Wahlkreis Rheintal,9058|9450|9452|9453|9463|9464
+3252,Eichberg,SG,Wahlkreis Rheintal,9452|9453
+3253,Marbach (SG),SG,Wahlkreis Rheintal,9437
+3254,Oberriet (SG),SG,Wahlkreis Rheintal,9436|9451|9462|9463
+3255,Rebstein,SG,Wahlkreis Rheintal,9437|9445
+3256,Rüthi (SG),SG,Wahlkreis Rheintal,9463|9464
+3271,Buchs (SG),SG,Wahlkreis Werdenberg,9469|9470
+3272,Gams,SG,Wahlkreis Werdenberg,9473|9658
+3273,Grabs,SG,Wahlkreis Werdenberg,9469|9470|9472|9658
+3274,Sennwald,SG,Wahlkreis Werdenberg,9465|9466|9467|9468|9469|9473
+3275,Sevelen,SG,Wahlkreis Werdenberg,9470|9475|9476
+3276,Wartau,SG,Wahlkreis Werdenberg,7320|9476|9477|9478|9479
+3291,Bad Ragaz,SG,Wahlkreis Sarganserland,7310|7317
+3292,Flums,SG,Wahlkreis Sarganserland,8888|8890|8892|8893|8894|8895|8896|8897|8898
+3293,Mels,SG,Wahlkreis Sarganserland,7325|7326|8886|8887|8888|8889
+3294,Pfäfers,SG,Wahlkreis Sarganserland,7312|7313|7314|7315|7317
+3295,Quarten,SG,Wahlkreis Sarganserland,8877|8878|8882|8883|8884|8885|8896|8898
+3296,Sargans,SG,Wahlkreis Sarganserland,7320|8888
+3297,Vilters-Wangs,SG,Wahlkreis Sarganserland,7323|7324
+3298,Walenstadt,SG,Wahlkreis Sarganserland,8878|8880|8881|8890|8892|8893|8896
+3311,Amden,SG,Wahlkreis See-Gaster,8872|8873
+3312,Benken (SG),SG,Wahlkreis See-Gaster,8717|8863
+3313,Kaltbrunn,SG,Wahlkreis See-Gaster,8717|8722
+3315,Schänis,SG,Wahlkreis See-Gaster,8718|8722|8723|8866
+3316,Weesen,SG,Wahlkreis See-Gaster,8872
+3338,Schmerikon,SG,Wahlkreis See-Gaster,8716|8730
+3339,Uznach,SG,Wahlkreis See-Gaster,8716|8725|8730
+3340,Rapperswil-Jona,SG,Wahlkreis See-Gaster,8630|8633|8640|8645|8646|8714|8715|8734
+3341,Gommiswald,SG,Wahlkreis See-Gaster,8725|8726|8730|8737|8738|8739
+3342,Eschenbach (SG),SG,Wahlkreis See-Gaster,8636|8637|8638|8725|8727|8732|8733|8734|8735
+3352,Ebnat-Kappel,SG,Wahlkreis Toggenburg,9633|9642|9643
+3359,Wildhaus-Alt St. Johann,SG,Wahlkreis Toggenburg,9107|9656|9657|9658
+3360,Nesslau,SG,Wahlkreis Toggenburg,9107|9633|9643|9650|9651|9652|9655
+3374,Lichtensteig,SG,Wahlkreis Toggenburg,9620
+3379,Wattwil,SG,Wahlkreis Toggenburg,8726|9615|9620|9622|9630|9631|9633|9642
+3392,Kirchberg (SG),SG,Wahlkreis Toggenburg,8376|9500|9532|9533|9534|9601|9602|9613
+3393,Lütisburg,SG,Wahlkreis Toggenburg,9123|9243|9601|9602|9604|9608
+3394,Mosnang,SG,Wahlkreis Toggenburg,8376|8496|9601|9607|9612|9613|9614|9615|9630
+3395,Bütschwil-Ganterschwil,SG,Wahlkreis Toggenburg,9601|9606|9608|9614|9615|9620|9621
+3396,Neckertal,SG,Wahlkreis Toggenburg,9103|9105|9107|9113|9114|9115|9116|9122|9123|9125|9126|9127|9620|9621|9630|9633
+3401,Degersheim,SG,Wahlkreis Wil,9113|9116|9230
+3402,Flawil,SG,Wahlkreis Wil,9113|9200|9230|9231
+3405,Jonschwil,SG,Wahlkreis Wil,9242|9243|9532|9536|9604
+3407,Oberuzwil,SG,Wahlkreis Wil,9230|9240|9242|9244|9248|9604
+3408,Uzwil,SG,Wahlkreis Wil,9240|9242|9244|9247|9249|9536
+3422,Niederbüren,SG,Wahlkreis Wil,9200|9203|9246
+3423,Niederhelfenschwil,SG,Wahlkreis Wil,9223|9245|9524|9525|9526|9527
+3424,Oberbüren,SG,Wahlkreis Wil,9203|9230|9240|9245
+3426,Zuzwil (SG),SG,Wahlkreis Wil,9500|9515|9523|9524
+3427,Wil (SG),SG,Wahlkreis Wil,9500|9512|9514|9524|9536|9543|9552
+3441,Andwil (SG),SG,Wahlkreis St. Gallen,9204|9212
+3442,Gaiserwald,SG,Wahlkreis St. Gallen,9030|9032|9300
+3443,Gossau (SG),SG,Wahlkreis St. Gallen,9015|9030|9100|9200|9204|9212
+3444,Waldkirch,SG,Wahlkreis St. Gallen,9032|9204|9205|9213|9246|9300|9304
+3506,Vaz/Obervaz,GR,Region Albula,7076|7077|7078|7082|7450
+3513,Lantsch/Lenz,GR,Region Albula,7083
+3514,Schmitten (GR),GR,Region Albula,7493
+3542,Albula/Alvra,GR,Region Albula,7084|7450|7451|7458|7459|7472|7473|7492
+3543,Surses,GR,Region Albula,7452|7453|7454|7455|7456|7457|7460|7462|7463|7464
+3544,Bergün Filisur,GR,Region Albula,7477|7482|7484|7494
+3551,Brusio,GR,Region Bernina,7743|7744|7747|7748
+3561,Poschiavo,GR,Region Bernina,7710|7741|7742|7743|7745|7746
+3572,Falera,GR,Region Surselva,7032|7153
+3575,Laax,GR,Region Surselva,7031|7032
+3581,Sagogn,GR,Region Surselva,7152
+3582,Schluein,GR,Region Surselva,7151
+3603,Vals,GR,Region Surselva,7116|7132
+3618,Lumnezia,GR,Region Surselva,7110|7113|7114|7115|7116|7142|7143|7144|7145|7146|7147|7148|7149
+3619,Ilanz/Glion,GR,Region Surselva,7111|7112|7122|7126|7127|7128|7130|7141|7142|7154|7155|7156|7157
+3633,Fürstenau,GR,Region Viamala,7413|7414
+3637,Rothenbrunnen,GR,Region Viamala,7405
+3638,Scharans,GR,Region Viamala,7412
+3640,Sils im Domleschg,GR,Region Viamala,7411
+3661,Cazis,GR,Region Viamala,7405|7408|7415|7421|7422|7423|7424
+3662,Flerden,GR,Region Viamala,7426
+3663,Masein,GR,Region Viamala,7421|7425
+3668,Thusis,GR,Region Viamala,7430|7431
+3669,Tschappina,GR,Region Viamala,7428
+3670,Urmein,GR,Region Viamala,7427
+3672,Safiental,GR,Region Surselva,7104|7106|7107|7109|7122|7402
+3673,Domleschg,GR,Region Viamala,7404|7407|7415|7416|7417|7418|7419
+3681,Avers,GR,Region Viamala,7447|7448
+3695,Sufers,GR,Region Viamala,7434
+3701,Andeer,GR,Region Viamala,7440|7442|7443
+3711,Rongellen,GR,Region Viamala,7430
+3712,Zillis-Reischen,GR,Region Viamala,7432
+3713,Ferrera,GR,Region Viamala,7444|7445
+3714,Rheinwald,GR,Region Viamala,7435|7436|7437|7438
+3715,Muntogna da Schons,GR,Region Viamala,7433
+3721,Bonaduz,AG,Zeiningen,7402
+3722,Domat/Ems,AG,Zeiningen,7013
+3723,Rhäzüns,AG,Zeiningen,7403
+3731,Felsberg,AG,Zeiningen,7012
+3732,Flims,AG,Zeiningen,7017|7018|7019
+3733,Tamins,AG,Zeiningen,7015|7315
+3734,Trin,AG,Zeiningen,7014|7015|7016
+3746,Zernez,GR,Region Engiadina Bassa / Val Müstair,7527|7530|7542|7543
+3752,Samnaun,GR,Region Engiadina Bassa / Val Müstair,7562|7563
+3762,Scuol,GR,Region Engiadina Bassa / Val Müstair,7545|7546|7550|7551|7552|7553|7554|7557
+3764,Valsot,GR,Region Engiadina Bassa / Val Müstair,7556|7557|7558|7559|7560
+3781,Bever,GR,Region Maloja,7502
+3782,Celerina/Schlarigna,GR,Region Maloja,7500|7504|7505
+3783,Madulain,GR,Region Maloja,7523
+3784,Pontresina,GR,Region Maloja,7504
+3785,La Punt Chamues-ch,GR,Region Maloja,7522
+3786,Samedan,GR,Region Maloja,7503|7504|7513
+3787,St. Moritz,GR,Region Maloja,7500|7512
+3788,S-chanf,GR,Region Maloja,7525|7526
+3789,Sils im Engadin/Segl,GR,Region Maloja,7514|7515|7517
+3790,Silvaplana,GR,Region Maloja,7512|7513
+3791,Zuoz,GR,Region Maloja,7524
+3792,Bregaglia,GR,Region Maloja,7447|7516|7602|7603|7604|7605|7606|7608|7610
+3804,Buseno,GR,Region Moesa,6542
+3805,Castaneda,GR,Region Moesa,6537|6540|6541
+3808,Rossa,GR,Region Moesa,6548
+3810,Santa Maria in Calanca,GR,Region Moesa,6541
+3821,Lostallo,GR,Region Moesa,6558
+3822,Mesocco,GR,Region Moesa,6563|6565
+3823,Soazza,GR,Region Moesa,6562
+3831,Cama,GR,Region Moesa,6557
+3832,Grono,GR,Region Moesa,6537|6538|6556|6557
+3834,Roveredo (GR),GR,Region Moesa,6535|6549
+3835,San Vittore,GR,Region Moesa,6533|6534
+3837,Calanca,GR,Region Moesa,6543|6544|6545|6546
+3847,Val Müstair,GR,Region Engiadina Bassa / Val Müstair,7532|7533|7534|7535|7536|7537
+3851,Davos,VS,Zermatt,7260|7265|7270|7272|7276|7277|7278|7494
+3861,Fideris,VS,Zermatt,7235
+3862,Furna,VS,Zermatt,7232
+3863,Jenaz,VS,Zermatt,7231|7232|7233
+3871,Klosters,VS,Zermatt,7247|7249|7250|7252|7265
+3881,Conters im Prättigau,VS,Zermatt,7241
+3882,Küblis,VS,Zermatt,7240
+3891,Luzein,VS,Zermatt,7222|7223|7224|7226|7240|7242|7243|7244|7245|7246
+3901,Chur,GR,Region Plessur,7000|7023|7026|7063|7064|7074
+3911,Churwalden,GR,Region Plessur,7000|7062|7074|7075|7076
+3921,Arosa,GR,Region Plessur,7027|7028|7029|7050|7056|7057|7058|7260
+3945,Trimmis,GR,Region Landquart,7202|7203|7213
+3946,Untervaz,GR,Region Landquart,7204
+3947,Zizers,GR,Region Landquart,7205|7302
+3951,Fläsch,GR,Region Landquart,7304|7306
+3952,Jenins,GR,Region Landquart,7307
+3953,Maienfeld,GR,Region Landquart,7302|7304
+3954,Malans,GR,Region Landquart,7208
+3955,Landquart,GR,Region Landquart,7204|7206|7302|7303|7313
+3961,Grüsch,VS,Zermatt,7213|7214|7215
+3962,Schiers,VS,Zermatt,7220|7222|7226|7228
+3972,Seewis im Prättigau,VS,Zermatt,7212|7215
+3981,Breil/Brigels,GR,Region Surselva,7134|7158|7159|7162|7163|7164|7165
+3982,Disentis/Mustér,GR,Region Surselva,7180|7182|7183|7186
+3983,Medel (Lucmagn),GR,Region Surselva,7184|7185
+3985,Sumvitg,GR,Region Surselva,7172|7173|7174|7175|7176|7180
+3986,Tujetsch,GR,Region Surselva,7187|7188|7189
+3987,Trun,GR,Region Surselva,7166|7167|7168|7172
+3988,Obersaxen Mundaun,GR,Region Surselva,7134|7137|7138
+4001,Aarau,AG,Bezirk Aarau,5000|5004|5032
+4002,Biberstein,AG,Bezirk Aarau,5023
+4003,Buchs (AG),AG,Bezirk Aarau,5033
+4004,Densbüren,AG,Bezirk Aarau,5025|5026
+4005,Erlinsbach (AG),AG,Bezirk Aarau,5017|5018
+4006,Gränichen,AG,Bezirk Aarau,5722|5723
+4007,Hirschthal,AG,Bezirk Aarau,5042
+4008,Küttigen,AG,Bezirk Aarau,5022|5024
+4009,Muhen,AG,Bezirk Aarau,5037
+4010,Oberentfelden,AG,Bezirk Aarau,5036
+4012,Suhr,AG,Bezirk Aarau,5000|5034
+4013,Unterentfelden,AG,Bezirk Aarau,5035
+4021,Baden,AG,Bezirk Baden,5300|5400|5404|5405|5406
+4022,Bellikon,AG,Bezirk Baden,5454|8967
+4023,Bergdietikon,AG,Bezirk Baden,8962|8967
+4024,Birmenstorf (AG),AG,Bezirk Baden,5406|5413
+4026,Ennetbaden,AG,Bezirk Baden,5408
+4027,Fislisbach,AG,Bezirk Baden,5405|5442
+4028,Freienwil,AG,Bezirk Baden,5423
+4029,Gebenstorf,AG,Bezirk Baden,5412
+4030,Killwangen,AG,Bezirk Baden,8956
+4031,Künten,AG,Bezirk Baden,5444
+4032,Mägenwil,AG,Bezirk Baden,5506
+4033,Mellingen,AG,Bezirk Baden,5507
+4034,Neuenhof,AG,Bezirk Baden,5432
+4035,Niederrohrdorf,AG,Bezirk Baden,5443
+4037,Oberrohrdorf,AG,Bezirk Baden,5452
+4038,Obersiggenthal,AG,Bezirk Baden,5415|5416
+4039,Remetschwil,AG,Bezirk Baden,5453
+4040,Spreitenbach,AG,Bezirk Baden,8953|8957
+4041,Stetten (AG),AG,Bezirk Baden,5608
+4044,Untersiggenthal,AG,Bezirk Baden,5301|5416|5417
+4045,Wettingen,AG,Bezirk Baden,5430
+4046,Wohlenschwil,AG,Bezirk Baden,5506|5512
+4047,Würenlingen,AG,Bezirk Baden,5303
+4048,Würenlos,AG,Bezirk Baden,5430|5436|8109
+4049,Ehrendingen,AG,Bezirk Baden,5420
+4061,Arni (AG),AG,Bezirk Bremgarten,8905
+4062,Berikon,AG,Bezirk Bremgarten,8964|8965
+4063,Bremgarten (AG),AG,Bezirk Bremgarten,5620|5626
+4064,Büttikon,AG,Bezirk Bremgarten,5619
+4065,Dottikon,AG,Bezirk Bremgarten,5604|5605
+4066,Eggenwil,AG,Bezirk Bremgarten,5445
+4067,Fischbach-Göslikon,AG,Bezirk Bremgarten,5525
+4068,Hägglingen,AG,Bezirk Bremgarten,5522|5607
+4071,Jonen,AG,Bezirk Bremgarten,8916
+4072,Niederwil (AG),AG,Bezirk Bremgarten,5524
+4073,Oberlunkhofen,AG,Bezirk Bremgarten,8917
+4074,Oberwil-Lieli,AG,Bezirk Bremgarten,8966
+4075,Rudolfstetten-Friedlisberg,AG,Bezirk Bremgarten,8964
+4076,Sarmenstorf,AG,Bezirk Bremgarten,5614|5618
+4077,Tägerig,AG,Bezirk Bremgarten,5522
+4078,Uezwil,AG,Bezirk Bremgarten,5619
+4079,Unterlunkhofen,AG,Bezirk Bremgarten,8918
+4080,Villmergen,AG,Bezirk Bremgarten,5605|5610|5611|5612|5613
+4081,Widen,AG,Bezirk Bremgarten,8967
+4082,Wohlen (AG),AG,Bezirk Bremgarten,5610|5611|5612
+4083,Zufikon,AG,Bezirk Bremgarten,5621
+4084,Islisberg,AG,Bezirk Bremgarten,8905
+4091,Auenstein,AG,Bezirk Brugg,5105
+4092,Birr,AG,Bezirk Brugg,5242
+4093,Birrhard,AG,Bezirk Brugg,5244
+4095,Brugg,AG,Bezirk Brugg,5107|5116|5200|5210|5213|5222|5225
+4099,Habsburg,AG,Bezirk Brugg,5245
+4100,Hausen (AG),AG,Bezirk Brugg,5210|5212
+4104,Lupfig,AG,Bezirk Brugg,5212|5242|5246
+4105,Mandach,AG,Bezirk Brugg,5318
+4106,Mönthal,AG,Bezirk Brugg,5078|5237
+4107,Mülligen,AG,Bezirk Brugg,5243
+4110,Remigen,AG,Bezirk Brugg,5236
+4111,Riniken,AG,Bezirk Brugg,5223
+4112,Rüfenach,AG,Bezirk Brugg,5200|5235
+4117,Thalheim (AG),AG,Bezirk Brugg,5112
+4120,Veltheim (AG),AG,Bezirk Brugg,5106
+4121,Villigen,AG,Bezirk Brugg,5233|5234
+4123,Windisch,AG,Bezirk Brugg,5210
+4124,Bözberg,AG,Bezirk Brugg,5225|5236|5237
+4125,Schinznach,AG,Bezirk Brugg,5107|5108
+4131,Beinwil am See,AG,Bezirk Kulm,5712
+4132,Birrwil,AG,Bezirk Kulm,5708
+4134,Dürrenäsch,AG,Bezirk Kulm,5724|5726
+4135,Gontenschwil,AG,Bezirk Kulm,5046|5728
+4136,Holziken,AG,Bezirk Kulm,5043
+4137,Leimbach (AG),AG,Bezirk Kulm,5733
+4138,Leutwil,AG,Bezirk Kulm,5706|5725
+4139,Menziken,AG,Bezirk Kulm,5736|5737
+4140,Oberkulm,AG,Bezirk Kulm,5727
+4141,Reinach (AG),AG,Bezirk Kulm,5734
+4142,Schlossrued,AG,Bezirk Kulm,5044
+4143,Schmiedrued,AG,Bezirk Kulm,5046
+4144,Schöftland,AG,Bezirk Kulm,5040
+4145,Teufenthal (AG),AG,Bezirk Kulm,5723|5724
+4146,Unterkulm,AG,Bezirk Kulm,5722|5723|5726
+4147,Zetzwil,AG,Bezirk Kulm,5732
+4161,Eiken,AG,Bezirk Laufenburg,5074
+4163,Frick,AG,Bezirk Laufenburg,5070
+4164,Gansingen,AG,Bezirk Laufenburg,5272
+4165,Gipf-Oberfrick,AG,Bezirk Laufenburg,5063|5073
+4169,Kaisten,AG,Bezirk Laufenburg,5080|5082|5083
+4170,Laufenburg,AG,Bezirk Laufenburg,5080|5084|5085
+4172,Münchwilen (AG),AG,Bezirk Laufenburg,4333
+4173,Oberhof,AG,Bezirk Laufenburg,5062
+4175,Oeschgen,AG,Bezirk Laufenburg,5072
+4176,Schwaderloch,AG,Bezirk Laufenburg,5326
+4177,Sisseln,AG,Bezirk Laufenburg,4334
+4181,Wittnau,AG,Bezirk Laufenburg,5064
+4182,Wölflinswil,AG,Bezirk Laufenburg,5026|5063
+4183,Zeihen,AG,Bezirk Laufenburg,5079
+4184,Mettauertal,AG,Bezirk Laufenburg,5273|5274|5275|5276|5277
+4185,Böztal,AG,Bezirk Laufenburg,5075|5076|5077|5078
+4186,Herznach-Ueken,AG,Bezirk Laufenburg,5027|5028
+4191,Ammerswil,AG,Bezirk Lenzburg,5600
+4192,Boniswil,AG,Bezirk Lenzburg,5706|5708
+4193,Brunegg,AG,Bezirk Lenzburg,5505
+4194,Dintikon,AG,Bezirk Lenzburg,5606
+4195,Egliswil,AG,Bezirk Lenzburg,5703|5704
+4196,Fahrwangen,AG,Bezirk Lenzburg,5615
+4197,Hallwil,AG,Bezirk Lenzburg,5705|5706
+4198,Hendschiken,AG,Bezirk Lenzburg,5604
+4199,Holderbank (AG),AG,Bezirk Lenzburg,5113
+4200,Hunzenschwil,AG,Bezirk Lenzburg,5502
+4201,Lenzburg,AG,Bezirk Lenzburg,5600
+4202,Meisterschwanden,AG,Bezirk Lenzburg,5615|5616|5617
+4203,Möriken-Wildegg,AG,Bezirk Lenzburg,5103
+4204,Niederlenz,AG,Bezirk Lenzburg,5103|5702
+4205,Othmarsingen,AG,Bezirk Lenzburg,5504|5604
+4206,Rupperswil,AG,Bezirk Lenzburg,5102|5103
+4207,Schafisheim,AG,Bezirk Lenzburg,5503
+4208,Seengen,AG,Bezirk Lenzburg,5707
+4209,Seon,AG,Bezirk Lenzburg,5703
+4210,Staufen,AG,Bezirk Lenzburg,5603
+4221,Abtwil,AG,Bezirk Muri,5646
+4222,Aristau,AG,Bezirk Muri,5628|5630
+4223,Auw,AG,Bezirk Muri,5637|5642|5643|5644|6277
+4224,Beinwil (Freiamt),AG,Bezirk Muri,5637
+4226,Besenbüren,AG,Bezirk Muri,5627
+4227,Bettwil,AG,Bezirk Muri,5618|5632
+4228,Boswil,AG,Bezirk Muri,5623|5630|5632
+4229,Bünzen,AG,Bezirk Muri,5624
+4230,Buttwil,AG,Bezirk Muri,5632
+4231,Dietwil,AG,Bezirk Muri,6034|6042
+4232,Geltwil,AG,Bezirk Muri,5637
+4233,Kallern,AG,Bezirk Muri,5625
+4234,Merenschwand,AG,Bezirk Muri,5634|5636
+4235,Mühlau,AG,Bezirk Muri,5642
+4236,Muri (AG),AG,Bezirk Muri,5630
+4237,Oberrüti,AG,Bezirk Muri,5647
+4238,Rottenschwil,AG,Bezirk Muri,8919
+4239,Sins,AG,Bezirk Muri,5643|5645|6034|6275
+4240,Waltenschwil,AG,Bezirk Muri,5622
+4251,Hellikon,AG,Bezirk Rheinfelden,4316|4465
+4252,Kaiseraugst,AG,Bezirk Rheinfelden,4303
+4253,Magden,AG,Bezirk Rheinfelden,4305|4312
+4254,Möhlin,AG,Bezirk Rheinfelden,4313
+4255,Mumpf,AG,Bezirk Rheinfelden,4322
+4256,Obermumpf,AG,Bezirk Rheinfelden,4324
+4257,Olsberg,AG,Bezirk Rheinfelden,4304|4305
+4258,Rheinfelden,AG,Bezirk Rheinfelden,4303|4310|4313
+4259,Schupfart,AG,Bezirk Rheinfelden,4325
+4260,Stein (AG),AG,Bezirk Rheinfelden,4332
+4261,Wallbach,AG,Bezirk Rheinfelden,4323
+4262,Wegenstetten,AG,Bezirk Rheinfelden,4317
+4263,Zeiningen,AG,Bezirk Rheinfelden,4314|4315|4323
+4264,Zuzgen,AG,Bezirk Rheinfelden,4315
+4271,Aarburg,AG,Bezirk Zofingen,4600|4663|4665
+4273,Bottenwil,AG,Bezirk Zofingen,4813|4814
+4274,Brittnau,AG,Bezirk Zofingen,4803|4805|6264
+4275,Kirchleerau,AG,Bezirk Zofingen,5054
+4276,Kölliken,AG,Bezirk Zofingen,4813|5742
+4277,Moosleerau,AG,Bezirk Zofingen,5054
+4279,Murgenthal,AG,Bezirk Zofingen,4853|4856|4914|4915
+4280,Oftringen,AG,Bezirk Zofingen,4656|4665|4800
+4281,Reitnau,AG,Bezirk Zofingen,5056|5057
+4282,Rothrist,AG,Bezirk Zofingen,4802|4852
+4283,Safenwil,AG,Bezirk Zofingen,5745
+4284,Staffelbach,AG,Bezirk Zofingen,5053
+4285,Strengelbach,AG,Bezirk Zofingen,4802
+4286,Uerkheim,AG,Bezirk Zofingen,4812|4813
+4287,Vordemwald,AG,Bezirk Zofingen,4803|4852
+4288,Wiliberg,AG,Bezirk Zofingen,5058
+4289,Zofingen,AG,Bezirk Zofingen,4800|4812|4814
+4303,Böttstein,AG,Bezirk Zurzach,5314|5315
+4304,Döttingen,AG,Bezirk Zurzach,5312
+4305,Endingen,AG,Bezirk Zurzach,5304|5305
+4306,Fisibach,AG,Bezirk Zurzach,5467
+4307,Full-Reuenthal,AG,Bezirk Zurzach,5324
+4309,Klingnau,AG,Bezirk Zurzach,5313|5322
+4310,Koblenz,AG,Bezirk Zurzach,5322
+4311,Leibstadt,AG,Bezirk Zurzach,5325
+4312,Lengnau (AG),AG,Bezirk Zurzach,5426
+4313,Leuggern,AG,Bezirk Zurzach,5316|5317
+4314,Mellikon,AG,Bezirk Zurzach,5465
+4318,Schneisingen,AG,Bezirk Zurzach,5425
+4319,Siglistorf,AG,Bezirk Zurzach,5462
+4320,Tegerfelden,AG,Bezirk Zurzach,5306
+4324,Zurzach,AG,Bezirk Zurzach,5323|5330|5332|5333|5334|5463|5464|5466
+4401,Arbon,TG,Bezirk Arbon,9320
+4406,Dozwil,TG,Bezirk Arbon,8582
+4411,Egnach,TG,Bezirk Arbon,9314|9315|9322
+4416,Hefenhofen,TG,Bezirk Arbon,8580
+4421,Horn,TG,Bezirk Arbon,9326
+4426,Kesswil,TG,Bezirk Arbon,8593
+4431,Roggwil (TG),TG,Bezirk Arbon,9306|9308|9315|9320|9325
+4436,Romanshorn,TG,Bezirk Arbon,8590
+4441,Salmsach,TG,Bezirk Arbon,8580|8599|9322
+4446,Sommeri,TG,Bezirk Arbon,8580
+4451,Uttwil,TG,Bezirk Arbon,8590|8592
+4461,Amriswil,TG,Bezirk Arbon,8580|8581|8587
+4471,Bischofszell,TG,Bezirk Weinfelden,9220|9223
+4476,Erlen,TG,Bezirk Weinfelden,8586|9216
+4486,Hauptwil-Gottshaus,TG,Bezirk Weinfelden,9213|9220|9225
+4495,Hohentannen,TG,Bezirk Weinfelden,9216
+4501,Kradolf-Schönenberg,TG,Bezirk Weinfelden,9214|9215|9217
+4506,Sulgen,TG,Bezirk Weinfelden,8583|9214
+4511,Zihlschlacht-Sitterdorf,TG,Bezirk Weinfelden,8588|8589|9220|9313
+4536,Basadingen-Schlattingen,TG,Bezirk Frauenfeld,8254|8255|8476
+4545,Diessenhofen,TG,Bezirk Frauenfeld,8252|8253
+4546,Schlatt (TG),TG,Bezirk Frauenfeld,8252
+4551,Aadorf,TG,Bezirk Münchwilen,8355|8356|8357|8522|9547
+4561,Felben-Wellhausen,TG,Bezirk Frauenfeld,8500|8552
+4566,Frauenfeld,TG,Bezirk Frauenfeld,8500|9548
+4571,Gachnang,TG,Bezirk Frauenfeld,8500|8546|8547
+4590,Hüttlingen,TG,Bezirk Frauenfeld,8553
+4591,Matzingen,TG,Bezirk Frauenfeld,8500|9548
+4601,Neunforn,TG,Bezirk Frauenfeld,8525|8526
+4606,Stettfurt,TG,Bezirk Frauenfeld,9507|9548
+4611,Thundorf,TG,Bezirk Frauenfeld,8500|8512
+4616,Uesslingen-Buch,TG,Bezirk Frauenfeld,8524
+4621,Warth-Weiningen,TG,Bezirk Frauenfeld,8532|8536
+4641,Altnau,TG,Bezirk Kreuzlingen,8595
+4643,Bottighofen,TG,Bezirk Kreuzlingen,8280|8598
+4646,Ermatingen,TG,Bezirk Kreuzlingen,8272|8273
+4651,Gottlieben,TG,Bezirk Kreuzlingen,8274
+4656,Güttingen,TG,Bezirk Kreuzlingen,8594
+4666,Kemmental,TG,Bezirk Kreuzlingen,8565|8566|8573
+4671,Kreuzlingen,TG,Bezirk Kreuzlingen,8280|8598
+4681,Langrickenbach,TG,Bezirk Kreuzlingen,8585|8586
+4683,Lengwil,TG,Bezirk Kreuzlingen,8574
+4691,Münsterlingen,TG,Bezirk Kreuzlingen,8596|8597
+4696,Tägerwilen,TG,Bezirk Kreuzlingen,8274|8280
+4701,Wäldi,TG,Bezirk Kreuzlingen,8558|8564
+4711,Affeltrangen,TG,Bezirk Weinfelden,8514|9555|9556|9562
+4716,Bettwiesen,TG,Bezirk Münchwilen,9553
+4721,Bichelsee-Balterswil,TG,Bezirk Münchwilen,8362|8363
+4723,Braunau,TG,Bezirk Münchwilen,9502
+4724,Eschlikon,TG,Bezirk Münchwilen,8360|8370
+4726,Fischingen,TG,Bezirk Münchwilen,8372|8374|8376|8495|8499
+4741,Lommis,TG,Bezirk Münchwilen,9506|9508
+4746,Münchwilen (TG),TG,Bezirk Münchwilen,8360|9500|9542|9543
+4751,Rickenbach (TG),TG,Bezirk Münchwilen,9532|9535|9536
+4756,Schönholzerswilen,TG,Bezirk Weinfelden,8577
+4761,Sirnach,TG,Bezirk Münchwilen,8370|8371|8372|9573
+4776,Tobel-Tägerschen,TG,Bezirk Münchwilen,9554|9555
+4781,Wängi,TG,Bezirk Münchwilen,9545|9546
+4786,Wilen (TG),TG,Bezirk Münchwilen,9535
+4791,Wuppenau,TG,Bezirk Weinfelden,9514|9515
+4801,Berlingen,TG,Bezirk Frauenfeld,8267
+4806,Eschenz,TG,Bezirk Frauenfeld,8264
+4811,Herdern,TG,Bezirk Frauenfeld,8506|8532|8535|8536
+4816,Homburg,TG,Bezirk Frauenfeld,8507|8508
+4821,Hüttwilen,TG,Bezirk Frauenfeld,8535|8536|8537
+4826,Mammern,TG,Bezirk Frauenfeld,8264|8265|8507
+4831,Müllheim,TG,Bezirk Frauenfeld,8555
+4841,Pfyn,TG,Bezirk Frauenfeld,8505|8508
+4846,Raperswilen,TG,Bezirk Kreuzlingen,8558
+4851,Salenstein,TG,Bezirk Kreuzlingen,8268|8269
+4864,Steckborn,TG,Bezirk Frauenfeld,8266
+4871,Wagenhausen,TG,Bezirk Frauenfeld,8259
+4881,Amlikon-Bissegg,TG,Bezirk Weinfelden,8514|8554
+4891,Berg (TG),TG,Bezirk Weinfelden,8570|8572|8576|8584
+4901,Birwinken,TG,Bezirk Weinfelden,8585|8586
+4911,Bürglen (TG),TG,Bezirk Weinfelden,8575|8584
+4921,Bussnang,TG,Bezirk Weinfelden,8575|9503|9504|9517|9562|9565
+4941,Märstetten,TG,Bezirk Weinfelden,8560|8561
+4946,Weinfelden,TG,Bezirk Weinfelden,8570|8575
+4951,Wigoltingen,TG,Bezirk Weinfelden,8554|8556|8560|8564
+5001,Arbedo-Castione,TI,Distretto di Bellinzona,6517|6532
+5002,Bellinzona,TI,Distretto di Bellinzona,6500|6503|6512|6513|6514|6515|6518|6523|6524|6525|6528|6532|6582|6583|6584|6592|6702
+5003,Cadenazzo,TI,Distretto di Bellinzona,6592|6593|6599
+5009,Isone,TI,Distretto di Bellinzona,6810
+5010,Lumino,TI,Distretto di Bellinzona,6533
+5017,Sant'Antonino,TI,Distretto di Bellinzona,6515|6528|6592|6593
+5048,Acquarossa,TI,Distretto di Blenio,6715|6716|6721|6722|6723|6724
+5049,Blenio,TI,Distretto di Blenio,6717|6718|6719|6720
+5050,Serravalle,TI,Distretto di Blenio,6710|6713|6714|6721
+5061,Airolo,TI,Distretto di Leventina,6780
+5063,Bedretto,TI,Distretto di Leventina,6781
+5071,Dalpe,TI,Distretto di Leventina,6774
+5072,Faido,TI,Distretto di Leventina,6714|6746|6747|6748|6749|6760|6763|6764
+5073,Giornico,TI,Distretto di Leventina,6743|6745
+5076,Personico,TI,Distretto di Leventina,6744
+5077,Pollegio,TI,Distretto di Leventina,6742
+5079,Quinto,TI,Distretto di Leventina,6772|6773|6775|6776|6777
+5091,Ascona,TI,Distretto di Locarno,6612|6618|6622
+5096,Brione sopra Minusio,TI,Distretto di Locarno,6645|6646
+5097,Brissago,TI,Distretto di Locarno,6614
+5108,Gordola,TI,Distretto di Locarno,6596
+5112,Lavertezzo,TI,Distretto di Locarno,6595
+5113,Locarno,TI,Distretto di Locarno,6516|6572|6594|6595|6596|6600|6605|6612|6644|6652
+5115,Losone,TI,Distretto di Locarno,6616|6618
+5117,Mergoscia,TI,Distretto di Locarno,6647
+5118,Minusio,TI,Distretto di Locarno,6645|6648
+5120,Muralto,TI,Distretto di Locarno,6600
+5121,Orselina,TI,Distretto di Locarno,6600|6605|6644
+5125,Ronco sopra Ascona,TI,Distretto di Locarno,6613|6622
+5131,Tenero-Contra,TI,Distretto di Locarno,6598|6646
+5136,Onsernone,TI,Distretto di Locarno,6655|6661
+5138,Cugnasco-Gerra,TI,Distretto di Locarno,6516|6594|6595|6597
+5141,Agno,TI,Distretto di Lugano,6934|6982|6990|6992
+5143,Aranno,TI,Distretto di Lugano,6994
+5144,Arogno,TI,Distretto di Lugano,6822|6823
+5148,Bedano,TI,Distretto di Lugano,6930
+5151,Bioggio,TI,Distretto di Lugano,6934|6935|6982|6992|6993
+5154,Bissone,TI,Distretto di Lugano,6816
+5160,Brusino Arsizio,TI,Distretto di Lugano,6827|6867
+5161,Cademario,TI,Distretto di Lugano,6934|6936
+5162,Cadempino,TI,Distretto di Lugano,6814
+5167,Canobbio,TI,Distretto di Lugano,6952
+5171,Caslano,TI,Distretto di Lugano,6987
+5176,Comano,TI,Distretto di Lugano,6944|6949
+5180,Cureglia,TI,Distretto di Lugano,6944
+5186,Grancia,TI,Distretto di Lugano,6916
+5187,Gravesano,TI,Distretto di Lugano,6814|6929
+5189,Lamone,TI,Distretto di Lugano,6807|6814|6930|6944
+5192,Lugano,TI,Distretto di Lugano,6823|6900|6912|6913|6914|6915|6917|6918|6924|6925|6932|6943|6951|6959|6962|6963|6964|6965|6966|6967|6968|6974|6976|6977|6978|6979
+5193,Magliaso,TI,Distretto di Lugano,6983
+5194,Manno,TI,Distretto di Lugano,6928|6934
+5196,Massagno,TI,Distretto di Lugano,6900
+5198,Melide,TI,Distretto di Lugano,6815
+5199,Mezzovico-Vira,TI,Distretto di Lugano,6805
+5203,Morcote,TI,Distretto di Lugano,6922
+5205,Muzzano,TI,Distretto di Lugano,6933|6982
+5206,Neggio,TI,Distretto di Lugano,6983|6991
+5208,Origlio,TI,Distretto di Lugano,6945
+5210,Paradiso,TI,Distretto di Lugano,6900
+5212,Ponte Capriasca,TI,Distretto di Lugano,6945|6946
+5214,Porza,TI,Distretto di Lugano,6942|6948
+5216,Pura,TI,Distretto di Lugano,6984
+5221,Savosa,TI,Distretto di Lugano,6942|6948
+5225,Sorengo,TI,Distretto di Lugano,6924
+5226,Capriasca,TI,Distretto di Lugano,6807|6947|6950|6953|6954|6955|6956|6957|6958|6960
+5227,Torricella-Taverne,TI,Distretto di Lugano,6807|6808
+5230,Vernate,TI,Distretto di Lugano,6992
+5231,Vezia,TI,Distretto di Lugano,6943
+5233,Vico Morcote,TI,Distretto di Lugano,6921
+5236,Collina d'Oro,TI,Distretto di Lugano,6916|6919|6925|6926|6927
+5237,Alto Malcantone,TI,Distretto di Lugano,6937|6938|6939
+5238,Monteceneri,TI,Distretto di Lugano,6802|6803|6804|6806|6809
+5239,Tresa,TI,Distretto di Lugano,6980|6988|6989|6995|6997|6998
+5240,Val Mara,TI,Distretto di Lugano,6817|6818|6821
+5242,Balerna,TI,Distretto di Mendrisio,6828|6830
+5249,Castel San Pietro,TI,Distretto di Mendrisio,6825|6850|6873|6874|6875|6877
+5250,Chiasso,TI,Distretto di Mendrisio,6830|6832
+5251,Coldrerio,TI,Distretto di Mendrisio,6877
+5254,Mendrisio,TI,Distretto di Mendrisio,6825|6850|6852|6853|6855|6862|6863|6864|6865|6866|6872|6874
+5257,Morbio Inferiore,TI,Distretto di Mendrisio,6834
+5260,Novazzano,TI,Distretto di Mendrisio,6828|6883
+5263,Riva San Vitale,TI,Distretto di Mendrisio,6826
+5266,Stabio,TI,Distretto di Mendrisio,6853|6854|6855
+5268,Vacallo,TI,Distretto di Mendrisio,6833
+5269,Breggia,TI,Distretto di Mendrisio,6835|6837|6838|6839
+5281,Biasca,TI,Distretto di Riviera,6710|6742
+5287,Riviera,TI,Distretto di Riviera,6526|6527|6703|6705|6707
+5304,Bosco/Gurin,TI,Distretto di Vallemaggia,6685
+5307,Campo (Vallemaggia),TI,Distretto di Vallemaggia,6683|6684
+5309,Cerentino,TI,Distretto di Vallemaggia,6682|6683
+5310,Cevio,TI,Distretto di Vallemaggia,6675|6676|6690
+5315,Linescio,TI,Distretto di Vallemaggia,6682
+5317,Maggia,TI,Distretto di Vallemaggia,6670|6673|6674|6677|6678
+5323,Lavizzara,TI,Distretto di Vallemaggia,6692|6693|6694|6695|6696
+5324,Avegno Gordevio,TI,Distretto di Vallemaggia,6670|6672
+5395,Lema,TI,Distretto di Lugano,6980|6981|6986|6999
+5396,Terre di Pedemonte,TI,Distretto di Locarno,6652|6653|6654
+5397,Centovalli,TI,Distretto di Locarno,6655|6656|6657|6658|6659
+5398,Gambarogno,TI,Distretto di Locarno,6571|6572|6573|6574|6575|6576|6577|6578|6579|6593|6594
+5399,Verzasca,TI,Distretto di Locarno,6631|6632|6633|6634|6635|6636|6637
+5401,Aigle,VD,District d'Aigle,1860|1863
+5402,Bex,VD,District d'Aigle,1880|1882
+5403,Chessel,VD,District d'Aigle,1846
+5404,Corbeyrier,VD,District d'Aigle,1856
+5405,Gryon,VD,District d'Aigle,1880|1882
+5406,Lavey-Morcles,VD,District d'Aigle,1892
+5407,Leysin,VD,District d'Aigle,1854
+5408,Noville,VD,District d'Aigle,1845
+5409,Ollon,VD,District d'Aigle,1860|1866|1867|1884|1885
+5410,Ormont-Dessous,VD,District d'Aigle,1660|1856|1862|1863|1866
+5411,Ormont-Dessus,VD,District d'Aigle,1864|1865
+5412,Rennaz,VD,District d'Aigle,1847
+5413,Roche (VD),VD,District d'Aigle,1852
+5414,Villeneuve (VD),VD,District d'Aigle,1844
+5415,Yvorne,VD,District d'Aigle,1853
+5422,Aubonne,VD,District de Morges,1170|1172|1174
+5423,Ballens,VD,District de Morges,1144
+5424,Berolle,VD,District de Morges,1149
+5425,Bière,VD,District de Morges,1145
+5426,Bougy-Villars,VD,District de Morges,1172
+5427,Féchy,VD,District de Morges,1166|1173
+5428,Gimel,VD,District de Morges,1188
+5429,Longirod,VD,District de Nyon,1261
+5430,Marchissy,VD,District de Nyon,1261
+5431,Mollens (VD),VD,District de Morges,1146
+5434,Saint-George,VD,District de Nyon,1188
+5435,Saint-Livres,VD,District de Morges,1145|1176
+5436,Saint-Oyens,VD,District de Morges,1187
+5437,Saubraz,VD,District de Morges,1189
+5451,Avenches,VD,District de la Broye-Vully,1564|1580|1721
+5456,Cudrefin,VD,District de la Broye-Vully,1588
+5458,Faoug,VD,District de la Broye-Vully,1595
+5464,Vully-les-Lacs,VD,District de la Broye-Vully,1584|1585|1586|1587|1589|1787
+5471,Bettens,VD,District du Gros-de-Vaud,1042|1306
+5472,Bournens,VD,District du Gros-de-Vaud,1035
+5473,Boussens,VD,District du Gros-de-Vaud,1034
+5474,La Chaux (Cossonay),VD,District de Morges,1148|1308|1316
+5475,Chavannes-le-Veyron,VD,District de Morges,1148
+5476,Chevilly,VD,District de Morges,1316
+5477,Cossonay,VD,District de Morges,1304
+5479,Cuarnens,VD,District de Morges,1148
+5480,Daillens,VD,District du Gros-de-Vaud,1306
+5481,Dizy,VD,District de Morges,1304
+5482,Eclépens,VD,District de Morges,1312
+5483,Ferreyres,VD,District de Morges,1313
+5484,Gollion,VD,District de Morges,1124
+5485,Grancy,VD,District de Morges,1117
+5486,L'Isle,VD,District de Morges,1148
+5487,Lussery-Villars,VD,District du Gros-de-Vaud,1307
+5488,Mauraz,VD,District de Morges,1148
+5489,Mex (VD),VD,District du Gros-de-Vaud,1031
+5490,Moiry,VD,District de Morges,1148
+5491,Mont-la-Ville,VD,District de Morges,1148|1325
+5492,Montricher,VD,District de Morges,1147
+5493,Orny,VD,District de Morges,1317|1372
+5495,Penthalaz,VD,District du Gros-de-Vaud,1305
+5496,Penthaz,VD,District du Gros-de-Vaud,1303
+5497,Pompaples,VD,District de Morges,1318
+5498,La Sarraz,VD,District de Morges,1315
+5499,Senarclens,VD,District de Morges,1304
+5501,Sullens,VD,District du Gros-de-Vaud,1036
+5503,Vufflens-la-Ville,VD,District du Gros-de-Vaud,1031|1302
+5511,Assens,VD,District du Gros-de-Vaud,1042
+5512,Bercher,VD,District du Gros-de-Vaud,1038
+5514,Bottens,VD,District du Gros-de-Vaud,1041
+5515,Bretigny-sur-Morrens,VD,District du Gros-de-Vaud,1053
+5516,Cugy (VD),VD,District du Gros-de-Vaud,1053
+5518,Echallens,VD,District du Gros-de-Vaud,1040
+5520,Essertines-sur-Yverdon,VD,District du Gros-de-Vaud,1417
+5521,Etagnières,VD,District du Gros-de-Vaud,1037
+5522,Fey,VD,District du Gros-de-Vaud,1044
+5523,Froideville,VD,District du Gros-de-Vaud,1055
+5527,Morrens (VD),VD,District du Gros-de-Vaud,1054
+5529,Oulens-sous-Echallens,VD,District du Gros-de-Vaud,1377
+5530,Pailly,VD,District du Gros-de-Vaud,1416
+5531,Penthéréaz,VD,District du Gros-de-Vaud,1375
+5533,Poliez-Pittet,VD,District du Gros-de-Vaud,1041
+5534,Rueyres,VD,District du Gros-de-Vaud,1046
+5535,Saint-Barthélemy (VD),VD,District du Gros-de-Vaud,1040
+5537,Villars-le-Terroir,VD,District du Gros-de-Vaud,1040
+5539,Vuarrens,VD,District du Gros-de-Vaud,1418
+5540,Montilliez,VD,District du Gros-de-Vaud,1041|1043
+5541,Goumoëns,VD,District du Gros-de-Vaud,1376
+5551,Bonvillars,VD,District du Jura-Nord vaudois,1423|1427
+5552,Bullet,VD,District du Jura-Nord vaudois,1452|1453
+5553,Champagne,VD,District du Jura-Nord vaudois,1424
+5554,Concise,VD,District du Jura-Nord vaudois,1426|2028
+5555,Corcelles-près-Concise,VD,District du Jura-Nord vaudois,1426
+5556,Fiez,VD,District du Jura-Nord vaudois,1420|1453
+5557,Fontaines-sur-Grandson,VD,District du Jura-Nord vaudois,1421|1453
+5559,Giez,VD,District du Jura-Nord vaudois,1429
+5560,Grandevent,VD,District du Jura-Nord vaudois,1421|1453
+5561,Grandson,VD,District du Jura-Nord vaudois,1422
+5562,Mauborget,VD,District du Jura-Nord vaudois,1453
+5563,Mutrux,VD,District du Jura-Nord vaudois,1428
+5564,Novalles,VD,District du Jura-Nord vaudois,1431
+5565,Onnens (VD),VD,District du Jura-Nord vaudois,1425
+5566,Provence,VD,District du Jura-Nord vaudois,1428|2108
+5568,Sainte-Croix,VD,District du Jura-Nord vaudois,1445|1450|1452|1454
+5571,Tévenon,VD,District du Jura-Nord vaudois,1423|1453
+5581,Belmont-sur-Lausanne,VD,District de Lavaux-Oron,1092
+5582,Cheseaux-sur-Lausanne,VD,District de Lausanne,1033
+5583,Crissier,VD,District de l'Ouest lausannois,1023|1033
+5584,Epalinges,VD,District de Lausanne,1066
+5585,Jouxtens-Mézery,VD,District de Lausanne,1008
+5586,Lausanne,VD,District de Lausanne,1000|1003|1004|1005|1006|1007|1010|1011|1012|1018|1023|1032|1033|1053
+5587,Le Mont-sur-Lausanne,VD,District de Lausanne,1052
+5588,Paudex,VD,District de Lavaux-Oron,1094|1095
+5589,Prilly,VD,District de l'Ouest lausannois,1008
+5590,Pully,VD,District de Lavaux-Oron,1009|1068
+5591,Renens (VD),VD,District de l'Ouest lausannois,1020
+5592,Romanel-sur-Lausanne,VD,District de Lausanne,1032
+5601,Chexbres,VD,District de Lavaux-Oron,1071
+5604,Forel (Lavaux),VD,District de Lavaux-Oron,1072|1080|1091
+5606,Lutry,VD,District de Lavaux-Oron,1090|1092|1093|1095
+5607,Puidoux,VD,District de Lavaux-Oron,1070|1071|1096|1098|1607
+5609,Rivaz,VD,District de Lavaux-Oron,1071
+5610,Saint-Saphorin (Lavaux),VD,District de Lavaux-Oron,1071
+5611,Savigny,VD,District de Lavaux-Oron,1073|1090|1091
+5613,Bourg-en-Lavaux,VD,District de Lavaux-Oron,1070|1091|1095|1096|1097|1098
+5621,Aclens,VD,District de Morges,1123
+5622,Bremblens,VD,District de Morges,1121
+5623,Buchillon,VD,District de Morges,1164
+5624,Bussigny,VD,District de l'Ouest lausannois,1030
+5627,Chavannes-près-Renens,VD,District de l'Ouest lausannois,1015|1022
+5628,Chigny,VD,District de Morges,1134
+5629,Clarmont,VD,District de Morges,1127
+5631,Denens,VD,District de Morges,1135
+5632,Denges,VD,District de Morges,1026
+5633,Echandens,VD,District de Morges,1026
+5634,Echichens,VD,District de Morges,1112|1113|1114|1125
+5635,Ecublens (VD),VD,District de l'Ouest lausannois,1015|1024
+5636,Etoy,VD,District de Morges,1163
+5637,Lavigny,VD,District de Morges,1170|1175
+5638,Lonay,VD,District de Morges,1027
+5639,Lully (VD),VD,District de Morges,1132|1162
+5640,Lussy-sur-Morges,VD,District de Morges,1167
+5642,Morges,VD,District de Morges,1110
+5643,Préverenges,VD,District de Morges,1028
+5645,Romanel-sur-Morges,VD,District de Morges,1122
+5646,Saint-Prex,VD,District de Morges,1162
+5648,Saint-Sulpice (VD),VD,District de l'Ouest lausannois,1015|1025
+5649,Tolochenaz,VD,District de Morges,1131
+5650,Vaux-sur-Morges,VD,District de Morges,1126
+5651,Villars-Sainte-Croix,VD,District de l'Ouest lausannois,1029
+5652,Villars-sous-Yens,VD,District de Morges,1168
+5653,Vufflens-le-Château,VD,District de Morges,1134
+5654,Vullierens,VD,District de Morges,1115
+5655,Yens,VD,District de Morges,1169
+5656,Hautemorges,VD,District de Morges,1116|1128|1136|1141|1142|1143
+5661,Boulens,VD,District du Gros-de-Vaud,1038|1063
+5663,Bussy-sur-Moudon,VD,District de la Broye-Vully,1514
+5665,Chavannes-sur-Moudon,VD,District de la Broye-Vully,1510|1512
+5669,Curtilles,VD,District de la Broye-Vully,1521
+5671,Dompierre (VD),VD,District de la Broye-Vully,1682
+5673,Hermenches,VD,District de la Broye-Vully,1059|1513
+5674,Lovatens,VD,District de la Broye-Vully,1682
+5675,Lucens,VD,District de la Broye-Vully,1522|1526|1683
+5678,Moudon,VD,District de la Broye-Vully,1510
+5680,Ogens,VD,District du Gros-de-Vaud,1045
+5683,Prévonloup,VD,District de la Broye-Vully,1682
+5684,Rossenges,VD,District de la Broye-Vully,1513
+5688,Syens,VD,District de la Broye-Vully,1510
+5690,Villars-le-Comte,VD,District de la Broye-Vully,1515
+5692,Vucherens,VD,District de la Broye-Vully,1509
+5693,Montanaire,VD,District du Gros-de-Vaud,1038|1063|1409|1410|1515
+5701,Arnex-sur-Nyon,VD,District de Nyon,1277
+5702,Arzier-Le Muids,VD,District de Nyon,1264|1273
+5703,Bassins,VD,District de Nyon,1269
+5704,Begnins,VD,District de Nyon,1268
+5705,Bogis-Bossey,VD,District de Nyon,1279
+5706,Borex,VD,District de Nyon,1277
+5707,Chavannes-de-Bogis,VD,District de Nyon,1279
+5708,Chavannes-des-Bois,VD,District de Nyon,1290
+5709,Chéserex,VD,District de Nyon,1275|1276
+5710,Coinsins,VD,District de Nyon,1267
+5711,Commugny,VD,District de Nyon,1291
+5712,Coppet,VD,District de Nyon,1296|1297
+5713,Crans (VD),VD,District de Nyon,1299
+5714,Crassier,VD,District de Nyon,1263
+5715,Duillier,VD,District de Nyon,1266
+5716,Eysins,VD,District de Nyon,1262
+5717,Founex,VD,District de Nyon,1297
+5718,Genolier,VD,District de Nyon,1272
+5719,Gingins,VD,District de Nyon,1276
+5720,Givrins,VD,District de Nyon,1271|1272
+5721,Gland,VD,District de Nyon,1196
+5722,Grens,VD,District de Nyon,1274
+5723,Mies,VD,District de Nyon,1290|1295
+5724,Nyon,VD,District de Nyon,1260
+5725,Prangins,VD,District de Nyon,1197|1260
+5726,La Rippe,VD,District de Nyon,1275|1278
+5727,Saint-Cergue,VD,District de Nyon,1264|1265|1276
+5728,Signy-Avenex,VD,District de Nyon,1274
+5729,Tannay,VD,District de Nyon,1295
+5730,Trélex,VD,District de Nyon,1270
+5731,Le Vaud,VD,District de Nyon,1261
+5732,Vich,VD,District de Nyon,1267
+5741,L'Abergement,VD,District du Jura-Nord vaudois,1355|1357
+5742,Agiez,VD,District du Jura-Nord vaudois,1352
+5743,Arnex-sur-Orbe,VD,District du Jura-Nord vaudois,1321
+5744,Ballaigues,VD,District du Jura-Nord vaudois,1338
+5745,Baulmes,VD,District du Jura-Nord vaudois,1446|1454
+5746,Bavois,VD,District du Jura-Nord vaudois,1372
+5747,Bofflens,VD,District du Jura-Nord vaudois,1353
+5748,Bretonnières,VD,District du Jura-Nord vaudois,1329
+5749,Chavornay,VD,District du Jura-Nord vaudois,1373|1374|1435
+5750,Les Clées,VD,District du Jura-Nord vaudois,1356
+5752,Croy,VD,District du Jura-Nord vaudois,1322
+5754,Juriens,VD,District du Jura-Nord vaudois,1326
+5755,Lignerolle,VD,District du Jura-Nord vaudois,1357
+5756,Montcherand,VD,District du Jura-Nord vaudois,1354
+5757,Orbe,VD,District du Jura-Nord vaudois,1350
+5758,La Praz,VD,District du Jura-Nord vaudois,1148
+5759,Premier,VD,District du Jura-Nord vaudois,1324
+5760,Rances,VD,District du Jura-Nord vaudois,1439
+5761,Romainmôtier-Envy,VD,District du Jura-Nord vaudois,1323
+5762,Sergey,VD,District du Jura-Nord vaudois,1355
+5763,Valeyres-sous-Rances,VD,District du Jura-Nord vaudois,1358
+5764,Vallorbe,VD,District du Jura-Nord vaudois,1337
+5765,Vaulion,VD,District du Jura-Nord vaudois,1325
+5766,Vuiteboeuf,VD,District du Jura-Nord vaudois,1443|1445
+5785,Corcelles-le-Jorat,VD,District de la Broye-Vully,1082|1513
+5790,Maracon,VD,District de Lavaux-Oron,1613
+5792,Montpreveyres,VD,District de Lavaux-Oron,1081
+5798,Ropraz,VD,District de la Broye-Vully,1088
+5799,Servion,VD,District de Lavaux-Oron,1077|1080
+5803,Vulliens,VD,District de la Broye-Vully,1084|1085
+5804,Jorat-Menthue,VD,District du Gros-de-Vaud,1041|1058|1059|1061|1062|1063
+5805,Oron,VD,District de Lavaux-Oron,1078|1607|1608|1610|1612
+5806,Jorat-Mézières,VD,District de Lavaux-Oron,1076|1083|1084
+5812,Champtauroz,VD,District de la Broye-Vully,1537
+5813,Chevroux,VD,District de la Broye-Vully,1545
+5816,Corcelles-près-Payerne,VD,District de la Broye-Vully,1562|1774
+5817,Grandcour,VD,District de la Broye-Vully,1543
+5819,Henniez,VD,District de la Broye-Vully,1525
+5821,Missy,VD,District de la Broye-Vully,1565
+5822,Payerne,VD,District de la Broye-Vully,1530|1551|1562
+5827,Trey,VD,District de la Broye-Vully,1552
+5828,Treytorrens (Payerne),VD,District de la Broye-Vully,1538
+5830,Villarzel,VD,District de la Broye-Vully,1554|1555
+5831,Valbroye,VD,District de la Broye-Vully,1485|1523|1524|1525|1534|1535|1536|1682
+5841,Château-d'Oex,VD,District de la Riviera-Pays-d'Enhaut,1659|1660
+5842,Rossinière,VD,District de la Riviera-Pays-d'Enhaut,1658
+5843,Rougemont,VD,District de la Riviera-Pays-d'Enhaut,1659
+5851,Allaman,VD,District de Morges,1165
+5852,Bursinel,VD,District de Nyon,1195
+5853,Bursins,VD,District de Nyon,1183|1268
+5854,Burtigny,VD,District de Nyon,1268
+5855,Dully,VD,District de Nyon,1195
+5856,Essertines-sur-Rolle,VD,District de Nyon,1180|1185|1186
+5857,Gilly,VD,District de Nyon,1180|1182|1183|1186|1195
+5858,Luins,VD,District de Nyon,1184
+5859,Mont-sur-Rolle,VD,District de Nyon,1185
+5860,Perroy,VD,District de Nyon,1166
+5861,Rolle,VD,District de Nyon,1180
+5862,Tartegnin,VD,District de Nyon,1180
+5863,Vinzel,VD,District de Nyon,1184|1268
+5871,L'Abbaye,VD,District du Jura-Nord vaudois,1342|1344|1346
+5872,Le Chenit,VD,District du Jura-Nord vaudois,1341|1347|1348
+5873,Le Lieu,VD,District du Jura-Nord vaudois,1343|1345
+5882,Chardonne,VD,District de la Riviera-Pays-d'Enhaut,1801|1803
+5883,Corseaux,VD,District de la Riviera-Pays-d'Enhaut,1802
+5884,Corsier-sur-Vevey,VD,District de la Riviera-Pays-d'Enhaut,1804|1808|1809
+5885,Jongny,VD,District de la Riviera-Pays-d'Enhaut,1805
+5886,Montreux,VD,District de la Riviera-Pays-d'Enhaut,1807|1815|1816|1817|1820|1822|1823|1824|1832|1833
+5889,La Tour-de-Peilz,VD,District de la Riviera-Pays-d'Enhaut,1814
+5890,Vevey,VD,District de la Riviera-Pays-d'Enhaut,1800
+5891,Veytaux,VD,District de la Riviera-Pays-d'Enhaut,1820
+5892,Blonay - Saint-Légier,VD,District de la Riviera-Pays-d'Enhaut,1806|1807
+5902,Belmont-sur-Yverdon,VD,District du Jura-Nord vaudois,1432
+5903,Bioley-Magnoux,VD,District du Jura-Nord vaudois,1045|1407
+5904,Chamblon,VD,District du Jura-Nord vaudois,1436
+5905,Champvent,VD,District du Jura-Nord vaudois,1443
+5907,Chavannes-le-Chêne,VD,District du Jura-Nord vaudois,1464
+5908,Chêne-Pâquier,VD,District du Jura-Nord vaudois,1464
+5909,Cheseaux-Noréaz,VD,District du Jura-Nord vaudois,1400
+5910,Cronay,VD,District du Jura-Nord vaudois,1406
+5911,Cuarny,VD,District du Jura-Nord vaudois,1400|1404
+5912,Démoret,VD,District du Jura-Nord vaudois,1415
+5913,Donneloye,VD,District du Jura-Nord vaudois,1407|1408
+5914,Ependes (VD),VD,District du Jura-Nord vaudois,1434
+5919,Mathod,VD,District du Jura-Nord vaudois,1438
+5921,Molondin,VD,District du Jura-Nord vaudois,1415
+5922,Montagny-près-Yverdon,VD,District du Jura-Nord vaudois,1442
+5923,Oppens,VD,District du Gros-de-Vaud,1047
+5924,Orges,VD,District du Jura-Nord vaudois,1430
+5925,Orzens,VD,District du Jura-Nord vaudois,1413
+5926,Pomy,VD,District du Jura-Nord vaudois,1405
+5928,Rovray,VD,District du Jura-Nord vaudois,1463
+5929,Suchy,VD,District du Jura-Nord vaudois,1433
+5930,Suscévaz,VD,District du Jura-Nord vaudois,1437
+5931,Treycovagnes,VD,District du Jura-Nord vaudois,1436
+5932,Ursins,VD,District du Jura-Nord vaudois,1412
+5933,Valeyres-sous-Montagny,VD,District du Jura-Nord vaudois,1441
+5934,Valeyres-sous-Ursins,VD,District du Jura-Nord vaudois,1412
+5935,Villars-Epeney,VD,District du Jura-Nord vaudois,1404
+5937,Vugelles-La Mothe,VD,District du Jura-Nord vaudois,1431
+5938,Yverdon-les-Bains,VD,District du Jura-Nord vaudois,1400|1432
+5939,Yvonand,VD,District du Jura-Nord vaudois,1462
+6002,Brig-Glis,VS,Bezirk Brig,3900|3902
+6004,Eggerberg,VS,Bezirk Brig,3937|3939
+6007,Naters,VS,Bezirk Brig,3900|3903|3904|3914
+6008,Ried-Brig,VS,Bezirk Brig,3900|3901|3911|3912|3913
+6009,Simplon,VS,Bezirk Brig,3907
+6010,Termen,VS,Bezirk Brig,3900|3912|3913|3982
+6011,Zwischbergen,VS,Bezirk Brig,3907
+6021,Ardon,VS,District de Conthey,1957
+6022,Chamoson,VS,District de Conthey,1908|1955
+6023,Conthey,VS,District de Conthey,1963|1964|1975|1976
+6024,Nendaz,VS,District de Conthey,1993|1994|1996|1997
+6025,Vétroz,VS,District de Conthey,1963|1976
+6032,Bourg-Saint-Pierre,VS,District d'Entremont,1946
+6033,Liddes,VS,District d'Entremont,1945|1946
+6034,Orsières,VS,District d'Entremont,1937|1938|1943|1944
+6035,Sembrancher,VS,District d'Entremont,1933
+6037,Val de Bagnes,VS,District d'Entremont,1927|1933|1934|1936|1941|1942|1947|1948
+6052,Bellwald,VS,Bezirk Goms,3997
+6054,Binn,VS,Bezirk Goms,3996
+6056,Ernen,VS,Bezirk Goms,3989|3995
+6057,Fiesch,VS,Bezirk Goms,3984
+6058,Fieschertal,VS,Bezirk Goms,3801|3984|3997
+6061,Lax,VS,Bezirk Goms,3984|3993|3994
+6076,Obergoms,VS,Bezirk Goms,3988|3999
+6077,Goms,VS,Bezirk Goms,3985|3989|3998
+6082,Ayent,VS,District d'Hérens,1958|1966|1972|1974
+6083,Evolène,VS,District d'Hérens,1983|1984|1985|1986
+6084,Hérémence,VS,District d'Hérens,1982|1987
+6087,Saint-Martin (VS),VS,District d'Hérens,1969|1982
+6089,Vex,VS,District d'Hérens,1967|1981|1988|1992
+6090,Mont-Noble,VS,District d'Hérens,1961|1968|1973|3967
+6101,Agarn,VS,Bezirk Leuk,3948|3951
+6102,Albinen,VS,Bezirk Leuk,3955
+6104,Ergisch,VS,Bezirk Leuk,3946|3947
+6109,Inden,VS,Bezirk Leuk,3953
+6110,Leuk,VS,Bezirk Leuk,3945|3951|3952|3953|3956|3957|3970
+6111,Leukerbad,VS,Bezirk Leuk,3953|3954
+6112,Oberems,VS,Bezirk Leuk,3946|3948
+6113,Salgesch,VS,Bezirk Leuk,3970|3972
+6116,Varen,VS,Bezirk Leuk,3953|3970
+6117,Guttet-Feschel,VS,Bezirk Leuk,3956
+6118,Gampel-Bratsch,VS,Bezirk Leuk,3917|3940|3945|3946|3957
+6119,Turtmann-Unterems,VS,Bezirk Leuk,3940|3943|3946|3948
+6131,Bovernier,VS,District de Martigny,1927|1932
+6133,Fully,VS,District de Martigny,1920|1926
+6134,Isérables,VS,District de Martigny,1914
+6135,Leytron,VS,District de Martigny,1911|1912
+6136,Martigny,VS,District de Martigny,1904|1906|1907|1920|1927|1928
+6137,Martigny-Combe,VS,District de Martigny,1920|1921|1928
+6139,Riddes,VS,District de Martigny,1908|1914|1918
+6140,Saillon,VS,District de Martigny,1911|1913
+6141,Saxon,VS,District de Martigny,1907
+6142,Trient,VS,District de Martigny,1929
+6151,Champéry,VS,District de Monthey,1874
+6152,Collombey-Muraz,VS,District de Monthey,1868|1872|1893
+6153,Monthey,VS,District de Monthey,1870|1871|1893
+6154,Port-Valais,VS,District de Monthey,1897|1898
+6155,Saint-Gingolph,VS,District de Monthey,1898
+6156,Troistorrents,VS,District de Monthey,1872|1875
+6157,Val-d'Illiez,VS,District de Monthey,1873
+6158,Vionnaz,VS,District de Monthey,1895|1899
+6159,Vouvry,VS,District de Monthey,1896|1897|1899
+6172,Bister,VS,Bezirk Raron,3983
+6173,Bitsch,VS,Bezirk Raron,3914|3982
+6177,Grengiols,VS,Bezirk Raron,3993|3994|3996
+6181,Riederalp,VS,Bezirk Raron,3982|3983|3986|3987|3991
+6191,Ausserberg,VS,Bezirk Raron,3938
+6192,Blatten,VS,Bezirk Raron,3919
+6193,Bürchen,VS,Bezirk Raron,3935|3942
+6194,Eischoll,VS,Bezirk Raron,3943
+6195,Ferden,VS,Bezirk Raron,3916|3917
+6197,Kippel,VS,Bezirk Raron,3917
+6198,Niedergesteln,VS,Bezirk Raron,3940|3942|3943|3949
+6199,Raron,VS,Bezirk Raron,3930|3942
+6201,Unterbäch,VS,Bezirk Raron,3942|3944
+6202,Wiler (Lötschen),VS,Bezirk Raron,3918|3919
+6203,Mörel-Filet,VS,Bezirk Raron,3983
+6204,Steg-Hohtenn,VS,Bezirk Raron,3940|3949
+6205,Bettmeralp,VS,Bezirk Raron,3983|3991|3992|3994
+6211,Collonges,VS,District de Saint-Maurice,1903
+6212,Dorénaz,VS,District de Saint-Maurice,1905
+6213,Evionnaz,VS,District de Saint-Maurice,1902
+6214,Finhaut,VS,District de Saint-Maurice,1925
+6215,Massongex,VS,District de Saint-Maurice,1869|1871|1891
+6217,Saint-Maurice,VS,District de Saint-Maurice,1890|1902
+6218,Salvan,VS,District de Saint-Maurice,1920|1922|1923
+6219,Vernayaz,VS,District de Saint-Maurice,1904|1920
+6220,Vérossaz,VS,District de Saint-Maurice,1891
+6232,Chalais,VS,District de Sierre,3966|3967|3979
+6235,Chippis,VS,District de Sierre,3965
+6238,Grône,VS,District de Sierre,3967|3979
+6239,Icogne,VS,District de Sierre,1977|1978|3963
+6240,Lens,VS,District de Sierre,1978|3963|3971|3978
+6246,Saint-Léonard,VS,District de Sierre,1958|1977|3978
+6248,Sierre,VS,District de Sierre,1958|3960|3965|3966|3971|3976|3977
+6252,Anniviers,VS,District de Sierre,3960|3961
+6253,Crans-Montana,VS,District de Sierre,3960|3963|3970|3971|3972|3973|3974|3975|3976
+6254,Noble-Contrée,VS,District de Sierre,3960|3968|3970|3972|3973
+6261,Arbaz,VS,District de Sion,1972|1974
+6263,Grimisuat,VS,District de Sion,1950|1966|1971
+6265,Savièse,VS,District de Sion,1950|1962|1965
+6266,Sion,VS,District de Sion,1950|1958|1962|1967|1971|1991|1992|1993|1994
+6267,Veysonnaz,VS,District de Sion,1991|1993
+6281,Baltschieder,VS,Bezirk Visp,3930|3931|3937
+6282,Eisten,VS,Bezirk Visp,3908|3922
+6283,Embd,VS,Bezirk Visp,3922|3926
+6285,Grächen,VS,Bezirk Visp,3922|3925
+6286,Lalden,VS,Bezirk Visp,3931
+6287,Randa,VS,Bezirk Visp,3928
+6288,Saas-Almagell,VS,Bezirk Visp,3905
+6289,Saas-Balen,VS,Bezirk Visp,3906|3908|3910
+6290,Saas-Fee,VS,Bezirk Visp,3906|3910
+6291,Saas-Grund,VS,Bezirk Visp,3910
+6292,St. Niklaus,VS,Bezirk Visp,3924|3927
+6293,Stalden (VS),VS,Bezirk Visp,3922|3923
+6294,Staldenried,VS,Bezirk Visp,3922|3933
+6295,Täsch,VS,Bezirk Visp,3929
+6296,Törbel,VS,Bezirk Visp,3922|3923
+6297,Visp,VS,Bezirk Visp,3930
+6298,Visperterminen,VS,Bezirk Visp,3922|3930|3932
+6299,Zeneggen,VS,Bezirk Visp,3934
+6300,Zermatt,VS,Bezirk Visp,3920
+6404,Boudry,NE,Canton de Neuchâtel,2013|2014|2015|2016|2017|2019|2022|2149
+6408,Cortaillod,NE,Canton de Neuchâtel,2016|2022
+6413,Rochefort,NE,Canton de Neuchâtel,2019|2035|2037|2103|2149|2318
+6416,Milvignes,NE,Canton de Neuchâtel,2000|2012|2013|2014|2015|2035|2036
+6417,La Grande Béroche,NE,Canton de Neuchâtel,2022|2023|2024|2025|2027|2028|2103
+6421,La Chaux-de-Fonds,NE,Canton de Neuchâtel,2300|2314|2322|2616
+6422,Les Planchettes,NE,Canton de Neuchâtel,2325
+6423,La Sagne,NE,Canton de Neuchâtel,2314
+6432,La Brévine,NE,Canton de Neuchâtel,2124|2406
+6433,Brot-Plamboz,NE,Canton de Neuchâtel,2318
+6434,Le Cerneux-Péquignot,NE,Canton de Neuchâtel,2400|2405|2406|2414
+6435,La Chaux-du-Milieu,NE,Canton de Neuchâtel,2400|2405|2406
+6436,Le Locle,NE,Canton de Neuchâtel,2322|2400|2416
+6437,Les Ponts-de-Martel,NE,Canton de Neuchâtel,2105|2314|2316|2318
+6451,Cornaux,NE,Canton de Neuchâtel,2072|2075|2087
+6452,Cressier (NE),NE,Canton de Neuchâtel,2072|2087|2088
+6455,Le Landeron,NE,Canton de Neuchâtel,2073|2520|2523|2525
+6456,Lignières,NE,Canton de Neuchâtel,2523
+6458,Neuchâtel,NE,Canton de Neuchâtel,2000|2034|2035|2036|2037|2042|2067|2068
+6487,Val-de-Ruz,NE,Canton de Neuchâtel,2019|2037|2042|2043|2046|2052|2053|2054|2056|2057|2058|2063|2065|2067|2206|2207|2208|2314|2518|2523|2616
+6504,La Côte-aux-Fées,NE,Canton de Neuchâtel,2115|2117
+6511,Les Verrières,NE,Canton de Neuchâtel,2126|2406
+6512,Val-de-Travers,NE,Canton de Neuchâtel,2103|2105|2108|2112|2113|2114|2115|2116|2123|2124|2126|2127|2316|2318|2406
+6513,Laténa,NE,Canton de Neuchâtel,2067|2068|2072|2073|2074|2075|3236
+6601,Aire-la-Ville,GE,Canton de Genève,1288
+6602,Anières,GE,Canton de Genève,1247
+6603,Avully,GE,Canton de Genève,1237
+6604,Avusy,GE,Canton de Genève,1236|1285
+6605,Bardonnex,GE,Canton de Genève,1257|1258
+6606,Bellevue,GE,Canton de Genève,1293
+6607,Bernex,GE,Canton de Genève,1232|1233|1236|1286
+6608,Carouge (GE),GE,Canton de Genève,1227
+6609,Cartigny,GE,Canton de Genève,1236
+6610,Céligny,GE,Canton de Genève,1298
+6611,Chancy,GE,Canton de Genève,1237|1284|1285
+6612,Chêne-Bougeries,GE,Canton de Genève,1224|1231
+6613,Chêne-Bourg,GE,Canton de Genève,1225
+6614,Choulex,GE,Canton de Genève,1244
+6615,Collex-Bossy,GE,Canton de Genève,1239|1290
+6616,Collonge-Bellerive,GE,Canton de Genève,1222|1245
+6617,Cologny,GE,Canton de Genève,1223
+6618,Confignon,GE,Canton de Genève,1228|1232
+6619,Corsier (GE),GE,Canton de Genève,1246
+6620,Dardagny,GE,Canton de Genève,1283
+6621,Genève,GE,Canton de Genève,1201|1202|1203|1204|1205|1206|1207|1208|1209|1213|1218|1227|1292
+6622,Genthod,GE,Canton de Genève,1294
+6623,Le Grand-Saconnex,GE,Canton de Genève,1209|1215|1216|1218
+6624,Gy,GE,Canton de Genève,1251|1254
+6625,Hermance,GE,Canton de Genève,1248
+6626,Jussy,GE,Canton de Genève,1254
+6627,Laconnex,GE,Canton de Genève,1236|1287
+6628,Lancy,GE,Canton de Genève,1212|1213|1227|1228
+6629,Meinier,GE,Canton de Genève,1252
+6630,Meyrin,GE,Canton de Genève,1214|1215|1216|1217
+6631,Onex,GE,Canton de Genève,1212|1213
+6632,Perly-Certoux,GE,Canton de Genève,1258
+6633,Plan-les-Ouates,GE,Canton de Genève,1212|1228|1257
+6634,Pregny-Chambésy,GE,Canton de Genève,1202|1292
+6635,Presinge,GE,Canton de Genève,1243
+6636,Puplinge,GE,Canton de Genève,1241
+6637,Russin,GE,Canton de Genève,1281
+6638,Satigny,GE,Canton de Genève,1214|1242|1281
+6639,Soral,GE,Canton de Genève,1286
+6640,Thônex,GE,Canton de Genève,1226
+6641,Troinex,GE,Canton de Genève,1256
+6642,Vandoeuvres,GE,Canton de Genève,1253
+6643,Vernier,GE,Canton de Genève,1209|1214|1216|1219|1220
+6644,Versoix,GE,Canton de Genève,1290
+6645,Veyrier,GE,Canton de Genève,1234|1255
+6702,Boécourt,JU,District de Delémont,2856|2857|2883
+6703,Bourrignon,JU,District de Delémont,2803
+6704,Châtillon (JU),JU,District de Delémont,2843
+6706,Courchapoix,JU,District de Delémont,2824|2825
+6708,Courrendlin,JU,District de Delémont,2800|2830|2832
+6709,Courroux,JU,District de Delémont,2805|2822|2823|2830
+6710,Courtételle,JU,District de Delémont,2852|2853
+6711,Delémont,JU,District de Delémont,2800|2806|2852
+6712,Develier,JU,District de Delémont,2800|2802
+6713,Ederswiler,JU,District de Delémont,2813|2814
+6715,Mervelier,JU,District de Delémont,2827
+6716,Mettembert,JU,District de Delémont,2806
+6718,Movelier,JU,District de Delémont,2812|2813
+6719,Pleigne,JU,District de Delémont,2803|2806|2807|2813|2814
+6721,Rossemaison,JU,District de Delémont,2842
+6722,Saulcy,JU,District de Delémont,2718|2873
+6724,Soyhières,JU,District de Delémont,2805
+6729,Haute-Sorne,JU,District de Delémont,2748|2853|2854|2855|2863|2864
+6730,Val Terbi,JU,District de Delémont,2824|2826|2828|2829|2832
+6741,Le Bémont (JU),JU,District des Franches-Montagnes,2360|2362|2363
+6742,Les Bois,JU,District des Franches-Montagnes,2333|2336
+6743,Les Breuleux,JU,District des Franches-Montagnes,2345
+6745,Les Enfers,JU,District des Franches-Montagnes,2353|2363
+6748,Les Genevez (JU),JU,District des Franches-Montagnes,2714
+6750,Lajoux (JU),JU,District des Franches-Montagnes,2362|2718
+6751,Montfaucon,JU,District des Franches-Montagnes,2362|2718
+6753,Muriaux,JU,District des Franches-Montagnes,2338|2345
+6754,Le Noirmont,JU,District des Franches-Montagnes,2336|2340|2345
+6757,Saignelégier,JU,District des Franches-Montagnes,2350|2353|2354
+6758,Saint-Brais,JU,District des Franches-Montagnes,2364|2873|2882|2883|2886
+6759,Soubey,JU,District des Franches-Montagnes,2887
+6771,Alle,JU,District de Porrentruy,2942
+6774,Boncourt,JU,District de Porrentruy,2926
+6778,Bure,JU,District de Porrentruy,2915
+6781,Coeuve,JU,District de Porrentruy,2932
+6782,Cornol,JU,District de Porrentruy,2952
+6783,Courchavon,JU,District de Porrentruy,2922
+6784,Courgenay,JU,District de Porrentruy,2950
+6785,Courtedoux,JU,District de Porrentruy,2900|2905
+6789,Fahy,JU,District de Porrentruy,2916
+6790,Fontenais,JU,District de Porrentruy,2900|2902|2903|2904
+6792,Grandfontaine,JU,District de Porrentruy,2908
+6800,Porrentruy,JU,District de Porrentruy,2900
+6806,Vendlincourt,JU,District de Porrentruy,2943
+6807,Basse-Allaine,JU,District de Porrentruy,2915|2923|2924|2925
+6808,Clos du Doubs,JU,District de Porrentruy,2882|2883|2884|2885|2886|2888|2889
+6809,Haute-Ajoie,JU,District de Porrentruy,2906|2907|2912|2914
+6810,La Baroche,JU,District de Porrentruy,2807|2946|2947|2953|2954
+6811,Damphreux-Lugnez,JU,District de Porrentruy,2933
+6812,Basse-Vendline,JU,District de Porrentruy,2935|2944
+6831,Moutier,JU,District de Moutier,2740

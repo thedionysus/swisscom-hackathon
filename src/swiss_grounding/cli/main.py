@@ -3,6 +3,7 @@ import uuid
 from dataclasses import asdict
 from datetime import UTC, date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import typer
 
@@ -33,6 +34,7 @@ def _link(url: str, anchor: str | None) -> str:
 
 
 EXIT_CODES = {"invalid_request": 1, "needs_location": 2}
+SWISS_TZ = ZoneInfo("Europe/Zurich")
 
 app = typer.Typer(help="Swiss Grounding MCP command line.", no_args_is_help=True)
 db_app = typer.Typer(help="Database commands.")
@@ -40,6 +42,8 @@ app.add_typer(db_app, name="db")
 sources_app = typer.Typer(help="Source registry and suggestions.")
 app.add_typer(sources_app, name="sources")
 app.add_typer(eval_app, name="eval")
+locations_app = typer.Typer(help="Location tree data.")
+app.add_typer(locations_app, name="locations")
 
 
 @db_app.command("init")
@@ -198,6 +202,25 @@ def sources_approve(
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1)
     typer.echo(f"approved {s.url} as source {s.source_id}")
+
+
+DEFAULT_OUT_OPTION = typer.Option(None, "--out")
+
+
+@locations_app.command("fetch-register")
+def fetch_register_cmd(
+    snapshot_date: str = typer.Option(None, "--date", help="ISO date, default today"),
+    out: Path | None = DEFAULT_OUT_OPTION,
+) -> None:
+    """Regenerate the committed commune register snapshot from BFS and LINDAS."""
+    from swiss_grounding.locations.register import SNAPSHOT, write_register_csv
+    from swiss_grounding.locations.register_fetch import fetch_register
+
+    when = date.fromisoformat(snapshot_date) if snapshot_date else datetime.now(SWISS_TZ).date()
+    communes = fetch_register(when)
+    destination = out or SNAPSHOT
+    write_register_csv(destination, communes)
+    typer.echo(f"wrote {len(communes)} communes to {destination}")
 
 
 @sources_app.command("reject")

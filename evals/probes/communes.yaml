@@ -199,8 +199,8 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
-    note: Kloten must not receive city of Zurich park rules. Today it resolves to the canton, so the node expectation fails.
+    status: green
+    note: Kloten must not receive city of Zurich park rules. Resolves to its own municipality node under CH-ZH now that the commune register is seeded.
     expect:
       status: results
       resolved:
@@ -479,10 +479,10 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     judge: true
-    note: A Zurich commune, not the Affoltern Quartier in Kreis 11. Today GeoAdmin returns a different Affoltern and the resolver
-      lands on canton Bern, which is a jurisdiction leak across cantons.
+    note: A Zurich commune, not the Affoltern Quartier in Kreis 11. Now resolves via alias to its own municipality node under
+      CH-ZH since the commune register is seeded, no longer falling through to GeoAdmin's cross-canton Affoltern hit.
     expect:
       status: results
       resolved:
@@ -614,9 +614,10 @@ probes:
       - dogs
     kind: structural
     failure_class: none
-    status: red
+    status: green
     note: Marked commune input. Same node as com-001; checks that the marker is accepted by the alias lookup rather than falling
-      through to GeoAdmin. Today resolves approximately to the canton.
+      through to GeoAdmin. Now resolves via alias directly to the Winterthur municipality node, since the commune register
+      seeds "Gemeinde Winterthur" as an alias.
     expect:
       status: results
       resolved:
