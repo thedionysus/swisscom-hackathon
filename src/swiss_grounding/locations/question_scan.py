@@ -78,6 +78,7 @@ def _has_ancestor_match(
 
 def _accept_unigram(
     tree: LocationTree, match: _AliasMatch, raw: Sequence[str], others: Sequence[_AliasMatch],
+    prose: bool,
 ) -> bool:
     """Guards against ordinary prose words that happen to be aliases."""
     word = match.text
@@ -87,7 +88,7 @@ def _accept_unigram(
         return False
     if not word[:1].isupper():
         return False
-    if _is_sentence_initial(raw, match.start):
+    if prose and _is_sentence_initial(raw, match.start):
         return False
     if match.nodes[0].level is Level.NEIGHBORHOOD:
         return _has_ancestor_match(tree, match.nodes[0], others)
@@ -95,12 +96,12 @@ def _accept_unigram(
 
 
 def _keep(
-    tree: LocationTree, matches: Sequence[_AliasMatch], raw: Sequence[str],
+    tree: LocationTree, matches: Sequence[_AliasMatch], raw: Sequence[str], prose: bool,
 ) -> tuple[_AliasMatch, ...]:
     return tuple(
         m for m in matches
         if m.size > 1
-        or _accept_unigram(tree, m, raw, [o for o in matches if o is not m])
+        or _accept_unigram(tree, m, raw, [o for o in matches if o is not m], prose)
     )
 
 
@@ -108,16 +109,54 @@ def _most_specific(tree: LocationTree, matches: Sequence[_AliasMatch]) -> _Alias
     return max(matches, key=lambda m: len(tree.path(m.nodes[0].id)))
 
 
-def resolve_from_question(tree: LocationTree, question: str) -> ResolvedLocation | None:
+def _is_candidate_word(word: str) -> bool:
+    """A word that looks like it could name a place: a postal code or a capitalised word.
+
+    Mirrors the entry checks of :func:`_accept_unigram` (minus the guards that need
+    context) so filler words ("postal", "code", "or") never have to be matched for
+    the input to count as fully covered.
+    """
+    if not word:
+        return False
+    if word.isdigit():
+        return len(word) == PLZ_LENGTH
+    if len(word) == AMBIGUOUS_ABBREVIATION_LENGTH:
+        return False
+    return word[:1].isupper()
+
+
+def _fully_covered(words: Sequence[str], matches: Sequence[_AliasMatch]) -> bool:
+    """True when every place-name-shaped word is inside some match's span.
+
+    Ordinary filler words ("postal", "code") never need to match; a leftover
+    capitalised or postal-code-shaped word ("Oberland", "Airport") does.
+    """
+    expected = {i for i, w in enumerate(words) if _is_candidate_word(w)}
+    covered = {i for m in matches for i in range(m.start, m.end)}
+    return expected <= covered
+
+
+def resolve_from_question(
+    tree: LocationTree, question: str, prose: bool = True,
+) -> ResolvedLocation | None:
     """Resolve a jurisdiction mentioned in ``question``, or None when unclear.
 
     Returns None when nothing survives the guards, or when two surviving matches
     are not on a single root-to-node path (e.g. "Basel or Zurich"), so the caller
-    can ask the user instead of guessing.
+    can ask the user instead of guessing. ``prose`` gates the sentence-initial
+    capitalisation guard, which only makes sense for free-flowing text; a bare
+    place name like "Zürich, Switzerland" is not prose and should not be
+    rejected for starting the string. When ``prose`` is False the whole input
+    is expected to name one place, so a leftover unmatched word ("Oberland" in
+    "Zürich Oberland") means the scan should back off and let the caller (the
+    resolver's GeoAdmin fallback) decide, rather than silently keeping just
+    the part it recognised.
     """
     raw, words = _tokenize(question)
-    kept = _keep(tree, _drop_contained(_alias_matches(tree, words)), raw)
+    kept = _keep(tree, _drop_contained(_alias_matches(tree, words)), raw, prose)
     if not kept:
+        return None
+    if not prose and not _fully_covered(words, kept):
         return None
     best = _most_specific(tree, kept)
     path = tree.path(best.nodes[0].id)

@@ -100,10 +100,22 @@ def test_ambiguous_alias_picks_most_specific_and_lists_alternatives():
 
 
 def test_geoadmin_known_commune():
+    # Exercise _resolve_via_geoadmin directly: since "Zurich" is itself a tree alias,
+    # resolve() would short-circuit through the scan before ever reaching GeoAdmin
+    # (see test_alias_found_in_text_short_circuits_geoadmin).
+    geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
+    r = LocationResolver(tree(), geo)._resolve_via_geoadmin("Zurich")
+    assert r.location.id == "CH-ZH-261"
+    assert r.method == "geoadmin"
+
+
+def test_alias_found_in_text_short_circuits_geoadmin():
+    """A recognisable alias inside the text resolves via the scan, never reaching GeoAdmin."""
     geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
     r = LocationResolver(tree(), geo).resolve("Zurich centre")
     assert r.location.id == "CH-ZH-261"
-    assert r.method == "geoadmin"
+    assert r.method == "alias_scan"
+    assert geo.calls == []
 
 
 def test_geoadmin_hit_without_token_overlap_is_rejected():
@@ -192,3 +204,34 @@ def test_niederdorf_collides_with_basel_landschaft_commune_cross_path():
     result = LocationResolver(tree(), FakeGeo(())).resolve("Niederdorf")
     assert isinstance(result, AmbiguousLocation)
     assert {c.id for c in result.candidates} == {"CH-ZH-261-K1-RATHAUS", "CH-BL-2891"}
+
+
+def test_geoadmin_hit_needs_every_token_covered():
+    geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
+    r = LocationResolver(tree(), geo).resolve("Zürich Oberland")
+    assert r.location.id == "CH-ZH"
+    assert r.method == "geoadmin_approximate"
+
+
+def test_geoadmin_hit_with_unresolved_non_commune_label_returns_none():
+    geo = FakeGeo((GeoAdminHit(bfs_id=0, label="Zürichsee (ZH)"),))
+    assert LocationResolver(tree(), geo).resolve("Zürichsee") is None
+
+
+def test_single_token_typo_resolves_against_the_tree():
+    r = LocationResolver(tree(), FakeGeo(())).resolve("Winterthurr")
+    assert r.location.id == "CH-ZH-230"
+    assert r.method == "alias_fuzzy"
+
+
+def test_trailing_country_name_keeps_the_most_specific():
+    r = LocationResolver(tree(), FakeGeo(())).resolve("Zürich, Switzerland")
+    assert r.location.id == "CH-ZH-261"
+    assert [a.id for a in r.alternatives] == ["CH-ZH"]
+
+
+def test_zurich_airport_shares_one_token_falls_to_canton():
+    geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
+    r = LocationResolver(tree(), geo).resolve("Zurich Airport")
+    assert r.location.id == "CH-ZH"
+    assert r.method == "geoadmin_approximate"

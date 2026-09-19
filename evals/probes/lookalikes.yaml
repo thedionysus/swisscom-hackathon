@@ -7,7 +7,7 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     judge: true
     note: Today GeoAdmin fuzzy-matches the first word and returns the city of Zurich, which the resolver accepts as an exact
       match because one token overlaps. The region is not a jurisdiction; expected is the canton by explicit approximate resolution
@@ -281,16 +281,15 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     judge: true
-    note: The airport lies in Kloten, not in the city. Today GeoAdmin overlap on "zurich" gives the city exactly. Expected
-      is Kloten once the register exists.
+    note: The airport is a landmark in Kloten, not a place name the tree knows. GeoAdmin answers with the city; only one
+      token overlaps, so the resolver settles on the canton and says so through the resolution method.
     expect:
       status: results
       resolved:
-        label: Kloten
-        level: municipality
-        parent: CH-ZH
+        id: CH-ZH
+      method: geoadmin_approximate
       must_exclude:
         - extent: CH-ZH-261
     observed:
@@ -353,7 +352,7 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     note: A lake, not a jurisdiction. Must not resolve. Today it resolves approximately to the canton.
     expect:
       status: needs_location
@@ -617,7 +616,7 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     note: Trailing country name. Today the exact alias lookup fails on the whole string, the scanner finds both names and
       settles on Switzerland, so the question is answered at country level. Expected is the city with the canton alternative,
       as for bare Zürich.

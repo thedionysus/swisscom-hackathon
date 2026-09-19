@@ -716,7 +716,7 @@ probes:
       - dogs
     kind: structural
     failure_class: none
-    status: red
+    status: green
     note: One-character typo. GeoAdmin returns nothing for it, so the resolver must tolerate a single edit against the commune
       register and resolve to Winterthur itself. Today the response is needs_location.
     expect:
