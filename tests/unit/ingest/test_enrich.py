@@ -25,7 +25,7 @@ def source(**o):
     return Source(**{**base, **o})
 
 
-def fetched(language="de", text="Hunde in Wiedikon, Zürich, müssen an die Leine."):
+def fetched(language="de", text="Hunde in der Stadt Zürich müssen an die Leine."):
     return FetchedDocument(source_id="zh_ch", url="https://www.zh.ch/x", title="Hunde", language=language,
                            sections=(Section("Hunde", None, text),))
 
