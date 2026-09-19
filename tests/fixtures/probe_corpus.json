@@ -118,7 +118,7 @@
       "title_original": "Hunde im Kanton Zürich",
       "title_en": "Dogs in the Canton of Zurich",
       "language": "de",
-      "extent_id": "CH-ZH-261",
+      "extent_id": "CH-ZH",
       "authority": "official_info",
       "categories": [
         "dogs",
@@ -141,7 +141,7 @@
       "title_original": "Abfall und Rohstoffe",
       "title_en": "Waste and raw materials",
       "language": "de",
-      "extent_id": "CH-ZH-261",
+      "extent_id": "CH-ZH",
       "authority": "official_info",
       "categories": [
         "waste"

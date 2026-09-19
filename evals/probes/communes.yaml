@@ -7,11 +7,10 @@ probes:
       - dogs
     kind: structural
     failure_class: silent_under_coverage
-    status: red
+    status: green
     judge: true
-    note: Resolves to the canton via geoadmin_approximate and now carries a coverage signal (ADR 0001). Stays red only
-      because the required zh_ch citation at CH-ZH is not ranked into the result on the fixture corpus with the fake
-      embedder; ranking on fixtures is not meaningful and the live run decides.
+    note: Winterthur resolves to its own node from the commune register, canton and federal evidence come back, and the coverage
+      signal reports Winterthur itself as empty.
     expect:
       status: results
       resolved:
@@ -89,11 +88,10 @@ probes:
       - waste
     kind: structural
     failure_class: silent_under_coverage
-    status: red
+    status: green
     judge: true
-    note: No calendar for Uster. Does not return the 8003 calendar. Canton guidance applies and the response now carries
-      a coverage signal (ADR 0001). Stays red only because the required zh_ch citation is not ranked into the result on
-      the fixture corpus with the fake embedder; ranking on fixtures is not meaningful and the live run decides.
+    note: Uster resolves to its own node; no calendar leaks in from Kreis 3, the canton waste page applies, and the coverage
+      signal reports Uster as empty.
     expect:
       status: results
       resolved:
@@ -168,8 +166,8 @@ probes:
     kind: structural
     failure_class: silent_under_coverage
     status: green
-    note: Location only in the question, with an umlaut. The question scanner now recognises the commune, resolves it,
-      and the response carries a coverage signal (ADR 0001).
+    note: Location only in the question, with an umlaut. The question scanner now recognises the commune, resolves it, and
+      the response carries a coverage signal (ADR 0001).
     expect:
       status: results
       resolved:
@@ -202,7 +200,8 @@ probes:
     kind: structural
     failure_class: jurisdiction_confusion
     status: green
-    note: Kloten must not receive city of Zurich park rules. Resolves to its own municipality node under CH-ZH now that the commune register is seeded.
+    note: Kloten must not receive city of Zurich park rules. Resolves to its own municipality node under CH-ZH now that the
+      commune register is seeded.
     expect:
       status: results
       resolved:
@@ -270,11 +269,9 @@ probes:
       - dogs
     kind: structural
     failure_class: silent_under_coverage
-    status: red
-    note: Same shape as Winterthur; a second commune guards against a fix that special-cases one name. Resolves to the
-      canton and now carries a coverage signal (ADR 0001). Stays red only because the required zh_ch citation is not
-      ranked into the result on the fixture corpus with the fake embedder; ranking on fixtures is not meaningful and the
-      live run decides.
+    status: green
+    note: Wetzikon resolves to its own node with canton evidence and an empty-coverage signal, guarding against a fix that
+      special-cases one commune name.
     expect:
       status: results
       resolved:
@@ -346,10 +343,9 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
-    note: Wil exists in both ZH and SG. The canton suffix now pins it to the Zurich commune by alias resolution. Stays red
-      only because the fixture's zh_ch documents still sit at the CH-ZH extent until the fixture revert; must_include expects
-      them at the commune.
+    status: green
+    note: The canton suffix pins Wil to the Zurich commune by alias, and the canton dog page is returned now that zh.ch pages
+      sit at CH-ZH again.
     expect:
       status: results
       resolved:
@@ -420,8 +416,8 @@ probes:
     failure_class: jurisdiction_confusion
     status: green
     judge: true
-    note: Bare "Wil" matches communes in both ZH and SG, which are not on a single path, so the resolver returns them as
-      ambiguous candidates and needs_location instead of guessing one.
+    note: Bare "Wil" matches communes in both ZH and SG, which are not on a single path, so the resolver returns them as ambiguous
+      candidates and needs_location instead of guessing one.
     expect:
       status: needs_location
       message_contains: Wil
@@ -557,9 +553,8 @@ probes:
     kind: structural
     failure_class: entity_substitution
     status: green
-    note: Bare "Affoltern" matches only the Zurich Quartier by exact alias, but it is a common word that also names the
-      nearby commune Affoltern am Albis, so the resolver treats it as ambiguous and needs_location rather than guessing
-      the Quartier.
+    note: Bare "Affoltern" matches only the Zurich Quartier by exact alias, but it is a common word that also names the nearby
+      commune Affoltern am Albis, so the resolver treats it as ambiguous and needs_location rather than guessing the Quartier.
     expect:
       status: needs_location
     observed:
@@ -691,8 +686,8 @@ probes:
     kind: structural
     failure_class: silent_under_coverage
     status: green
-    note: Postal code of Winterthur. The register now resolves the postal code to the commune, and the response carries
-      a coverage signal (ADR 0001).
+    note: Postal code of Winterthur. The register now resolves the postal code to the commune, and the response carries a
+      coverage signal (ADR 0001).
     expect:
       status: results
       resolved:
@@ -751,8 +746,8 @@ probes:
     kind: structural
     failure_class: silent_under_coverage
     status: green
-    note: Commune with an umlaut passed as the location. Resolves approximately to the canton and now carries a coverage
-      signal (ADR 0001).
+    note: Commune with an umlaut passed as the location. Resolves approximately to the canton and now carries a coverage signal
+      (ADR 0001).
     expect:
       status: results
       resolved:
@@ -822,9 +817,9 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
-    note: 'Canton-level answer must carry canton documents and no commune or city ones. Red for the same reason as city-017:
-      no zh.ch document sits at CH-ZH today (ADR 0002).'
+    status: green
+    note: Control probe. The canton-level answer carries canton documents and nothing from a commune or the city, now that
+      re-narrowing restored the zh.ch pages to CH-ZH.
     expect:
       status: results
       resolved:
