@@ -46,8 +46,8 @@ def test_geoadmin_hit_without_token_overlap_is_rejected():
 
 
 def test_geoadmin_hit_with_token_overlap_is_accepted():
-    geo = FakeGeo((GeoAdminHit(bfs_id=198, label="Uster (ZH)"),))
-    r = LocationResolver(tree(), geo).resolve("uster")
+    geo = FakeGeo((GeoAdminHit(bfs_id=99999, label="Musterhausen (ZH)"),))
+    r = LocationResolver(tree(), geo).resolve("musterhausen")
     assert r.location.id == "CH-ZH"
     assert r.method == "geoadmin_approximate"
 
@@ -58,8 +58,8 @@ def test_geoadmin_transliteration_without_overlap_is_rejected():
 
 
 def test_geoadmin_unknown_commune_falls_back_to_canton_via_label():
-    geo = FakeGeo((GeoAdminHit(bfs_id=198, label="Uster (ZH)"),))
-    r = LocationResolver(tree(), geo).resolve("Uster")
+    geo = FakeGeo((GeoAdminHit(bfs_id=99999, label="Musterhausen (ZH)"),))
+    r = LocationResolver(tree(), geo).resolve("Musterhausen")
     assert r.location.id == "CH-ZH"
     assert r.method == "geoadmin_approximate"
 
@@ -73,7 +73,7 @@ def test_geoadmin_failure_returns_none():
         def search_communes(self, text):
             raise RuntimeError("GeoAdmin down")
 
-    assert LocationResolver(tree(), Broken()).resolve("Uster") is None
+    assert LocationResolver(tree(), Broken()).resolve("Musterhausen") is None
 
 
 def test_empty_input_returns_none():

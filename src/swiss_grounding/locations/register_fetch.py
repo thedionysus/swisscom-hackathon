@@ -26,10 +26,12 @@ MAX_PARENT_HOPS = 5
 def parse_agvch(text: str) -> tuple[Commune, ...]:
     """Communes from an AGVCH snapshot; canton found by walking Parent to the Level 1 row."""
     rows = list(csv.DictReader(io.StringIO(text)))
-    by_hist = {r["HistoricalCode"]: r for r in rows}
+    # HistoricalCode repeats across levels, so a parent is looked up one level above its child.
+    by_level_hist = {(r["Level"], r["HistoricalCode"]): r for r in rows}
 
     def parent_of(row: Mapping[str, str]) -> Mapping[str, str]:
-        parent = by_hist.get(row["Parent"])
+        parent_level = str(int(row["Level"]) - 1)
+        parent = by_level_hist.get((parent_level, row["Parent"]))
         if parent is None:
             raise ValueError(f"AGVCH row {row['BfsCode']} {row['Name']}: parent {row['Parent']!r} not in snapshot")
         return parent

@@ -82,15 +82,18 @@ probes:
     kind: structural
     failure_class: jurisdiction_confusion
     status: green
-    note: Neighbouring canton. No Zurich documents at any level.
+    note: Neighbouring canton whose capital shares its name. Most specific wins, so the city of Zug resolves with the canton
+      as the alternative reading. No Zurich documents at any level.
     expect:
       status: results
       resolved:
-        id: CH-ZG
+        id: CH-ZG-1711
       must_exclude:
         - extent: CH-ZH
         - extent: CH-ZH-261
         - extent: off_path
+      alternatives_include:
+        - CH-ZG
     observed:
       recorded_at: '2026-09-16T16:47:14.761244Z'
       git_commit: 2fff5b7
@@ -413,8 +416,8 @@ probes:
     kind: structural
     failure_class: jurisdiction_confusion
     status: green
-    note: Canton Aargau commune whose name starts like Zurich. Resolves to its own municipality node under CH-AG now that the
-      commune register is seeded, instead of falling back approximately to the canton.
+    note: Canton Aargau commune whose name starts like Zurich. Resolves to its own municipality node under CH-AG now that
+      the commune register is seeded, instead of falling back approximately to the canton.
     expect:
       status: results
       resolved:
@@ -483,15 +486,17 @@ probes:
     kind: structural
     failure_class: jurisdiction_confusion
     status: green
-    note: Routing control. The Basel alias resolves to Basel-Stadt and nothing from Zurich appears. Basel has no indexed documents
-      live, so this probe does not require any.
+    note: Routing control. Basel resolves to the city of Basel with the canton Basel-Stadt as the alternative reading, and
+      nothing from Zurich appears. Basel has no indexed documents live, so this probe does not require any.
     expect:
       status: results
       resolved:
-        id: CH-BS
+        id: CH-BS-2701
       must_exclude:
         - extent: CH-ZH
         - extent: CH-ZH-261
+      alternatives_include:
+        - CH-BS
     observed:
       recorded_at: '2026-09-16T16:47:15.446382Z'
       git_commit: 2fff5b7

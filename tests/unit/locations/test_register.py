@@ -93,3 +93,19 @@ def test_parse_lindas_plz_skips_empty_codes():
     text = "id,postalCode\n230,8400\n230,\n"
     plz = parse_lindas_plz(text)
     assert plz[230] == ("8400",)
+
+
+def test_parse_agvch_parent_lookup_is_scoped_by_level():
+    """HistoricalCode repeats across levels: a commune row may share a code with a district."""
+    text = (
+        "HistoricalCode,BfsCode,ValidFrom,ValidTo,Level,Parent,Name,ShortName,Inscription,Radiation,Rec_Type_fr,Rec_Type_de\n"
+        "1,1,12.09.1848,,1,,Zürich,ZH,,,,\n"
+        "23,23,12.09.1848,,1,,Wallis,VS,,,,\n"
+        "10078,106,12.09.1848,,2,1,Bezirk Horgen,Horgen,100,,,\n"
+        "10078,6151,12.09.1848,,3,10500,Vionnaz,Vionnaz,1000,,,\n"
+        "10500,2301,12.09.1848,,2,23,Bezirk Monthey,Monthey,100,,,\n"
+        "11745,131,12.09.1848,,3,10078,Adliswil,Adliswil,1000,,,\n"
+    )
+    by_id = {c.bfs_id: c for c in parse_agvch(text)}
+    assert by_id[131].canton == "ZH" and by_id[131].district == "Bezirk Horgen"
+    assert by_id[6151].canton == "VS"
