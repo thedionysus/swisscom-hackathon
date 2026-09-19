@@ -30,9 +30,10 @@ FROZEN_TODAY = date(2026, 9, 16)
 EMBEDDING_DIM = 8
 
 # What the live GeoAdmin SearchServer answered for each probe input on 2026-09-16.
-# Two entries are constructed rather than captured: zurichsee uses bfs_id 0 as a
-# no-commune sentinel so the resolver falls back to the (ZH) label, and nowhere
-# pairs a canton label with a commune-range id to exercise the overlap rejection.
+# Two entries are constructed rather than captured: zurichsee uses featureId 9051 (a real
+# GeoAdmin id that is not a commune bfs in our tree) so the resolver recognises it never
+# maps to a commune, and nowhere pairs a canton label with a commune-range id to exercise
+# the overlap rejection.
 CANNED_GEOADMIN: dict[str, tuple[GeoAdminHit, ...]] = {
     "winterthur": (GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),),
     "gemeinde winterthur": (GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),),
@@ -45,7 +46,7 @@ CANNED_GEOADMIN: dict[str, tuple[GeoAdminHit, ...]] = {
     "wil zh": (GeoAdminHit(bfs_id=27, label="Wil (ZH)"),),
     "affoltern am albis": (GeoAdminHit(bfs_id=951, label="Affoltern im Emmental (BE)"),),
     "zurich oberland": (GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),),
-    "zurichsee": (GeoAdminHit(bfs_id=0, label="Zürichsee (ZH)"),),
+    "zurichsee": (GeoAdminHit(bfs_id=9051, label="Zürichsee (ZH)"),),
     "zurich airport": (GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),),
     "zurzach": (GeoAdminHit(bfs_id=4324, label="Zurzach (AG)"),),
     "nowhere": (GeoAdminHit(bfs_id=1502, label="Nidwalden (NW)"),),
@@ -57,8 +58,8 @@ CANNED_GEOADMIN: dict[str, tuple[GeoAdminHit, ...]] = {
 
 class CannedGeo:
     """Replays what the live GeoAdmin SearchServer answered for each probe input on 2026-09-16.
-    Two entries are constructed rather than captured: zurichsee uses bfs_id 0 as a no-commune
-    sentinel so the resolver falls back to the (ZH) label, and nowhere pairs a canton label
+    Two entries are constructed rather than captured: zurichsee uses featureId 9051 (a real
+    GeoAdmin id that is not a commune bfs in our tree), and nowhere pairs a canton label
     with a commune-range id to exercise the overlap rejection. Unlisted inputs raise so gaps
     are loud."""
 

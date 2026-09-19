@@ -123,9 +123,11 @@ def test_geoadmin_hit_without_token_overlap_is_rejected():
     assert LocationResolver(tree(), geo).resolve("nowhere") is None
 
 
-def test_geoadmin_hit_with_token_overlap_is_accepted():
+def test_geoadmin_hit_with_qualifier_falls_back_to_canton_via_label():
+    # A qualifier ("Ost") keeps the whole input from equaling the bare label, so this is a
+    # genuinely unlisted commune plus a qualifier, not GeoAdmin naming a non-commune feature.
     geo = FakeGeo((GeoAdminHit(bfs_id=99999, label="Musterhausen (ZH)"),))
-    r = LocationResolver(tree(), geo).resolve("musterhausen")
+    r = LocationResolver(tree(), geo).resolve("musterhausen ost")
     assert r.location.id == "CH-ZH"
     assert r.method == "geoadmin_approximate"
 
@@ -135,11 +137,11 @@ def test_geoadmin_transliteration_without_overlap_is_rejected():
     assert LocationResolver(tree(), geo).resolve("Zueri city") is None
 
 
-def test_geoadmin_unknown_commune_falls_back_to_canton_via_label():
+def test_geoadmin_hit_with_unknown_bfs_matching_the_whole_label_returns_none():
+    # bfs 99999 isn't in the tree and the input names exactly the bare label; GeoAdmin has
+    # named something that isn't a commune, so the resolver must not guess a canton for it.
     geo = FakeGeo((GeoAdminHit(bfs_id=99999, label="Musterhausen (ZH)"),))
-    r = LocationResolver(tree(), geo).resolve("Musterhausen")
-    assert r.location.id == "CH-ZH"
-    assert r.method == "geoadmin_approximate"
+    assert LocationResolver(tree(), geo).resolve("Musterhausen") is None
 
 
 def test_nothing_found_returns_none():
@@ -214,7 +216,8 @@ def test_geoadmin_hit_needs_every_token_covered():
 
 
 def test_geoadmin_hit_with_unresolved_non_commune_label_returns_none():
-    geo = FakeGeo((GeoAdminHit(bfs_id=0, label="Zürichsee (ZH)"),))
+    # 9051 is a real GeoAdmin featureId, but not a commune bfs in our tree.
+    geo = FakeGeo((GeoAdminHit(bfs_id=9051, label="Zürichsee (ZH)"),))
     assert LocationResolver(tree(), geo).resolve("Zürichsee") is None
 
 
