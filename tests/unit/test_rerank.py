@@ -1,11 +1,11 @@
 from dataclasses import replace
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.models import Authority
 from swiss_grounding.retrieval.models import ChunkRecord, Hit
-from swiss_grounding.retrieval.rerank import RerankWeights, rerank
+from swiss_grounding.retrieval.rerank import RerankWeights, event_recency_factor, rerank
 
 
 def make_hit(chunk_id, extent_id, authority, categories, rrf=0.01):
@@ -86,5 +86,53 @@ def test_past_event_ranks_below_upcoming_event_all_else_equal():
     ranked = rerank(hits, TREE, QUERY_NODE, ("waste",), RerankWeights(), today=lambda: date(2026, 9, 12))
     ids = [s.hit.chunk.chunk_id for s in ranked]
     assert ids[-1] == 1                                        # penalised, not dropped
-    assert ranked[0].score == ranked[1].score == ranked[2].score
+    # Nearer future events now outrank later ones (Task 7 reranker decision), so the
+    # three non-past hits are no longer tied: event-today (3) > upcoming (2) > non-event (4).
+    assert ids[:3] == [3, 2, 4]
+    assert ranked[0].score > ranked[1].score > ranked[2].score
     assert ranked[-1].score < ranked[0].score
+
+
+def test_nearest_future_event_outranks_later_ones():
+    today = date(2026, 9, 16)
+    hits = (
+        make_event_hit(1, date(2026, 12, 31)),
+        make_event_hit(2, date(2026, 9, 29)),
+        make_event_hit(3, date(2026, 9, 17)),
+    )
+    ranked = rerank(hits, TREE, QUERY_NODE, ("waste",), RerankWeights(), today=lambda: today)
+    assert [s.hit.chunk.chunk_id for s in ranked] == [3, 2, 1]
+
+
+def test_past_event_sinks_below_all_future_events():
+    today = date(2026, 9, 16)
+    hits = (
+        make_event_hit(1, date(2026, 12, 31)),
+        make_event_hit(2, date(2026, 9, 10)),  # past
+    )
+    ranked = rerank(hits, TREE, QUERY_NODE, ("waste",), RerankWeights(), today=lambda: today)
+    ids = [s.hit.chunk.chunk_id for s in ranked]
+    assert ids == [1, 2]
+    assert 2 in ids  # present, not dropped
+
+
+def test_non_event_chunk_unaffected():
+    today = date(2026, 9, 16)
+    assert event_recency_factor(None, today) == 1.0
+    hits = (
+        make_event_hit(1, date(2026, 12, 31)),  # far future
+        make_event_hit(2, date(2026, 9, 10)),   # past
+        make_event_hit(3, None),                # non-event
+    )
+    ranked = rerank(hits, TREE, QUERY_NODE, ("waste",), RerankWeights(), today=lambda: today)
+    ids = [s.hit.chunk.chunk_id for s in ranked]
+    assert ids.index(3) > ids.index(1)
+    assert ids.index(3) < ids.index(2)
+
+
+def test_factor_is_monotonic_in_days_ahead():
+    today = date(2026, 9, 16)
+    f0 = event_recency_factor(today, today)
+    f7 = event_recency_factor(today + timedelta(days=7), today)
+    f60 = event_recency_factor(today + timedelta(days=60), today)
+    assert f0 > f7 > f60 > 1.0
