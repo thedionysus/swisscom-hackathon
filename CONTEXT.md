@@ -27,7 +27,7 @@ A chunk that describes one dated event, such as a waste collection on a given da
 _Avoid_: Schedule entry, event record
 
 **Commune register**:
-The Federal Statistical Office list of every Swiss commune with its BFS number and canton. The location tree is meant to hold all of them, whether or not any source covers them, so a place always resolves to its own node..
+The Federal Statistical Office list of every Swiss commune with its BFS number and canton. The location tree is meant to hold all of them, whether or not any source covers them, so a place always resolves to its own node.
 _Avoid_: Municipality list, gazetteer
 
 **Narrowing**:

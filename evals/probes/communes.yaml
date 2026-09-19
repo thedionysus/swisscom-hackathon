@@ -695,9 +695,9 @@ probes:
     kind: structural
     failure_class: none
     status: green
-    note: One-character typo. Today the response was needs_location, since GeoAdmin returns nothing for it. The resolver now
-      falls back to a single-edit match against the alias index when GeoAdmin comes up empty, and "Winterthurr" is within
-      one edit of exactly one alias, so it resolves to Winterthur.
+    note: One-character typo. Live GeoAdmin still answers Winterthur (ZH) for it and the per-token single-edit tolerance in
+      the acceptance rule carries the match, so it resolves to Winterthur by the geoadmin method. The alias-level typo fallback
+      exists for inputs GeoAdmin cannot place at all.
     expect:
       status: results
       resolved:
@@ -903,8 +903,9 @@ probes:
     failure_class: authority_hierarchy
     status: red
     judge: true
-    note: With no local data, the canton leash rule must outrank institutional trail advice. Live corpus only. Today the canton
-      level holds no zh.ch documents at all because narrowing moved them to the city.
+    note: With no local data, the canton leash rule must outrank institutional trail advice. Ranking probe, live database
+      only. The canton page is present again since re-narrowing, but the Schweizer Wanderwege pages at country level still
+      take the first place; an authority-weight question for the ranking work, not the resolver.
     expect:
       status: results
       resolved:
