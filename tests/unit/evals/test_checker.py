@@ -25,10 +25,10 @@ def _tree() -> LocationTree:
 
 
 def _cit(source="fedlex", extent="CH", url="https://www.fedlex.admin.ch/eli/cc/2008/414/de",
-         authority="federal_law", event_date=None) -> Citation:
+         authority="federal_law", event_date=None, identifier=None) -> Citation:
     return Citation(
         chunk_id=1, document_id=1, source_id=source, title_en="t", title_original="t", url=url,
-        anchor=None, identifier=None, snippet_en="s", snippet_original="s", language="de",
+        anchor=None, identifier=identifier, snippet_en="s", snippet_original="s", language="de",
         heading_path="", extent_id=extent, extent_label=extent, authority=authority,
         categories=("dogs",), valid_from=None, retrieved_at=datetime(2026, 9, 14, tzinfo=UTC),
         license=None, score=1.0, event_date=event_date,
@@ -243,3 +243,24 @@ def test_coverage_resolved_sentinel_names_the_resolved_node():
     object.__setattr__(unresolved, "coverage", ({"extent_id": "CH", "documents": 3},))
     assert check(probe, unresolved, _tree(), TODAY) == (
         "coverage: no resolved location to check emptiness for",)
+
+
+def test_first_event_compares_within_the_first_citations_series():
+    from swiss_grounding.evals.checker import _series
+
+    assert _series(_cit(identifier="cardboard-2026-09-24")) == "cardboard"
+    assert _series(_cit(identifier="waste-2026-09-21")) == "waste"
+    assert _series(_cit(identifier="SR 455 Art. 6")) == "SR 455 Art. 6"
+    probe = _probe(status="results", first_event="nearest_future")
+    resp = _resp(citations=(
+        _cit(source="open_erz", event_date=date(2026, 9, 24), identifier="cardboard-2026-09-24"),
+        _cit(source="open_erz", event_date=date(2026, 9, 21), identifier="waste-2026-09-21"),
+        _cit(source="open_erz", event_date=date(2026, 10, 1), identifier="cardboard-2026-10-01"),
+    ))
+    assert check(probe, resp, _tree(), TODAY) == ()
+    wrong = _resp(citations=(
+        _cit(source="open_erz", event_date=date(2026, 10, 1), identifier="cardboard-2026-10-01"),
+        _cit(source="open_erz", event_date=date(2026, 9, 24), identifier="cardboard-2026-09-24"),
+    ))
+    assert check(probe, wrong, _tree(), TODAY) == (
+        "first_event: expected nearest future 2026-09-24, first citation has 2026-10-01",)
