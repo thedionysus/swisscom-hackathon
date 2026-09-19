@@ -9,6 +9,7 @@ from swiss_grounding.locations.resolver import LocationResolver, Resolution, can
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORY_IDS
 from swiss_grounding.retrieval.cite import build_citation
+from swiss_grounding.retrieval.coverage import coverage_rows, resolution_note
 from swiss_grounding.retrieval.diversify import diversify
 from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
@@ -76,12 +77,17 @@ class QueryCore:
                 conn, self.embedder, question=request.question, extent_path=resolved.path,
                 as_of=request.as_of, top_n=CANDIDATE_TOP_N,
             )
+            rows = coverage_rows(conn, self.tree, resolved.path)
+        note = resolution_note(
+            rows, resolved.method, [f"{a.label('en')} ({a.level.value})" for a in resolved.alternatives],
+        )
         base = QueryResponse(
             status="no_evidence", resolved_location_id=resolved.location.id,
             resolved_location_label=resolved.location.label("en"),
             resolution_method=resolved.method,
             alternatives=tuple(a.id for a in resolved.alternatives),
             categories_used=request.categories,
+            coverage=rows, resolution_note=note,
         )
         if not hits:
             label = resolved.location.label("en")

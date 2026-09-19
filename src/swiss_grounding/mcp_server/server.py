@@ -16,6 +16,7 @@ from swiss_grounding.locations.models import AmbiguousLocation
 from swiss_grounding.locations.resolver import canton_label
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.registry.suggestions import list_suggestions, submit_suggestion
+from swiss_grounding.retrieval.coverage import coverage_rows
 from swiss_grounding.retrieval.models import NOTICE, QueryRequest, QueryResponse
 from swiss_grounding.retrieval.query_core import QueryCore
 
@@ -124,7 +125,10 @@ def build_server(settings: Settings) -> FastMCP:
         Results are evidence with citations; write the answer from them and cite the URLs.
         Calendar-style citations (e.g. waste collections) carry event_date: the day the event
         happens. Treat an event_date before today as already passed; do not present it as the
-        next occurrence. Never invent URLs."""
+        next occurrence. Never invent URLs.
+
+        coverage lists, per jurisdiction on the path, how many documents are indexed; when the
+        asked place has 0, say so in the answer, and repeat resolution_note when present."""
         try:
             parsed_as_of = date.fromisoformat(as_of) if as_of else None
         except ValueError:
@@ -191,8 +195,12 @@ def build_server(settings: Settings) -> FastMCP:
             rows = conn.execute(COVERAGE_SQL.format(extent_filter=extent_filter), {"path": path}).fetchall()
             health = load_source_health(conn)
             pending = [asdict(s) for s in list_suggestions(conn, status="pending")]
+            by_extent = [asdict(r) for r in coverage_rows(conn, core.tree, path)] if path is not None else []
         coverage = [_with_health(dict(row), health.get(row["source_id"], UNKNOWN_HEALTH)) for row in rows]
-        return _json({"resolved_location_id": resolved_id, "coverage": coverage, "pending_suggestions": pending})
+        return _json({
+            "resolved_location_id": resolved_id, "coverage": coverage, "by_extent": by_extent,
+            "pending_suggestions": pending,
+        })
 
     @mcp.tool(annotations=WRITE)
     def swiss_suggest_source(

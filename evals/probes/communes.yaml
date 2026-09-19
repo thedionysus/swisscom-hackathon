@@ -9,8 +9,9 @@ probes:
     failure_class: silent_under_coverage
     status: red
     judge: true
-    note: Today resolves to the canton via geoadmin_approximate. Expected is the Winterthur node itself with canton and federal
-      evidence and a signal that Winterthur is empty.
+    note: Resolves to the canton via geoadmin_approximate and now carries a coverage signal (ADR 0001). Stays red only
+      because the required zh_ch citation at CH-ZH is not ranked into the result on the fixture corpus with the fake
+      embedder; ranking on fixtures is not meaningful and the live run decides.
     expect:
       status: results
       resolved:
@@ -90,8 +91,9 @@ probes:
     failure_class: silent_under_coverage
     status: red
     judge: true
-    note: No calendar for Uster. Must not return the 8003 calendar. Canton guidance applies. Today resolves to the canton
-      and carries no coverage signal.
+    note: No calendar for Uster. Does not return the 8003 calendar. Canton guidance applies and the response now carries
+      a coverage signal (ADR 0001). Stays red only because the required zh_ch citation is not ranked into the result on
+      the fixture corpus with the fake embedder; ranking on fixtures is not meaningful and the live run decides.
     expect:
       status: results
       resolved:
@@ -165,9 +167,9 @@ probes:
       - waste
     kind: structural
     failure_class: silent_under_coverage
-    status: red
-    note: Location only in the question, with an umlaut. Today the question scanner knows no communes, so the response is
-      needs_location.
+    status: green
+    note: Location only in the question, with an umlaut. The question scanner now recognises the commune, resolves it,
+      and the response carries a coverage signal (ADR 0001).
     expect:
       status: results
       resolved:
@@ -269,8 +271,10 @@ probes:
     kind: structural
     failure_class: silent_under_coverage
     status: red
-    note: Same shape as Winterthur; a second commune guards against a fix that special-cases one name. Today resolves to the
-      canton.
+    note: Same shape as Winterthur; a second commune guards against a fix that special-cases one name. Resolves to the
+      canton and now carries a coverage signal (ADR 0001). Stays red only because the required zh_ch citation is not
+      ranked into the result on the fixture corpus with the fake embedder; ranking on fixtures is not meaningful and the
+      live run decides.
     expect:
       status: results
       resolved:
@@ -686,9 +690,9 @@ probes:
       - dogs
     kind: structural
     failure_class: silent_under_coverage
-    status: red
-    note: Postal code of Winterthur. The register carries postal codes for communes; today 8400 is unknown and the response
-      is needs_location.
+    status: green
+    note: Postal code of Winterthur. The register now resolves the postal code to the commune, and the response carries
+      a coverage signal (ADR 0001).
     expect:
       status: results
       resolved:
@@ -745,8 +749,9 @@ probes:
       - dogs
     kind: structural
     failure_class: silent_under_coverage
-    status: red
-    note: Commune with an umlaut passed as the location. Today resolves approximately to the canton with no coverage signal.
+    status: green
+    note: Commune with an umlaut passed as the location. Resolves approximately to the canton and now carries a coverage
+      signal (ADR 0001).
     expect:
       status: results
       resolved:

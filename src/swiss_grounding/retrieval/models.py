@@ -73,6 +73,14 @@ class Citation:
 
 
 @dataclass(frozen=True)
+class CoverageRow:
+    """Document count for one extent on a resolved location's path."""
+    extent_id: str
+    label: str
+    documents: int
+
+
+@dataclass(frozen=True)
 class QueryRequest:
     question: str
     location: str | None = None
@@ -98,3 +106,5 @@ class QueryResponse:
     field: str | None = None      # the offending request field when status is invalid_request
     notice: str = NOTICE
     categories_used: tuple[str, ...] = ()
+    coverage: tuple[CoverageRow, ...] = ()
+    resolution_note: str = ""

@@ -7,11 +7,11 @@ probes:
       - waste
     kind: structural
     failure_class: temporal_misapplication
-    status: red
+    status: green
     judge: true
-    note: With a frozen clock of 2026-09-16 the nearest future event is 2026-09-17. Today the reranker only penalises past
-      events, so ordering among future events is arbitrary and the first page can start in December. The 2026-09-17 anchor
-      is absolute and will read as past once the wall clock passes it; give this probe an as_of when as_of reaches the reranker.
+    note: With a frozen clock of 2026-09-16 the nearest future event is 2026-09-17 and the reranker now orders future
+      events nearest-first, so the 2026-09-17 anchor lands first on the fixture. Unrelated to the coverage signal (Task 5);
+      flipped because it already passes.
     expect:
       status: results
       resolved:
@@ -79,10 +79,10 @@ probes:
       - waste
     kind: structural
     failure_class: silent_under_coverage
-    status: red
+    status: green
     judge: true
-    note: Only 8003 has calendar data. Kreis 4 must get city and canton guidance, no Kreis 3 dates, and a coverage signal
-      saying Kreis 4 itself is empty. The signal does not exist yet.
+    note: Only 8003 has calendar data. Kreis 4 gets city and canton guidance, no Kreis 3 dates, and coverage now says
+      Kreis 4 itself is empty (ADR 0001).
     expect:
       status: results
       resolved:
@@ -445,10 +445,10 @@ probes:
       - dogs
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
+    status: green
     judge: true
-    note: Seefeld is Kreis 8. The Wiedikon dog zone is a sibling and must not appear. Coverage must say Kreis 8 is empty;
-      the signal does not exist yet.
+    note: Seefeld is Kreis 8. The Wiedikon dog zone is a sibling and does not appear. Coverage now says Kreis 8 is empty
+      (ADR 0001).
     expect:
       status: results
       resolved:
@@ -598,10 +598,10 @@ probes:
       - dogs
     kind: structural
     failure_class: silent_under_coverage
-    status: red
+    status: green
     judge: true
-    note: No indexed page states the city dog tax. The result may carry ch.ch and canton evidence but must carry a coverage
-      signal. City-level dog documents exist, so coverage_present holds; the failure is the missing signal.
+    note: No indexed page states the city dog tax. The result carries ch.ch and canton evidence plus a coverage signal.
+      City-level dog documents exist, so coverage_present holds (ADR 0001).
     expect:
       status: results
       resolved:

@@ -32,9 +32,13 @@ def test_query_passes_injected_today_to_rerank(monkeypatch):
         def resolve(self, text):
             return ResolvedLocation(location=tree.get("CH"), path=("CH",), method="alias", input_text=text)
 
+    class Cursor:
+        def fetchall(self): return []
+
     class Conn:
         def __enter__(self): return self
         def __exit__(self, *a): return False
+        def execute(self, *a, **k): return Cursor()
 
     seen = {}
     def fake_rerank(hits, tree_, node, cats, weights, today=date.today):
