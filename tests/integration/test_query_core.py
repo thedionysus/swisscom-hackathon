@@ -73,7 +73,7 @@ def test_country_question_returns_only_country_scoped(core):
 def test_unindexed_canton_falls_back_to_federal_only(core):
     resp = core.query(QueryRequest(question="dog leash", location="Genève"))
     assert resp.status == "results"
-    assert resp.resolved_location_id == "CH-GE"
+    assert resp.resolved_location_id == "CH-GE-6621"  # city of Geneva; the canton is the alternative reading
     assert {c.extent_id for c in resp.citations} == {"CH"}
 
 
@@ -82,14 +82,14 @@ def test_no_evidence_when_nothing_indexed_for_path(core):
         conn.execute("truncate chunk, document_change, document restart identity cascade")
     resp = core.query(QueryRequest(question="dog leash", location="Genève"))
     assert resp.status == "no_evidence"
-    assert resp.resolved_location_id == "CH-GE"
+    assert resp.resolved_location_id == "CH-GE-6621"  # city of Geneva; the canton is the alternative reading
     assert "Geneva" in resp.message
 
 
 def test_location_in_question_is_detected(core):
     resp = core.query(QueryRequest(question="What are the dog rules in Basel?"))
     assert resp.status == "results"
-    assert resp.resolved_location_id == "CH-BS"
+    assert resp.resolved_location_id == "CH-BS-2701"  # city of Basel; the canton is the alternative reading
     assert all(c.extent_id in {"CH", "CH-BS"} for c in resp.citations)
 
 
