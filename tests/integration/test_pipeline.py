@@ -57,7 +57,7 @@ def test_full_run_persists_and_reports(ctx):
         report = run_ingest(conn, source, StubFetcher(result), FakeLLM(), FakeEmbedder(8), tree, run_id="r1")
         docs = conn.execute("select url, extent_id, status from document order by url").fetchall()
     assert (report.added, report.modified, report.unchanged, report.withdrawn, report.failed) == (2, 0, 0, 0, 1)
-    assert [d["extent_id"] for d in docs] == ["CH-ZH-261", "CH-ZH"]     # narrowed for the Zürich page
+    assert [d["extent_id"] for d in docs] == ["CH-ZH", "CH-ZH"]  # a canton page stays at the canton (ADR 0002)
     assert report.errors[0].reason == "timeout"
 
 
