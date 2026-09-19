@@ -174,7 +174,7 @@ def renarrow_cmd() -> None:
     with connect(settings.database_url) as conn:
         tree = load_tree(conn)
         report = renarrow_all(conn, tree)
-    typer.echo(f"examined {report.examined}, moved {report.moved}")
+    typer.echo(f"examined {report.examined}, moved {report.moved}, skipped {report.skipped}")
 
 
 @sources_app.command("list")
