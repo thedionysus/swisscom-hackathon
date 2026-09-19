@@ -8,7 +8,7 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.repository import load_sources
 
 SELECT = """
-select d.id, d.source_id, d.title_en, d.extent_id,
+select d.id, d.source_id, d.title_en, d.extent_id, d.extent_reason,
        array_agg(c.heading_path order by c.ordinal) as headings,
        string_agg(c.text_en, ' ' order by c.ordinal) as text_en
 from document d join chunk c on c.document_id = d.id
@@ -23,6 +23,7 @@ class RenarrowReport:
     examined: int
     moved: int
     skipped: int = 0
+    relabelled: int = 0   # extent unchanged, reason text refreshed
 
 
 def renarrow_all(conn: psycopg.Connection, tree: LocationTree) -> RenarrowReport:
@@ -31,7 +32,7 @@ def renarrow_all(conn: psycopg.Connection, tree: LocationTree) -> RenarrowReport
     A document whose source has since been removed from the registry is skipped, not fatal.
     """
     sources = {s.id: s for s in load_sources(conn)}
-    examined = moved = skipped = 0
+    examined = moved = skipped = relabelled = 0
     for row in conn.execute(SELECT).fetchall():
         examined += 1
         source = sources.get(row["source_id"])
@@ -48,4 +49,7 @@ def renarrow_all(conn: psycopg.Connection, tree: LocationTree) -> RenarrowReport
             conn.execute(UPDATE_DOC, (target, reason, row["id"]))
             conn.execute(UPDATE_CHUNKS, (target, row["id"]))
             moved += 1
-    return RenarrowReport(examined=examined, moved=moved, skipped=skipped)
+        elif reason != row["extent_reason"]:
+            conn.execute(UPDATE_DOC, (target, reason, row["id"]))
+            relabelled += 1
+    return RenarrowReport(examined=examined, moved=moved, skipped=skipped, relabelled=relabelled)
