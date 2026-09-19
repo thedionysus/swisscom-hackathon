@@ -14,7 +14,7 @@ SCAN_METHOD = "alias_scan"
 FUZZY_METHOD = "alias_fuzzy"
 CANTON_IN_LABEL = re.compile(r"\(([A-Z]{2})\)\s*$")
 LABEL_PUNCTUATION = "()[],.-"
-MIN_OVERLAP_TOKEN_LENGTH = 3
+MIN_OVERLAP_TOKEN_LENGTH = 4
 COMMON_WORD_NEIGHBORHOODS = frozenset({"city", "hard", "werd", "enge"})
 Resolution = ResolvedLocation | AmbiguousLocation | None
 
@@ -117,6 +117,12 @@ class LocationResolver:
         return tuple(n for n in nodes if n.level is Level.MUNICIPALITY)
 
     def _resolve_via_geoadmin(self, text: str) -> Resolution:
+        # Inputs shaped "<commune> <unknown word>" ("Winterthur Töss", "Zurich Airport") end
+        # up here: the commune token is covered but the trailing word isn't, so tokens_covered
+        # fails and we fall to the canton-approximate branch below. That's a deliberate
+        # downgrade, not a bug: the resolver has no way to tell whether the unknown word names
+        # a suburb, a neighbourhood, or a landmark in a different commune, so it declines to
+        # guess a specific place and reports the canton instead, honestly, via the method name.
         try:
             hits = self._geo.search_communes(text)
         except RuntimeError:

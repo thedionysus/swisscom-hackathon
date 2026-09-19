@@ -246,3 +246,17 @@ def test_zurich_airport_shares_one_token_falls_to_canton():
     r = LocationResolver(tree(), geo).resolve("Zurich Airport")
     assert r.location.id == "CH-ZH"
     assert r.method == "geoadmin_approximate"
+
+
+def test_commune_with_unknown_suffix_downgrades_to_canton():
+    geo = FakeGeo((GeoAdminHit(bfs_id=230, label="Winterthur (ZH)"),))
+    r = LocationResolver(tree(), geo).resolve("Winterthur Töss")
+    assert r.location.id == "CH-ZH"
+    assert r.method == "geoadmin_approximate"
+
+
+def test_lowercase_two_word_input_still_reaches_geoadmin():
+    geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
+    r = LocationResolver(tree(), geo).resolve("zürich oberland")
+    assert r.location.id == "CH-ZH"
+    assert r.method == "geoadmin_approximate"

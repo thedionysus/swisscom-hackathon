@@ -722,8 +722,9 @@ probes:
     kind: structural
     failure_class: none
     status: green
-    note: One-character typo. GeoAdmin returns nothing for it, so the resolver must tolerate a single edit against the commune
-      register and resolve to Winterthur itself. Today the response is needs_location.
+    note: One-character typo. Today the response was needs_location, since GeoAdmin returns nothing for it. The resolver now
+      falls back to a single-edit match against the alias index when GeoAdmin comes up empty, and "Winterthurr" is within
+      one edit of exactly one alias, so it resolves to Winterthur.
     expect:
       status: results
       resolved:
