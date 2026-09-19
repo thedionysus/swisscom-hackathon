@@ -37,7 +37,7 @@ def test_country_wins_over_ambiguous_abbreviation(tree, question):
 
 
 def test_canton_alias_resolves(tree):
-    assert resolved_id(tree, "What are the dog rules in Basel?") == "CH-BS"
+    assert resolved_id(tree, "What are the dog rules in Basel?") == "CH-BS-2701"  # city of Basel; canton is the alternative
 
 
 def test_neighborhood_resolves_when_an_ancestor_is_also_mentioned(tree):

@@ -86,13 +86,13 @@ bfs_id,name,canton,district,postal_codes
 119,Seegräben,ZH,Bezirk Hinwil,8607
 120,Wald (ZH),ZH,Bezirk Hinwil,8497|8636|8637
 121,Wetzikon (ZH),ZH,Bezirk Hinwil,8345|8620|8623
-131,Adliswil,VS,Vionnaz,8041|8134
-135,Kilchberg (ZH),VS,Vionnaz,8802|8803
-136,Langnau am Albis,VS,Vionnaz,8135
-137,Oberrieden,VS,Vionnaz,8942
-138,Richterswil,VS,Vionnaz,8805|8833
-139,Rüschlikon,VS,Vionnaz,8803
-141,Thalwil,VS,Vionnaz,8136|8800
+131,Adliswil,ZH,Bezirk Horgen,8041|8134
+135,Kilchberg (ZH),ZH,Bezirk Horgen,8802|8803
+136,Langnau am Albis,ZH,Bezirk Horgen,8135
+137,Oberrieden,ZH,Bezirk Horgen,8942
+138,Richterswil,ZH,Bezirk Horgen,8805|8833
+139,Rüschlikon,ZH,Bezirk Horgen,8803
+141,Thalwil,ZH,Bezirk Horgen,8136|8800
 151,Erlenbach (ZH),ZH,Bezirk Meilen,8703
 152,Herrliberg,ZH,Bezirk Meilen,8703|8704
 153,Hombrechtikon,ZH,Bezirk Meilen,8627|8634|8714
@@ -153,9 +153,9 @@ bfs_id,name,canton,district,postal_codes
 261,Zürich,ZH,Bezirk Zürich,8001|8002|8003|8004|8005|8006|8008|8032|8037|8038|8041|8044|8045|8046|8047|8048|8049|8050|8051|8052|8053|8055|8057|8064|8125|8134|8142|8143|8152|8952
 291,Andelfingen,ZH,Bezirk Andelfingen,8450|8452|8457
 292,Stammheim,ZH,Bezirk Andelfingen,8468|8476|8477|8525
-293,Wädenswil,VS,Vionnaz,8804|8820|8824|8825
+293,Wädenswil,ZH,Bezirk Horgen,8804|8820|8824|8825
 294,Elgg,ZH,Bezirk Winterthur,8353|8354|8355|8523
-295,Horgen,VS,Vionnaz,6340|8135|8810|8815|8816
+295,Horgen,ZH,Bezirk Horgen,6340|8135|8810|8815|8816
 296,Illnau-Effretikon,ZH,Bezirk Pfäffikon,8307|8308|8314|8482|8483
 297,Bauma,ZH,Bezirk Pfäffikon,8493|8494|8499
 298,Wiesendangen,ZH,Bezirk Winterthur,8542|8543|8544|8546
@@ -493,14 +493,14 @@ bfs_id,name,canton,district,postal_codes
 991,Walliswil bei Wangen,BE,Verwaltungskreis Oberaargau,3377
 992,Wangen an der Aare,BE,Verwaltungskreis Oberaargau,3374|3380|4536
 995,Wiedlisbach,BE,Verwaltungskreis Oberaargau,3380|4537|4539
-1001,Doppleschwand,AG,Würenlos,6110|6112
-1002,Entlebuch,AG,Würenlos,6105|6110|6162|6163|6166|6170
-1004,Flühli,AG,Würenlos,6170|6173|6174|6192|6197
-1005,Hasle (LU),AG,Würenlos,6162|6166|6170
-1007,Romoos,AG,Würenlos,6110|6113|6166|6167|6170
-1008,Schüpfheim,AG,Würenlos,6170
-1009,Werthenstein,AG,Würenlos,6105|6106|6110
-1010,Escholzmatt-Marbach,AG,Würenlos,3555|6170|6173|6182|6192|6196|6197
+1001,Doppleschwand,LU,Wahlkreis Entlebuch,6110|6112
+1002,Entlebuch,LU,Wahlkreis Entlebuch,6105|6110|6162|6163|6166|6170
+1004,Flühli,LU,Wahlkreis Entlebuch,6170|6173|6174|6192|6197
+1005,Hasle (LU),LU,Wahlkreis Entlebuch,6162|6166|6170
+1007,Romoos,LU,Wahlkreis Entlebuch,6110|6113|6166|6167|6170
+1008,Schüpfheim,LU,Wahlkreis Entlebuch,6170
+1009,Werthenstein,LU,Wahlkreis Entlebuch,6105|6106|6110
+1010,Escholzmatt-Marbach,LU,Wahlkreis Entlebuch,3555|6170|6173|6182|6192|6196|6197
 1021,Aesch (LU),LU,Wahlkreis Hochdorf,6287
 1023,Ballwil,LU,Wahlkreis Hochdorf,6034|6274|6275
 1024,Emmen,LU,Wahlkreis Hochdorf,6020|6023|6032|6206
@@ -531,26 +531,26 @@ bfs_id,name,canton,district,postal_codes
 1067,Udligenswil,LU,Wahlkreis Luzern-Land,6044
 1068,Vitznau,LU,Wahlkreis Luzern-Land,6354|6356
 1069,Weggis,LU,Wahlkreis Luzern-Land,6353|6354|6356
-1081,Beromünster,AG,Zetzwil,6025|6028|6215|6221|6222
-1082,Büron,AG,Zetzwil,6233
-1083,Buttisholz,AG,Zetzwil,6018|6022
-1084,Eich,AG,Zetzwil,6205|6214
-1085,Geuensee,AG,Zetzwil,6232
-1086,Grosswangen,AG,Zetzwil,6022
-1088,Hildisrieden,AG,Zetzwil,6024
-1089,Knutwil,AG,Zetzwil,6212|6213
-1091,Mauensee,AG,Zetzwil,6210|6212|6216|6242
-1093,Neuenkirch,AG,Zetzwil,6016|6023|6024|6203|6204|6206|6207
-1094,Nottwil,AG,Zetzwil,6207
-1095,Oberkirch,AG,Zetzwil,6018|6207|6208|6210|6216
-1097,Rickenbach (LU),AG,Zetzwil,5735|6221
-1098,Ruswil,AG,Zetzwil,6016|6017|6018|6019|6105|6106|6110|6206|6207
-1099,Schenkon,AG,Zetzwil,6210|6214|6222
-1100,Schlierbach,AG,Zetzwil,6231
-1102,Sempach,AG,Zetzwil,6024|6204
-1103,Sursee,AG,Zetzwil,6210
-1104,Triengen,AG,Zetzwil,6213|6234|6235|6236
-1107,Wolhusen,AG,Würenlos,6110|6114|6122
+1081,Beromünster,LU,Wahlkreis Sursee,6025|6028|6215|6221|6222
+1082,Büron,LU,Wahlkreis Sursee,6233
+1083,Buttisholz,LU,Wahlkreis Sursee,6018|6022
+1084,Eich,LU,Wahlkreis Sursee,6205|6214
+1085,Geuensee,LU,Wahlkreis Sursee,6232
+1086,Grosswangen,LU,Wahlkreis Sursee,6022
+1088,Hildisrieden,LU,Wahlkreis Sursee,6024
+1089,Knutwil,LU,Wahlkreis Sursee,6212|6213
+1091,Mauensee,LU,Wahlkreis Sursee,6210|6212|6216|6242
+1093,Neuenkirch,LU,Wahlkreis Sursee,6016|6023|6024|6203|6204|6206|6207
+1094,Nottwil,LU,Wahlkreis Sursee,6207
+1095,Oberkirch,LU,Wahlkreis Sursee,6018|6207|6208|6210|6216
+1097,Rickenbach (LU),LU,Wahlkreis Sursee,5735|6221
+1098,Ruswil,LU,Wahlkreis Sursee,6016|6017|6018|6019|6105|6106|6110|6206|6207
+1099,Schenkon,LU,Wahlkreis Sursee,6210|6214|6222
+1100,Schlierbach,LU,Wahlkreis Sursee,6231
+1102,Sempach,LU,Wahlkreis Sursee,6024|6204
+1103,Sursee,LU,Wahlkreis Sursee,6210
+1104,Triengen,LU,Wahlkreis Sursee,6213|6234|6235|6236
+1107,Wolhusen,LU,Wahlkreis Entlebuch,6110|6114|6122
 1121,Alberswil,LU,Wahlkreis Willisau,6248
 1122,Altbüron,LU,Wahlkreis Willisau,6147
 1123,Altishofen,LU,Wahlkreis Willisau,6144|6244|6245|6246|6247|6263
@@ -1126,13 +1126,13 @@ bfs_id,name,canton,district,postal_codes
 3713,Ferrera,GR,Region Viamala,7444|7445
 3714,Rheinwald,GR,Region Viamala,7435|7436|7437|7438
 3715,Muntogna da Schons,GR,Region Viamala,7433
-3721,Bonaduz,AG,Zeiningen,7402
-3722,Domat/Ems,AG,Zeiningen,7013
-3723,Rhäzüns,AG,Zeiningen,7403
-3731,Felsberg,AG,Zeiningen,7012
-3732,Flims,AG,Zeiningen,7017|7018|7019
-3733,Tamins,AG,Zeiningen,7015|7315
-3734,Trin,AG,Zeiningen,7014|7015|7016
+3721,Bonaduz,GR,Region Imboden,7402
+3722,Domat/Ems,GR,Region Imboden,7013
+3723,Rhäzüns,GR,Region Imboden,7403
+3731,Felsberg,GR,Region Imboden,7012
+3732,Flims,GR,Region Imboden,7017|7018|7019
+3733,Tamins,GR,Region Imboden,7015|7315
+3734,Trin,GR,Region Imboden,7014|7015|7016
 3746,Zernez,GR,Region Engiadina Bassa / Val Müstair,7527|7530|7542|7543
 3752,Samnaun,GR,Region Engiadina Bassa / Val Müstair,7562|7563
 3762,Scuol,GR,Region Engiadina Bassa / Val Müstair,7545|7546|7550|7551|7552|7553|7554|7557
@@ -1162,14 +1162,14 @@ bfs_id,name,canton,district,postal_codes
 3835,San Vittore,GR,Region Moesa,6533|6534
 3837,Calanca,GR,Region Moesa,6543|6544|6545|6546
 3847,Val Müstair,GR,Region Engiadina Bassa / Val Müstair,7532|7533|7534|7535|7536|7537
-3851,Davos,VS,Zermatt,7260|7265|7270|7272|7276|7277|7278|7494
-3861,Fideris,VS,Zermatt,7235
-3862,Furna,VS,Zermatt,7232
-3863,Jenaz,VS,Zermatt,7231|7232|7233
-3871,Klosters,VS,Zermatt,7247|7249|7250|7252|7265
-3881,Conters im Prättigau,VS,Zermatt,7241
-3882,Küblis,VS,Zermatt,7240
-3891,Luzein,VS,Zermatt,7222|7223|7224|7226|7240|7242|7243|7244|7245|7246
+3851,Davos,GR,Region Prättigau / Davos,7260|7265|7270|7272|7276|7277|7278|7494
+3861,Fideris,GR,Region Prättigau / Davos,7235
+3862,Furna,GR,Region Prättigau / Davos,7232
+3863,Jenaz,GR,Region Prättigau / Davos,7231|7232|7233
+3871,Klosters,GR,Region Prättigau / Davos,7247|7249|7250|7252|7265
+3881,Conters im Prättigau,GR,Region Prättigau / Davos,7241
+3882,Küblis,GR,Region Prättigau / Davos,7240
+3891,Luzein,GR,Region Prättigau / Davos,7222|7223|7224|7226|7240|7242|7243|7244|7245|7246
 3901,Chur,GR,Region Plessur,7000|7023|7026|7063|7064|7074
 3911,Churwalden,GR,Region Plessur,7000|7062|7074|7075|7076
 3921,Arosa,GR,Region Plessur,7027|7028|7029|7050|7056|7057|7058|7260
@@ -1181,9 +1181,9 @@ bfs_id,name,canton,district,postal_codes
 3953,Maienfeld,GR,Region Landquart,7302|7304
 3954,Malans,GR,Region Landquart,7208
 3955,Landquart,GR,Region Landquart,7204|7206|7302|7303|7313
-3961,Grüsch,VS,Zermatt,7213|7214|7215
-3962,Schiers,VS,Zermatt,7220|7222|7226|7228
-3972,Seewis im Prättigau,VS,Zermatt,7212|7215
+3961,Grüsch,GR,Region Prättigau / Davos,7213|7214|7215
+3962,Schiers,GR,Region Prättigau / Davos,7220|7222|7226|7228
+3972,Seewis im Prättigau,GR,Region Prättigau / Davos,7212|7215
 3981,Breil/Brigels,GR,Region Surselva,7134|7158|7159|7162|7163|7164|7165
 3982,Disentis/Mustér,GR,Region Surselva,7180|7182|7183|7186
 3983,Medel (Lucmagn),GR,Region Surselva,7184|7185
