@@ -181,7 +181,9 @@ def build_server(settings: Settings) -> FastMCP:
         some failures), failing (last run fetched nothing), or unknown (never run); `last_run_at`,
         `last_successful_run_at` and `last_run_failed` back it up. `fixture_only` is true when every
         document in the row is offline demo data rather than fetched from the source. Treat a row
-        that is failing or fixture_only as NOT covered by live data, even if documents is non-zero."""
+        that is failing or fixture_only as NOT covered by live data, even if documents is non-zero.
+        `by_extent` gives, per jurisdiction on the resolved path, the document count independent of
+        source; empty only when no location was given."""
         path: list[str] | None = None
         resolved_id = None
         if location:
