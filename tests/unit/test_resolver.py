@@ -230,6 +230,17 @@ def test_trailing_country_name_keeps_the_most_specific():
     assert [a.id for a in r.alternatives] == ["CH-ZH"]
 
 
+def test_marker_naming_a_level_with_no_match_returns_none():
+    assert LocationResolver(tree(), FakeGeo(())).resolve("Kanton Wil") is None
+    assert LocationResolver(tree(), FakeGeo(())).resolve("Quartier Zürich") is None
+
+
+def test_affoltern_collides_with_a_commune_name_start():
+    result = LocationResolver(tree(), FakeGeo(())).resolve("Affoltern")
+    assert isinstance(result, AmbiguousLocation)
+    assert {"CH-ZH-261-K11-AFFOLTERN", "CH-ZH-2"} <= {c.id for c in result.candidates}
+
+
 def test_zurich_airport_shares_one_token_falls_to_canton():
     geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
     r = LocationResolver(tree(), geo).resolve("Zurich Airport")

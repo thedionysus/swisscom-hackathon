@@ -343,8 +343,9 @@ probes:
     kind: structural
     failure_class: jurisdiction_confusion
     status: red
-    note: Wil exists in both ZH and SG. The canton suffix must pin it to the Zurich commune. Today it resolves approximately
-      to the canton.
+    note: Wil exists in both ZH and SG. The canton suffix now pins it to the Zurich commune by alias resolution. Stays red
+      only because the fixture's zh_ch documents still sit at the CH-ZH extent until the fixture revert; must_include expects
+      them at the commune.
     expect:
       status: results
       resolved:
