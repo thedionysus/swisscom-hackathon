@@ -7,6 +7,7 @@ import io
 import re
 from collections import Counter
 from collections.abc import Iterable, Sequence
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from swiss_grounding.locations.models import Level, Location
 SNAPSHOT = Path(__file__).resolve().parent / "data" / "communes.csv"
 COLUMNS = ("bfs_id", "name", "canton", "district", "postal_codes")
 PLZ_SEPARATOR = "|"
-CANTON_SUFFIX = re.compile(r"\s*\(([A-Z]{2})\)\s*$")
+CANTON_SUFFIX = re.compile(r"\s*(?:\([A-Z]{2}\))\s*$")
 LINDAS_MUNICIPALITY = "https://ld.admin.ch/municipality/{bfs_id}"
 
 
@@ -34,8 +35,8 @@ def parse_register_csv(text: str) -> tuple[Commune, ...]:
     if missing:
         raise ValueError(f"register snapshot lacks columns {sorted(missing)}")
     communes = tuple(
-        Commune(bfs_id=int(r["bfs_id"]), name=r["name"], canton=r["canton"], district=r["district"],
-                postal_codes=tuple(p for p in r["postal_codes"].split(PLZ_SEPARATOR) if p))
+        Commune(bfs_id=int(r["bfs_id"]), name=r["name"] or "", canton=r["canton"] or "", district=r["district"] or "",
+                postal_codes=tuple(p for p in (r["postal_codes"] or "").split(PLZ_SEPARATOR) if p))
         for r in reader
     )
     return tuple(sorted(communes, key=lambda c: c.bfs_id))
@@ -49,11 +50,11 @@ def write_register_csv(path: Path, communes: Iterable[Commune]) -> None:
         writer.writerow({"bfs_id": c.bfs_id, "name": c.name, "canton": c.canton,
                          "district": c.district, "postal_codes": PLZ_SEPARATOR.join(c.postal_codes)})
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(buffer.getvalue())
+    path.write_text(buffer.getvalue(), encoding="utf-8")
 
 
 def load_register(path: Path = SNAPSHOT) -> tuple[Commune, ...]:
-    return parse_register_csv(path.read_text())
+    return parse_register_csv(path.read_text(encoding="utf-8"))
 
 
 def _bare_name(name: str) -> str:
@@ -66,7 +67,7 @@ def _aliases(c: Commune, bare: str, unique_plz: frozenset[str]) -> tuple[str, ..
     return tuple(dict.fromkeys(marked + plz))
 
 
-def commune_locations(communes: Sequence[Commune], skip_bfs_ids: set[int]) -> tuple[Location, ...]:
+def commune_locations(communes: Sequence[Commune], skip_bfs_ids: AbstractSet[int]) -> tuple[Location, ...]:
     """One Location per commune, id CH-<canton>-<bfs>, name without the canton suffix.
 
     A postal code becomes an alias only when exactly one commune carries it."""
