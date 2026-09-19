@@ -29,11 +29,11 @@ probes:
       coverage_present:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:47:12.520618Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.093401Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-230
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -72,15 +72,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
-      failures:
-        - 'resolved: expected Winterthur (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
-        - 'must_include: no citation matched source=zh_ch extent=CH-ZH'
-        - 'coverage: response carries no coverage signal'
+      failures: []
   - id: com-002
     question: When is cardboard collected?
     location: Uster
@@ -107,11 +104,11 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-16T16:47:12.673651Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.173501Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-198
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -130,11 +127,21 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/1984/1122_1122_1122/20260801/de
           authority: federal_law
           event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
+          authority: official_info
+          event_date: null
         - source: fedlex
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
           authority: federal_law
           event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
+          authority: official_info
+          event_date: null
         - source: fedlex
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
@@ -145,20 +152,7 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'resolved: expected Uster (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
-        - 'must_include: no citation matched source=zh_ch url_contains=abfall'
-        - 'coverage: response carries no coverage signal'
+      failures: []
   - id: com-003
     question: When is cardboard collected in Dübendorf?
     categories:
@@ -179,19 +173,55 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-16T16:47:12.673772Z'
-      git_commit: 2fff5b7
-      status: needs_location
-      resolved_id: null
-      method: null
+      recorded_at: '2026-09-19T10:49:23.235666Z'
+      git_commit: 05c106c
+      status: results
+      resolved_id: CH-ZH-191
+      method: alias_in_question
       alternatives: []
-      message: No location was given and none was recognised in the question. Ask the user which city, canton, or postal code
-        they are interested in, then search again.
-      citations: []
-      failures:
-        - 'status: expected results, got needs_location'
-        - 'resolved: expected Dübendorf (municipality under CH-ZH), got None'
-        - 'coverage: response carries no coverage signal'
+      message: ''
+      citations:
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
+          authority: official_info
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
+          authority: official_info
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1984/1122_1122_1122/20260801/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/boden.html
+          authority: official_info
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1984/1122_1122_1122/20260801/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/klima.html
+          authority: official_info
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
+          event_date: null
+      failures: []
   - id: com-004
     question: Do I need to leash my dog in the forest?
     location: Kloten
@@ -212,11 +242,11 @@ probes:
         - extent: CH-ZH-261
         - extent: CH-ZH-261-K3
     observed:
-      recorded_at: '2026-09-16T16:47:12.795423Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.289119Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-62
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -255,13 +285,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
-      failures:
-        - 'resolved: expected Kloten (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
+      failures: []
   - id: com-005
     question: Do I need to leash my dog in the forest?
     location: Wetzikon
@@ -284,11 +313,11 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-16T16:47:13.053448Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.346543Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-121
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -327,15 +356,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
-      failures:
-        - 'resolved: expected Wetzikon (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
-        - 'must_include: no citation matched source=zh_ch extent=CH-ZH'
-        - 'coverage: response carries no coverage signal'
+      failures: []
   - id: com-006
     question: Do I need to leash my dog in the forest?
     location: Wil ZH
@@ -356,11 +382,11 @@ probes:
         - source: zh_ch
           extent: CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:47:13.159835Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.413000Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-71
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -399,14 +425,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
-      failures:
-        - 'resolved: expected Wil (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
-        - 'must_include: no citation matched source=zh_ch extent=CH-ZH'
+      failures: []
   - id: com-007
     question: Do I need to leash my dog in the forest?
     location: Wil
@@ -422,57 +446,16 @@ probes:
       status: needs_location
       message_contains: Wil
     observed:
-      recorded_at: '2026-09-16T16:47:13.280691Z'
-      git_commit: 2fff5b7
-      status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      recorded_at: '2026-09-19T10:49:23.413111Z'
+      git_commit: 05c106c
+      status: needs_location
+      resolved_id: null
+      method: null
       alternatives: []
-      message: ''
-      citations:
-        - source: schweizer_wanderwege
-          extent: CH
-          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
-          authority: institutional
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'status: expected needs_location, got results'
-        - 'message: ''Wil'' not in ""'
+      message: '''Wil'' is ambiguous (several places share this name): Wil (Zurich, CH-ZH-71), Wil (St. Gallen, CH-SG-3427).
+        Ask the user which one they mean, then search again.'
+      citations: []
+      failures: []
   - id: com-008
     question: Do I need to leash my dog in the forest?
     location: Affoltern am Albis
@@ -495,10 +478,237 @@ probes:
         - extent: CH-ZH-261-K11
         - extent: CH-BE
     observed:
-      recorded_at: '2026-09-16T16:47:13.564972Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.471706Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-BE
+      resolved_id: CH-ZH-2
+      method: alias
+      alternatives: []
+      message: ''
+      citations:
+        - source: schweizer_wanderwege
+          extent: CH
+          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
+          authority: institutional
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
+          event_date: null
+      failures: []
+  - id: com-009
+    question: Do I need to leash my dog in the forest?
+    location: Affoltern
+    categories:
+      - dogs
+    kind: structural
+    failure_class: entity_substitution
+    status: green
+    note: Bare "Affoltern" matches only the Zurich Quartier by exact alias, but it is a common word that also names the nearby
+      commune Affoltern am Albis, so the resolver treats it as ambiguous and needs_location rather than guessing the Quartier.
+    expect:
+      status: needs_location
+    observed:
+      recorded_at: '2026-09-19T10:49:23.472736Z'
+      git_commit: 05c106c
+      status: needs_location
+      resolved_id: null
+      method: null
+      alternatives: []
+      message: '''Affoltern'' is ambiguous (also the start of a commune name): Affoltern (Zurich, CH-ZH-261-K11-AFFOLTERN),
+        Affoltern am Albis (Zurich, CH-ZH-2), Affoltern im Emmental (Bern, CH-BE-951). Ask the user which one they mean, then
+        search again.'
+      citations: []
+      failures: []
+  - id: com-010
+    question: Do I need to leash my dog in the forest?
+    location: Gemeinde Winterthur
+    categories:
+      - dogs
+    kind: structural
+    failure_class: none
+    status: green
+    note: Marked commune input. Same node as com-001; checks that the marker is accepted by the alias lookup rather than falling
+      through to GeoAdmin. Now resolves via alias directly to the Winterthur municipality node, since the commune register
+      seeds "Gemeinde Winterthur" as an alias.
+    expect:
+      status: results
+      resolved:
+        label: Winterthur
+        level: municipality
+        parent: CH-ZH
+      method: alias
+    observed:
+      recorded_at: '2026-09-19T10:49:23.540263Z'
+      git_commit: 05c106c
+      status: results
+      resolved_id: CH-ZH-230
+      method: alias
+      alternatives: []
+      message: ''
+      citations:
+        - source: schweizer_wanderwege
+          extent: CH
+          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
+          authority: institutional
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
+          event_date: null
+      failures: []
+  - id: com-011
+    question: Do I need to leash my dog in the forest?
+    location: '8400'
+    categories:
+      - dogs
+    kind: structural
+    failure_class: silent_under_coverage
+    status: green
+    note: Postal code of Winterthur. The register now resolves the postal code to the commune, and the response carries a
+      coverage signal (ADR 0001).
+    expect:
+      status: results
+      resolved:
+        label: Winterthur
+        level: municipality
+        parent: CH-ZH
+      coverage_empty:
+        - resolved
+    observed:
+      recorded_at: '2026-09-19T10:49:23.611591Z'
+      git_commit: 05c106c
+      status: results
+      resolved_id: CH-ZH-230
+      method: alias
+      alternatives: []
+      message: ''
+      citations:
+        - source: schweizer_wanderwege
+          extent: CH
+          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
+          authority: institutional
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
+          event_date: null
+      failures: []
+  - id: com-012
+    question: Do I need to leash my dog in the forest?
+    location: Winterthurr
+    categories:
+      - dogs
+    kind: structural
+    failure_class: none
+    status: green
+    note: One-character typo. Today the response was needs_location, since GeoAdmin returns nothing for it. The resolver now
+      falls back to a single-edit match against the alias index when GeoAdmin comes up empty, and "Winterthurr" is within
+      one edit of exactly one alias, so it resolves to Winterthur.
+    expect:
+      status: results
+      resolved:
+        label: Winterthur
+        level: municipality
+        parent: CH-ZH
+    observed:
+      recorded_at: '2026-09-19T10:49:23.759524Z'
+      git_commit: 05c106c
+      status: results
+      resolved_id: CH-ZH-230
       method: geoadmin
       alternatives: []
       message: ''
@@ -538,206 +748,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'resolved: expected Affoltern am Albis (municipality under CH-ZH), got CH-BE (Bern, canton under CH)'
-  - id: com-009
-    question: Do I need to leash my dog in the forest?
-    location: Affoltern
-    categories:
-      - dogs
-    kind: structural
-    failure_class: entity_substitution
-    status: green
-    note: Bare "Affoltern" matches only the Zurich Quartier by exact alias, but it is a common word that also names the nearby
-      commune Affoltern am Albis, so the resolver treats it as ambiguous and needs_location rather than guessing the Quartier.
-    expect:
-      status: needs_location
-    observed:
-      recorded_at: '2026-09-16T16:47:13.675450Z'
-      git_commit: 2fff5b7
-      status: results
-      resolved_id: CH-ZH-261-K11-AFFOLTERN
-      method: alias
-      alternatives: []
-      message: ''
-      citations:
-        - source: schweizer_wanderwege
-          extent: CH
-          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
-          authority: institutional
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
         - source: zh_ch
-          extent: CH-ZH-261
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/wald.html
           authority: official_info
           event_date: null
-      failures:
-        - 'status: expected needs_location, got results'
-  - id: com-010
-    question: Do I need to leash my dog in the forest?
-    location: Gemeinde Winterthur
-    categories:
-      - dogs
-    kind: structural
-    failure_class: none
-    status: green
-    note: Marked commune input. Same node as com-001; checks that the marker is accepted by the alias lookup rather than falling
-      through to GeoAdmin. Now resolves via alias directly to the Winterthur municipality node, since the commune register
-      seeds "Gemeinde Winterthur" as an alias.
-    expect:
-      status: results
-      resolved:
-        label: Winterthur
-        level: municipality
-        parent: CH-ZH
-      method: alias
-    observed:
-      recorded_at: '2026-09-16T16:47:13.859898Z'
-      git_commit: 2fff5b7
-      status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
-      alternatives: []
-      message: ''
-      citations:
-        - source: schweizer_wanderwege
-          extent: CH
-          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
-          authority: institutional
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'resolved: expected Winterthur (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
-        - 'method: expected alias, got geoadmin_approximate'
-  - id: com-011
-    question: Do I need to leash my dog in the forest?
-    location: '8400'
-    categories:
-      - dogs
-    kind: structural
-    failure_class: silent_under_coverage
-    status: green
-    note: Postal code of Winterthur. The register now resolves the postal code to the commune, and the response carries a
-      coverage signal (ADR 0001).
-    expect:
-      status: results
-      resolved:
-        label: Winterthur
-        level: municipality
-        parent: CH-ZH
-      coverage_empty:
-        - resolved
-    observed:
-      recorded_at: '2026-09-16T16:47:13.894774Z'
-      git_commit: 2fff5b7
-      status: needs_location
-      resolved_id: null
-      method: null
-      alternatives: []
-      message: Could not resolve location '8400'. Ask the user for a city, canton, or postal code.
-      citations: []
-      failures:
-        - 'status: expected results, got needs_location'
-        - 'resolved: expected Winterthur (municipality under CH-ZH), got None'
-        - 'coverage: response carries no coverage signal'
-  - id: com-012
-    question: Do I need to leash my dog in the forest?
-    location: Winterthurr
-    categories:
-      - dogs
-    kind: structural
-    failure_class: none
-    status: green
-    note: One-character typo. Today the response was needs_location, since GeoAdmin returns nothing for it. The resolver now
-      falls back to a single-edit match against the alias index when GeoAdmin comes up empty, and "Winterthurr" is within
-      one edit of exactly one alias, so it resolves to Winterthur.
-    expect:
-      status: results
-      resolved:
-        label: Winterthur
-        level: municipality
-        parent: CH-ZH
-    observed:
-      recorded_at: '2026-09-16T16:47:13.990381Z'
-      git_commit: 2fff5b7
-      status: needs_location
-      resolved_id: null
-      method: null
-      alternatives: []
-      message: Could not resolve location 'Winterthurr'. Ask the user for a city, canton, or postal code.
-      citations: []
-      failures:
-        - 'status: expected results, got needs_location'
-        - 'resolved: expected Winterthur (municipality under CH-ZH), got None'
+      failures: []
   - id: com-013
     question: Do I need to leash my dog in the forest?
     location: Bülach
@@ -759,11 +775,11 @@ probes:
       coverage_present:
         - CH
     observed:
-      recorded_at: '2026-09-16T16:47:14.197943Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.820959Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-53
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -802,14 +818,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
-      failures:
-        - 'resolved: expected Bülach (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
-        - 'coverage: response carries no coverage signal'
+      failures: []
   - id: com-014
     question: What applies to dogs everywhere in the canton?
     location: Kanton Zürich
@@ -831,18 +845,33 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:47:14.273003Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.901883Z'
+      git_commit: 05c106c
       status: results
       resolved_id: CH-ZH
       method: alias
       alternatives: []
       message: ''
       citations:
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere.html
+          authority: official_info
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere.html
+          authority: official_info
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/planen-bauen.html
+          authority: official_info
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wasser-gewaesser.html
+          authority: official_info
           event_date: null
         - source: fedlex
           extent: CH
@@ -851,36 +880,20 @@ probes:
           event_date: null
         - source: fedlex
           extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/luft-strahlung.html
+          authority: official_info
+          event_date: null
+        - source: fedlex
+          extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'must_include: no citation matched source=zh_ch extent=CH-ZH'
+      failures: []
   - id: com-015
     question: Do I need to leash my dog in the forest?
     location: Dietikon
@@ -901,11 +914,11 @@ probes:
       first_extent: CH-ZH
       first_authority: official_info
     observed:
-      recorded_at: '2026-09-16T16:47:14.435486Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:23.975198Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      resolved_id: CH-ZH-243
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -944,12 +957,11 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
       failures:
-        - 'resolved: expected Dietikon (municipality under CH-ZH), got CH-ZH (Zurich, canton under CH)'
         - 'first_extent: expected CH-ZH, got CH'
         - 'first_authority: expected official_info, got institutional'

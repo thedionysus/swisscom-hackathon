@@ -22,11 +22,11 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-16T16:47:14.661447Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.069441Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZH-261
-      method: geoadmin
+      resolved_id: CH-ZH
+      method: geoadmin_approximate
       alternatives: []
       message: ''
       citations:
@@ -36,24 +36,24 @@ probes:
           authority: institutional
           event_date: null
         - source: zh_ch
-          extent: CH-ZH-261
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/wald.html
           authority: official_info
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
           event_date: null
         - source: zh_ch
-          extent: CH-ZH-261
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/wald.html
           authority: official_info
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
           event_date: null
         - source: fedlex
           extent: CH
@@ -70,11 +70,7 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
           authority: federal_law
           event_date: null
-      failures:
-        - 'resolved: expected CH-ZH, got CH-ZH-261'
-        - 'method: expected geoadmin_approximate, got geoadmin'
-        - 'must_exclude: citation matched extent=CH-ZH-261 (https://www.zh.ch/de/umwelt-tiere/wald.html)'
-        - 'must_exclude: citation matched extent=CH-ZH-261 (https://www.zh.ch/de/umwelt-tiere/wald.html)'
+      failures: []
   - id: look-002
     question: Do I need to leash my dog in the forest?
     location: Zug
@@ -96,12 +92,13 @@ probes:
       alternatives_include:
         - CH-ZG
     observed:
-      recorded_at: '2026-09-16T16:47:14.761244Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.134319Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-ZG
+      resolved_id: CH-ZG-1711
       method: alias
-      alternatives: []
+      alternatives:
+        - CH-ZG
       message: ''
       citations:
         - source: schweizer_wanderwege
@@ -160,8 +157,8 @@ probes:
         id: CH-ZH
       method: alias
     observed:
-      recorded_at: '2026-09-16T16:47:14.869772Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.213513Z'
+      git_commit: 05c106c
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -173,6 +170,11 @@ probes:
           url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
           authority: institutional
           event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
+          event_date: null
         - source: fedlex
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
@@ -182,20 +184,15 @@ probes:
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
           authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
         - source: fedlex
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
           authority: federal_law
           event_date: null
         - source: fedlex
@@ -225,8 +222,8 @@ probes:
       alternatives_include:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:47:14.943546Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.285633Z'
+      git_commit: 05c106c
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -239,13 +236,76 @@ probes:
           url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
           authority: institutional
           event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
+          authority: federal_law
+          event_date: null
         - source: zh_ch
-          extent: CH-ZH-261
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/wald.html
           authority: official_info
           event_date: null
+      failures: []
+  - id: look-005
+    question: Do I need to leash my dog in the forest?
+    location: Zurich Airport
+    categories:
+      - dogs
+    kind: structural
+    failure_class: jurisdiction_confusion
+    status: green
+    judge: true
+    note: The airport is a landmark in Kloten, not a place name the tree knows. GeoAdmin answers with the city; only one token
+      overlaps, so the resolver settles on the canton and says so through the resolution method.
+    expect:
+      status: results
+      resolved:
+        id: CH-ZH
+      method: geoadmin_approximate
+      must_exclude:
+        - extent: CH-ZH-261
+    observed:
+      recorded_at: '2026-09-19T10:49:24.370422Z'
+      git_commit: 05c106c
+      status: results
+      resolved_id: CH-ZH
+      method: geoadmin_approximate
+      alternatives: []
+      message: ''
+      citations:
+        - source: schweizer_wanderwege
+          extent: CH
+          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
+          authority: institutional
+          event_date: null
         - source: zh_ch
-          extent: CH-ZH-261
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/wald.html
           authority: official_info
           event_date: null
@@ -258,6 +318,11 @@ probes:
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
           authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
         - source: fedlex
           extent: CH
@@ -275,77 +340,6 @@ probes:
           authority: federal_law
           event_date: null
       failures: []
-  - id: look-005
-    question: Do I need to leash my dog in the forest?
-    location: Zurich Airport
-    categories:
-      - dogs
-    kind: structural
-    failure_class: jurisdiction_confusion
-    status: green
-    judge: true
-    note: The airport is a landmark in Kloten, not a place name the tree knows. GeoAdmin answers with the city; only one
-      token overlaps, so the resolver settles on the canton and says so through the resolution method.
-    expect:
-      status: results
-      resolved:
-        id: CH-ZH
-      method: geoadmin_approximate
-      must_exclude:
-        - extent: CH-ZH-261
-    observed:
-      recorded_at: '2026-09-16T16:47:15.129517Z'
-      git_commit: 2fff5b7
-      status: results
-      resolved_id: CH-ZH-261
-      method: geoadmin
-      alternatives: []
-      message: ''
-      citations:
-        - source: schweizer_wanderwege
-          extent: CH
-          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
-          authority: institutional
-          event_date: null
-        - source: zh_ch
-          extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/wald.html
-          authority: official_info
-          event_date: null
-        - source: zh_ch
-          extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/wald.html
-          authority: official_info
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'resolved: expected Kloten (municipality under CH-ZH), got CH-ZH-261 (Zurich, municipality under CH-ZH)'
-        - 'must_exclude: citation matched extent=CH-ZH-261 (https://www.zh.ch/de/umwelt-tiere/wald.html)'
-        - 'must_exclude: citation matched extent=CH-ZH-261 (https://www.zh.ch/de/umwelt-tiere/wald.html)'
   - id: look-006
     question: Do I need to leash my dog in the forest?
     location: Zürichsee
@@ -360,56 +354,15 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-16T16:47:15.270375Z'
-      git_commit: 2fff5b7
-      status: results
-      resolved_id: CH-ZH
-      method: geoadmin_approximate
+      recorded_at: '2026-09-19T10:49:24.476084Z'
+      git_commit: 05c106c
+      status: needs_location
+      resolved_id: null
+      method: null
       alternatives: []
-      message: ''
-      citations:
-        - source: schweizer_wanderwege
-          extent: CH
-          url: https://www.schweizer-wanderwege.ch/de/wandern/unterwegs/like-to-hike
-          authority: institutional
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1992/2521_2521_2521/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-      failures:
-        - 'status: expected needs_location, got results'
+      message: Could not resolve location 'Zürichsee'. Ask the user for a city, canton, or postal code.
+      citations: []
+      failures: []
   - id: look-007
     question: Do I need to leash my dog in the forest?
     location: Zurzach
@@ -430,11 +383,11 @@ probes:
         - extent: CH-ZH
         - extent: CH-ZH-261
     observed:
-      recorded_at: '2026-09-16T16:47:15.388018Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.574150Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-AG
-      method: geoadmin_approximate
+      resolved_id: CH-AG-4324
+      method: alias
       alternatives: []
       message: ''
       citations:
@@ -478,8 +431,7 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
           authority: federal_law
           event_date: null
-      failures:
-        - 'resolved: expected Zurzach (municipality under CH-AG), got CH-AG (Aargau, canton under CH)'
+      failures: []
   - id: look-008
     question: Do I need to leash my dog in the forest?
     location: Basel
@@ -500,12 +452,13 @@ probes:
       alternatives_include:
         - CH-BS
     observed:
-      recorded_at: '2026-09-16T16:47:15.446382Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.669956Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH-BS
+      resolved_id: CH-BS-2701
       method: alias
-      alternatives: []
+      alternatives:
+        - CH-BS
       message: ''
       citations:
         - source: schweizer_wanderwege
@@ -563,14 +516,19 @@ probes:
       resolved:
         id: CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:47:15.538438Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.756686Z'
+      git_commit: 05c106c
       status: results
       resolved_id: CH-ZH
       method: alias
       alternatives: []
       message: ''
       citations:
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere.html
+          authority: official_info
+          event_date: null
         - source: fedlex
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
@@ -599,11 +557,6 @@ probes:
         - source: fedlex
           extent: CH
           url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
-          event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1959/679_705_685/20260701/de
           authority: federal_law
           event_date: null
         - source: schweizer_wanderwege
@@ -631,12 +584,13 @@ probes:
       alternatives_include:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-16T16:47:15.622964Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.810446Z'
+      git_commit: 05c106c
       status: results
-      resolved_id: CH
+      resolved_id: CH-ZH-261
       method: alias_scan
-      alternatives: []
+      alternatives:
+        - CH-ZH
       message: ''
       citations:
         - source: schweizer_wanderwege
@@ -674,14 +628,12 @@ probes:
           url: https://www.fedlex.admin.ch/eli/cc/2008/414/20230901/de
           authority: federal_law
           event_date: null
-        - source: fedlex
-          extent: CH
-          url: https://www.fedlex.admin.ch/eli/cc/1966/1637_1694_1679/20250801/de
-          authority: federal_law
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/wald.html
+          authority: official_info
           event_date: null
-      failures:
-        - 'resolved: expected CH-ZH-261, got CH'
-        - 'alternatives: CH-ZH missing; none returned'
+      failures: []
   - id: look-011
     question: Do I need to leash my dog in the forest?
     location: Nowhere
@@ -695,8 +647,8 @@ probes:
       status: needs_location
       message_contains: Nowhere
     observed:
-      recorded_at: '2026-09-16T16:47:15.655945Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.860215Z'
+      git_commit: 05c106c
       status: needs_location
       resolved_id: null
       method: null
@@ -723,8 +675,8 @@ probes:
         - source: open_erz
       first_url_contains: stadt-zuerich.ch
     observed:
-      recorded_at: '2026-09-16T16:47:15.773044Z'
-      git_commit: 2fff5b7
+      recorded_at: '2026-09-19T10:49:24.950846Z'
+      git_commit: 05c106c
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -737,39 +689,39 @@ probes:
           url: https://www.stadt-zuerich.ch/de/umwelt-und-energie/entsorgung.html
           authority: official_info
           event_date: null
-        - source: zh_ch
+        - source: stadt_zuerich
           extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
+          url: https://www.stadt-zuerich.ch/de/umwelt-und-energie.html
           authority: official_info
           event_date: null
         - source: zh_ch
           extent: CH-ZH-261
+          url: https://www.zh.ch/de/umwelt-tiere/landwirtschaft.html
+          authority: official_info
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1984/1122_1122_1122/20260801/de
+          authority: federal_law
+          event_date: null
+        - source: fedlex
+          extent: CH
+          url: https://www.fedlex.admin.ch/eli/cc/1984/1122_1122_1122/20260801/de
+          authority: federal_law
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
+          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
+          authority: official_info
+          event_date: null
+        - source: zh_ch
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/luft-strahlung.html
           authority: official_info
           event_date: null
         - source: zh_ch
-          extent: CH-ZH-261
+          extent: CH-ZH
           url: https://www.zh.ch/de/umwelt-tiere/klima.html
-          authority: official_info
-          event_date: null
-        - source: zh_ch
-          extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/wasser-gewaesser.html
-          authority: official_info
-          event_date: null
-        - source: zh_ch
-          extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/wald.html
-          authority: official_info
-          event_date: null
-        - source: zh_ch
-          extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html
-          authority: official_info
-          event_date: null
-        - source: zh_ch
-          extent: CH-ZH-261
-          url: https://www.zh.ch/de/umwelt-tiere/umweltschutz.html
           authority: official_info
           event_date: null
       failures: []
