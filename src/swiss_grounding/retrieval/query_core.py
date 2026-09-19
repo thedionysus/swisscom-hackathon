@@ -72,6 +72,7 @@ class QueryCore:
             )
             return QueryResponse(status="needs_location", message=message)
         limit = max(1, min(request.limit, MAX_LIMIT))
+        today = request.as_of or self.today()
         with connect(self.database_url) as conn:
             hits = hybrid_search(
                 conn, self.embedder, question=request.question, extent_path=resolved.path,
@@ -93,7 +94,7 @@ class QueryCore:
             label = resolved.location.label("en")
             return replace(base, message=f"No indexed evidence for {label} or its parent jurisdictions.")
         ranked = rerank(hits, self.tree, resolved.location.id, request.categories, self.weights,
-                        today=self.today)
+                        today=lambda: today)
         chosen = diversify(ranked, limit=limit, per_document_cap=PER_DOCUMENT_CAP)
         citations = tuple(build_citation(s, self.tree) for s in chosen)
         return replace(base, status="results", citations=citations)
