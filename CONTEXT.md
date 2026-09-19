@@ -14,6 +14,10 @@ _Avoid_: Scope, region, area
 The chain of extents from Switzerland down to a resolved location, inclusive. A search returns only chunks whose extent lies on this path.
 _Avoid_: Ancestor list, hierarchy
 
+**Ambiguous location**:
+An input naming more than one place that does not sit on a single path, such as Wil in Zurich and Wil in St. Gallen, or a Quartier and a commune sharing a name. The server asks which one is meant instead of guessing.
+_Avoid_: Fallback, best guess
+
 **Coverage signal**:
 The part of a search result that states, per extent on the path, whether any indexed document exists there. A result stays `results` when only parent extents have data; the signal is what makes the gap visible.
 _Avoid_: Fallback notice, warning
@@ -23,7 +27,7 @@ A chunk that describes one dated event, such as a waste collection on a given da
 _Avoid_: Schedule entry, event record
 
 **Commune register**:
-The Federal Statistical Office list of every Swiss commune with its BFS number and canton. The location tree is meant to hold all of them, whether or not any source covers them, so a place always resolves to its own node. Not yet seeded: today only the city of Zurich exists below canton level.
+The Federal Statistical Office list of every Swiss commune with its BFS number and canton. The location tree is meant to hold all of them, whether or not any source covers them, so a place always resolves to its own node..
 _Avoid_: Municipality list, gazetteer
 
 **Narrowing**:

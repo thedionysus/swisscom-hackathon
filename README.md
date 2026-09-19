@@ -184,6 +184,8 @@ Probes are hand-written adversarial questions under `evals/probes/`, one YAML fi
     uv run pytest tests/integration/test_probes_structural.py   # structural probes on fixtures, frozen clock
     uv run swiss-grounding eval probes --record                  # all probes on the live database, writes observed blocks
     uv run swiss-grounding eval judge                            # judge cases across models, needs the claude CLI
+    uv run swiss-grounding locations fetch-register              # regenerate the committed commune register snapshot
+    uv run swiss-grounding renarrow                              # re-file stored documents under the narrowing rule (no API calls)
 
 The probes command exits 3 when a probe's red or green status disagrees with the live result.
 
