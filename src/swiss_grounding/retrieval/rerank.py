@@ -8,6 +8,10 @@ from swiss_grounding.retrieval.models import Hit, ScoredHit
 
 # Events that already happened stay retrievable but should not outrank upcoming ones.
 PAST_EVENT_PENALTY = 0.5
+# Boost for an event happening today, decaying with days ahead so the nearest future
+# event outranks later ones.
+NEARNESS_BONUS = 0.5
+NEARNESS_HALF_LIFE_DAYS = 14.0
 
 
 @dataclass(frozen=True)
@@ -36,10 +40,13 @@ def category_overlap(query_categories: Sequence[str], chunk_categories: Sequence
 
 
 def event_recency_factor(event_date: date | None, today: date) -> float:
-    """1.0 for non-events and events today or later; a penalty for events already in the past."""
-    if event_date is None or event_date >= today:
+    """1.0 for non-events; past events halved; future events boosted the nearer they are."""
+    if event_date is None:
         return 1.0
-    return PAST_EVENT_PENALTY
+    days = (event_date - today).days
+    if days < 0:
+        return PAST_EVENT_PENALTY
+    return 1.0 + NEARNESS_BONUS / (1.0 + days / NEARNESS_HALF_LIFE_DAYS)
 
 
 def rerank(
