@@ -9,9 +9,9 @@ probes:
     failure_class: temporal_misapplication
     status: green
     judge: true
-    note: With a frozen clock of 2026-09-16 the nearest future event is 2026-09-17 and the reranker now orders future
-      events nearest-first, so the 2026-09-17 anchor lands first on the fixture. Unrelated to the coverage signal (Task 5);
-      flipped because it already passes.
+    note: With a frozen clock of 2026-09-16 the nearest future event is 2026-09-17 and the reranker now orders future events
+      nearest-first, so the 2026-09-17 anchor lands first on the fixture. Unrelated to the coverage signal (Task 5); flipped
+      because it already passes.
     expect:
       status: results
       resolved:
@@ -81,8 +81,8 @@ probes:
     failure_class: silent_under_coverage
     status: green
     judge: true
-    note: Only 8003 has calendar data. Kreis 4 gets city and canton guidance, no Kreis 3 dates, and coverage now says
-      Kreis 4 itself is empty (ADR 0001).
+    note: Only 8003 has calendar data. Kreis 4 gets city and canton guidance, no Kreis 3 dates, and coverage now says Kreis
+      4 itself is empty (ADR 0001).
     expect:
       status: results
       resolved:
@@ -447,8 +447,8 @@ probes:
     failure_class: jurisdiction_confusion
     status: green
     judge: true
-    note: Seefeld is Kreis 8. The Wiedikon dog zone is a sibling and does not appear. Coverage now says Kreis 8 is empty
-      (ADR 0001).
+    note: Seefeld is Kreis 8. The Wiedikon dog zone is a sibling and does not appear. Coverage now says Kreis 8 is empty (ADR
+      0001).
     expect:
       status: results
       resolved:
@@ -600,8 +600,8 @@ probes:
     failure_class: silent_under_coverage
     status: green
     judge: true
-    note: No indexed page states the city dog tax. The result carries ch.ch and canton evidence plus a coverage signal.
-      City-level dog documents exist, so coverage_present holds (ADR 0001).
+    note: No indexed page states the city dog tax. The result carries ch.ch and canton evidence plus a coverage signal. City-level
+      dog documents exist, so coverage_present holds (ADR 0001).
     expect:
       status: results
       resolved:
@@ -868,8 +868,8 @@ probes:
     kind: structural
     failure_class: entity_substitution
     status: green
-    note: '"City" is a Quartier name in Kreis 1. A bare "City" as a location does not resolve to that Quartier; it is a
-      common word, so the resolver returns it as ambiguous and needs_location. Say "Quartier City" to mean the district.'
+    note: '"City" is a Quartier name in Kreis 1. A bare "City" as a location does not resolve to that Quartier; it is a common
+      word, so the resolver returns it as ambiguous and needs_location. Say "Quartier City" to mean the district.'
     expect:
       status: needs_location
     observed:
@@ -1108,10 +1108,9 @@ probes:
       - hiking
     kind: structural
     failure_class: jurisdiction_confusion
-    status: red
-    note: Marked canton input must resolve to the canton and return canton documents. Red because narrowing moved every zh.ch
-      page to the city, so nothing sits at CH-ZH (ADR 0002). The fixture corpus mirrors this defect; move its zh_ch documents
-      back to CH-ZH when re-narrowing lands.
+    status: green
+    note: Marked canton input resolves to the canton and returns canton documents. Green since re-narrowing under ADR 0002
+      moved the zh.ch pages back to CH-ZH; the fixture corpus files them there too.
     expect:
       status: results
       resolved:
@@ -1182,8 +1181,9 @@ probes:
     kind: structural
     failure_class: temporal_misapplication
     status: red
-    note: With as_of 2026-09-08 the next collection is 2026-09-10, so it must rank first. Today the reranker penalises 2026-09-10
-      as past because it uses the real clock rather than as_of, and as_of only filters law validity.
+    note: With as_of 2026-09-08 the next collection is 2026-09-10, so it must rank first. as_of now drives the reranker clock,
+      but live ingestion fetches the calendar from today onward, so the 2026-09-10 event is not indexed anywhere; red until
+      the fetch keeps a trailing window, like city-003.
     expect:
       status: results
       resolved:
