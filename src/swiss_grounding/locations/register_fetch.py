@@ -42,7 +42,9 @@ def parse_agvch(text: str) -> tuple[Commune, ...]:
             if current["Level"] == LEVEL_CANTON:
                 return current["ShortName"]
             current = parent_of(current)
-        raise ValueError(f"AGVCH row {row['BfsCode']} {row['Name']}: parent {row['Parent']!r} not in snapshot")
+        raise ValueError(
+            f"AGVCH row {row['BfsCode']} {row['Name']}: parent chain exceeds {MAX_PARENT_HOPS} hops or is cyclic"
+        )
 
     communes = []
     for r in rows:

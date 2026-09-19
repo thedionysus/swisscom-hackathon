@@ -18,7 +18,7 @@ from swiss_grounding.ingest.llm import build_llm
 from swiss_grounding.ingest.pipeline import run_ingest
 from swiss_grounding.ingest.renarrow import renarrow_all
 from swiss_grounding.ingest.run_log import record_run
-from swiss_grounding.locations.repository import load_tree, upsert_locations
+from swiss_grounding.locations.repository import load_tree, prune_locations, upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
 from swiss_grounding.registry.repository import load_sources, upsert_sources
@@ -59,10 +59,15 @@ def db_init() -> None:
 def db_seed() -> None:
     """Insert the location tree and seed source definitions."""
     settings = load_settings()
+    locations = seed_locations()
     with connect(settings.database_url) as conn:
-        upsert_locations(conn, seed_locations())
+        upsert_locations(conn, locations)
         upsert_sources(conn, load_seed_sources())
+        report = prune_locations(conn, [loc.id for loc in locations])
     typer.echo("locations and sources seeded")
+    typer.echo(f"pruned {len(report.deleted)} stale communes")
+    if report.kept_referenced:
+        typer.echo(f"kept {len(report.kept_referenced)} referenced stale communes: {', '.join(report.kept_referenced)}")
 
 
 @app.command("load-fixture")
