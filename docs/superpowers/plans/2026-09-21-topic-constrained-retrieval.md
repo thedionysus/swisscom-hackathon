@@ -40,8 +40,15 @@ Commit messages: `<type>: <description>` ending with `Co-Authored-By: Claude Opu
 
 Two of the reported findings are design questions, not defects. They block the tasks named and must be answered before those tasks start. **Both were decided on 2026-09-22; the decisions are recorded inline below.**
 
-**D1 — What does `score` mean to a caller?** (blocks Task 9)
-Scores are query-node-relative by construction: the same chunk scores 1.1918 at `CH` and 0.8168 at `8003`, and the entire difference is the specificity term. Measured across four scopes, the pool grew 18 → 132 documents with no effect on the retrieval component. Once a tier decides ordering, `score` informs nothing a caller can act on. Options: drop it from citations; keep it and document it as incomparable; or replace it with the tier rank. *Recommendation: replace with tier rank plus the raw retrieval distance, which is comparable across calls.*
+**D1 — What does `score` mean to a caller? — DECIDED 2026-09-22: tier rank plus cosine distance.**
+Scores are query-node-relative by construction: the same chunk scores 1.1918 at `CH` and 0.8168 at `8003`, and the entire difference is the specificity term. `Citation.score` is therefore dropped and replaced by two fields, both lower-is-better:
+
+- `tier: int` — hops from the question's node to the chunk's extent. 0 = same node, rising to the federal root.
+- `distance: float` — cosine distance to the vector actually searched, which is `question_en + topic_en` (Task 10).
+
+This holds steady across the call that broke `score`: changing `location` does not change the query vector. It does move when a calling model rewords `topic_en`; the docstring says so rather than implying a universal scale. Distance is filled for **every** returned chunk by one extra primary-key query after diversification, so a lexical-only hit is no longer distanceless and can claim a tier.
+
+Recorded against my own objection: on the Dietikon forest question a download link sat at distance 0.5115 and the page's only real forest sentence at 0.5257 — the junk was closer. Distance is stable across calls but does not separate relevant from irrelevant on the current corpus, so nothing downstream may threshold on it. Task 4 and Task 6 are what make it meaningful.
 
 **Decided:** replace `score` with the tier rank and the raw retrieval distance. `score` leaves the citation contract.
 
@@ -329,9 +336,9 @@ def test_no_evidence_when_nothing_on_the_path_carries_the_topic(corpus):
 
 ## Task 9: Specificity tier and relevance floor
 
-*Blocked on decision D1.* Ordering becomes `(extent distance, -score)` rather than `-score` alone, so the tool description's "most specific first" becomes true. The floor governs **tier eligibility only** — a chunk below it still appears, ranked by score, so the floor can never cause a false `no_evidence`.
+*Decision D1 is made: citations carry `tier` and `distance`, not `score`.* Ordering becomes `(tier, -score)` rather than `-score` alone, so the tool description's "most specific first" becomes true. `score` survives inside `ScoredHit` as the within-tier ordering key; it simply stops being published. The floor governs **tier eligibility only** — a chunk below it still appears, ranked by score, so the floor can never cause a false `no_evidence`.
 
-**Files:** Modify `rerank.py`, `models.py` (carry raw distance on `Hit`), `tests/unit/test_rerank_tier.py`.
+**Files:** Modify `rerank.py`, `search.py`, `models.py` (carry raw distance on `Hit`; swap `Citation.score` for `tier` and `distance`), `cite.py`, `cli/main.py`, `tests/unit/test_rerank_tier.py`, `tests/unit/test_cite.py`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -346,7 +353,8 @@ def test_a_weak_local_chunk_does_not_leapfrog_but_is_still_returned():
     assert any(s.hit.chunk.extent_id == "CH-ZH-261" for s in ranked)   # not excluded
 ```
 
-- [ ] **Step 2:** Carry the raw cosine distance from `hybrid_search` onto `Hit`; it is comparable across calls, unlike `score`. A chunk retrieved only by the lexical arm has no distance and does not claim a tier.
+- [ ] **Step 2:** Carry the raw cosine distance onto `Hit`. `DENSE_SQL` already selects it (`search.py:30`) but `_record()` discards it, and a lexical-only hit never had one. Add `distances_for(conn, vector, chunk_ids)` — one primary-key query run after diversification over the ≤25 surviving ids — so every citation carries a distance and every chunk can claim a tier.
+- [ ] **Step 2b:** Replace `Citation.score` with `tier: int` and `distance: float` in `models.py`, build them in `cite.py:21`, and update the CLI line at `cli/main.py:116` and the assertion at `tests/unit/test_cite.py:28`. Neither field belongs in `CONCISE_DROP`.
 - [ ] **Step 3:** `RELEVANCE_FLOOR` goes in the same config as the rerank weights. **Do not calibrate it against the current corpus** — it is 71% federal and 100% boilerplate below canton level. Ship the documented default, calibrate after Task 6.
 
 **Verification:** unit tests pass; probes re-recorded in Task 12.
@@ -361,7 +369,7 @@ ADR 0004. The tool asks the caller for the question as written, the question in 
 
 - [ ] **Step 1:** `QueryRequest` gains `question_en`, `topic_en`, `topics`. `question` stays the verbatim text and still feeds the lexical arm, so original-language terms have something to match against.
 - [ ] **Step 2:** The search query embedded becomes `question_en + topic_en`; the lexical query stays the verbatim question.
-- [ ] **Step 3:** Rewrite the tool docstring. It currently promises "most specific first" (untrue until Task 9) and an `as_of` that retrieves law "as it stood on that date" (untrue, see D2). Both claims must match behaviour.
+- [ ] **Step 3:** Rewrite the tool docstring. It currently promises "most specific first" (untrue until Task 9) and an `as_of` that retrieves law "as it stood on that date" (untrue, see D2). Both claims must match behaviour. State that `tier` and `distance` are lower-is-better, that `distance` is measured against `question_en + topic_en`, and that it is not a relevance threshold.
 - [ ] **Step 4:** Absent `question_en`, fall back to `question` and the local classifier, so an un-updated client degrades rather than breaks.
 
 **Verification:** `uv run pytest tests/integration/test_mcp_server.py -q`; manual `/mcp` check that six tools still register.
@@ -405,4 +413,4 @@ Every probe file gains the fields the new contract requires. Ordering changes, s
 - Task order is by credit cost, not by importance. Tasks 1–4 need no model calls at all; Tasks 5–6 need roughly 630, reading only stored text; nothing in this plan requires a re-crawl or a re-translation.
 - Task 1 makes coverage numbers *fall*. That is the honest number and the point of ADR 0005, but it will look like a regression to anyone reading the demo without the ADR.
 - Generated context entering the retrieval surface is the riskiest change here. The test that citations never contain it is the guard, and it should not be relaxed.
-- Two tasks are blocked on decisions D1 and D2. They are sequenced late so the rest is not held up.
+- Task 11 is blocked on decision D2. It is sequenced late so the rest is not held up. D1 is resolved.
