@@ -16,6 +16,7 @@ from swiss_grounding.ingest.fetchers import build_fetcher
 from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import build_llm
 from swiss_grounding.ingest.pipeline import run_ingest
+from swiss_grounding.ingest.reclean import reclean_all
 from swiss_grounding.ingest.renarrow import renarrow_all
 from swiss_grounding.ingest.run_log import record_run
 from swiss_grounding.locations.repository import load_tree, prune_locations, upsert_locations
@@ -175,6 +176,17 @@ def renarrow_cmd() -> None:
         tree = load_tree(conn)
         report = renarrow_all(conn, tree)
     typer.echo(f"examined {report.examined}, moved {report.moved}, relabelled {report.relabelled}, skipped {report.skipped}")
+
+
+@app.command("reclean")
+def reclean_cmd() -> None:
+    """Delete boilerplate chunks and any document left with none. No network, no model calls."""
+    settings = load_settings()
+    with connect(settings.database_url) as conn:
+        report = reclean_all(conn)
+    for source in report.by_source:
+        typer.echo(f"{source.source_id}: dropped_chunks={source.dropped_chunks} dropped_documents={source.dropped_documents}")
+    typer.echo(f"total: dropped_chunks={report.dropped_chunks} dropped_documents={report.dropped_documents}")
 
 
 @sources_app.command("list")
