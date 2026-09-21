@@ -1,5 +1,5 @@
 from collections.abc import Callable, Mapping
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -41,9 +41,15 @@ def _record_id(cfg: dict, record: dict) -> str:
     return str(record.get(cfg.get("id_field", "id"), ""))
 
 
-def _request_url(template: str, today: date) -> str:
-    """Render date placeholders ({today} as ISO date) so calendar feeds anchor to the present."""
-    return template.replace("{today}", today.isoformat())
+def _request_url(template: str, today: date, start_offset_days: int = 0) -> str:
+    """Render date placeholders so calendar feeds anchor to the present.
+
+    ``{today}`` is today's ISO date. ``{start}`` is today minus ``start_offset_days``, letting a
+    feed's window reach back into the past without changing the stored document identity (see
+    ``_identity_url``, which strips placeholder query parameters).
+    """
+    start = today - timedelta(days=start_offset_days)
+    return template.replace("{today}", today.isoformat()).replace("{start}", start.isoformat())
 
 
 def _is_placeholder(value: str) -> bool:
@@ -71,9 +77,9 @@ def _event_date(cfg: dict, record: dict) -> date | None:
 class ApiFetcher:
     """Turn each record of a JSON feed into a small document, keyed by feed URL + record id.
 
-    The configured URL may contain ``{today}``; it is rendered for the HTTP request only.
-    Document identity uses the URL without placeholder parameters so records stay stable as the
-    window moves and the stored url remains a working link.
+    The configured URL may contain ``{today}`` and ``{start}``; both are rendered for the HTTP
+    request only. Document identity uses the URL without placeholder parameters so records stay
+    stable as the window moves and the stored url remains a working link.
     """
 
     def __init__(self, http: httpx.Client, today: Callable[[], date] = date.today):
@@ -82,7 +88,7 @@ class ApiFetcher:
 
     def fetch(self, source: Source, known: Mapping[str, KnownUrl]) -> FetchResult:
         cfg = source.fetch_config
-        request_url = _request_url(cfg["url"], self._today())
+        request_url = _request_url(cfg["url"], self._today(), cfg.get("start_offset_days", 0))
         feed_url = _identity_url(cfg["url"])
         try:
             response = self._http.get(request_url)

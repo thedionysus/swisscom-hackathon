@@ -21,8 +21,8 @@ probes:
       first_event: nearest_future
     as_of: '2026-09-16'
     observed:
-      recorded_at: '2026-09-21T14:30:52.391329Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.055522Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -51,24 +51,24 @@ probes:
           event_date: '2026-10-01'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-23
-          authority: official_info
-          event_date: '2026-09-23'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-09-29
           authority: official_info
           event_date: '2026-09-29'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-09-21
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-23
           authority: official_info
-          event_date: '2026-09-21'
+          event_date: '2026-09-23'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-15
           authority: official_info
           event_date: '2026-10-15'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-29
+          authority: official_info
+          event_date: '2026-10-29'
       failures: []
   - id: city-002
     question: When is the next cardboard collection?
@@ -95,8 +95,8 @@ probes:
       coverage_present:
         - CH-ZH-261
     observed:
-      recorded_at: '2026-09-21T14:30:52.450507Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.122590Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K4
       method: alias
@@ -164,8 +164,8 @@ probes:
         - source: open_erz
           url_contains: '#cardboard-2026-09-10'
     observed:
-      recorded_at: '2026-09-21T14:30:52.528526Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.219556Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -204,19 +204,14 @@ probes:
           event_date: '2026-10-15'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-30
-          authority: official_info
-          event_date: '2026-09-30'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
           authority: official_info
           event_date: '2026-10-08'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-09-28
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-30
           authority: official_info
-          event_date: '2026-09-28'
+          event_date: '2026-09-30'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-22
@@ -239,9 +234,9 @@ probes:
           event_date: '2026-11-19'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-11-05
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-17
           authority: official_info
-          event_date: '2026-11-05'
+          event_date: '2026-12-17'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-11-12
@@ -249,9 +244,9 @@ probes:
           event_date: '2026-11-12'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-17
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-11-05
           authority: official_info
-          event_date: '2026-12-17'
+          event_date: '2026-11-05'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-11-26
@@ -269,24 +264,19 @@ probes:
           event_date: '2026-10-14'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-10-07
-          authority: official_info
-          event_date: '2026-10-07'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-10-21
           authority: official_info
           event_date: '2026-10-21'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-10-12
-          authority: official_info
-          event_date: '2026-10-12'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-10-19
           authority: official_info
           event_date: '2026-10-19'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-31
+          authority: official_info
+          event_date: '2026-12-31'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-10
@@ -297,6 +287,16 @@ probes:
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-03
           authority: official_info
           event_date: '2026-12-03'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-10-28
+          authority: official_info
+          event_date: '2026-10-28'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-11-10
+          authority: official_info
+          event_date: '2026-11-10'
       failures:
         - 'must_include: no citation matched source=open_erz url_contains=#cardboard-2026-09-10'
   - id: city-004
@@ -317,8 +317,8 @@ probes:
       first_url_contains: '#paper-'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-21T14:30:52.604034Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.315570Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -384,8 +384,8 @@ probes:
         - extent: off_path
         - extent: CH-BS
     observed:
-      recorded_at: '2026-09-21T14:30:53.199499Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.400242Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3-ALT-WIEDIKON
       method: alias
@@ -455,8 +455,8 @@ probes:
         - CH-ZH-261-K8-SEEFELD
         - CH-ZH-261-K8
     observed:
-      recorded_at: '2026-09-21T14:30:53.257114Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.468582Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K8-SEEFELD
       method: alias
@@ -528,8 +528,8 @@ probes:
         - authority: institutional
           extent: CH
     observed:
-      recorded_at: '2026-09-21T14:30:53.323029Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.543521Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -602,8 +602,8 @@ probes:
         - CH-ZH-261
         - CH
     observed:
-      recorded_at: '2026-09-21T14:30:53.407230Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.621437Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -668,8 +668,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-21T14:30:53.476818Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.685810Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -688,14 +688,14 @@ probes:
           event_date: '2026-10-01'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
-          authority: official_info
-          event_date: '2026-10-08'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-15
           authority: official_info
           event_date: '2026-10-15'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
+          authority: official_info
+          event_date: '2026-10-08'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-29
@@ -733,8 +733,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-21T14:30:53.563220Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.765437Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias_in_question
@@ -758,11 +758,6 @@ probes:
           event_date: '2026-10-01'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-23
-          authority: official_info
-          event_date: '2026-09-23'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-09-29
           authority: official_info
           event_date: '2026-09-29'
@@ -781,6 +776,11 @@ probes:
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
           authority: official_info
           event_date: '2026-10-08'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-29
+          authority: official_info
+          event_date: '2026-10-29'
       failures: []
   - id: city-011
     question: When is cardboard collected?
@@ -798,8 +798,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-21T14:30:53.634779Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.831883Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -818,14 +818,14 @@ probes:
           event_date: '2026-10-01'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
-          authority: official_info
-          event_date: '2026-10-08'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-15
           authority: official_info
           event_date: '2026-10-15'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
+          authority: official_info
+          event_date: '2026-10-08'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-29
@@ -860,8 +860,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-21T14:30:53.637607Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.834678Z'
+      git_commit: 317b621
       status: needs_location
       resolved_id: null
       method: null
@@ -884,8 +884,8 @@ probes:
       resolved:
         id: CH-ZH-261
     observed:
-      recorded_at: '2026-09-21T14:30:53.704576Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.897542Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -946,8 +946,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-21T14:30:53.704739Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.897682Z'
+      git_commit: 317b621
       status: needs_location
       resolved_id: null
       method: null
@@ -971,8 +971,8 @@ probes:
       resolved:
         id: CH-ZH-261-K4-HARD
     observed:
-      recorded_at: '2026-09-21T14:30:53.769453Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:10.960885Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K4-HARD
       method: alias
@@ -1036,8 +1036,8 @@ probes:
       must_exclude:
         - extent: off_path
     observed:
-      recorded_at: '2026-09-21T14:30:53.836113Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:11.022922Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K5-ESCHER-WYSS
       method: alias
@@ -1107,8 +1107,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-21T14:30:53.906859Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:11.101230Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -1164,10 +1164,10 @@ probes:
     as_of: '2026-09-08'
     kind: structural
     failure_class: temporal_misapplication
-    status: red
+    status: green
     note: With as_of 2026-09-08 the next collection is 2026-09-10, so it must rank first. as_of now drives the reranker clock,
-      but live ingestion fetches the calendar from today onward, so the 2026-09-10 event is not indexed anywhere; red until
-      the fetch keeps a trailing window, like city-003.
+      and the open_erz fetch now keeps a trailing 30-day window, so the 2026-09-10 event is indexed and the reranker's nearness
+      bonus puts it first.
     expect:
       status: results
       resolved:
@@ -1175,8 +1175,8 @@ probes:
       first_url_contains: '#cardboard-2026-09-10'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-21T14:30:53.980415Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:11.168902Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -1185,9 +1185,29 @@ probes:
       citations:
         - source: open_erz
           extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-10
+          authority: official_info
+          event_date: '2026-09-10'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-09
+          authority: official_info
+          event_date: '2026-09-09'
+        - source: open_erz
+          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-17
           authority: official_info
           event_date: '2026-09-17'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#special-2026-09-08
+          authority: official_info
+          event_date: '2026-09-08'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#special-2026-09-10
+          authority: official_info
+          event_date: '2026-09-10'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-09-15
@@ -1203,28 +1223,7 @@ probes:
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-24
           authority: official_info
           event_date: '2026-09-24'
-        - source: open_erz
-          extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-16
-          authority: official_info
-          event_date: '2026-09-16'
-        - source: open_erz
-          extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
-          authority: official_info
-          event_date: '2026-10-08'
-        - source: open_erz
-          extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-09-21
-          authority: official_info
-          event_date: '2026-09-21'
-        - source: open_erz
-          extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-01
-          authority: official_info
-          event_date: '2026-10-01'
-      failures:
-        - 'first_url_contains: ''#cardboard-2026-09-10'' not in https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-17'
+      failures: []
   - id: city-019
     question: Was ist die Leinenpflicht im Wald?
     location: Zürich
@@ -1240,8 +1239,8 @@ probes:
       resolved:
         id: CH-ZH-261
     observed:
-      recorded_at: '2026-09-21T14:30:54.055838Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:11.239595Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -1310,8 +1309,8 @@ probes:
         - source: fedlex
           url_contains: 1991/1052
     observed:
-      recorded_at: '2026-09-21T14:30:54.113873Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:05:11.316878Z'
+      git_commit: 317b621
       status: results
       resolved_id: CH-ZH-261
       method: alias

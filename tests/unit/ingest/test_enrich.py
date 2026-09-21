@@ -58,6 +58,22 @@ def test_law_sources_never_narrow():
     assert out.extent_id == "CH-ZH" and out.extent_reason == "source_default"
 
 
+class RaisingLLM(FakeLLM):
+    def translate(self, text, source_language):
+        raise AssertionError("translate must not be called for an English document")
+
+    def classify(self, title, text, categories):
+        raise AssertionError("classify must not be called when llm_tagging is False")
+
+
+def test_llm_tagging_false_skips_classify_and_uses_source_defaults_only():
+    llm = RaisingLLM()
+    out = enrich(fetched(language="en", text="Waste collection for dogs."),
+                 source(categories=("dogs",), llm_tagging=False), TREE, llm, CATEGORIES)
+    ids = {t.id: t.confidence for t in out.categories}
+    assert ids == {"dogs": 1.0}
+
+
 def test_categories_are_sorted_by_confidence_then_id():
     out = enrich(fetched(language="en", text="Hiking with dogs and waste bins."), source(categories=()), TREE, FakeLLM(), CATEGORIES)
     confidences = [t.confidence for t in out.categories]

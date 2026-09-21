@@ -6,7 +6,8 @@ authority: official_info
 categories: [waste]
 fetch_strategy: api
 fetch_config:
-  url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&start={today}&sort=date&limit=100
+  url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&start={start}&sort=date&limit=100
+  start_offset_days: 30
   records_path: result
   id_template: "{waste_type}-{date}"
   event_date_field: date
@@ -14,4 +15,5 @@ fetch_config:
   text_template: "Collection of {waste_type} in Zurich postal code {zip} on {date}. Put it out before 7:00 on collection day. {station}"
   language: en
 allow_narrowing: false
+llm_tagging: false
 license: "Open ERZ API (openerz.metaodi.ch), data by Entsorgung + Recycling Zürich"

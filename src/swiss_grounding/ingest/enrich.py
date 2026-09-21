@@ -35,7 +35,8 @@ def enrich(
     sections_en = _translate_sections(doc, llm)
     title_en = doc.title if doc.language == ENGLISH else llm.translate(doc.title, doc.language)
     text_en = SECTION_SEPARATOR.join(s.text for s in sections_en)
-    tags = _merge_tags(source.categories, llm.classify(title_en, text_en, categories))
+    llm_tags = llm.classify(title_en, text_en, categories) if source.llm_tagging else ()
+    tags = _merge_tags(source.categories, llm_tags)
     if source.allow_narrowing:
         headings = tuple(s.heading_path for s in sections_en)
         extent_id, reason = narrow_extent(tree, source.default_extent_id, title_en, headings, text_en)

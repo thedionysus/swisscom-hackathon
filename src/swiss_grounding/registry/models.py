@@ -45,6 +45,7 @@ class Source(BaseModel):
     fetch_strategy: FetchStrategy
     fetch_config: dict[str, Any] = {}
     allow_narrowing: bool = False
+    llm_tagging: bool = True
     license: str | None = None
     origin: str = "seed"
 
