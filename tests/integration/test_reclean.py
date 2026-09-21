@@ -141,6 +141,43 @@ def test_reclean_drops_document_referenced_by_document_change(url):
     assert ch.dropped_documents == 1
 
 
+def test_reclean_nulls_previous_document_id_on_a_surviving_documents_change_row(url):
+    # A document_change row can belong to a document that survives reclean while its
+    # previous_document_id points at the earlier version reclean drops. reclean's licence is
+    # to erase the history *of the documents it drops*, not to punch holes in the history of
+    # documents it keeps -- so the row must survive with the dangling pointer nulled, not be
+    # deleted outright the way a row whose own document_id is dropped is.
+    with connect(url) as conn:
+        doc = conn.execute(
+            "update chunk set heading_path = 'Navigation' where document_id = "
+            "(select id from document where source_id = 'ch_ch' and url = 'https://www.ch.ch/en/dogs') "
+            "returning document_id"
+        ).fetchone()
+        sibling = conn.execute(
+            "select id from document where source_id = 'ch_ch' and url = 'https://www.ch.ch/en/dogs/basel-stadt'"
+        ).fetchone()
+        change_row = conn.execute(
+            "insert into document_change (run_id, document_id, previous_document_id, change_type) "
+            "values (%s, %s, %s, %s) returning id",
+            ("test-run", sibling["id"], doc["document_id"], "modified"),
+        ).fetchone()
+
+    with connect(url) as conn:
+        reclean_all(conn)
+        document_gone = conn.execute(
+            "select id from document where id = %s", (doc["document_id"],)
+        ).fetchone()
+        surviving_row = conn.execute(
+            "select document_id, previous_document_id from document_change where id = %s",
+            (change_row["id"],),
+        ).fetchone()
+
+    assert document_gone is None
+    assert surviving_row is not None
+    assert surviving_row["document_id"] == sibling["id"]
+    assert surviving_row["previous_document_id"] is None
+
+
 def test_reclean_nulls_superseded_by_pointing_at_a_dropped_document(url):
     # document.superseded_by is a self-referencing FK with no ON DELETE CASCADE either; the
     # live data has no case of it today, but the fix must not leave a dangling pointer.
