@@ -21,8 +21,8 @@ probes:
       first_event: nearest_future
     as_of: '2026-09-16'
     observed:
-      recorded_at: '2026-09-19T10:49:21.352515Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:52.391329Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -95,8 +95,8 @@ probes:
       coverage_present:
         - CH-ZH-261
     observed:
-      recorded_at: '2026-09-19T10:49:21.437565Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:52.450507Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K4
       method: alias
@@ -164,8 +164,8 @@ probes:
         - source: open_erz
           url_contains: '#cardboard-2026-09-10'
     observed:
-      recorded_at: '2026-09-19T10:49:21.553366Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:52.528526Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -204,24 +204,24 @@ probes:
           event_date: '2026-10-15'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
-          authority: official_info
-          event_date: '2026-10-08'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-30
           authority: official_info
           event_date: '2026-09-30'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-22
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-08
           authority: official_info
-          event_date: '2026-10-22'
+          event_date: '2026-10-08'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-09-28
           authority: official_info
           event_date: '2026-09-28'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-22
+          authority: official_info
+          event_date: '2026-10-22'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-10-29
@@ -279,9 +279,9 @@ probes:
           event_date: '2026-10-21'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-10
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-10-12
           authority: official_info
-          event_date: '2026-12-10'
+          event_date: '2026-10-12'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-10-19
@@ -289,14 +289,14 @@ probes:
           event_date: '2026-10-19'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-10-12
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-10
           authority: official_info
-          event_date: '2026-10-12'
+          event_date: '2026-12-10'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-31
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-12-03
           authority: official_info
-          event_date: '2026-12-31'
+          event_date: '2026-12-03'
       failures:
         - 'must_include: no citation matched source=open_erz url_contains=#cardboard-2026-09-10'
   - id: city-004
@@ -317,8 +317,8 @@ probes:
       first_url_contains: '#paper-'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-19T10:49:21.639299Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:52.604034Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -362,9 +362,9 @@ probes:
           event_date: '2026-12-08'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-24
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-09-21
           authority: official_info
-          event_date: '2026-09-24'
+          event_date: '2026-09-21'
       failures: []
   - id: city-005
     question: Where can my dog run off leash?
@@ -384,8 +384,8 @@ probes:
         - extent: off_path
         - extent: CH-BS
     observed:
-      recorded_at: '2026-09-19T10:49:21.754970Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.199499Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3-ALT-WIEDIKON
       method: alias
@@ -455,8 +455,8 @@ probes:
         - CH-ZH-261-K8-SEEFELD
         - CH-ZH-261-K8
     observed:
-      recorded_at: '2026-09-19T10:49:21.852818Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.257114Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K8-SEEFELD
       method: alias
@@ -528,8 +528,8 @@ probes:
         - authority: institutional
           extent: CH
     observed:
-      recorded_at: '2026-09-19T10:49:21.957813Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.323029Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -602,8 +602,8 @@ probes:
         - CH-ZH-261
         - CH
     observed:
-      recorded_at: '2026-09-19T10:49:22.074805Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.407230Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -668,8 +668,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-19T10:49:22.173019Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.476818Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -733,8 +733,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-19T10:49:22.266704Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.563220Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias_in_question
@@ -758,14 +758,14 @@ probes:
           event_date: '2026-10-01'
         - source: open_erz
           extent: CH-ZH-261-K3
-          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-09-29
-          authority: official_info
-          event_date: '2026-09-29'
-        - source: open_erz
-          extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#organic-2026-09-23
           authority: official_info
           event_date: '2026-09-23'
+        - source: open_erz
+          extent: CH-ZH-261-K3
+          url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#paper-2026-09-29
+          authority: official_info
+          event_date: '2026-09-29'
         - source: open_erz
           extent: CH-ZH-261-K3
           url: https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#waste-2026-09-28
@@ -798,8 +798,8 @@ probes:
       must_include:
         - source: open_erz
     observed:
-      recorded_at: '2026-09-19T10:49:22.364559Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.634779Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -860,14 +860,14 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-19T10:49:22.365582Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.637607Z'
+      git_commit: 17d14cf
       status: needs_location
       resolved_id: null
       method: null
       alternatives: []
-      message: '''City'' is ambiguous (also the start of a commune name): City (Zurich, CH-ZH-261-K1-CITY), Zurich (Zurich,
-        CH-ZH-261). Ask the user which one they mean, then search again.'
+      message: '''City'' is ambiguous (a common word; say Quartier City to mean the district): City (Zurich, CH-ZH-261-K1-CITY).
+        Ask the user which one they mean, then search again.'
       citations: []
       failures: []
   - id: city-013
@@ -884,8 +884,8 @@ probes:
       resolved:
         id: CH-ZH-261
     observed:
-      recorded_at: '2026-09-19T10:49:22.461446Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.704576Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -946,8 +946,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-19T10:49:22.461585Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.704739Z'
+      git_commit: 17d14cf
       status: needs_location
       resolved_id: null
       method: null
@@ -971,8 +971,8 @@ probes:
       resolved:
         id: CH-ZH-261-K4-HARD
     observed:
-      recorded_at: '2026-09-19T10:49:22.571806Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.769453Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K4-HARD
       method: alias
@@ -1036,8 +1036,8 @@ probes:
       must_exclude:
         - extent: off_path
     observed:
-      recorded_at: '2026-09-19T10:49:22.665075Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.836113Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K5-ESCHER-WYSS
       method: alias
@@ -1107,8 +1107,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-19T10:49:22.768209Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.906859Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -1175,8 +1175,8 @@ probes:
       first_url_contains: '#cardboard-2026-09-10'
       first_event: nearest_future
     observed:
-      recorded_at: '2026-09-19T10:49:22.860571Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:53.980415Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261-K3
       method: alias
@@ -1240,8 +1240,8 @@ probes:
       resolved:
         id: CH-ZH-261
     observed:
-      recorded_at: '2026-09-19T10:49:22.940152Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.055838Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -1310,8 +1310,8 @@ probes:
         - source: fedlex
           url_contains: 1991/1052
     observed:
-      recorded_at: '2026-09-19T10:49:23.032185Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.113873Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-261
       method: alias
