@@ -45,6 +45,9 @@ class Source(BaseModel):
     fetch_strategy: FetchStrategy
     fetch_config: dict[str, Any] = {}
     allow_narrowing: bool = False
+    # When false, enrich() skips llm.classify and tags from `categories` alone; _merge_tags never
+    # drops an LLM tag outside those defaults, so this only suits a single-category feed like a
+    # waste calendar, not a source whose documents span several categories.
     llm_tagging: bool = True
     license: str | None = None
     origin: str = "seed"

@@ -162,6 +162,11 @@ To add a source by hand, drop a YAML file in `src/swiss_grounding/registry/sourc
 following an existing one (`fetch_strategy` is `html_crawl`, `api`, `fedlex_sparql`, or `pdf`),
 then run `db seed`.
 
+Set `llm_tagging: false` to skip `llm.classify` and tag documents from the source's own
+`categories` alone. This only suits a single-category feed such as a waste calendar: the
+LLM tags it skips are never merged away, only never fetched, so a source spanning several
+categories would silently keep documents tagged with just its declared defaults.
+
 ## Tests
 
     uv run pytest tests/unit

@@ -47,8 +47,14 @@ def _request_url(template: str, today: date, start_offset_days: int = 0) -> str:
     ``{today}`` is today's ISO date. ``{start}`` is today minus ``start_offset_days``, letting a
     feed's window reach back into the past without changing the stored document identity (see
     ``_identity_url``, which strips placeholder query parameters).
+
+    Raises ``ValueError``/``TypeError`` for a bad offset; the caller wraps this so one source's
+    misconfiguration fails only that source, not the whole ingest run.
     """
-    start = today - timedelta(days=start_offset_days)
+    offset = int(start_offset_days)
+    if offset < 0:
+        raise ValueError(f"start_offset_days must not be negative: {start_offset_days!r}")
+    start = today - timedelta(days=offset)
     return template.replace("{today}", today.isoformat()).replace("{start}", start.isoformat())
 
 
@@ -88,14 +94,14 @@ class ApiFetcher:
 
     def fetch(self, source: Source, known: Mapping[str, KnownUrl]) -> FetchResult:
         cfg = source.fetch_config
-        request_url = _request_url(cfg["url"], self._today(), cfg.get("start_offset_days", 0))
         feed_url = _identity_url(cfg["url"])
         try:
+            request_url = _request_url(cfg["url"], self._today(), cfg.get("start_offset_days", 0))
             response = self._http.get(request_url)
             response.raise_for_status()
             records = _dig(response.json(), cfg.get("records_path", ""))
         except (httpx.HTTPError, ValueError, TypeError) as exc:
-            return FetchResult(documents=(), errors=(FetchError(url=request_url, reason=str(exc)),))
+            return FetchResult(documents=(), errors=(FetchError(url=feed_url, reason=str(exc)),))
         documents, errors = [], []
         for record in records:
             url = None

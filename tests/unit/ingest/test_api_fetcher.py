@@ -160,6 +160,28 @@ def test_start_placeholder_is_stripped_from_the_stored_document_identity():
     assert result.documents[0].url == "https://erz.example/api?limit=5#cardboard-2026-08-25"
 
 
+def test_negative_start_offset_fails_only_this_source():
+    src = _start_offset_source(start_offset_days=-1)
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, json={"result": []})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    result = ApiFetcher(http=http, today=lambda: date(2026, 9, 21)).fetch(src, {})
+    assert result.documents == ()
+    assert "start_offset_days" in result.errors[0].reason
+    assert calls == []  # bad offset caught before the request is made
+
+
+def test_unparseable_start_offset_fails_only_this_source():
+    src = _start_offset_source(start_offset_days="soon")
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json={"result": []})))
+    result = ApiFetcher(http=http, today=lambda: date(2026, 9, 21)).fetch(src, {})
+    assert result.documents == () and result.errors != ()
+
+
 def test_event_date_field_is_parsed_into_event_date():
     http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=FEED)))
     result = ApiFetcher(http=http).fetch(_event_source(event_date_field="date"), {})
