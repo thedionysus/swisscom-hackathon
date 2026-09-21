@@ -105,6 +105,61 @@ def _event_source(**cfg):
     return Source(**{**base.__dict__, "fetch_config": {**base.fetch_config, **cfg}})
 
 
+def _start_offset_source(url="https://erz.example/api?start={start}&limit=5", start_offset_days=30):
+    return Source(id="erz", name="ERZ", base_url="https://erz.example", default_extent_id="CH-ZH-261",
+                  authority="official_info", categories=("waste",), fetch_strategy="api",
+                  fetch_config={"url": url, "start_offset_days": start_offset_days, "records_path": "result",
+                                "id_template": "{waste_type}-{date}", "title_template": "{waste_type}",
+                                "text_template": "{waste_type} on {date}", "language": "en"})
+
+
+def test_start_placeholder_is_rendered_as_today_minus_the_offset():
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, json={"result": []})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    ApiFetcher(http=http, today=lambda: date(2026, 9, 21)).fetch(_start_offset_source(), {})
+    assert calls == ["https://erz.example/api?start=2026-08-22&limit=5"]
+
+
+def test_start_placeholder_defaults_to_zero_offset_when_not_configured():
+    src = _start_offset_source()
+    src = Source(**{**src.__dict__, "fetch_config": {k: v for k, v in src.fetch_config.items()
+                                                       if k != "start_offset_days"}})
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, json={"result": []})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    ApiFetcher(http=http, today=lambda: date(2026, 9, 21)).fetch(src, {})
+    assert calls == ["https://erz.example/api?start=2026-09-21&limit=5"]
+
+
+def test_template_without_placeholders_is_left_alone():
+    src = _start_offset_source(url="https://erz.example/api?limit=5", start_offset_days=30)
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, json={"result": []})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    ApiFetcher(http=http, today=lambda: date(2026, 9, 21)).fetch(src, {})
+    assert calls == ["https://erz.example/api?limit=5"]
+
+
+def test_start_placeholder_is_stripped_from_the_stored_document_identity():
+    feed = {"result": [{"date": "2026-08-25", "waste_type": "cardboard"}]}
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
+    result = ApiFetcher(http=http, today=lambda: date(2026, 9, 21)).fetch(_start_offset_source(), {})
+    assert result.documents[0].url == "https://erz.example/api?limit=5#cardboard-2026-08-25"
+
+
 def test_event_date_field_is_parsed_into_event_date():
     http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=FEED)))
     result = ApiFetcher(http=http).fetch(_event_source(event_date_field="date"), {})

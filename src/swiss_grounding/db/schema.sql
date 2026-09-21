@@ -27,6 +27,9 @@ create table if not exists source (
     origin             text not null default 'seed' check (origin in ('seed','auto_approved','reviewed'))
 );
 
+-- Databases created before this column existed pick it up on the next db init.
+alter table source add column if not exists llm_tagging boolean not null default true;
+
 create table if not exists source_suggestion (
     id                   bigserial primary key,
     url                  text not null unique,
