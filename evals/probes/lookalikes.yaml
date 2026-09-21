@@ -22,8 +22,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-21T14:30:55.226761Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.450238Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -92,8 +92,8 @@ probes:
       alternatives_include:
         - CH-ZG
     observed:
-      recorded_at: '2026-09-21T14:30:55.280242Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.499732Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZG-1711
       method: alias
@@ -157,8 +157,8 @@ probes:
         id: CH-ZH
       method: alias
     observed:
-      recorded_at: '2026-09-21T14:30:55.335854Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.552083Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -222,8 +222,8 @@ probes:
       alternatives_include:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-21T14:30:55.395716Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.605946Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-261
       method: alias
@@ -291,8 +291,8 @@ probes:
       must_exclude:
         - extent: CH-ZH-261
     observed:
-      recorded_at: '2026-09-21T14:30:55.484641Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.702032Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH
       method: geoadmin_approximate
@@ -354,8 +354,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-21T14:30:55.519650Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.738286Z'
+      git_commit: 6f3d42b
       status: needs_location
       resolved_id: null
       method: null
@@ -383,8 +383,8 @@ probes:
         - extent: CH-ZH
         - extent: CH-ZH-261
     observed:
-      recorded_at: '2026-09-21T14:30:55.573525Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.801397Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-AG-4324
       method: alias
@@ -452,8 +452,8 @@ probes:
       alternatives_include:
         - CH-BS
     observed:
-      recorded_at: '2026-09-21T14:30:55.633413Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.864799Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-BS-2701
       method: alias
@@ -516,8 +516,8 @@ probes:
       resolved:
         id: CH-ZH
     observed:
-      recorded_at: '2026-09-21T14:30:55.706941Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.927858Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -584,8 +584,8 @@ probes:
       alternatives_include:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-21T14:30:55.755903Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.979682Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-261
       method: alias_scan
@@ -647,8 +647,8 @@ probes:
       status: needs_location
       message_contains: Nowhere
     observed:
-      recorded_at: '2026-09-21T14:30:55.899698Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:45.062381Z'
+      git_commit: 6f3d42b
       status: needs_location
       resolved_id: null
       method: null
@@ -675,8 +675,8 @@ probes:
         - source: open_erz
       first_url_contains: stadt-zuerich.ch
     observed:
-      recorded_at: '2026-09-21T14:30:55.973585Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:45.131206Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-261
       method: alias

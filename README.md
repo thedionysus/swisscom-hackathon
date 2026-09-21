@@ -61,7 +61,8 @@ What to expect:
 - The first run downloads the bge-m3 model, about 2 GB, into `~/.cache/huggingface`.
 - Translation makes one Claude call per section plus one per document, sequentially. A
   federal law takes ten minutes or more; a 15-page crawl a few minutes; a 200-page crawl
-  hours. Start with `CRAWL_MAX_PAGES=15`, then re-run with a larger budget later; unchanged
+  hours. A crawled page now yields a section per heading rather than one section for the
+  whole page, so a content-heavy page costs tens of calls; budget accordingly. Start with `CRAWL_MAX_PAGES=15`, then re-run with a larger budget later; unchanged
   pages are skipped.
 - Only ingest uses the Anthropic API. Search and the MCP server run entirely locally, so
   an empty credit balance does not stop chat from working.

@@ -224,6 +224,52 @@
     },
     {
       "source_id": "open_erz",
+      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-03",
+      "identifier": "cardboard-2026-09-03",
+      "title_original": "Waste collection cardboard in 8003 on 2026-09-03",
+      "title_en": "Waste collection cardboard in 8003 on 2026-09-03",
+      "language": "en",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "event_date": "2026-09-03",
+      "chunks": [
+        {
+          "heading_path": "Waste collection cardboard in 8003",
+          "anchor": null,
+          "text_original": "Collection of cardboard in Zurich postal code 8003 on 2026-09-03. Put it out before 7:00 on collection day.",
+          "text_en": "Collection of cardboard in Zurich postal code 8003 on 2026-09-03. Put it out before 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
+      "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-10",
+      "identifier": "cardboard-2026-09-10",
+      "title_original": "Waste collection cardboard in 8003 on 2026-09-10",
+      "title_en": "Waste collection cardboard in 8003 on 2026-09-10",
+      "language": "en",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [
+        "waste"
+      ],
+      "valid_from": null,
+      "event_date": "2026-09-10",
+      "chunks": [
+        {
+          "heading_path": "Waste collection cardboard in 8003",
+          "anchor": null,
+          "text_original": "Collection of cardboard in Zurich postal code 8003 on 2026-09-10. Put it out before 7:00 on collection day.",
+          "text_en": "Collection of cardboard in Zurich postal code 8003 on 2026-09-10. Put it out before 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
       "url": "https://openerz.metaodi.ch/api/calendar?region=zurich&zip=8003&sort=date&limit=100#cardboard-2026-09-17",
       "identifier": "cardboard-2026-09-17",
       "title_original": "Waste collection cardboard in 8003 on 2026-09-17",

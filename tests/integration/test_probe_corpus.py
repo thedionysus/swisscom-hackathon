@@ -1,8 +1,7 @@
 """Loads the structural probe corpus.
 
-The corpus mirrors one remaining live defect so probe statuses agree between fixtures and the
-live database: there is no past-dated calendar event, because live ingestion fetches from today
-onward. Add one (and restore city-003 to green) once the calendar fetch keeps a trailing window.
+The corpus mirrors the live database: cantonal pages sit at canton level after re-narrowing,
+and the waste calendar carries a trailing window of past events as well as upcoming ones.
 """
 import os
 from pathlib import Path
@@ -32,6 +31,6 @@ def test_probe_corpus_loads_and_covers_every_level():
         report = load_fixture(conn, CORPUS, FakeEmbedder(dim=8))
         extents = {r["extent_id"] for r in conn.execute("select distinct extent_id from document").fetchall()}
         events = conn.execute("select count(*) from document where event_date is not null").fetchone()["count"]
-    assert report.documents == 14  # mirrors live: no past calendar events are ingested
+    assert report.documents == 16
     assert {"CH", "CH-ZH", "CH-ZH-261", "CH-ZH-261-K3", "CH-BS"} <= extents
-    assert events == 3
+    assert events == 5
