@@ -22,7 +22,11 @@ def url():
     u = os.environ["DATABASE_URL"]
     apply_schema(u, embedding_dim=8)
     with connect(u) as conn:
-        conn.execute("truncate chunk, document_change, document restart identity cascade")
+        # document_change is not named here: CASCADE still empties it, because it has a
+        # foreign key onto document, but it is no longer truncated up front as a table this
+        # suite treats as always-empty -- tests that need a document_change row insert one
+        # themselves, after this fixture runs, so reclean is exercised against real rows.
+        conn.execute("truncate chunk, document restart identity cascade")
         upsert_locations(conn, seed_locations())
         upsert_sources(conn, load_seed_sources())
         load_fixture(conn, FIXTURE, FakeEmbedder(dim=8))
@@ -94,6 +98,76 @@ def test_reclean_drops_document_left_with_no_chunks(url):
     ch = next(s for s in report.by_source if s.source_id == "ch_ch")
     assert ch.dropped_chunks == 1
     assert ch.dropped_documents == 1
+
+
+def test_reclean_drops_document_referenced_by_document_change(url):
+    # Every crawled document gets a document_change row (ingest/persist.py); document_change
+    # has no ON DELETE CASCADE onto document (db/schema.sql), so reclean must clear the rows
+    # that reference a document it drops -- as either document_id or previous_document_id --
+    # or the DELETE FROM document raises ForeignKeyViolation and the whole transaction (all
+    # 80 chunk deletions included) rolls back.
+    with connect(url) as conn:
+        doc = conn.execute(
+            "update chunk set heading_path = 'Navigation' where document_id = "
+            "(select id from document where source_id = 'ch_ch' and url = 'https://www.ch.ch/en/dogs') "
+            "returning document_id"
+        ).fetchone()
+        sibling = conn.execute(
+            "select id from document where source_id = 'ch_ch' and url = 'https://www.ch.ch/en/dogs/basel-stadt'"
+        ).fetchone()
+        conn.execute(
+            "insert into document_change (run_id, document_id, change_type) values (%s, %s, %s)",
+            ("test-run", doc["document_id"], "added"),
+        )
+        conn.execute(
+            "insert into document_change (run_id, document_id, previous_document_id, change_type) "
+            "values (%s, %s, %s, %s)",
+            ("test-run", sibling["id"], doc["document_id"], "modified"),
+        )
+
+    with connect(url) as conn:
+        report = reclean_all(conn)
+        document_gone = conn.execute(
+            "select id from document where id = %s", (doc["document_id"],)
+        ).fetchone()
+        change_rows_left = conn.execute(
+            "select id from document_change where document_id = %s or previous_document_id = %s",
+            (doc["document_id"], doc["document_id"]),
+        ).fetchall()
+
+    assert document_gone is None
+    assert change_rows_left == []
+    ch = next(s for s in report.by_source if s.source_id == "ch_ch")
+    assert ch.dropped_documents == 1
+
+
+def test_reclean_nulls_superseded_by_pointing_at_a_dropped_document(url):
+    # document.superseded_by is a self-referencing FK with no ON DELETE CASCADE either; the
+    # live data has no case of it today, but the fix must not leave a dangling pointer.
+    with connect(url) as conn:
+        doc = conn.execute(
+            "update chunk set heading_path = 'Navigation' where document_id = "
+            "(select id from document where source_id = 'ch_ch' and url = 'https://www.ch.ch/en/dogs') "
+            "returning document_id"
+        ).fetchone()
+        old_version = conn.execute(
+            """
+            insert into document (source_id, url, title_original, title_en, language, extent_id,
+                                  authority, content_hash, version, status, superseded_by)
+            values ('ch_ch', 'https://www.ch.ch/en/dogs-old', 'Dogs (old)', 'Dogs (old)', 'en', 'CH',
+                    'official_info', 'test-superseded-hash', 1, 'superseded', %s)
+            returning id
+            """,
+            (doc["document_id"],),
+        ).fetchone()
+
+    with connect(url) as conn:
+        reclean_all(conn)
+        refreshed = conn.execute(
+            "select superseded_by from document where id = %s", (old_version["id"],)
+        ).fetchone()
+
+    assert refreshed["superseded_by"] is None
 
 
 def test_reclean_second_run_drops_nothing(url):

@@ -1,4 +1,20 @@
-"""Drop boilerplate chunks and any document left with none. No network, no model calls."""
+"""Drop boilerplate chunks and any document left with none. No network, no model calls.
+
+Deleting a document here is deliberate: "this was wrongly ingested, erase it including its
+history." `chunk.document_id` has `on delete cascade`, but `document_change.document_id`,
+`document_change.previous_document_id`, and the self-referencing `document.superseded_by`
+do not -- and every crawled document gets a `document_change` row (`ingest/persist.py`), so
+on the live corpus every document reclean empties has one. `reclean_all` therefore deletes
+the referencing `document_change` rows and nulls any `superseded_by` pointer aimed at a
+dropped document itself, inside the same transaction, rather than adding `on delete cascade`
+to those foreign keys in the schema -- a schema-level cascade would silently erase audit
+history on every future deletion path, not just this one deliberate one.
+
+`fetch_state` rows for recleaned URLs are left untouched on purpose. `is_boilerplate` is not
+wired into the ingestion path yet (Task 5 does that), so clearing fetch_state would make the
+next crawl treat these URLs as new, re-fetch them, and re-insert exactly the boilerplate this
+just dropped. Safe to revisit once boilerplate is excluded at ingestion time.
+"""
 from dataclasses import dataclass
 
 import psycopg
@@ -11,6 +27,10 @@ from chunk c join document d on d.id = c.document_id
 """
 DELETE_CHUNKS = "delete from chunk where id = any(%s)"
 SELECT_SURVIVING_DOCUMENTS = "select distinct document_id from chunk where document_id = any(%s)"
+DELETE_DOCUMENT_CHANGE_REFERENCING = """
+delete from document_change where document_id = any(%s) or previous_document_id = any(%s)
+"""
+NULL_SUPERSEDED_BY_POINTING_AT = "update document set superseded_by = null where superseded_by = any(%s)"
 DELETE_DOCUMENTS = "delete from document where id = any(%s)"
 
 
@@ -59,6 +79,8 @@ def reclean_all(conn: psycopg.Connection) -> RecleanReport:
     }
     empty_document_ids = [doc_id for doc_id in touched_document_ids if doc_id not in surviving_document_ids]
     if empty_document_ids:
+        conn.execute(DELETE_DOCUMENT_CHANGE_REFERENCING, (empty_document_ids, empty_document_ids))
+        conn.execute(NULL_SUPERSEDED_BY_POINTING_AT, (empty_document_ids,))
         conn.execute(DELETE_DOCUMENTS, (empty_document_ids,))
     empty_document_id_set = set(empty_document_ids)
 
