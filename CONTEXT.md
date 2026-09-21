@@ -30,6 +30,18 @@ _Avoid_: Schedule entry, event record
 The Federal Statistical Office list of every Swiss commune with its BFS number and canton. The location tree is meant to hold all of them, whether or not any source covers them, so a place always resolves to its own node.
 _Avoid_: Municipality list, gazetteer
 
+**Topic**:
+The subject a question is about, drawn from the fixed category list. Fixed before searching, alongside the extent path: a chunk that does not carry the topic is not evidence for that question.
+_Avoid_: Category hint, tag, subject area
+
+**Off-topic evidence**:
+A chunk that sits on the extent path and carries the topic, but does not address what was asked. A referendum clause returned for a question about dog tax is off-topic evidence, not weak evidence.
+_Avoid_: Irrelevant result, low-quality hit, noise
+
+**Boilerplate chunk**:
+A stored chunk that carries a page's furniture -- navigation menus, download links, postal addresses, office hours -- rather than its substance. Indistinguishable from content by topic or by similarity, so it must be excluded at ingestion, not at ranking.
+_Avoid_: Chrome, navigation junk, nav text
+
 **Narrowing**:
 The ingestion step that moves a document from its source's default extent to a more specific one found in its text. Only a level marker, or a bare name in the title or a heading, may narrow. A name shared with an ancestor of the default extent never narrows on its own.
 _Avoid_: Localisation, scoping
@@ -67,6 +79,10 @@ Evidence from a superseded or future version, or a past calendar event, is prese
 
 **Entity substitution**:
 Evidence about a different named thing (another Kreis, waste type, animal, act) is presented as answering the question.
+
+**Off-topic retrieval**:
+Evidence is returned for a question that no indexed chunk addresses, because the server ranks whatever passed the extent filter instead of reporting that nothing is on topic.
+_Avoid_: Poor relevance, bad ranking
 
 **Silent under-coverage**:
 The server returns evidence from a parent extent for a location it holds no local data on, without signalling that the local level is missing. Distinct from `no_evidence`, which is an explicit signal.

@@ -11,3 +11,4 @@ Most Swiss places have no local documents indexed, and after the planned expansi
 
 - The response contract of `swiss_search` gains a field. Clients that read the signal must repeat it in their answer; the judge cases check for that.
 - `swiss_coverage` and `swiss_search` share the per-extent document count; keep one implementation.
+- A place with documents and a question with no on-topic evidence are different cases. This ADR governs the first; ADR 0003 governs the second, where `swiss_search` does return no evidence.
