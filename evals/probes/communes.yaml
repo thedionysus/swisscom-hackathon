@@ -29,8 +29,8 @@ probes:
       coverage_present:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-19T10:49:23.093401Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.174979Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-230
       method: alias
@@ -104,8 +104,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-19T10:49:23.173501Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.239317Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-198
       method: alias
@@ -173,8 +173,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-19T10:49:23.235666Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.326465Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-191
       method: alias_in_question
@@ -242,8 +242,8 @@ probes:
         - extent: CH-ZH-261
         - extent: CH-ZH-261-K3
     observed:
-      recorded_at: '2026-09-19T10:49:23.289119Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.378124Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-62
       method: alias
@@ -313,8 +313,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-19T10:49:23.346543Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.432415Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-121
       method: alias
@@ -382,8 +382,8 @@ probes:
         - source: zh_ch
           extent: CH-ZH
     observed:
-      recorded_at: '2026-09-19T10:49:23.413000Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.490254Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-71
       method: alias
@@ -446,8 +446,8 @@ probes:
       status: needs_location
       message_contains: Wil
     observed:
-      recorded_at: '2026-09-19T10:49:23.413111Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.490333Z'
+      git_commit: 17d14cf
       status: needs_location
       resolved_id: null
       method: null
@@ -478,8 +478,8 @@ probes:
         - extent: CH-ZH-261-K11
         - extent: CH-BE
     observed:
-      recorded_at: '2026-09-19T10:49:23.471706Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.542165Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-2
       method: alias
@@ -540,14 +540,14 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-19T10:49:23.472736Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.544996Z'
+      git_commit: 17d14cf
       status: needs_location
       resolved_id: null
       method: null
       alternatives: []
       message: '''Affoltern'' is ambiguous (also the start of a commune name): Affoltern (Zurich, CH-ZH-261-K11-AFFOLTERN),
-        Affoltern am Albis (Zurich, CH-ZH-2), Affoltern im Emmental (Bern, CH-BE-951). Ask the user which one they mean, then
+        Affoltern im Emmental (Bern, CH-BE-951), Affoltern am Albis (Zurich, CH-ZH-2). Ask the user which one they mean, then
         search again.'
       citations: []
       failures: []
@@ -570,8 +570,8 @@ probes:
         parent: CH-ZH
       method: alias
     observed:
-      recorded_at: '2026-09-19T10:49:23.540263Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.597080Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-230
       method: alias
@@ -638,8 +638,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-19T10:49:23.611591Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.654096Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-230
       method: alias
@@ -705,8 +705,8 @@ probes:
         level: municipality
         parent: CH-ZH
     observed:
-      recorded_at: '2026-09-19T10:49:23.759524Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:54.958434Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-230
       method: geoadmin
@@ -775,8 +775,8 @@ probes:
       coverage_present:
         - CH
     observed:
-      recorded_at: '2026-09-19T10:49:23.820959Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:55.012866Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-53
       method: alias
@@ -845,8 +845,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-19T10:49:23.901883Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:55.073995Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -915,8 +915,8 @@ probes:
       first_extent: CH-ZH
       first_authority: official_info
     observed:
-      recorded_at: '2026-09-19T10:49:23.975198Z'
-      git_commit: 05c106c
+      recorded_at: '2026-09-21T14:30:55.131765Z'
+      git_commit: 17d14cf
       status: results
       resolved_id: CH-ZH-243
       method: alias
