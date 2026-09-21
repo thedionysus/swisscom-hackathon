@@ -32,10 +32,16 @@ def _clean(root: Tag) -> Tag:
     return root
 
 
-def _title(soup: BeautifulSoup) -> str:
-    h1 = soup.find("h1")
-    if h1 and h1.get_text(strip=True):
-        return h1.get_text(" ", strip=True)
+def _title(soup: BeautifulSoup, root: Tag | None) -> str:
+    """The page's title: the first h1 inside the (cleaned) content root, falling back to <title>.
+
+    Pages commonly carry a visually-hidden ``<h1>Navigation</h1>`` inside their nav and another
+    hidden h1 inside their footer; neither lives in the content root, so this never sees them.
+    """
+    if root is not None:
+        h1 = root.find("h1")
+        if h1 and h1.get_text(strip=True):
+            return h1.get_text(" ", strip=True)
     if soup.title and soup.title.string:
         return soup.title.string.split("|")[0].strip()
     return ""
@@ -52,12 +58,23 @@ def _to_text(nodes: list[Tag]) -> str:
     return markdownify(html, heading_style="ATX", strip=["a", "img"]).strip()
 
 
+def _holds_heading(node: Tag) -> bool:
+    return node.find(HEADING_TAGS) is not None
+
+
 def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
+    """Split root into sections keyed by heading, walking the DOM recursively.
+
+    Real pages nest their content several levels below the content root (wrapping
+    ``<div>``s, ``<details>``, breadcrumb containers, ...), so headings are not necessarily
+    direct children of root. Any child that itself contains a heading is descended into;
+    everything else is buffered as-is and converted to markdown in one piece, so list/table
+    structure inside it is preserved exactly as before.
+    """
     sections: list[Section] = []
     stack: list[tuple[int, str]] = []
     anchor: str | None = None
     buffer: list[Tag] = []
-    heading_seen = False
 
     def flush() -> None:
         text = _to_text(buffer)
@@ -66,33 +83,37 @@ def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
             sections.append(Section(heading_path=path, anchor=anchor, text=text))
         buffer.clear()
 
-    for node in root.find_all(recursive=False):
-        if node.name in HEADING_TAGS:
-            flush()
-            heading_seen = True
-            level = int(node.name[1])
-            name = node.get_text(" ", strip=True)
-            while stack and stack[-1][0] >= level:
-                stack.pop()
-            stack.append((level, name))
-            anchor = node.get("id")
-        else:
-            buffer.append(node)
+    def walk(node: Tag) -> None:
+        nonlocal anchor
+        for child in node.find_all(recursive=False):
+            if child.name in HEADING_TAGS:
+                flush()
+                level = int(child.name[1])
+                name = child.get_text(" ", strip=True)
+                while stack and stack[-1][0] >= level:
+                    stack.pop()
+                stack.append((level, name))
+                anchor = child.get("id")
+            elif _holds_heading(child):
+                walk(child)
+            else:
+                buffer.append(child)
+
+    walk(root)
     flush()
-    if not heading_seen and not sections:
-        return ()
     return tuple(sections)
 
 
 def html_to_page(html: str, url: str, default_language: str) -> Page:
     """Parse an HTML page into a title, a language, and heading-delimited sections."""
     soup = BeautifulSoup(html, "lxml")
-    title = _title(soup)
     language = _language(soup, default_language)
     root = _content_root(soup)
     if root is None:
-        return Page(title=title, language=language, sections=())
-    sections = _split_by_headings(_clean(root), title)
+        return Page(title=_title(soup, None), language=language, sections=())
+    cleaned = _clean(root)
+    title = _title(soup, cleaned)
+    sections = _split_by_headings(cleaned, title)
     return Page(title=title, language=language, sections=sections)
 
 
