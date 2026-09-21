@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from bs4 import BeautifulSoup
+
 from swiss_grounding.ingest.html_sections import extract_links, html_to_page
 
 FIXTURES = Path(__file__).parent.parent.parent / "fixtures" / "html"
@@ -76,12 +78,15 @@ def test_title_falls_back_to_title_tag_stripped_of_site_suffix_when_root_has_no_
 
 
 def test_more_than_one_section_with_real_nested_heading_paths():
+    # The real content h1 ("Umwelt & Tiere") lives inside a <header> nested in <main>, used
+    # only for the page title (see test_title_ignores_hidden_nav_and_footer_h1); <header> is
+    # dropped before the section split, so the shallowest heading path here starts at h2.
     page = html_to_page(HTML_UMWELT, url="https://www.zh.ch/x", default_language="de")
     paths = [s.heading_path for s in page.sections]
     assert len(paths) > 1
     assert any(" > " in p for p in paths)
-    assert "Umwelt & Tiere > Umweltschutz > Wir sind für nachfolgende Generationen verantwortlich" in paths
-    assert "Umwelt & Tiere > Umweltschutz > Umweltschutz funktioniert nur ganzheitlich" in paths
+    assert "Umweltschutz > Wir sind für nachfolgende Generationen verantwortlich" in paths
+    assert "Umweltschutz > Umweltschutz funktioniert nur ganzheitlich" in paths
 
 
 def test_heading_with_id_produces_matching_anchor():
@@ -101,6 +106,9 @@ def test_text_under_nested_heading_is_not_attributed_to_an_earlier_heading():
 
 
 def test_page_without_main_article_or_role_main_falls_back_to_body():
+    # When there's no main/article/[role=main], the content root falls back to <body>, which
+    # (unlike <main> on the real pages) directly contains the site <nav> with its own hidden
+    # h1. That nav h1 comes first in document order, so it must still lose to the real one.
     html = """<html><head><title>Fallback</title></head><body>
     <nav><h1 class="visuallyhidden">Navigation</h1></nav>
     <h1>Body Heading</h1><p>Body text.</p>
@@ -108,9 +116,41 @@ def test_page_without_main_article_or_role_main_falls_back_to_body():
     </body></html>"""
     page = html_to_page(html, url="https://x/", default_language="de")
     assert page.title == "Body Heading"
+    assert page.title not in ("Navigation", "Fussbereich")
     assert len(page.sections) == 1
     assert page.sections[0].heading_path == "Body Heading"
     assert page.sections[0].text == "Body text."
+
+
+def test_bare_text_directly_under_a_descended_wrapper_is_kept():
+    # A container that itself holds no heading is buffered whole (a Tag, via _to_text). A
+    # container that does hold one is descended into instead -- and NavigableStrings sitting
+    # directly under it, as opposed to wrapped in a Tag, must survive that descent too.
+    html = "<main><div>Intro sentence that belongs to the page.<h2>H</h2><p>Body</p></div></main>"
+    page = html_to_page(html, url="https://x/", default_language="de")
+    texts = [s.text for s in page.sections]
+    assert any("Intro sentence that belongs to the page." in t for t in texts)
+    assert any(t == "Body" for t in texts)
+
+
+def test_descent_into_nested_headings_is_not_depth_bounded():
+    # On the real zh.ch pages, content headings sit many wrapper-divs below <main> (a
+    # page-header block, grid/cell layout divs, an AEM grid column, a richtext block, ...).
+    # Confirm the fixture actually reproduces that depth, then confirm the extractor still
+    # finds the heading there -- guards against ever capping the recursive descent.
+    soup = BeautifulSoup(HTML_UMWELT, "lxml")
+    main = soup.select_one("main")
+    heading = soup.find(id="-845041718")
+    depth = 0
+    node = heading
+    while node is not main and node is not None:
+        node = node.parent
+        depth += 1
+    assert depth >= 6, "fixture no longer reproduces the real page's nesting depth"
+
+    page = html_to_page(HTML_UMWELT, url="https://www.zh.ch/x", default_language="de")
+    section = next(s for s in page.sections if s.anchor == "-845041718")
+    assert "künftige Generationen" in section.text
 
 
 def test_extract_links_reads_href_from_custom_elements_but_not_head_resources():

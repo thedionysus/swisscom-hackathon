@@ -1,14 +1,25 @@
 from dataclasses import dataclass
 from urllib.parse import urldefrag, urljoin
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4.element import PageElement
 from markdownify import markdownify
 
 from swiss_grounding.ingest.models import Section
 
 DROP_TAGS = ("nav", "footer", "header", "script", "style", "noscript", "aside", "form")
+# _clean runs in two stages (see html_to_page): everything except <header> first, then
+# <header> on its own, with the title looked up in between. That way an h1 wrapped in a
+# <header> inside the content root (a page-header block inside <main>) still counts as the
+# content title, while a <nav>'s or <body>'s own hidden "Navigation" h1 -- gone in stage one
+# regardless of which selector supplied the content root -- never can.
+_NON_HEADER_DROP_TAGS = tuple(tag for tag in DROP_TAGS if tag != "header")
+_HEADER_DROP_TAGS = ("header",)
 HEADING_TAGS = ("h1", "h2", "h3", "h4")
 MAIN_CANDIDATES = ("main", "article", "[role=main]", "body")
+# Never split a table/list on a heading nested inside it: markdownify needs the whole
+# element in one piece, or its structure (rows, item nesting) comes out destructured.
+NO_DESCEND_TAGS = frozenset({"table", "ul", "ol", "dl"})
 
 
 @dataclass(frozen=True)
@@ -26,24 +37,27 @@ def _content_root(soup: BeautifulSoup) -> Tag | None:
     return None
 
 
-def _clean(root: Tag) -> Tag:
-    for tag in root.find_all(DROP_TAGS):
+def _clean(root: Tag, tags: tuple[str, ...] = DROP_TAGS) -> Tag:
+    for tag in root.find_all(tags):
         tag.decompose()
     return root
 
 
 def _title(soup: BeautifulSoup, root: Tag | None) -> str:
-    """The page's title: the first h1 inside the (cleaned) content root, falling back to <title>.
+    """The page's title: the first h1 inside the content root, falling back to <title>.
 
-    Pages commonly carry a visually-hidden ``<h1>Navigation</h1>`` inside their nav and another
-    hidden h1 inside their footer; neither lives in the content root, so this never sees them.
+    Pages commonly carry a visually-hidden ``<h1>Navigation</h1>`` inside their nav (or, when
+    the content root falls back to ``<body>``, a nav that's a direct sibling of it there too)
+    and another hidden h1 inside their footer; the caller has already dropped both by the time
+    this runs, so neither is ever seen. A ``<header>`` wrapping the real content h1 (e.g. a
+    page-header block inside ``<main>``) is still in place at this point, so that h1 is found.
     """
     if root is not None:
         h1 = root.find("h1")
         if h1 and h1.get_text(strip=True):
             return h1.get_text(" ", strip=True)
     if soup.title and soup.title.string:
-        return soup.title.string.split("|")[0].strip()
+        return soup.title.string.rsplit("|", 1)[0].strip()
     return ""
 
 
@@ -53,7 +67,7 @@ def _language(soup: BeautifulSoup, default: str) -> str:
     return lang.split("-")[0].lower() if lang else default
 
 
-def _to_text(nodes: list[Tag]) -> str:
+def _to_text(nodes: list[PageElement]) -> str:
     html = "".join(str(n) for n in nodes)
     return markdownify(html, heading_style="ATX", strip=["a", "img"]).strip()
 
@@ -65,16 +79,18 @@ def _holds_heading(node: Tag) -> bool:
 def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
     """Split root into sections keyed by heading, walking the DOM recursively.
 
-    Real pages nest their content several levels below the content root (wrapping
-    ``<div>``s, ``<details>``, breadcrumb containers, ...), so headings are not necessarily
-    direct children of root. Any child that itself contains a heading is descended into;
-    everything else is buffered as-is and converted to markdown in one piece, so list/table
-    structure inside it is preserved exactly as before.
+    Real pages nest their content many levels below the content root (wrapping ``<div>``s,
+    ``<header>`` blocks, ``<details>``, breadcrumb containers, ...), so headings are not
+    necessarily direct children of root, or even close to it. Any child element that itself
+    contains a heading is descended into, however deep; everything else -- elements and bare
+    text alike -- is buffered as-is and converted to markdown in one piece, so structure
+    inside it (e.g. a list) is preserved. A table/list/dl is never descended into even if a
+    heading tag lives inside it, since splitting one apart destructures it.
     """
     sections: list[Section] = []
     stack: list[tuple[int, str]] = []
     anchor: str | None = None
-    buffer: list[Tag] = []
+    buffer: list[PageElement] = []
 
     def flush() -> None:
         text = _to_text(buffer)
@@ -85,8 +101,12 @@ def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
 
     def walk(node: Tag) -> None:
         nonlocal anchor
-        for child in node.find_all(recursive=False):
-            if child.name in HEADING_TAGS:
+        for child in node.children:
+            if isinstance(child, NavigableString):
+                buffer.append(child)
+            elif not isinstance(child, Tag):
+                continue
+            elif child.name in HEADING_TAGS:
                 flush()
                 level = int(child.name[1])
                 name = child.get_text(" ", strip=True)
@@ -94,7 +114,7 @@ def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
                     stack.pop()
                 stack.append((level, name))
                 anchor = child.get("id")
-            elif _holds_heading(child):
+            elif child.name not in NO_DESCEND_TAGS and _holds_heading(child):
                 walk(child)
             else:
                 buffer.append(child)
@@ -111,9 +131,10 @@ def html_to_page(html: str, url: str, default_language: str) -> Page:
     root = _content_root(soup)
     if root is None:
         return Page(title=_title(soup, None), language=language, sections=())
-    cleaned = _clean(root)
-    title = _title(soup, cleaned)
-    sections = _split_by_headings(cleaned, title)
+    _clean(root, _NON_HEADER_DROP_TAGS)  # drop nav/footer/etc. first so their h1s can't win
+    title = _title(soup, root)  # ... then look for the title, while a <header> is still there
+    _clean(root, _HEADER_DROP_TAGS)  # now drop <header> too, before splitting into sections
+    sections = _split_by_headings(root, title)
     return Page(title=title, language=language, sections=sections)
 
 
