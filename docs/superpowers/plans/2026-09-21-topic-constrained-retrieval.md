@@ -38,13 +38,17 @@ Commit messages: `<type>: <description>` ending with `Co-Authored-By: Claude Opu
 
 ## Open decisions
 
-Two of the reported findings are design questions, not defects. They block the tasks named and must be answered before those tasks start.
+Two of the reported findings are design questions, not defects. They block the tasks named and must be answered before those tasks start. **Both were decided on 2026-09-22; the decisions are recorded inline below.**
 
 **D1 — What does `score` mean to a caller?** (blocks Task 9)
 Scores are query-node-relative by construction: the same chunk scores 1.1918 at `CH` and 0.8168 at `8003`, and the entire difference is the specificity term. Measured across four scopes, the pool grew 18 → 132 documents with no effect on the retrieval component. Once a tier decides ordering, `score` informs nothing a caller can act on. Options: drop it from citations; keep it and document it as incomparable; or replace it with the tier rank. *Recommendation: replace with tier rank plus the raw retrieval distance, which is comparable across calls.*
 
+**Decided:** replace `score` with the tier rank and the raw retrieval distance. `score` leaves the citation contract.
+
 **D2 — What should `as_of` do with no version history?** (blocks Task 11)
 Only current consolidations are ingested, so every Fedlex document has `valid_from >= 2023`. `as_of: 2020-01-01` therefore excludes all law and returns only undated pages, which is worse than refusing. Documents with `valid_from is null` bypass the filter entirely. Options: reject an `as_of` earlier than the oldest indexed version with a structured error; return `no_evidence` with an explanation; or keep today's silent filtering. *Recommendation: reject with a structured error naming the earliest date the index can answer for.*
+
+**Decided:** reject with a structured error naming the earliest date the index can answer for. The `valid_from is null` bypass is fixed alongside it.
 
 ---
 
