@@ -42,6 +42,10 @@ _Avoid_: Irrelevant result, low-quality hit, noise
 A stored chunk that carries a page's furniture -- navigation menus, download links, postal addresses, office hours -- rather than its substance. Indistinguishable from content by topic or by similarity, so it must be excluded at ingestion, not at ranking.
 _Avoid_: Chrome, navigation junk, nav text
 
+**Reclean**:
+The maintenance step that deletes boilerplate chunks already sitting in the index, and any document left with none, undoing the fact that they were ingested at all. A separate command run after the fact, not part of ingestion itself, until a later step excludes boilerplate at ingestion time and this has nothing left to do.
+_Avoid_: Cleanup, purge, prune
+
 **Narrowing**:
 The ingestion step that moves a document from its source's default extent to a more specific one found in its text. Only a level marker, or a bare name in the title or a heading, may narrow. A name shared with an ancestor of the default extent never narrows on its own.
 _Avoid_: Localisation, scoping

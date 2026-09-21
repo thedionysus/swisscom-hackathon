@@ -179,14 +179,17 @@ def renarrow_cmd() -> None:
 
 
 @app.command("reclean")
-def reclean_cmd() -> None:
+def reclean_cmd(
+    dry_run: bool = typer.Option(False, "--dry-run", help="report what would be dropped, without deleting"),
+) -> None:
     """Delete boilerplate chunks and any document left with none. No network, no model calls."""
     settings = load_settings()
     with connect(settings.database_url) as conn:
-        report = reclean_all(conn)
+        report = reclean_all(conn, dry_run=dry_run)
     for source in report.by_source:
         typer.echo(f"{source.source_id}: dropped_chunks={source.dropped_chunks} dropped_documents={source.dropped_documents}")
-    typer.echo(f"total: dropped_chunks={report.dropped_chunks} dropped_documents={report.dropped_documents}")
+    prefix = "dry run: " if dry_run else ""
+    typer.echo(f"{prefix}examined={report.examined} dropped_chunks={report.dropped_chunks} dropped_documents={report.dropped_documents}")
 
 
 @sources_app.command("list")
