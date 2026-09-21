@@ -244,6 +244,15 @@ def test_affoltern_collides_with_a_commune_name_start():
     assert {"CH-ZH-261-K11-AFFOLTERN", "CH-ZH-2"} <= {c.id for c in result.candidates}
 
 
+def test_common_word_is_not_a_commune_prefix_via_a_marker_alias():
+    """The register aliases the city of Zurich as "City of Zurich"; a bare "City" must still
+    report the common-word reason and offer only the Quartier."""
+    result = LocationResolver(tree(), FakeGeo(())).resolve("City")
+    assert isinstance(result, AmbiguousLocation)
+    assert [c.id for c in result.candidates] == ["CH-ZH-261-K1-CITY"]
+    assert "common word" in result.reason
+
+
 def test_zurich_airport_shares_one_token_falls_to_canton():
     geo = FakeGeo((GeoAdminHit(bfs_id=261, label="Zürich (ZH)"),))
     r = LocationResolver(tree(), geo).resolve("Zurich Airport")
