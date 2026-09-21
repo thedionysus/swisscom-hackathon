@@ -23,10 +23,10 @@ create table if not exists source (
     fetch_strategy     text not null,
     fetch_config       jsonb not null default '{}',
     allow_narrowing    boolean not null default false,
+    llm_tagging        boolean not null default true,
     license            text,
     origin             text not null default 'seed' check (origin in ('seed','auto_approved','reviewed'))
 );
-
 -- Databases created before this column existed pick it up on the next db init.
 alter table source add column if not exists llm_tagging boolean not null default true;
 

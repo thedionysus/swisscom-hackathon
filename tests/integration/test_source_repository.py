@@ -31,3 +31,5 @@ def test_upsert_and_load_sources(url):
     fedlex = next(s for s in loaded if s.id == "fedlex")
     assert fedlex.fetch_config["sr_numbers"][0] == "451"
     assert fedlex.allow_narrowing is False
+    open_erz = next(s for s in loaded if s.id == "open_erz")
+    assert open_erz.llm_tagging is False
