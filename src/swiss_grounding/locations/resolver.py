@@ -39,7 +39,7 @@ def _tokens(text: str) -> tuple[str, ...]:
 
 
 def _shares_a_token(text: str, label: str) -> bool:
-    """True when at least one input token of length >= 3 exactly matches a label token.
+    """True when at least one input token of length >= 4 exactly matches a label token.
 
     GeoAdmin is a fuzzy search: it answers "nowhere" with "Nidwalden". Requiring
     a shared token keeps genuine hits ("Zürich Oberland" -> "Zürich (ZH)") and
@@ -103,18 +103,21 @@ class LocationResolver:
         )
 
     def _communes_starting_with(self, name: str) -> tuple[Location, ...]:
-        """Municipalities whose normalised name starts with ``name + " "`` (e.g. "affoltern"
+        """Municipalities whose own name starts with ``name + " "`` (e.g. "affoltern"
         matching "Affoltern am Albis"), so a neighbourhood-only match doesn't hide a commune
-        it collides with the start of."""
+        it collides with the start of.
+
+        Only a commune's real names count. The register generates marker aliases such as
+        "City of Zurich" and "Stadt Winterthur", so scanning aliases would make every marker
+        word look like the start of a commune name.
+        """
         prefix = normalize(name) + " "
-        node_ids = {
-            node_id
-            for alias, ids in self._tree.alias_index.items()
-            if alias.startswith(prefix)
-            for node_id in ids
-        }
-        nodes = (self._tree.get(node_id) for node_id in node_ids)
-        return tuple(n for n in nodes if n.level is Level.MUNICIPALITY)
+        matched = (
+            node for node in self._tree.all()
+            if node.level is Level.MUNICIPALITY
+            and any(normalize(n).startswith(prefix) for n in node.names.values())
+        )
+        return tuple(sorted(matched, key=lambda n: n.id))
 
     def _resolve_via_geoadmin(self, text: str) -> Resolution:
         # Inputs shaped "<commune> <unknown word>" ("Winterthur Töss", "Zurich Airport") end
