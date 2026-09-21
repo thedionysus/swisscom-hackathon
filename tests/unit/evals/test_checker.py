@@ -246,11 +246,11 @@ def test_coverage_resolved_sentinel_names_the_resolved_node():
 
 
 def test_first_event_compares_within_the_first_citations_series():
-    from swiss_grounding.evals.checker import _series
+    from swiss_grounding.retrieval.calendar import calendar_series as _series
 
-    assert _series(_cit(identifier="cardboard-2026-09-24")) == "cardboard"
-    assert _series(_cit(identifier="waste-2026-09-21")) == "waste"
-    assert _series(_cit(identifier="SR 455 Art. 6")) == "SR 455 Art. 6"
+    assert _series("cardboard-2026-09-24") == "cardboard"
+    assert _series("waste-2026-09-21") == "waste"
+    assert _series("SR 455 Art. 6") == "SR 455 Art. 6"
     probe = _probe(status="results", first_event="nearest_future")
     resp = _resp(citations=(
         _cit(source="open_erz", event_date=date(2026, 9, 24), identifier="cardboard-2026-09-24"),
