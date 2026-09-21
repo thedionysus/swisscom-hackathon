@@ -29,8 +29,8 @@ probes:
       coverage_present:
         - CH-ZH
     observed:
-      recorded_at: '2026-09-21T14:30:54.174979Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.490382Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-230
       method: alias
@@ -104,8 +104,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-21T14:30:54.239317Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.569428Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-198
       method: alias
@@ -173,8 +173,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-21T14:30:54.326465Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.634965Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-191
       method: alias_in_question
@@ -242,8 +242,8 @@ probes:
         - extent: CH-ZH-261
         - extent: CH-ZH-261-K3
     observed:
-      recorded_at: '2026-09-21T14:30:54.378124Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.687010Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-62
       method: alias
@@ -313,8 +313,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-21T14:30:54.432415Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.737711Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-121
       method: alias
@@ -382,8 +382,8 @@ probes:
         - source: zh_ch
           extent: CH-ZH
     observed:
-      recorded_at: '2026-09-21T14:30:54.490254Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.792138Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-71
       method: alias
@@ -446,8 +446,8 @@ probes:
       status: needs_location
       message_contains: Wil
     observed:
-      recorded_at: '2026-09-21T14:30:54.490333Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.792234Z'
+      git_commit: 6f3d42b
       status: needs_location
       resolved_id: null
       method: null
@@ -478,8 +478,8 @@ probes:
         - extent: CH-ZH-261-K11
         - extent: CH-BE
     observed:
-      recorded_at: '2026-09-21T14:30:54.542165Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.854983Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-2
       method: alias
@@ -540,8 +540,8 @@ probes:
     expect:
       status: needs_location
     observed:
-      recorded_at: '2026-09-21T14:30:54.544996Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.857730Z'
+      git_commit: 6f3d42b
       status: needs_location
       resolved_id: null
       method: null
@@ -570,8 +570,8 @@ probes:
         parent: CH-ZH
       method: alias
     observed:
-      recorded_at: '2026-09-21T14:30:54.597080Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.917143Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-230
       method: alias
@@ -638,8 +638,8 @@ probes:
       coverage_empty:
         - resolved
     observed:
-      recorded_at: '2026-09-21T14:30:54.654096Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:43.968272Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-230
       method: alias
@@ -705,8 +705,8 @@ probes:
         level: municipality
         parent: CH-ZH
     observed:
-      recorded_at: '2026-09-21T14:30:54.958434Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.151855Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-230
       method: geoadmin
@@ -775,8 +775,8 @@ probes:
       coverage_present:
         - CH
     observed:
-      recorded_at: '2026-09-21T14:30:55.012866Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.203141Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-53
       method: alias
@@ -845,8 +845,8 @@ probes:
         - extent: CH-ZH-261
         - extent: off_path
     observed:
-      recorded_at: '2026-09-21T14:30:55.073995Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.256351Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH
       method: alias
@@ -903,9 +903,9 @@ probes:
     failure_class: authority_hierarchy
     status: red
     judge: true
-    note: With no local data, the canton leash rule must outrank institutional trail advice. Ranking probe, live database
-      only. The canton page is present again since re-narrowing, but the Schweizer Wanderwege pages at country level still
-      take the first place; an authority-weight question for the ranking work, not the resolver.
+    note: 'With no local data for the commune, the cantonal rule must outrank institutional trail advice. Red for the same
+      reason as city-007: the stored cantonal pages predate the extraction fix and carry navigation chrome, so none of them
+      can win on relevance. A re-ingest closes this, which needs translation credits.'
     expect:
       status: results
       resolved:
@@ -915,8 +915,8 @@ probes:
       first_extent: CH-ZH
       first_authority: official_info
     observed:
-      recorded_at: '2026-09-21T14:30:55.131765Z'
-      git_commit: 17d14cf
+      recorded_at: '2026-09-21T15:26:44.317634Z'
+      git_commit: 6f3d42b
       status: results
       resolved_id: CH-ZH-243
       method: alias
