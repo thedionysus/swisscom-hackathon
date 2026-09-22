@@ -1,10 +1,11 @@
 import json
 from datetime import date
 from pathlib import Path
+from urllib.parse import unquote_plus
 
 import httpx
 
-from swiss_grounding.ingest.fetchers.fedlex import FedlexFetcher, parse_akoma_ntoso
+from swiss_grounding.ingest.fetchers.fedlex import LANGUAGE_URI, FedlexFetcher, parse_akoma_ntoso
 from swiss_grounding.ingest.fetchers.retry import RetryPolicy
 from swiss_grounding.ingest.models import FetchError, KnownUrl
 from swiss_grounding.registry.models import Source
@@ -127,3 +128,81 @@ def test_retry_backoff_uses_injected_sleep():
     http = httpx.Client(transport=httpx.MockTransport(handler))
     FedlexFetcher(http=http, retry=RetryPolicy(attempts=3, backoff_seconds=0.25), sleep=slept.append).fetch(source(), {})
     assert slept == [0.25]
+
+
+# --- official English editions -------------------------------------------------------------------
+
+def _row(lang: str, date_applicability: str = "2022-01-01"):
+    """The fixture's binding, re-labelled with a language URI, a date and a language-specific XML URL."""
+    base = SPARQL["results"]["bindings"][0]
+    return {**base,
+            "lang": {"type": "uri", "value": LANGUAGE_URI[lang]},
+            "dateApplicability": {"type": "literal", "value": date_applicability},
+            "fileUrl": {"type": "uri", "value": f"https://fedlex.data.admin.ch/filestore/x/{lang}/xml/sr455.xml"}}
+
+
+def _sparql(*rows):
+    return {"results": {"bindings": list(rows)}}
+
+
+def english_source(fallback="de"):
+    cfg = {"sr_numbers": ["455"], "language": "en"}
+    if fallback:
+        cfg["fallback_language"] = fallback
+    return Source(id="fedlex", name="Fedlex", base_url="https://www.fedlex.admin.ch", default_extent_id="CH",
+                  authority="federal_law", categories=("dogs",), fetch_strategy="fedlex_sparql", fetch_config=cfg)
+
+
+def test_english_edition_is_chosen_when_it_matches_the_current_consolidation():
+    handler, _ = flaky_sparql([httpx.Response(200, json=_sparql(_row("en"), _row("de")))])
+    result = FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler))).fetch(english_source(), {})
+    assert result.errors == () and len(result.documents) == 1
+    d = result.documents[0]
+    assert d.language == "en"
+    assert d.url == "https://www.fedlex.admin.ch/eli/cc/2008/414/20220101/en"
+
+
+def test_falls_back_to_german_when_the_act_has_no_english_edition():
+    handler, calls = flaky_sparql([httpx.Response(200, json=_sparql(_row("de")))])
+    result = FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler)), retry=NO_SLEEP).fetch(
+        english_source(), {})
+    assert result.errors == () and result.documents[0].language == "de"
+    assert result.documents[0].url.endswith("/de")
+    assert calls.count("sparql") == 1  # one query covers both languages; no retry for a missing edition
+
+
+def test_falls_back_when_the_english_edition_lags_the_current_consolidation():
+    handler, _ = flaky_sparql([httpx.Response(200, json=_sparql(_row("de", "2022-01-01"), _row("en", "2020-01-01")))])
+    result = FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler))).fetch(english_source(), {})
+    d = result.documents[0]
+    assert d.language == "de" and d.valid_from == date(2022, 1, 1)
+
+
+def test_no_fallback_and_no_english_edition_is_reported_as_empty():
+    handler, _ = flaky_sparql([httpx.Response(200, json=_sparql(_row("de")))] * 3)
+    result = FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler)), retry=NO_SLEEP).fetch(
+        english_source(fallback=None), {})
+    assert result.documents == () and "SR 455" in result.errors[0].reason
+
+
+def test_query_asks_for_both_languages_when_a_fallback_is_configured():
+    seen = []
+
+    def handler(request):
+        if "sparqlendpoint" in str(request.url):
+            seen.append(request.content.decode())
+            return httpx.Response(200, json=_sparql(_row("en"), _row("de")))
+        return handler_xml(request)
+
+    FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler))).fetch(english_source(), {})
+    body = unquote_plus(seen[0])  # form-encoded POST body
+    assert LANGUAGE_URI["en"] in body and LANGUAGE_URI["de"] in body
+
+
+def test_unknown_language_is_a_source_level_error_not_a_crash():
+    handler, calls = flaky_sparql([])
+    cfg = {"sr_numbers": ["455"], "language": "xx"}
+    src = Source(id="fedlex", name="Fedlex", base_url="https://www.fedlex.admin.ch", default_extent_id="CH",
+                 authority="federal_law", fetch_strategy="fedlex_sparql", fetch_config=cfg)
+    result = FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler))).fetch(src, {})
+    assert result.documents == () and "unknown language" in result.errors[0].reason and calls == []
