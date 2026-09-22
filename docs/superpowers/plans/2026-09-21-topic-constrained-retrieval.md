@@ -492,19 +492,29 @@ Left open deliberately, since Task 12 is deferred and further pipeline changes a
 
 **The measured finding that outlives whatever replaces it**, because it is expensive to re-derive and it invalidates ADR 0004's stated premise:
 
-`tsv` is `to_tsvector('english', btrim(context_en || ' ' || text_en))` (`db/schema.sql`). **`text_original` is not in the keyword index at all.** Measured against the live index:
+`tsv` is `to_tsvector('english', btrim(context_en || ' ' || text_en))` (`db/schema.sql`). **`text_original` is not in the keyword index at all.** Re-measured against the live index on 2026-09-23 (719 chunks) — an earlier version of this section carried numbers taken from a review without re-running them, and several were wrong:
 
 ```
-Leinenpflicht -> 0 chunks     leash -> 5
-Hund          -> 0            dog   -> 7
-Wanderwege    -> 0
-"Darf mein Hund im Wald frei laufen?"      -> 0 chunks
-"May my dog run off leash in the forest?"  -> 1 chunk
-Zürich -> 1   vs   Zurich -> 2      (no unaccent extension: the umlaut loses matches
-                                     even on a proper noun)
+Leinenpflicht ->  0      leash    ->  4
+Hund          ->  0      dog      ->  7
+Abfall        ->  0
+Wanderwege    ->  6      <- NOT a counter-example: an untranslated proper noun
+Graubünden    ->  6      Graubunden ->  0
+Zürich        ->  2      Zurich     -> 89
+SR 455        ->  0      455        ->  0
+"Darf mein Hund im Wald frei laufen?"      -> 0
+"May my dog run off leash in the forest?"  -> 0   <- English fares no better
 ```
 
-So a non-English question contributes **nothing** to the lexical arm, and `websearch_to_tsquery('english', ...)` additionally applies English stemming and the English stopword list to non-English input. ADR 0004 justifies keeping the verbatim question "so that original-language terms still have something to match against" — that mechanism does not exist. Any replacement design should start from this rather than from the ADR's premise.
+Three rules follow, and they are sharper than "German does not match":
+
+1. **Names survive translation, ordinary words do not.** `Wanderwege` matches because it sits untranslated inside English text ("Registration: Wanderwege Graubünden"), not because German reaches the index.
+2. **Accent folding is absent in both directions.** No `unaccent` extension means an accented form and its plain form are different lexemes: `Graubünden` matches 6 and `Graubunden` 0, while `Zürich` matches 2 and `Zurich` 89. Which spelling wins depends on which the English text happens to use, so neither is safe.
+3. **Whole sentences rarely match in any language**, because `websearch_to_tsquery` ANDs every term — the English sentence scores 0 as well. The lexical arm is driven by distinctive terms, not sentences.
+
+Also false, and corrected here: **document identifiers do not reach the index either.** `SR 455` and `455` both match 0, because `identifier` is a `document` column that never enters `tsv`.
+
+ADR 0004 justifies keeping the verbatim question "so that original-language terms still have something to match against" — that mechanism does not exist for words, only incidentally for untranslated names. Any replacement design should start from the three rules above rather than from the ADR's premise.
 
 Consequences deliberately left alone, since the rung they describe is going away:
 - The tool docstring's smaller nuances (what "everything is English" means given `snippet_original`; that the classifier reads `question_en + topic_en` rather than `topic_en` alone; the second `as_of` refusal that names no boundary).
