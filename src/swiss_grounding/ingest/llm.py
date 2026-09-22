@@ -128,32 +128,47 @@ def _boilerplate_verdict(body: dict[str, Any]) -> bool:
     return stated
 
 
-def _context(body: dict[str, Any], boilerplate: bool) -> str:
-    """The generated description, required for any chunk that will actually be stored.
-
-    A chunk judged boilerplate is dropped, so its description is never read. Failing the whole
-    document over it would lose the articles around it to a judgement that was throwing the chunk
-    away anyway, so an empty context is accepted in that one case and in no other.
-    """
-    stated = body.get("context")
+def _context(body: dict[str, Any]) -> str:
+    """The generated description, required for every chunk that will actually be stored."""
+    stated = body.get("context", "")
     if not isinstance(stated, str):
         raise EnrichmentError(f"no usable context: {str(stated)[:MAX_ERROR_CHARS]!r}")
     context = stated.strip()
-    if not context and not boilerplate:
-        raise EnrichmentError("the model returned an empty context for a chunk it kept")
+    if not context:
+        raise EnrichmentError("the model returned no context for a chunk it kept")
     return context
 
 
+def _categories(body: dict[str, Any]) -> Any:
+    """The `categories` entry, which the model must actually send.
+
+    `[]` is an answer -- the model saying none apply -- and omitting the key is not the same
+    statement: it is the model ignoring the response format. The difference decides whether a
+    source's declared categories stand in for this chunk (`context.merge_topics`), so reading
+    silence as "none named" would hand a chunk a topic on the strength of a key that was never
+    there.
+    """
+    try:
+        return body["categories"]
+    except KeyError as exc:
+        raise EnrichmentError("the model named no categories key at all") from exc
+
+
 def parse_description(raw: str, known_ids: Sequence[str]) -> ChunkContext:
-    """Parse the JSON description response into context, topics and a boilerplate verdict."""
+    """Parse the JSON description response into context, topics and a boilerplate verdict.
+
+    A chunk judged boilerplate is discarded, so nothing but that verdict is ever read from it and
+    nothing but that verdict is required of it. Validating the rest would let a chunk already on
+    its way to the bin fail the whole document, losing the articles around it -- which is the
+    opposite of what this exemption is for. The verdict itself is validated as strictly as ever.
+    """
     body = _decode(raw)
-    boilerplate = _boilerplate_verdict(body)
+    if _boilerplate_verdict(body):
+        return ChunkContext(context_en="", topics=(), boilerplate=True)
     return ChunkContext(
-        context_en=_context(body, boilerplate),
-        # An absent list is the model naming no category, which is an answer; a list that is not
-        # a list is the model ignoring the format, which is not.
-        topics=_tags(body.get("categories", []), known_ids),
-        boilerplate=boilerplate,
+        context_en=_context(body),
+        topics=_tags(_categories(body), known_ids),
+        boilerplate=False,
     )
 
 

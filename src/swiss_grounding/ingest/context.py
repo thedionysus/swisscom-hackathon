@@ -26,10 +26,12 @@ from swiss_grounding.ingest.models import CategoryTag, ChunkDraft
 from swiss_grounding.registry.categories import Category
 from swiss_grounding.registry.models import Source
 
-# Written only when the model named no topic for this chunk; a fallback, not a certainty.
+# Written only where `_fallback_applies` lets a source's declaration stand in for a chunk the
+# model named nothing for; a fallback, not a certainty.
 SOURCE_FALLBACK_CONFIDENCE = 0.5
 # One space, so the last word of the context cannot fuse with the first word of the text.
-# `db/schema.sql` joins the same two columns the same way for `tsv`; the two must agree.
+# `db/schema.sql` joins the same two columns the same way for `tsv`. The two must agree, and
+# `tests/integration/test_schema_context.py` is what makes them rather than merely asking.
 CONTEXT_SEPARATOR = " "
 # A templated record already describes itself, so its context restates only what it belongs to.
 TEMPLATED_CONTEXT = "From {source_name}. {title_en}"
@@ -46,13 +48,44 @@ def indexed_text(context_en: str, text_en: str) -> str:
     return CONTEXT_SEPARATOR.join(part for part in (context_en, text_en) if part)
 
 
-def merge_topics(defaults: Sequence[str], model_topics: Sequence[CategoryTag]) -> tuple[CategoryTag, ...]:
-    """The model's per-chunk judgement always wins. A source's declared categories are used only
-    as a fallback, when the model named nothing for this chunk at all -- and then at a confidence
-    below certainty, because a source-level default is not a per-chunk assertion (ADR 0003)."""
+def _fallback_applies(source: Source) -> bool:
+    """Whether this source's declared categories may stand in for a chunk the model tagged with
+    nothing.
+
+    `source.categories` says what the source *covers*. Only a declaration of exactly one category
+    also says anything about an individual chunk of it: `open_erz` declaring `waste` does tell you
+    what every record of a waste calendar is about, while `fedlex` declaring five does not tell
+    you that a definitions article is about all five. Writing all five onto a chunk the model
+    named nothing for is the defect ADR 0003 exists to remove -- 563 chunks each asserting dogs,
+    hiking, safety, transport and waste -- re-entered through the fallback, and at chunk
+    granularity an empty answer is far commoner than it ever was per document, because a
+    definitions article or a penalty clause genuinely has no topic.
+
+    A templated source is the exception: there is no model judgement to defer to, so what it
+    declares is the whole judgement, however many categories that is.
+    """
+    if not source.llm_tagging:
+        return True
+    return len(source.categories) == 1
+
+
+def merge_topics(source: Source, model_topics: Sequence[CategoryTag]) -> tuple[CategoryTag, ...]:
+    """The topics of one chunk: the model's judgement, or a constrained fallback, or nothing.
+
+    The model's per-chunk judgement always wins. Where it named nothing, `source.categories` may
+    stand in, but only under `_fallback_applies` and then below certainty, because a source-level
+    default is not a per-chunk assertion (ADR 0003).
+
+    A chunk of a multi-category source that the model tagged with nothing therefore ends with no
+    topics at all. Under the hard topic filter this is deliberate and accepted, not an oversight:
+    such a chunk is unreachable, which is the honest outcome, and better than reaching it under
+    topics that are false of it -- a false topic surfaces wrong evidence, while a missing one
+    surfaces none. Task 8 should meet this as a decision rather than a surprise.
+    """
     topics = {t.id: t for t in model_topics}
-    if not topics:
-        topics = {cid: CategoryTag(id=cid, confidence=SOURCE_FALLBACK_CONFIDENCE) for cid in defaults}
+    if not topics and _fallback_applies(source):
+        topics = {cid: CategoryTag(id=cid, confidence=SOURCE_FALLBACK_CONFIDENCE)
+                  for cid in source.categories}
     return _sorted(topics.values())
 
 
@@ -84,7 +117,7 @@ def _from_template(chunk: ChunkDraft, source: Source, title_en: str) -> ChunkDra
     return replace(
         chunk,
         context_en=TEMPLATED_CONTEXT.format(source_name=source.name, title_en=title_en),
-        topics=merge_topics(source.categories, ()),
+        topics=merge_topics(source, ()),
     )
 
 
@@ -126,5 +159,5 @@ def describe_chunks(
         if context.boilerplate:
             continue
         described.append(replace(chunk, context_en=context.context_en,
-                                 topics=merge_topics(source.categories, context.topics)))
+                                 topics=merge_topics(source, context.topics)))
     return tuple(described)

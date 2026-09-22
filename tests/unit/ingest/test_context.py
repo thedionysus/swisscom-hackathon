@@ -55,6 +55,16 @@ class CountingLLM(FakeLLM):
         )
 
 
+class SilentLLM(FakeLLM):
+    """Describes every chunk but names no category for any of it."""
+
+    def summarise(self, title_en, text_en):
+        return "a summary"
+
+    def describe(self, summary_en, heading_path, text_en, text_original, categories):
+        return ChunkContext(context_en="Some context.", topics=(), boilerplate=False)
+
+
 class ForbiddenLLM(FakeLLM):
     def summarise(self, title_en, text_en):
         raise AssertionError("summarise must not be called")
@@ -71,9 +81,11 @@ def describe(chunks, llm, src=None, title_en="Animal Welfare Act", document_text
 # --- what the index sees --------------------------------------------------------------------
 
 
-def test_the_indexed_text_carries_the_context_ahead_of_the_chunk():
+def test_context_is_indexed_but_never_cited():
+    """The indexing half, named as the plan names it. The citation half of the same property is
+    `tests/integration/test_context_never_cited.py`, which needs a database and a real search."""
     joined = indexed_text("From the Animal Welfare Act. Sets penalties", "Anyone who intentionally")
-    assert "Animal Welfare Act" in joined
+    assert "Animal Welfare Act" in joined      # the embedding and the tsv see it
     assert joined == "From the Animal Welfare Act. Sets penalties Anyone who intentionally"
 
 
@@ -126,7 +138,7 @@ def test_the_original_wording_is_offered_to_the_model():
     assert llm.described[0]["text_original"] == "Grüngutabfuhr"
 
 
-def test_the_fake_keeps_a_term_the_english_lost():
+def test_context_keeps_the_original_term():
     """FakeLLM stands in for the real model's instruction to keep an untranslatable term."""
     out = describe((draft(text_en="Collection of green waste", text_original="Grüngutabfuhr"),), FakeLLM())
     assert "Grüngutabfuhr" in out[0].context_en
@@ -170,11 +182,46 @@ def test_the_models_per_chunk_topics_win_over_the_sources_declared_ones():
     assert out[0].topics == (WASTE,)
 
 
-def test_the_sources_categories_apply_only_when_the_model_names_none():
-    tags = merge_topics(defaults=("waste",), model_topics=())
+def test_a_single_declared_category_applies_when_the_model_names_none():
+    tags = merge_topics(source(categories=("waste",)), model_topics=())
     assert {t.id for t in tags} == {"waste"}
     assert tags[0].confidence == SOURCE_FALLBACK_CONFIDENCE
     assert tags[0].confidence < 1.0        # a fallback is not a certainty
+
+
+def test_several_declared_categories_never_become_one_chunks_topics():
+    """The defect this plan exists to fix, re-entered through the fallback door: `fedlex` declares
+    five, and a definitions article that the model tags with nothing is not about all five."""
+    assert merge_topics(source(categories=("dogs", "hiking", "safety", "transport", "waste")),
+                        model_topics=()) == ()
+
+
+def test_a_templated_source_still_falls_back_to_everything_it_declares():
+    """There is no model judgement to defer to, so the declaration is the whole judgement."""
+    tags = merge_topics(source(categories=("waste", "transport"), llm_tagging=False), model_topics=())
+    assert {t.id for t in tags} == {"waste", "transport"}
+
+
+def test_the_fallback_is_not_reached_when_the_model_named_something():
+    tags = merge_topics(source(categories=("dogs", "waste")), model_topics=(WASTE,))
+    assert tags == (WASTE,)
+
+
+def test_a_chunk_of_a_multi_category_source_can_end_with_no_topics_at_all():
+    """Accepted deliberately: under Task 8's hard filter such a chunk is unreachable, and that is
+    better than reaching it under five topics that are false of it."""
+    out = describe((draft(text_en="Definitions apply throughout."),), SilentLLM(),
+                   src=source(categories=("dogs", "hiking", "waste")))
+    assert out[0].topics == ()
+
+
+def test_open_erz_keeps_the_topic_its_whole_feed_is_about():
+    """The waste calendar is one category by declaration; Task 8's filter makes an untagged
+    calendar unreachable, which would lose every collection date in the index."""
+    out = describe((draft(heading="Waste collection cardboard in 8003 on 2026-09-25",
+                          text_en="Collection of cardboard."),), ForbiddenLLM(),
+                   src=source(id="open_erz", name="Open ERZ", categories=("waste",), llm_tagging=False))
+    assert out[0].topics == (CategoryTag("waste", SOURCE_FALLBACK_CONFIDENCE),)
 
 
 def test_two_chunks_of_one_document_can_carry_different_topics():
@@ -245,10 +292,11 @@ def test_the_fake_tags_each_chunk_at_its_own_confidence():
 
 def test_topics_are_sorted_by_confidence_then_id():
     """A stable order, so a stored tag list is comparable between runs."""
-    topics = merge_topics(defaults=(), model_topics=(
+    topics = merge_topics(source(categories=()), model_topics=(
         CategoryTag("waste", 0.4), CategoryTag("dogs", 0.9), CategoryTag("hiking", 0.9)))
     assert [t.id for t in topics] == ["dogs", "hiking", "waste"]
 
 
 def test_the_source_fallback_is_sorted_the_same_way():
-    assert [t.id for t in merge_topics(("waste", "dogs"), ())] == ["dogs", "waste"]
+    ids = [t.id for t in merge_topics(source(categories=("waste", "dogs"), llm_tagging=False), ())]
+    assert ids == ["dogs", "waste"]
