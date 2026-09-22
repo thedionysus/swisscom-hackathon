@@ -174,8 +174,19 @@ def hybrid_search(
     as_of: date | None,
     top_n: int = 50,
     topics: tuple[str, ...] = (),
+    embedded_question: str | None = None,
 ) -> tuple[Hit, ...]:
     """Dense and lexical retrieval restricted to the extent path and the topics, fused with RRF.
+
+    The two arms are asked different things (ADR 0004). `question` is the text as the
+    user wrote it and it is what the lexical arm matches, because a keyword index matches
+    literal terms and the caller's own words are the ones worth matching.
+    `embedded_question` is what the dense arm embeds -- the caller's English rendering,
+    because the embeddings and `tsv` are both built from `text_en` and an English index is
+    the only thing an English vector can usefully be compared against.
+    `retrieval/query_text.py` composes it; `None` means *the same text for both arms*,
+    which is what a caller with only one string has and is the honest default for a test
+    about the filter rather than about the query.
 
     `topics` is a hard filter (ADR 0003), and an empty tuple applies no filter at all
     rather than a filter nothing satisfies -- see FILTER for why the two must differ.
@@ -190,7 +201,7 @@ def hybrid_search(
     the ordering never used. The cost of moving it is one primary-key lookup over ≤100
     ids rather than ≤25.
     """
-    vector = embedder.embed([question])[0]
+    vector = embedder.embed([embedded_question if embedded_question is not None else question])[0]
     params = {
         "path": list(extent_path), "as_of": as_of, "top_n": top_n,
         # `list(topics) or None` would map an empty tuple to null by accident of

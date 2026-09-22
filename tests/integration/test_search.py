@@ -178,3 +178,57 @@ def test_distances_for_omits_an_id_it_finds_no_row_for(url):
     with connect(url) as conn:
         assert distances_for(conn, vector, []) == {}
         assert distances_for(conn, vector, [10**9]) == {}
+
+
+# --- the two arms are asked different things (ADR 0004, Task 10) ------------------------
+#
+# `hybrid_search` now takes the verbatim question *and* the English text to embed. The
+# dense arm is English-only because the index is (`db/schema.sql` builds `tsv` from
+# `context_en || text_en`, and the embeddings come from `text_en` too); the lexical arm
+# keeps the verbatim text so whatever the caller actually typed is still searched for.
+# Nothing else in this file would notice if the two were swapped.
+
+
+class RecordingEmbedder:
+    """A FakeEmbedder that remembers every text it was asked to embed."""
+
+    def __init__(self, dim: int = 8):
+        self.dim = dim
+        self._inner = FakeEmbedder(dim=dim)
+        self.texts: list[str] = []
+
+    def embed(self, texts):
+        self.texts.extend(texts)
+        return self._inner.embed(texts)
+
+
+LEXICAL_TERM = "signposting"        # in the hiking act's text_en, and nowhere else
+NOT_A_WORD = "zzzqqq"               # a valid tsquery that matches nothing
+
+
+def test_the_dense_arm_embeds_the_english_text_not_the_verbatim_question(url):
+    embedder = RecordingEmbedder()
+    with connect(url) as conn:
+        hybrid_search(
+            conn, embedder, question="Wer unterhält die Wanderwege?",
+            embedded_question="Who maintains the hiking trails?",
+            extent_path=("CH",), as_of=None, top_n=50,
+        )
+    assert embedder.texts == ["Who maintains the hiking trails?"]
+
+
+def test_the_lexical_arm_matches_the_verbatim_question_not_the_embedded_one(url):
+    """Run the same pair of strings both ways round. Only the arm that reads `question`
+    can tell them apart, so if the lexical arm ever followed `embedded_question` the two
+    assertions below would swap."""
+    with connect(url) as conn:
+        verbatim = hybrid_search(
+            conn, FakeEmbedder(dim=8), question=LEXICAL_TERM, embedded_question=NOT_A_WORD,
+            extent_path=("CH",), as_of=None, top_n=50,
+        )
+        embedded = hybrid_search(
+            conn, FakeEmbedder(dim=8), question=NOT_A_WORD, embedded_question=LEXICAL_TERM,
+            extent_path=("CH",), as_of=None, top_n=50,
+        )
+    assert [h.chunk.identifier for h in verbatim if h.lexical_rank is not None] == ["SR 704 Art. 1"]
+    assert [h for h in embedded if h.lexical_rank is not None] == []

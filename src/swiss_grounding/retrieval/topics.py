@@ -37,6 +37,7 @@ import numpy as np
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest
+from swiss_grounding.retrieval.query_text import build_search_query
 
 # Below this cosine similarity, the best-matching category is not a confident match —
 # return no topics so an unrecognised question degrades to no filter (search still runs
@@ -134,18 +135,45 @@ def classify_topics(question: str, embedder: Embedder) -> tuple[str, ...]:
     return band
 
 
+def topic_decided_by(request: QueryRequest) -> str:
+    """Which rung of `resolve_topics` this request lands on, without running it.
+
+    Published as `QueryResponse.topic_decided_by`, because `categories_used` alone cannot
+    tell a topic the caller stated from one the server guessed, and a caller has to be
+    able to act differently on the two. It also makes the deprecated `categories` field
+    visible in the response rather than silently indistinguishable from `topics` -- a
+    deprecation nobody can see is one nobody acts on.
+
+    Pure, and it mirrors `resolve_topics`'s ladder exactly. The two must not drift; they
+    are kept adjacent for that reason, and each rung below names the same field.
+    """
+    if request.topics:
+        return "topics"
+    if request.categories:
+        return "categories"
+    return "classifier"
+
+
 def resolve_topics(request: QueryRequest, embedder: Embedder) -> tuple[str, ...]:
     """Decide what `swiss_search` filters on for this request, in ADR 0004's order.
 
     1. `request.topics` -- the caller said what the question is about. ADR 0004 makes the
        calling model the primary source: it reads the user's question, it already speaks
        the user's language, and it is paying for its own tokens.
-    2. `request.categories` -- the same caller, on the older contract. It is the only way
-       a client that has not been updated can state a subject at all, and an explicit
-       statement from the caller must outrank a guess made on its behalf. This rung
-       disappears when Task 10 replaces the tool contract; until then, dropping it would
-       mean ignoring what the caller said in favour of what the server guessed.
+    2. `request.categories` -- the same caller, on the deprecated alias of `topics` that
+       `swiss_search` carried before Task 10. Same meaning, same hard filter; it survives
+       because a registered client that has not been updated has no other way to state a
+       subject, and an explicit statement from the caller must outrank a guess made on
+       its behalf. `topic_decided_by` reports when a request arrived on this rung.
     3. `classify_topics` -- the local fallback, used only when the caller said nothing.
+
+    Rung 3 classifies `build_search_query(request).dense`, not the raw question: that is
+    the caller's English rendering when there is one, and the classifier compares against
+    English category descriptions. ADR 0004's whole complaint is that a German question
+    against an English description decides on margins of 0.008; feeding it English when
+    English was supplied removes that coin-flip from the fallback path too. With no
+    English fields the dense text *is* the verbatim question, so an un-updated client
+    gets exactly the pre-Task-10 behaviour.
 
     Returns sorted ids so the applied filter is deterministic whatever PYTHONHASHSEED is
     (ADR 0004 commits probes to determinism), and an empty tuple to mean *no constraint*
@@ -160,4 +188,4 @@ def resolve_topics(request: QueryRequest, embedder: Embedder) -> tuple[str, ...]
         return tuple(sorted(set(request.topics)))
     if request.categories:
         return tuple(sorted(set(request.categories)))
-    return classify_topics(request.question, embedder)
+    return classify_topics(build_search_query(request).dense, embedder)

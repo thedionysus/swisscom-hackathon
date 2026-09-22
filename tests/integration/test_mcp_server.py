@@ -57,6 +57,10 @@ async def test_lists_expected_tools(server):
     names = {t.name for t in tools.tools}
     assert names == {"swiss_resolve_location", "swiss_search", "swiss_get_document",
                      "swiss_list_categories", "swiss_coverage", "swiss_suggest_source"}
+    # The count as well as the names: a set comparison says nothing about a tool
+    # registered twice, and Task 10's plan asks for the six registrations to be pinned
+    # rather than checked by hand in an MCP client.
+    assert len(tools.tools) == 6
 
 
 async def test_search_returns_results_with_notice(server):
@@ -259,3 +263,99 @@ async def test_swiss_get_document_never_hands_back_generated_context(server):
     data = await call(server, "swiss_get_document", {"document_id": chunk["document_id"]})
     assert data["chunks"], "nothing came back, so nothing was actually checked"
     assert GENERATED not in json.dumps(data)
+
+
+# --- the swiss_search contract ADR 0004 asks for (Task 10) ------------------------------
+#
+# The calling model supplies the question as written, the question in English, and a short
+# English description of the topic. These check the tool boundary: that the three text
+# fields and `topics` are on the signature, that the response says which of them were used,
+# and that a client still on the old contract degrades rather than breaks.
+
+DE = "Wo darf mein Hund frei laufen?"
+EN = "Where may my dog run off leash?"
+DOG_TOPIC = "off-leash dog zones and leash rules"
+
+
+async def test_search_accepts_the_english_query_fields_and_reports_them(server):
+    data = await call(server, "swiss_search", {
+        "question": DE, "question_en": EN, "topic_en": DOG_TOPIC,
+        "location": "Wiedikon", "topics": ["dogs"],
+    })
+    assert data["status"] == "results"
+    assert data["query_fields"] == ["question_en", "topic_en"]
+    assert data["topic_decided_by"] == "topics"
+    assert data["categories_used"] == ["dogs"]
+
+
+async def test_search_without_question_en_reports_the_degraded_path(server):
+    """An un-updated client gets an answer, and the response tells anyone reading it that
+    a German question was matched against an English index."""
+    data = await call(server, "swiss_search",
+                      {"question": DE, "location": "Wiedikon", "topics": ["dogs"]})
+    assert data["status"] == "results"
+    assert data["query_fields"] == ["question"]
+
+
+async def test_search_still_accepts_the_deprecated_categories_field(server):
+    """ADR 0004 accepts that registered clients must be updated; it does not accept that
+    an un-updated one gets a schema error instead of an answer. `categories` keeps
+    filtering, under its own name in the report so the deprecation is visible."""
+    data = await call(server, "swiss_search",
+                      {"question": "leash", "location": "Wiedikon", "categories": ["dogs"]})
+    assert data["status"] == "results"
+    assert data["topic_decided_by"] == "categories"
+    assert data["categories_used"] == ["dogs"]
+
+
+async def test_topics_outrank_the_deprecated_categories_field(server):
+    data = await call(server, "swiss_search", {
+        "question": "leash", "location": "Wiedikon",
+        "topics": ["dogs"], "categories": ["waste"],
+    })
+    assert data["categories_used"] == ["dogs"]
+    assert data["topic_decided_by"] == "topics"
+
+
+async def test_search_schema_advertises_the_new_contract(server):
+    """What a calling model actually reads. `question` stays the only required field, so
+    the three additions cannot break a client that sends nothing new."""
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    search = next(t for t in tools.tools if t.name == "swiss_search")
+    assert {"question", "question_en", "topic_en", "topics"} <= set(search.inputSchema["properties"])
+    assert search.inputSchema.get("required", []) == ["question"]
+
+
+def _flat(description: str) -> str:
+    """A tool description with its line wrapping collapsed.
+
+    The description is a docstring, so where a sentence breaks is an accident of the
+    source line width. Asserting against the raw string would make a reflow of the
+    paragraph fail a test that is about what the description says.
+    """
+    return " ".join(description.split())
+
+
+async def test_search_description_states_what_as_of_really_does(server):
+    """The old description said `as_of` is an "ISO date to retrieve law as it stood on that
+    date". The index holds current consolidations only and has no version history (D2), so
+    that was false. The description a calling model reads must carry the correction, not
+    merely drop the claim -- a model that has seen the old contract needs telling."""
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    description = _flat(next(t for t in tools.tools if t.name == "swiss_search").description)
+    assert "no version history" in description
+    assert "does NOT retrieve law as it stood on that date" in description
+
+
+async def test_search_description_does_not_sell_distance_as_relevance(server):
+    """`distance` is published for information and nothing filters on it. A calling model
+    that reads it as a relevance score will drop good evidence, so the description has to
+    say lower-is-better and say it is not a threshold."""
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    description = _flat(next(t for t in tools.tools if t.name == "swiss_search").description)
+    assert "lower-is-better" in description
+    assert "NOT a relevance threshold" in description
+    assert "question_en + topic_en" in description

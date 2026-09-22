@@ -104,7 +104,10 @@ def build_server(settings: Settings) -> FastMCP:
     @mcp.tool(annotations=READ_ONLY)
     def swiss_search(
         question: str,
+        question_en: str | None = None,
+        topic_en: str | None = None,
         location: str | None = None,
+        topics: list[str] | None = None,
         categories: list[str] | None = None,
         as_of: str | None = None,
         limit: Annotated[int, Field(ge=MIN_LIMIT, le=MAX_LIMIT)] = 8,
@@ -114,22 +117,63 @@ def build_server(settings: Settings) -> FastMCP:
         institutional guidance) for evidence answering a question, restricted to the
         jurisdictions that apply to a location.
 
-        The location is a hard filter: only documents scoped to the location or one of its
-        parent jurisdictions (city, canton, Switzerland) are returned, most specific first.
-        If the question concerns a specific place and no location is given, the response
-        status is 'needs_location': ask the user for a city, canton, or postal code, then
-        call again. Do not guess a location.
+        Everything in the index is English, and this server never calls a model while
+        answering, so it cannot translate for you. You already read the user's question, so
+        you do the translating: send the question as written AND in English, plus a short
+        English description of the subject. Answer quality depends on it.
 
-        categories: the topic(s) the question is about, from swiss_list_categories. This is a
-        hard filter, not a hint: evidence that does not carry one of them is not returned, and
-        the status is 'no_evidence' when nothing on the path does. Supply none and the server
-        estimates the topic itself; categories_used in the response says what it filtered on,
-        and is empty when no topic constraint was applied.
-        as_of: ISO date to retrieve law as it stood on that date.
+        question: the user's question exactly as they wrote it, in their language. This is
+        what the keyword index is searched for, so the terms they actually used still count.
+        question_en: the same question in English. This, joined to topic_en by a space, is
+        what gets embedded and compared against the index. Omit it and the server embeds the
+        verbatim question against an English index instead -- that still works and still
+        returns evidence, but it matches worse. query_fields in the response lists which of
+        these fields were used, so you can see whether an answer came from the good path
+        ["question_en","topic_en"] or the degraded one ["question"].
+        topic_en: a short English description of what the question is about, e.g. "leash
+        rules for dogs in forests" or "household waste collection days". Free text, not an
+        id. It sharpens the embedded query, and when you supply no topics it is also what
+        the server's own topic classifier reads.
+
+        topics: the topic ids the question is about, from swiss_list_categories. A hard
+        filter, not a hint: evidence carrying none of them is not returned, and the status is
+        'no_evidence' when nothing on the path carries one. Supply none and the server
+        estimates them itself. categories_used says what was filtered on and is empty when no
+        topic constraint was applied; topic_decided_by says who chose it -- "topics" (you),
+        "categories" (you, on the deprecated field) or "classifier" (the server guessed).
+        categories: DEPRECATED alias for topics, kept only so clients registered before this
+        contract keep working. Same meaning, same hard filter, read only when topics is
+        empty. Send topics.
+
+        location: a hard filter. Only documents scoped to the location or one of its parent
+        jurisdictions (city, canton, Switzerland) are returned. If the question concerns a
+        specific place and no location is given, the status is 'needs_location': ask the user
+        for a city, canton, or postal code, then call again. Do not guess a location.
+
+        as_of: optional ISO date. The index holds current consolidations only and has no
+        version history, so as_of can only exclude, never reach back -- it does NOT retrieve
+        law as it stood on that date. A document is returned only if it records a valid_from
+        on or before the date (and no valid_to at or before it). Most indexed documents --
+        calendar records and municipal pages among them -- record no validity date at all and
+        are therefore excluded entirely by any as_of. A date earlier than the oldest indexed
+        version is refused with 'invalid_request' and field "as_of", naming the earliest date
+        the index can answer for. Omit as_of for what is in force now; that is the normal case.
+
         Results are evidence with citations; write the answer from them and cite the URLs.
+        Never invent URLs. Citations are ordered by tier, most specific first. Both numbers
+        on a citation are lower-is-better and neither is a relevance score:
+        - tier: hops from the asked jurisdiction up to the one the evidence applies to. 0 is
+          the asked jurisdiction itself, 1 its parent, rising to the federal root. null means
+          the chunk claimed no tier; those citations come last but are still evidence.
+        - distance: cosine distance from the chunk to the embedded query, i.e. to
+          question_en + topic_en. It moves when you reword the topic and stays put when you
+          only change the location. It is NOT a relevance threshold and nothing filters on
+          it: on this corpus it does not separate relevant from irrelevant, so do not drop a
+          citation for having a high one. null means it was never measured.
+
         Calendar-style citations (e.g. waste collections) carry event_date: the day the event
         happens. Treat an event_date before today as already passed; do not present it as the
-        next occurrence. Never invent URLs.
+        next occurrence.
 
         coverage lists, per jurisdiction on the path, how many documents are indexed; when the
         asked place has 0, say so in the answer, and repeat resolution_note when present."""
@@ -139,7 +183,8 @@ def build_server(settings: Settings) -> FastMCP:
             return _json({"status": "invalid_request", "field": "as_of",
                           "message": AS_OF_ERROR.format(value=as_of)})
         resp = core.query(QueryRequest(
-            question=question, location=location, categories=tuple(categories or ()),
+            question=question, question_en=question_en, topic_en=topic_en, location=location,
+            topics=tuple(topics or ()), categories=tuple(categories or ()),
             as_of=parsed_as_of, limit=limit,
         ))
         return _json(_response_to_dict(resp, response_format))
@@ -174,8 +219,9 @@ def build_server(settings: Settings) -> FastMCP:
 
     @mcp.tool(annotations=READ_ONLY)
     def swiss_list_categories() -> str:
-        """List the topic categories swiss_search filters on. Pass the ones a question is about
-        as its `categories`; evidence carrying none of them is not returned."""
+        """List the topic categories swiss_search filters on. Pass the ids a question is about
+        as its `topics`; evidence carrying none of them is not returned. (`categories` is the
+        deprecated spelling of the same parameter.)"""
         return _json({"categories": [asdict(c) for c in CATEGORIES]})
 
     @mcp.tool(annotations=READ_ONLY)
