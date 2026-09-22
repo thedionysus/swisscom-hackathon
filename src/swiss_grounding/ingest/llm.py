@@ -244,9 +244,18 @@ class FakeLLM:
 
 
 class AnthropicLLM:
+    """The real model. `messages_sent` counts what was actually put on the wire.
+
+    A description that cannot be parsed is resampled (`DESCRIBE_ATTEMPTS`), so one chunk can cost
+    two messages, and a backfill that billed one call per chunk would understate what it spent.
+    The counter is what `recontext` bills from; it counts a message it set out to send, whether or
+    not the reply was usable.
+    """
+
     def __init__(self, model: str, client: Any):
         self._model = model
         self._client = client
+        self.messages_sent = 0
 
     @classmethod
     def from_api_key(cls, model: str, api_key: str) -> "AnthropicLLM":
@@ -263,6 +272,7 @@ class AnthropicLLM:
         slice of the prompt would be mostly the constant instructions, and the rest source text an
         operator has no use for in a log.
         """
+        self.messages_sent += 1
         message = self._client.messages.create(
             model=self._model, max_tokens=MAX_TOKENS,
             messages=[{"role": "user", "content": prompt}],

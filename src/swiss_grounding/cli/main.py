@@ -224,6 +224,9 @@ def recontext_cmd(
                                  help="report the scope and the bill, without calling or writing"),
     force: bool = typer.Option(False, "--force",
                                help="describe chunks that already carry a context"),
+    delete_emptied: bool = typer.Option(
+        False, "--delete-emptied",
+        help="erase a document the model left with no chunks, instead of reporting it"),
 ) -> None:
     """Re-enrich every stored chunk from text already in the database. No fetch, no translation.
 
@@ -236,21 +239,31 @@ def recontext_cmd(
                               settings.embedding_dim)
     llm = build_llm(settings.llm_backend, settings.llm_model, settings.anthropic_api_key)
     with connect(settings.database_url) as conn:
-        report = recontext_all(conn, llm, embedder, dry_run=dry_run, force=force)
+        report = recontext_all(conn, llm, embedder, dry_run=dry_run, force=force,
+                               delete_emptied=delete_emptied)
     for source in report.by_source:
         typer.echo(
             f"{source.source_id}: examined={source.examined} updated={source.updated} "
-            f"skipped={source.skipped} deleted={source.deleted_chunks} failed={source.failed} "
+            f"skipped={source.skipped} deleted={source.deleted_chunks} "
+            f"emptied={source.emptied_documents} failed={source.failed} "
             f"calls={source.describe_calls + source.summary_calls}"
         )
+    verb = "deleted" if delete_emptied else "left standing with no chunks"
+    for document in report.emptied:
+        typer.echo(f"  {verb}: document {document.document_id} ({document.source_id}) {document.url}")
     for error in report.errors:
         typer.echo(f"  ! {error.url}: {error.reason}", err=True)
+    calls = report.describe_calls + report.summary_calls
+    # A dry run cannot know which replies the model will answer unusably, and each of those costs
+    # a resample (`llm.DESCRIBE_ATTEMPTS`), so its projection is a floor and says so.
+    billed = f"calls>={calls} (a lower bound: an unusable reply is resampled once)" if dry_run \
+        else f"calls={calls}"
     prefix = "dry run: " if dry_run else ""
     typer.echo(
         f"{prefix}examined={report.examined} updated={report.updated} skipped={report.skipped} "
         f"deleted={report.deleted_chunks} failed={report.failed} "
-        f"deleted_documents={report.deleted_documents} "
-        f"calls={report.describe_calls + report.summary_calls} "
+        f"emptied_documents={report.emptied_documents} "
+        f"deleted_documents={report.deleted_documents} {billed} "
         f"(describe={report.describe_calls} summary={report.summary_calls})"
     )
 
