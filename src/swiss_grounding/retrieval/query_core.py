@@ -10,14 +10,13 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORY_IDS
 from swiss_grounding.retrieval.cite import build_citation
 from swiss_grounding.retrieval.coverage import coverage_rows, resolution_note
-from swiss_grounding.retrieval.diversify import PER_SERIES_CAP, UPCOMING_CALENDAR_CAP, diversify
+from swiss_grounding.retrieval.diversify import diversify
 from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
 from swiss_grounding.retrieval.rerank import RerankWeights, rerank
 from swiss_grounding.retrieval.search import hybrid_search
 
 CANDIDATE_TOP_N = 50
-PER_DOCUMENT_CAP = 2
 MAX_LIMIT = 25
 NEEDS_LOCATION_MESSAGE = (
     "No location was given and none was recognised in the question. "
@@ -95,10 +94,9 @@ class QueryCore:
             return replace(base, message=f"No indexed evidence for {label} or its parent jurisdictions.")
         ranked = rerank(hits, self.tree, resolved.location.id, request.categories, self.weights,
                         today=lambda: today)
-        chosen = diversify(
-            ranked, limit=limit, per_document_cap=PER_DOCUMENT_CAP, per_series_cap=PER_SERIES_CAP,
-            upcoming_calendar_cap=UPCOMING_CALENDAR_CAP, today=today,
-        )
+        # per_document_cap, per_series_cap, and upcoming_calendar_cap all take diversify()'s
+        # own defaults here; there is no query_core-specific override.
+        chosen = diversify(ranked, limit=limit, today=today)
         citations = tuple(build_citation(s, self.tree) for s in chosen)
         return replace(base, status="results", citations=citations)
 

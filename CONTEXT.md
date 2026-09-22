@@ -23,7 +23,7 @@ The part of a search result that states, per extent on the path, whether any ind
 _Avoid_: Fallback notice, warning
 
 **Calendar evidence**:
-A chunk that describes one dated event, such as a waste collection on a given day. Ranked by nearness to today among future events; past events stay visible but sink to the bottom.
+A chunk that describes one dated event, such as a waste collection on a given day. Ranked by nearness to today among future events; past events stay visible but sink to the bottom. "Upcoming" is used interchangeably with "future" for this evidence, including in code (e.g. `UPCOMING_CALENDAR_CAP`).
 _Avoid_: Schedule entry, event record
 
 **Commune register**:
