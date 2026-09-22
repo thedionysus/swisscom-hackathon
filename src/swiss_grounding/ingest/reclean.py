@@ -108,6 +108,23 @@ def _summarise(
     )
 
 
+def delete_documents(conn: psycopg.Connection, document_ids: Sequence[int]) -> None:
+    """Erase documents and the audit rows that point at them, per this module's two treatments.
+
+    Public because `recontext` empties documents too -- a page the model judges furniture from
+    top to bottom -- and the foreign keys that have to be cleared first are decided here, not
+    there. Written twice they could be fixed once, and `coverage_rows` counts documents, so a
+    document left behind with no chunks would keep reporting coverage it can no longer serve.
+    """
+    if not document_ids:
+        return
+    ids = list(document_ids)
+    conn.execute(DELETE_CHANGES_OF_DROPPED_DOCUMENTS, (ids,))
+    conn.execute(CLEAR_PREVIOUS_DOCUMENT_ID, (ids,))
+    conn.execute(CLEAR_SUPERSEDED_BY, (ids,))
+    conn.execute(DELETE_DOCUMENTS, (ids,))
+
+
 def reclean_all(conn: psycopg.Connection, dry_run: bool = False) -> RecleanReport:
     """Delete every boilerplate chunk (`is_boilerplate`) and any document left with none.
 
@@ -133,10 +150,6 @@ def reclean_all(conn: psycopg.Connection, dry_run: bool = False) -> RecleanRepor
 
     if not dry_run:
         conn.execute(DELETE_CHUNKS, ([row["id"] for row in boilerplate],))
-        if empty_document_ids:
-            conn.execute(DELETE_CHANGES_OF_DROPPED_DOCUMENTS, (empty_document_ids,))
-            conn.execute(CLEAR_PREVIOUS_DOCUMENT_ID, (empty_document_ids,))
-            conn.execute(CLEAR_SUPERSEDED_BY, (empty_document_ids,))
-            conn.execute(DELETE_DOCUMENTS, (empty_document_ids,))
+        delete_documents(conn, empty_document_ids)
 
     return RecleanReport(examined=examined, by_source=_summarise(boilerplate, empty_document_ids))
