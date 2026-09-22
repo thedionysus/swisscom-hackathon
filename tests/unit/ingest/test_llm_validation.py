@@ -106,9 +106,16 @@ def test_a_tag_with_a_non_numeric_confidence_is_rejected():
         parse_tags(raw, KNOWN)
 
 
-def test_a_missing_confidence_on_an_unknown_id_is_still_rejected():
-    """Unknown ids are dropped, but a malformed item is malformed output whatever id it carries."""
-    raw = json.dumps({"categories": [{"id": "unicorns"}]})
+def test_an_unknown_id_is_discarded_before_its_confidence_is_judged():
+    """A category we do not have cannot reach storage under any ordering, so its confidence is never
+    read. Judging it first would fail a whole document over an item that was irrelevant anyway."""
+    raw = json.dumps({"categories": [{"id": "unicorns"}, {"id": "dogs", "confidence": 0.4}]})
+    assert parse_tags(raw, KNOWN) == (CategoryTag("dogs", 0.4),)
+
+
+def test_a_boolean_confidence_is_rejected():
+    """`float(True)` is 1.0: a bool would become maximum confidence from a model that stated none."""
+    raw = json.dumps({"categories": [{"id": "dogs", "confidence": True}]})
     with pytest.raises(EnrichmentError, match="confidence"):
         parse_tags(raw, KNOWN)
 

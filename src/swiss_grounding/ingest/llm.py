@@ -30,7 +30,7 @@ class LLM(Protocol):
     def classify(self, title: str, text: str, categories: Sequence[Category]) -> tuple[CategoryTag, ...]: ...
 
 
-def _confidence(item: Any, raw: str) -> float:
+def _confidence(item: dict, raw: str) -> float:
     """How sure the model says it is, clamped to [0, 1].
 
     A tag with no stated confidence is malformed output, not a zero-confidence tag: confidence is
@@ -38,8 +38,11 @@ def _confidence(item: Any, raw: str) -> float:
     about to become a hard filter. We do not invent a constraint the model never asserted.
     """
     try:
-        value = float(item["confidence"])
-    except (KeyError, IndexError, TypeError, ValueError) as exc:
+        stated = item["confidence"]
+        if isinstance(stated, bool):  # bool is an int, and float(True) is full confidence
+            raise TypeError("confidence is a boolean, not a number")
+        value = float(stated)
+    except (KeyError, TypeError, ValueError) as exc:
         raise EnrichmentError(f"tag without a usable confidence: {raw[:MAX_ERROR_CHARS]!r}") from exc
     return min(MAX_CONFIDENCE, max(MIN_CONFIDENCE, value))
 
@@ -50,6 +53,9 @@ def parse_tags(raw: str, known_ids: Sequence[str]) -> tuple[CategoryTag, ...]:
     An empty category list is an answer -- the model saying none apply -- and comes back as an empty
     tuple. Output that cannot be read as that answer raises instead, so a document with no usable
     tags is retried rather than falling through to its source's declared categories.
+
+    Unknown ids are discarded before their confidence is read: a category we do not have cannot
+    reach storage either way, so a malformed one is no reason to fail the whole document.
     """
     cleaned = FENCE_RE.sub("", raw.strip())
     try:
@@ -60,10 +66,9 @@ def parse_tags(raw: str, known_ids: Sequence[str]) -> tuple[CategoryTag, ...]:
         raise EnrichmentError(f"unparseable tag response: {raw[:MAX_ERROR_CHARS]!r}") from exc
     tags = []
     for item in items:
-        confidence = _confidence(item, raw)
-        cid = item.get("id")
+        cid = item.get("id") if isinstance(item, dict) else None
         if cid in known_ids:
-            tags.append(CategoryTag(id=cid, confidence=confidence))
+            tags.append(CategoryTag(id=cid, confidence=_confidence(item, raw)))
     return tuple(tags)
 
 

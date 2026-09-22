@@ -13,8 +13,15 @@ ENGLISH = "en"
 
 
 def _translate_sections(doc: FetchedDocument, llm: LLM) -> tuple[Section, ...]:
-    """A section with no text is left alone: the model is not asked to translate nothing, and an
-    empty reply to a real section is a failure rather than a section quietly lost."""
+    """Translate each section, leaving a section that has no text alone.
+
+    This guard exists so that a blank section in the *source* never becomes an enrichment failure.
+    A source-side blank is a source artifact, not a translation that came back empty, and failing a
+    whole document over one would be the wrong response; the model is simply not asked to translate
+    nothing. Chunking then skips it, and an empty reply to a section that did have text still fails
+    the document, which is the case this pair of guards is really about. Do not delete this as
+    redundant with the fetchers' own guards: it is what keeps the two cases distinguishable.
+    """
     if doc.language == ENGLISH:
         return doc.sections
     return tuple(

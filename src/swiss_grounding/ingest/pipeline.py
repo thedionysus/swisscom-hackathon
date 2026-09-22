@@ -8,7 +8,7 @@ from swiss_grounding.ingest.enrich import enrich
 from swiss_grounding.ingest.fetch_state import load_known
 from swiss_grounding.ingest.fetchers.base import Fetcher
 from swiss_grounding.ingest.llm import LLM
-from swiss_grounding.ingest.models import FetchError
+from swiss_grounding.ingest.models import EnrichmentError, FetchError
 from swiss_grounding.ingest.persist import mark_withdrawn, persist_document, touch_unchanged
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORIES
@@ -55,6 +55,10 @@ def run_ingest(conn: psycopg.Connection, source: Source, fetcher: Fetcher, llm: 
             with conn.transaction():
                 enriched = enrich(fetched, source, tree, llm, CATEGORIES)
                 chunks = chunk_sections(fetched.sections, enriched.sections_en, limits)
+                if not chunks:
+                    # Persisting it would add a document no search can return, and report it as
+                    # added. A document with nothing to index is a per-document failure instead.
+                    raise EnrichmentError(f"no chunkable text in {len(fetched.sections)} sections")
                 outcome = persist_document(conn, enriched, chunks, embedder, run_id)
         except Exception as exc:
             log.exception("ingest failed source=%s url=%s", source.id, fetched.url)

@@ -199,3 +199,13 @@ def test_event_date_is_none_when_missing_or_malformed():
     assert result.errors == ()
     plain = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=FEED)))
     assert ApiFetcher(http=plain).fetch(source(), {}).documents[0].event_date is None
+
+
+def test_a_record_that_renders_no_text_is_an_error_not_an_empty_section():
+    """Every other fetcher refuses to build a section with no text; this one does too."""
+    feed = {"result": {"records": [{"id": "x", "zip": "8003", "type": "paper", "date": "2026-10-09", "note": ""}]}}
+    cfg = {**source().fetch_config, "text_template": "{note}"}
+    http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
+    result = ApiFetcher(http=http).fetch(source().model_copy(update={"fetch_config": cfg}), {})
+    assert result.documents == ()
+    assert result.errors[0].url.endswith("#x") and "no text" in result.errors[0].reason
