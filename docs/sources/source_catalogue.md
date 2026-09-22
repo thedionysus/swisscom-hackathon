@@ -182,9 +182,10 @@ Tages-Anzeiger and 20 Minuten articles (commercial media; 20min forbids automate
 
 | Fetcher | Entries | Tracking |
 |---|---|---|
-| `FedlexFetcher` extensions (English, history, taxonomy) | 1, 2, 3 | issue for the English editions; taxonomy and history to file |
-| `cantonal_law_api` (official portals, LexFind enumeration) | 5, 6, 7 | #37 (to be updated with the portal route) |
+| `FedlexFetcher` extensions (English #43 / PR #41; taxonomy, history, formats #46) | 1, 2, 3, 4 | #43, #46 |
+| `cantonal_law_api` (official portals, LexFind enumeration) | 5, 6, 7 | #37 (comment points to the portal route), #44 for the authority rule |
 | `amtsblatt` (XML) | 8 | #39 |
 | `api` pagination | 9, 10, 11, 13 | #38 |
-| `api` YAML only | 9, 10, 11, 12, 15 | sources branch |
-| parliament / opencaselaw decisions | 13, 14 | to file after the routing rules land |
+| `api` / `pdf` YAML only | 9, 10, 11, 12, 15 | #45 (per-source config) |
+| parliament / opencaselaw decisions + relation table | 13, 14 | #47 |
+| authority and extent routing (ADR 0003) | all | #44 / PR #42 |
