@@ -163,6 +163,7 @@ def test_a_document_described_into_nothing_is_skipped(url):
         title_en="Nav", document_text_en="Navigation menu.", llm=FakeLLM(), categories=CATEGORIES,
     )
     with connect(url) as conn:
-        outcome = persist_document(conn, furniture, described, EMB, run_id="r1")
+        outcome = persist_document(conn, furniture, described.kept, EMB, run_id="r1")
         stored = conn.execute("select count(*) as n from document").fetchone()["n"]
-    assert described == () and outcome.change_type == "skipped" and stored == 0
+    assert described.kept == () and len(described.dropped) == 2
+    assert outcome.change_type == "skipped" and stored == 0

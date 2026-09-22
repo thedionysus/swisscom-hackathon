@@ -7,9 +7,13 @@ content, so it must be excluded at ingestion.
 The model's judgement (`ingest/context.py`) supersedes this predicate in *reach*, not in
 authority. It sees every chunk and can call anything furniture; this predicate sees two exact
 headings and is consulted first, because a chunk headed `Navigation` is furniture beyond
-argument and a call spent confirming it is a call wasted -- 79 of the corpus's chunks carry
-one of these two headings. Where the two could disagree, the model is never asked. That is
-deliberate: the only disagreement possible is the model wanting to keep a navigation menu.
+argument and a call spent confirming it is a call wasted. Where the two could disagree, the
+model is never asked. That is deliberate: the only disagreement possible is the model wanting
+to keep a navigation menu.
+
+The saving is for future crawls, not for the backfill: `reclean` has already deleted the 79
+chunks that carried these headings, so the predicate now matches nothing in the stored corpus
+and every one of its chunks reaches the model.
 
 `text_en` is accepted and not consulted. It is kept because `reclean` passes it and because a
 later rule may want it, not because these rules read it.

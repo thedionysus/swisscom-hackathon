@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from collections.abc import Sequence
 from typing import Any, Protocol
@@ -6,6 +7,8 @@ from typing import Any, Protocol
 from swiss_grounding.ingest.errors import EnrichmentError
 from swiss_grounding.ingest.models import CategoryTag, ChunkContext
 from swiss_grounding.registry.categories import Category
+
+log = logging.getLogger(__name__)
 
 MAX_TOKENS = 4096
 FAKE_KEYWORD_CONFIDENCE = 0.9
@@ -23,6 +26,11 @@ MAX_ERROR_CHARS = 200
 MIN_TERM_CHARS = 5
 MAX_TITLE_CHARS = 120
 FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
+# The outermost {...}: a model that wraps its JSON in "Here is the JSON:" and a sign-off
+# has answered, and greedy matching takes the whole object rather than a nested one.
+JSON_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
+# One resample of a description before the document is abandoned. See `describe`.
+DESCRIBE_ATTEMPTS = 2
 
 TRANSLATE_PROMPT = (
     "Translate the following {language} text to English. Preserve paragraph breaks, numbering, "
@@ -42,21 +50,30 @@ DESCRIBE_PROMPT = (
     '- "context": one or two sentences saying which document this chunk comes from and what this '
     "chunk itself covers. Keep any term from the original wording that has no English equivalent, "
     "spelled as in the original. Do not quote the chunk back.\n"
-    '- "categories": zero or more of the categories below that this chunk is about. Name none if '
-    "none apply.\n"
+    '- "categories": every one of the categories below that this chunk is about, and none that it '
+    "is not.\n"
     '- "boilerplate": true when the chunk is page furniture -- a navigation menu, a list of links, '
     "a postal address, opening hours, a cookie or accessibility notice, an error page -- rather "
-    "than substance a question could be answered from.\n\n"
+    "than substance a question could be answered from.\n"
+    "Always include all three keys. Use an empty list for categories when none applies, rather "
+    "than leaving the key out, and true or false unquoted for boilerplate. Reply with the JSON "
+    "object alone: no preamble, no explanation, no code fence.\n\n"
     "Categories:\n{categories}\n\n"
     "Document: {summary}\n\nSection heading: {heading}\n\n"
     "Chunk (English):\n{text_en}\n\nChunk (original wording):\n{text_original}"
+)
+# What stands where the original wording would be for a chunk that has none of its own. Said
+# rather than left blank, so the model does not read silence as "this chunk had no original".
+NO_PARALLEL_ORIGINAL = (
+    "unavailable -- this chunk is one piece of a longer section, and the section's original "
+    "wording does not line up with it. Work from the English alone."
 )
 
 
 class LLM(Protocol):
     def translate(self, text: str, source_language: str) -> str: ...
     def summarise(self, title_en: str, text_en: str) -> str: ...
-    def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str,
+    def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str | None,
                  categories: Sequence[Category]) -> ChunkContext: ...
 
 
@@ -101,15 +118,24 @@ def _tags(items: Any, known_ids: Sequence[str]) -> tuple[CategoryTag, ...]:
     return tuple(tags)
 
 
-def _decode(raw: str) -> dict[str, Any]:
-    """Strip any code fence and read the response as a JSON object, or fail showing what came back."""
+def _decode(raw: str, call: str) -> dict[str, Any]:
+    """Read the response as a JSON object, or fail saying which call and what came back.
+
+    Prose around the object is tolerated. A preamble is the model being chatty, not the model
+    refusing, and one chatty reply should not discard the hundred-odd paid calls already made
+    for the document it belongs to. Output with no object in it at all still fails.
+    """
     cleaned = FENCE_RE.sub("", raw.strip())
+    found = JSON_OBJECT_RE.search(cleaned)
     try:
-        body = json.loads(cleaned)
+        if found is None:
+            raise ValueError("no JSON object in the response")
+        body = json.loads(found.group())
         if not isinstance(body, dict):
             raise TypeError(f"response is {type(body).__name__}, not an object")
     except (ValueError, TypeError) as exc:
-        raise EnrichmentError(f"unparseable description response: {raw[:MAX_ERROR_CHARS]!r}") from exc
+        raise EnrichmentError(
+            f"unparseable response for {call}: {raw[:MAX_ERROR_CHARS]!r}") from exc
     return body
 
 
@@ -154,7 +180,7 @@ def _categories(body: dict[str, Any]) -> Any:
         raise EnrichmentError("the model named no categories key at all") from exc
 
 
-def parse_description(raw: str, known_ids: Sequence[str]) -> ChunkContext:
+def parse_description(raw: str, known_ids: Sequence[str], call: str = "a description") -> ChunkContext:
     """Parse the JSON description response into context, topics and a boilerplate verdict.
 
     A chunk judged boilerplate is discarded, so nothing but that verdict is ever read from it and
@@ -162,7 +188,7 @@ def parse_description(raw: str, known_ids: Sequence[str]) -> ChunkContext:
     its way to the bin fail the whole document, losing the articles around it -- which is the
     opposite of what this exemption is for. The verdict itself is validated as strictly as ever.
     """
-    body = _decode(raw)
+    body = _decode(raw, call)
     if _boilerplate_verdict(body):
         return ChunkContext(context_en="", topics=(), boilerplate=True)
     return ChunkContext(
@@ -193,9 +219,9 @@ class FakeLLM:
     def summarise(self, title_en: str, text_en: str) -> str:
         return f"the document {title_en!r}"
 
-    def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str,
+    def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str | None,
                  categories: Sequence[Category]) -> ChunkContext:
-        term = _untranslated_term(text_en, text_original)
+        term = _untranslated_term(text_en, text_original or "")
         context = f"From {summary_en}. This section covers {heading_path}."
         if term:
             context += f" Original term: {term}."
@@ -251,22 +277,47 @@ class AnthropicLLM:
                          call=f"a translation from {source_language} of {len(text)} characters")
 
     def summarise(self, title_en: str, text_en: str) -> str:
-        """One call per document: what its chunks all say they come from."""
+        """One call per document: what its chunks all say they come from.
+
+        An untitled document is refused rather than summarised. Every chunk of the document
+        repeats this summary, so one built from a blank title would assert, N times over, a
+        subject nothing established -- and there is a stored Fedlex document with exactly that.
+        """
+        if not title_en.strip():
+            raise EnrichmentError("cannot summarise a document with no title")
         return self._ask(
             SUMMARISE_PROMPT.format(title=title_en, text=text_en[:MAX_SUMMARY_CHARS]),
             call=f"the summary of {title_en[:MAX_TITLE_CHARS]!r}",
         )
 
-    def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str,
+    def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str | None,
                  categories: Sequence[Category]) -> ChunkContext:
-        """One call per chunk: its context, its topics and whether it is page furniture."""
+        """One call per chunk: its context, its topics and whether it is page furniture.
+
+        Resampled once if the reply cannot be read. A model's output is not deterministic, so a
+        second sample is the cheapest recovery there is, and the alternative is losing every call
+        already paid for in this document -- around a hundred and twelve of them for a Fedlex act,
+        which is one transaction. The SDK's own retries cover transport; this covers the reply.
+        """
+        call = f"the description of chunk {heading_path[:MAX_TITLE_CHARS]!r}"
+        prompt = self._describe_prompt(summary_en, heading_path, text_en, text_original, categories)
+        known_ids = tuple(c.id for c in categories)
+        for attempt in range(1, DESCRIBE_ATTEMPTS + 1):
+            try:
+                return parse_description(self._ask(prompt, call=call), known_ids, call=call)
+            except EnrichmentError as exc:
+                if attempt == DESCRIBE_ATTEMPTS:
+                    raise
+                log.warning("resampling %s after an unusable reply: %s", call, exc)
+        raise AssertionError("unreachable: the final attempt either returns or raises")
+
+    @staticmethod
+    def _describe_prompt(summary_en: str, heading_path: str, text_en: str,
+                         text_original: str | None, categories: Sequence[Category]) -> str:
         listing = "\n".join(f"- {c.id}: {c.label} ({c.description})" for c in categories)
-        raw = self._ask(
-            DESCRIBE_PROMPT.format(categories=listing, summary=summary_en, heading=heading_path,
-                                   text_en=text_en, text_original=text_original[:MAX_ORIGINAL_CHARS]),
-            call=f"the description of chunk {heading_path[:MAX_TITLE_CHARS]!r}",
-        )
-        return parse_description(raw, tuple(c.id for c in categories))
+        original = NO_PARALLEL_ORIGINAL if text_original is None else text_original[:MAX_ORIGINAL_CHARS]
+        return DESCRIBE_PROMPT.format(categories=listing, summary=summary_en, heading=heading_path,
+                                      text_en=text_en, text_original=original)
 
 
 def build_llm(backend: str, model: str, api_key: str | None) -> LLM:

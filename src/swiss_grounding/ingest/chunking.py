@@ -41,7 +41,11 @@ def chunk_sections(
     """Structure-aware chunking: one chunk per section, split only when the English exceeds the cap.
 
     The original-language text is attached whole to every piece of a split section, because the
-    citation quotes the original and article boundaries are what matter there.
+    citation quotes the original and article boundaries are what matter there. Every piece of
+    such a section is marked `original_is_parallel=False`, because that same whole original is
+    not the original *of the piece*: read as a pair with the English, piece seven of nine sits
+    beside the opening of the section. Only a caller reading the two together needs to know, and
+    only the flag tells it.
 
     A section that has text in the original but none in English lost it in translation. That is an
     error, not a chunk to skip: the section count still matches, so nothing downstream would notice
@@ -60,9 +64,11 @@ def chunk_sections(
             if orig.text.strip():
                 raise EnrichmentError(f"section {en.heading_path!r} has no English text to chunk")
             continue
-        for piece in _split(text_en, limits):
+        pieces = _split(text_en, limits)
+        for piece in pieces:
             drafts.append(ChunkDraft(
                 ordinal=len(drafts), heading_path=en.heading_path, anchor=en.anchor,
                 text_original=orig.text.strip(), text_en=piece,
+                original_is_parallel=len(pieces) == 1,
             ))
     return tuple(drafts)

@@ -91,8 +91,9 @@ create table if not exists chunk (
     -- Indexed with the text, never cited: `retrieval/cite.py` reads text_en and text_original only.
     context_en       text not null default '',
     embedding        vector({{EMBEDDING_DIM}}) not null,
-    tsv              tsvector generated always as
-                     (to_tsvector('english', btrim(context_en || ' ' || text_en))) stored,
+    -- `tsv` is deliberately absent here: the guarded block below is its sole definition, for
+    -- both a database created from scratch and one carried forward. Written in two places it
+    -- could be edited in one, which is the divergence the block itself exists to prevent.
     chunk_hash       text not null,
     extent_id        text not null references location(id),
     authority        text not null check (authority in
@@ -105,22 +106,22 @@ create table if not exists chunk (
 -- Databases created before this column existed pick it up on the next db init.
 alter table chunk add column if not exists context_en text not null default '';
 
--- `tsv` must cover the generated context as well as the text (ADR 0005), and a database created
--- before that change keeps the old definition: `create table if not exists` above skips an
--- existing table, so editing the inline definition reaches fresh databases only. A generated
--- column cannot be altered in place, so it is dropped and rebuilt -- which also drops
--- `chunk_tsv_idx`, defined over it, so that is recreated here too.
+-- The one definition of `tsv`, which must cover the generated context as well as the text
+-- (ADR 0005). It is here rather than inline in `create table` because `create table if not
+-- exists` skips an existing table: an inline definition would reach databases created from
+-- scratch and never the one already holding the corpus. A generated column cannot be altered
+-- in place, so an existing one is dropped and rebuilt -- which also drops `chunk_tsv_idx`,
+-- defined over it, recreated below.
 --
 -- The guard reads the column's own stored expression rather than merely checking that `tsv`
--- exists: the column exists in both the old and the new shape, and only the expression tells
--- them apart. A database already on the new definition falls through untouched, which is what
--- keeps `db init` idempotent -- rebuilding on every run would rewrite the whole table each time.
+-- exists: on a database carried forward the column exists in both the old and the new shape,
+-- and only the expression tells them apart. A database already on the new definition falls
+-- through untouched, which is what keeps `db init` idempotent -- rebuilding on every run would
+-- rewrite the whole table each time.
 --
--- It is a substring test, so it carries a database forward across the one change it was written
--- for and no other: a later definition that still mentions `context_en` will not trigger a
--- rebuild, and whoever makes that change has to widen this test themselves. The definition below
--- is also written twice, here and inline in `create table` above; they must stay identical, and
--- `tests/integration/test_schema_context.py` compares a database made by each.
+-- It is a substring test, so it carries a database across the one change it was written for and
+-- no other: a later definition that still mentions `context_en` will not trigger a rebuild, and
+-- whoever makes that change has to widen this test with it.
 do $$
 declare
     stored_definition text;

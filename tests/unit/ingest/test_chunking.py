@@ -55,3 +55,20 @@ def test_a_dropped_section_is_an_error_not_a_silent_loss():
     """An article whose translation came back empty must fail the document, not vanish from it."""
     with pytest.raises(EnrichmentError):
         chunk_sections(original=(sec("Art. 1", "Text"),), english=(sec("Art. 1", "   "),), limits=ChunkLimits())
+
+
+def test_an_unsplit_sections_chunk_carries_the_original_that_matches_it():
+    chunks = chunk_sections((sec("A", "kurz"),), (sec("A", "short"),), ChunkLimits())
+    assert chunks[0].original_is_parallel is True
+
+
+def test_no_piece_of_a_split_section_claims_a_matching_original():
+    """The whole section's original is attached to every piece, which is right for a citation and
+    wrong for anything that reads the two as a pair: piece 7 of 9 sits beside the German opening
+    of the section. Only the flag makes the difference visible to a reader of the draft."""
+    long_en = " ".join(f"sentence{i}." for i in range(60))
+    chunks = chunk_sections((sec("A", "der ganze deutsche Abschnitt"),), (sec("A", long_en),),
+                            ChunkLimits(max_chars=200, overlap_chars=40))
+    assert len(chunks) > 1
+    assert [c.original_is_parallel for c in chunks] == [False] * len(chunks)
+    assert all(c.text_original == "der ganze deutsche Abschnitt" for c in chunks)  # citation is unaffected
