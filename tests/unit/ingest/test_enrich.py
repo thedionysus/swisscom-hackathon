@@ -1,6 +1,6 @@
-from swiss_grounding.ingest.enrich import enrich
-from swiss_grounding.ingest.llm import FakeLLM
-from swiss_grounding.ingest.models import FetchedDocument, Section
+from swiss_grounding.ingest.enrich import SOURCE_FALLBACK_CONFIDENCE, _merge_tags, enrich
+from swiss_grounding.ingest.llm import FAKE_KEYWORD_CONFIDENCE, FakeLLM
+from swiss_grounding.ingest.models import CategoryTag, FetchedDocument, Section
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORIES
@@ -46,10 +46,22 @@ def test_english_is_not_translated():
     assert llm.translated == [] and out.title_en == "Hunde"
 
 
-def test_source_default_categories_are_kept_and_merged_with_llm_tags():
+def test_source_categories_do_not_override_the_classifier():
+    tags = _merge_tags(defaults=("dogs", "hiking"), llm_tags=(CategoryTag("waste", 0.9),))
+    assert {t.id for t in tags} == {"waste"}
+
+
+def test_source_categories_apply_only_when_the_classifier_is_silent():
+    tags = _merge_tags(defaults=("waste",), llm_tags=())
+    assert {t.id for t in tags} == {"waste"}
+    assert tags[0].confidence == SOURCE_FALLBACK_CONFIDENCE
+    assert tags[0].confidence < 1.0        # a fallback is not a certainty
+
+
+def test_source_categories_do_not_override_the_classifier_through_enrich():
     out = enrich(fetched(language="en", text="Waste collection for dogs."), source(categories=("dogs",)), TREE, FakeLLM(), CATEGORIES)
     ids = {t.id: t.confidence for t in out.categories}
-    assert ids["dogs"] == 1.0            # source default wins at full confidence
+    assert ids["dogs"] == FAKE_KEYWORD_CONFIDENCE   # classifier's own confidence, not the source default
     assert "waste" in ids
 
 
@@ -71,7 +83,7 @@ def test_llm_tagging_false_skips_classify_and_uses_source_defaults_only():
     out = enrich(fetched(language="en", text="Waste collection for dogs."),
                  source(categories=("dogs",), llm_tagging=False), TREE, llm, CATEGORIES)
     ids = {t.id: t.confidence for t in out.categories}
-    assert ids == {"dogs": 1.0}
+    assert ids == {"dogs": SOURCE_FALLBACK_CONFIDENCE}
 
 
 def test_categories_are_sorted_by_confidence_then_id():
