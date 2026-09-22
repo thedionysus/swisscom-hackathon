@@ -14,7 +14,7 @@ FEED = {"result": {"records": [
 
 def source():
     return Source(id="open_erz", name="Open ERZ", base_url="https://openerz.example",
-                  default_extent_id="CH-ZH-261", authority="official_info", categories=("waste",),
+                  default_extent_id="CH-ZH-261", authority="official_info", authority_reason="test fixture", categories=("waste",),
                   fetch_strategy="api",
                   fetch_config={
                       "url": "https://openerz.example/api/calendar?zip=8003",
@@ -63,7 +63,7 @@ def test_id_template_builds_composite_ids():
     cfg = {"url": "https://erz.example/api", "records_path": "result", "id_template": "{waste_type}-{date}",
            "title_template": "{waste_type} in {zip}", "text_template": "{waste_type} on {date}", "language": "en"}
     src = Source(id="erz", name="ERZ", base_url="https://erz.example", default_extent_id="CH-ZH-261",
-                 authority="official_info", categories=("waste",), fetch_strategy="api", fetch_config=cfg)
+                 authority="official_info", authority_reason="test fixture", categories=("waste",), fetch_strategy="api", fetch_config=cfg)
     http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=feed)))
     result = ApiFetcher(http=http).fetch(src, {})
     assert [d.url for d in result.documents] == ["https://erz.example/api#cardboard-2026-10-02",
@@ -72,7 +72,7 @@ def test_id_template_builds_composite_ids():
 
 def _dated_source():
     return Source(id="erz", name="ERZ", base_url="https://erz.example", default_extent_id="CH-ZH-261",
-                  authority="official_info", categories=("waste",), fetch_strategy="api",
+                  authority="official_info", authority_reason="test fixture", categories=("waste",), fetch_strategy="api",
                   fetch_config={"url": "https://erz.example/api?start={today}&limit=5", "records_path": "result",
                                 "id_template": "{waste_type}-{date}", "title_template": "{waste_type}",
                                 "text_template": "{waste_type} on {date}", "language": "en"})
@@ -107,7 +107,7 @@ def _event_source(**cfg):
 
 def _start_offset_source(url="https://erz.example/api?start={start}&limit=5", start_offset_days=30):
     return Source(id="erz", name="ERZ", base_url="https://erz.example", default_extent_id="CH-ZH-261",
-                  authority="official_info", categories=("waste",), fetch_strategy="api",
+                  authority="official_info", authority_reason="test fixture", categories=("waste",), fetch_strategy="api",
                   fetch_config={"url": url, "start_offset_days": start_offset_days, "records_path": "result",
                                 "id_template": "{waste_type}-{date}", "title_template": "{waste_type}",
                                 "text_template": "{waste_type} on {date}", "language": "en"})

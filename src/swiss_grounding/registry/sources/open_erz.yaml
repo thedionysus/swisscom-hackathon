@@ -3,6 +3,7 @@ name: Open ERZ waste calendar (Stadt Zürich, PLZ 8003)
 base_url: https://openerz.metaodi.ch
 default_extent_id: CH-ZH-261-K3
 authority: official_info
+authority_reason: "Re-serves the City of Zurich open-data waste calendar (data.stadt-zuerich.ch, ERZ); the city is the publisher, OpenERZ only the transport"
 categories: [waste]
 fetch_strategy: api
 fetch_config:

@@ -72,14 +72,15 @@ def _source_id_for(url: str) -> str:
     return SOURCE_ID_RE.sub("_", _host_of(url)).strip("_")
 
 
-def _to_source(url: str, extent_id: str, authority: Authority, categories: tuple[str, ...], origin: str) -> Source:
+def _to_source(url: str, extent_id: str, authority: Authority, categories: tuple[str, ...], origin: str,
+               authority_reason: str | None = None) -> Source:
     parsed = urlparse(url)
     return Source(
         id=_source_id_for(url), name=parsed.netloc, base_url=f"{parsed.scheme}://{parsed.netloc}",
         default_extent_id=extent_id, authority=authority, categories=categories,
         fetch_strategy=FetchStrategy.HTML_CRAWL,
         fetch_config={"path_allowlist": [parsed.path or "/"], "start_paths": [parsed.path or "/"]},
-        allow_narrowing=authority not in LAW_AUTHORITIES, origin=origin,
+        allow_narrowing=authority not in LAW_AUTHORITIES, origin=origin, authority_reason=authority_reason,
     )
 
 
@@ -127,8 +128,10 @@ def review_suggestion(conn: psycopg.Connection, suggestion_id: int, approve: boo
         if not chosen_extent:
             raise ValueError("an extent_id is required to approve a non-official source")
         chosen_authority = Authority(authority or row["proposed_authority"] or Authority.INSTITUTIONAL)
+        # The reviewer's note is the stated reason when official_info is granted to a non-official host;
+        # a law authority on a crawled site is rejected by the Source validator (ADR 0003).
         source = _to_source(row["url"], chosen_extent, chosen_authority,
-                            categories or tuple(row["proposed_categories"]), "reviewed")
+                            categories or tuple(row["proposed_categories"]), "reviewed", authority_reason=note)
         upsert_sources(conn, (source,))
         source_id = source.id
     updated = conn.execute(
