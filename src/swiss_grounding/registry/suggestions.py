@@ -129,7 +129,7 @@ def review_suggestion(conn: psycopg.Connection, suggestion_id: int, approve: boo
             raise ValueError("an extent_id is required to approve a non-official source")
         chosen_authority = Authority(authority or row["proposed_authority"] or Authority.INSTITUTIONAL)
         # The reviewer's note is the stated reason when official_info is granted to a non-official host;
-        # a law authority on a crawled site is rejected by the Source validator (ADR 0003).
+        # a law authority on a crawled site is rejected by the Source validator (ADR 0007).
         source = _to_source(row["url"], chosen_extent, chosen_authority,
                             categories or tuple(row["proposed_categories"]), "reviewed", authority_reason=note)
         upsert_sources(conn, (source,))

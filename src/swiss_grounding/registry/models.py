@@ -92,7 +92,7 @@ class Source(BaseModel):
 
     @model_validator(mode="after")
     def _authority_follows_the_publisher(self) -> "Source":
-        """ADR 0003: a law authority only from a registered official law platform, at the platform's
+        """ADR 0007: a law authority only from a registered official law platform, at the platform's
         own jurisdiction and level; official_info only from an official domain unless a reason says why."""
         if self.authority in LAW_AUTHORITIES:
             platform = law_platform_extent(self.base_url)

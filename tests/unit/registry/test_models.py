@@ -18,7 +18,7 @@ def test_llm_tagging_can_be_disabled():
     assert _source(llm_tagging=False).llm_tagging is False
 
 
-# --- ADR 0003: authority follows the publisher ---------------------------------------------------
+# --- ADR 0007: authority follows the publisher ---------------------------------------------------
 
 def test_extent_level_is_read_from_the_id():
     assert extent_level_from_id("CH").value == "country"

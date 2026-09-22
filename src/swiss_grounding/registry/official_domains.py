@@ -12,7 +12,7 @@ FEDERAL_SUFFIXES: tuple[str, ...] = (".admin.ch",)
 CANTON_DOMAINS: dict[str, str] = {f"{abbr.lower()}.ch": f"CH-{abbr}" for _, abbr, *_ in CANTONS}
 SWISS_TLDS: tuple[str, ...] = (".ch", ".swiss")
 
-# Official law platforms (ADR 0003): the host that publishes the legal text itself, mapped to the
+# Official law platforms (ADR 0007): the host that publishes the legal text itself, mapped to the
 # jurisdiction whose law it holds. A law authority is accepted only from one of these, at that
 # jurisdiction. Cantonal collections hosted by a vendor (clex.ch, silgeneve.ch) are listed
 # explicitly because their host does not carry the canton's domain. Verified 2026-09-22.
