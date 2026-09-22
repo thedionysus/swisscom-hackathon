@@ -25,10 +25,14 @@ cannot carry a foreign key, so nothing breaks when an id inside one stops existi
 nothing reads them today. That silence is a decision, not an oversight: revisit only if
 something starts reading those arrays back into live chunk ids.
 
-`fetch_state` rows for recleaned URLs are left untouched on purpose. `is_boilerplate` is not
-wired into the ingestion path yet (Task 5 does that), so clearing fetch_state would make the
-next crawl treat these URLs as new, re-fetch them, and re-insert exactly the boilerplate this
-just dropped. Safe to revisit once boilerplate is excluded at ingestion time.
+`fetch_state` rows for recleaned URLs are left untouched on purpose. It was unsafe to clear
+them while boilerplate was still ingested; now that `ingest/context.py` drops it at ingestion,
+a re-fetch would end in a skipped document rather than re-inserting what this dropped, so the
+reason has changed from unsafe to merely unnecessary. Clearing them would buy a re-crawl and a
+model call per surviving chunk, and buy nothing else.
+
+This command is what ADR 0005 leaves behind for chunks already in the index. Once the backfill
+of Task 6 has run and ingestion excludes boilerplate on the way in, it has nothing left to do.
 """
 from collections import Counter
 from collections.abc import Collection, Mapping, Sequence

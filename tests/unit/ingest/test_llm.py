@@ -3,7 +3,7 @@ import json
 import pytest
 
 from swiss_grounding.ingest.errors import EnrichmentError
-from swiss_grounding.ingest.llm import AnthropicLLM, FakeLLM, build_llm, parse_tags
+from swiss_grounding.ingest.llm import AnthropicLLM, FakeLLM, build_llm, parse_description
 from swiss_grounding.ingest.models import CategoryTag
 from swiss_grounding.registry.categories import CATEGORIES
 
@@ -14,28 +14,54 @@ def test_fake_translate_is_identity():
     assert llm.translate("Hallo Welt", "de") == "Hallo Welt"
 
 
-def test_fake_classify_is_keyword_based_and_deterministic():
+def describe_with(llm, heading="Dogs in parks", text_en="Leash rules for dogs on hiking trails.",
+                  text_original="Leinenpflicht"):
+    return llm.describe(summary_en="a page about dogs", heading_path=heading, text_en=text_en,
+                        text_original=text_original, categories=CATEGORIES)
+
+
+def test_fake_describe_is_keyword_based_and_deterministic():
     llm = FakeLLM()
-    tags = llm.classify("Dogs in parks", "Leash rules for dogs on hiking trails.", CATEGORIES)
-    ids = {t.id for t in tags}
+    described = describe_with(llm)
+    ids = {t.id for t in described.topics}
     assert {"dogs", "hiking"} <= ids
-    assert all(0 < t.confidence <= 1 for t in tags)
-    assert tags == llm.classify("Dogs in parks", "Leash rules for dogs on hiking trails.", CATEGORIES)
+    assert all(0 < t.confidence <= 1 for t in described.topics)
+    assert described == describe_with(llm)
 
 
-def test_parse_tags_filters_unknown_and_clamps():
-    raw = json.dumps({"categories": [{"id": "dogs", "confidence": 1.7}, {"id": "unicorns", "confidence": 0.9}, {"id": "waste", "confidence": -1}]})
-    assert parse_tags(raw, ("dogs", "waste")) == (CategoryTag("dogs", 1.0), CategoryTag("waste", 0.0))
+def test_fake_describe_names_the_document_and_the_section():
+    described = describe_with(FakeLLM())
+    assert "a page about dogs" in described.context_en and "Dogs in parks" in described.context_en
+    assert described.boilerplate is False
 
 
-def test_parse_tags_bad_json_raises():
-    with pytest.raises(EnrichmentError, match="tag response"):
-        parse_tags("not json", ("dogs",))
+def test_fake_summarise_is_deterministic_and_names_the_title():
+    llm = FakeLLM()
+    assert llm.summarise("Animal Welfare Act", "Zweck.") == llm.summarise("Animal Welfare Act", "Zweck.")
+    assert "Animal Welfare Act" in llm.summarise("Animal Welfare Act", "Zweck.")
 
 
-def test_parse_tags_tolerates_code_fences():
-    raw = "```json\n{\"categories\": [{\"id\": \"dogs\", \"confidence\": 0.5}]}\n```"
-    assert parse_tags(raw, ("dogs",)) == (CategoryTag("dogs", 0.5),)
+def description(**overrides):
+    body = {"context": "About dogs.", "categories": [], "boilerplate": False}
+    return json.dumps({**body, **overrides})
+
+
+def test_parse_description_filters_unknown_ids_and_clamps_confidence():
+    raw = description(categories=[{"id": "dogs", "confidence": 1.7},
+                                  {"id": "unicorns", "confidence": 0.9},
+                                  {"id": "waste", "confidence": -1}])
+    assert parse_description(raw, ("dogs", "waste")).topics == (CategoryTag("dogs", 1.0),
+                                                                CategoryTag("waste", 0.0))
+
+
+def test_parse_description_bad_json_raises():
+    with pytest.raises(EnrichmentError, match="description response"):
+        parse_description("not json", ("dogs",))
+
+
+def test_parse_description_tolerates_code_fences():
+    raw = "```json\n" + description(categories=[{"id": "dogs", "confidence": 0.5}]) + "\n```"
+    assert parse_description(raw, ("dogs",)).topics == (CategoryTag("dogs", 0.5),)
 
 
 def test_build_llm_fake_and_anthropic():
@@ -57,7 +83,8 @@ def test_anthropic_backend_uses_client_and_extracts_text():
             prompt = kwargs["messages"][0]["content"]
 
             class Block:
-                text = '{"categories":[{"id":"dogs","confidence":0.8}]}' if "Categories:" in prompt else "Translated"
+                text = ('{"context":"About dogs.","categories":[{"id":"dogs","confidence":0.8}],'
+                        '"boilerplate":false}') if "Categories:" in prompt else "Translated"
 
             class Msg:
                 content = [Block()]  # noqa: RUF012
@@ -71,6 +98,7 @@ def test_anthropic_backend_uses_client_and_extracts_text():
     client = FakeClient()
     llm = AnthropicLLM(model="claude-sonnet-5", client=client)
     assert llm.translate("Hallo", "de") == "Translated"
-    tags = llm.classify("T", "text", CATEGORIES)
-    assert tags == (CategoryTag("dogs", 0.8),)
+    described = describe_with(llm, heading="T", text_en="text")
+    assert described.topics == (CategoryTag("dogs", 0.8),)
+    assert described.context_en == "About dogs."
     assert client.messages.calls[0]["model"] == "claude-sonnet-5"

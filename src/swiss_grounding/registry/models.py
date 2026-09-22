@@ -45,9 +45,11 @@ class Source(BaseModel):
     fetch_strategy: FetchStrategy
     fetch_config: dict[str, Any] = {}
     allow_narrowing: bool = False
-    # When false, enrich() skips llm.classify and tags from `categories` alone; _merge_tags never
-    # drops an LLM tag outside those defaults, so this only suits a single-category feed like a
-    # waste calendar, not a source whose documents span several categories.
+    # False means "this source needs no model judgement about what its documents are about":
+    # `context.describe_chunks` then makes no call at all, generating each chunk's context from
+    # the record template the source already renders and tagging from `categories` alone. It
+    # only suits a self-describing single-category feed such as a waste calendar; a source whose
+    # documents span several categories would keep its declared defaults and nothing else.
     llm_tagging: bool = True
     license: str | None = None
     origin: str = "seed"

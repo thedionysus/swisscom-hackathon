@@ -87,8 +87,12 @@ create table if not exists chunk (
     text_en          text not null,
     heading_path     text not null default '',
     anchor           text,
+    -- Generated description of what the document is about and what this chunk covers (ADR 0005).
+    -- Indexed with the text, never cited: `retrieval/cite.py` reads text_en and text_original only.
+    context_en       text not null default '',
     embedding        vector({{EMBEDDING_DIM}}) not null,
-    tsv              tsvector generated always as (to_tsvector('english', text_en)) stored,
+    tsv              tsvector generated always as
+                     (to_tsvector('english', btrim(context_en || ' ' || text_en))) stored,
     chunk_hash       text not null,
     extent_id        text not null references location(id),
     authority        text not null check (authority in
@@ -98,6 +102,35 @@ create table if not exists chunk (
     document_status  text not null default 'current' check (document_status in
         ('current','superseded','withdrawn','pending_enrichment'))
 );
+-- Databases created before this column existed pick it up on the next db init.
+alter table chunk add column if not exists context_en text not null default '';
+
+-- `tsv` must cover the generated context as well as the text (ADR 0005), and a database created
+-- before that change keeps the old definition: `create table if not exists` above skips an
+-- existing table, so editing the inline definition reaches fresh databases only. A generated
+-- column cannot be altered in place, so it is dropped and rebuilt -- which also drops
+-- `chunk_tsv_idx`, defined over it, so that is recreated here too.
+--
+-- The guard reads the column's own stored expression rather than merely checking that `tsv`
+-- exists: the column exists in both the old and the new shape, and only the expression tells
+-- them apart. A database already on the new definition falls through untouched, which is what
+-- keeps `db init` idempotent -- rebuilding on every run would rewrite the whole table each time.
+do $$
+declare
+    stored_definition text;
+begin
+    select pg_get_expr(ad.adbin, ad.adrelid) into stored_definition
+    from pg_attribute a
+    join pg_attrdef ad on ad.adrelid = a.attrelid and ad.adnum = a.attnum
+    where a.attrelid = 'chunk'::regclass and a.attname = 'tsv' and a.attgenerated = 's';
+
+    if stored_definition is null or stored_definition not like '%context_en%' then
+        alter table chunk drop column if exists tsv;
+        alter table chunk add column tsv tsvector generated always as
+            (to_tsvector('english', btrim(context_en || ' ' || text_en))) stored;
+    end if;
+end $$;
+
 create index if not exists chunk_extent_idx on chunk(extent_id, document_status);
 create index if not exists chunk_tsv_idx on chunk using gin (tsv);
 create index if not exists chunk_embedding_idx on chunk using hnsw (embedding vector_cosine_ops);

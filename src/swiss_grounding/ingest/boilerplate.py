@@ -2,14 +2,17 @@
 
 Heading-based rules only, per ADR 0005 (`docs/adr/0005-generated-context-steers-retrieval-and-is-never-cited.md`):
 neither topic nor similarity can separate a navigation menu or an error page body from real
-content, so it must be excluded at ingestion. A model-generated judgement (Task 5) supersedes
-this heuristic once every chunk carries a generated description; until then, `text_en` is
-accepted for a stable call signature but not yet consulted.
+content, so it must be excluded at ingestion.
 
-The two-argument signature is pinned by the plan's own unit tests below, not chosen with
-Task 5 in mind: ADR 0005 has Task 5 judge boilerplate from a *generated description* of the
-chunk, not from `text_en` itself, so this signature is probably not the one Task 5 wants.
-Read the ADR before assuming `text_en` is a head start on that work.
+The model's judgement (`ingest/context.py`) supersedes this predicate in *reach*, not in
+authority. It sees every chunk and can call anything furniture; this predicate sees two exact
+headings and is consulted first, because a chunk headed `Navigation` is furniture beyond
+argument and a call spent confirming it is a call wasted -- 79 of the corpus's chunks carry
+one of these two headings. Where the two could disagree, the model is never asked. That is
+deliberate: the only disagreement possible is the model wanting to keep a navigation menu.
+
+`text_en` is accepted and not consulted. It is kept because `reclean` passes it and because a
+later rule may want it, not because these rules read it.
 """
 
 # Exact `heading_path` values known to hold page furniture rather than content. Every producer

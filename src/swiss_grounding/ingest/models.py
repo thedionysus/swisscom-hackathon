@@ -57,22 +57,49 @@ class CategoryTag:
 
 
 @dataclass(frozen=True)
+class ChunkContext:
+    """One model call's answer about one chunk (ADR 0005).
+
+    `context_en` is a short description of what the document is about and what this chunk covers.
+    It is indexed with the text and never cited. `boilerplate` is the model's verdict that the
+    chunk is page furniture rather than evidence, and the chunk is then dropped rather than stored.
+    """
+    context_en: str
+    topics: tuple[CategoryTag, ...]
+    boilerplate: bool
+
+
+@dataclass(frozen=True)
 class EnrichedDocument:
+    """A fetched document translated to English and placed at an extent.
+
+    It carries no categories: a document's topics are the roll-up of its chunks' own topics
+    (ADR 0003), which are decided after chunking, so `persist` derives them from the chunks it
+    is writing rather than from a field that could disagree with them.
+    """
     fetched: FetchedDocument
     title_en: str
     sections_en: tuple[Section, ...]
     extent_id: str
     extent_reason: str
-    categories: tuple[CategoryTag, ...]
 
 
 @dataclass(frozen=True)
 class ChunkDraft:
+    """One chunk on its way to the index.
+
+    `chunk_sections` produces it without `context_en` or `topics`; `context.describe_chunks`
+    returns a copy carrying both. The defaults are what the two steps' split costs: they mirror
+    `chunk.context_en`'s own `not null default ''`, so an undescribed draft persists as a chunk
+    indexed on its text alone -- the behaviour before ADR 0005, never a crash or a null.
+    """
     ordinal: int
     heading_path: str
     anchor: str | None
     text_original: str
     text_en: str
+    context_en: str = ""
+    topics: tuple[CategoryTag, ...] = ()
 
 
 class ChangeType(StrEnum):
