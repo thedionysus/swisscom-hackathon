@@ -129,7 +129,33 @@ def test_coverage_is_unaffected_by_the_topic_filter(core):
     assert any(row.documents > 0 for row in off_topic.coverage)
 
 
-# The two tests below go through `hybrid_search` rather than `QueryCore.query`, because
+def test_a_question_the_classifier_declines_still_returns_everything_on_the_path(core):
+    """The end-to-end link between `resolve_topics` returning `()` and the SQL applying
+    no filter at all. It is the one path in this file that can break silently: change
+    `search.py` to send `list(topics)` rather than null for an empty tuple, or have
+    `resolve_topics` substitute some default, and this question returns nothing while
+    every other test here -- all of which state a topic -- stays green.
+
+    No stub and no real embedder are needed: FakeEmbedder at dim 8 puts the plan's own
+    question below TOPIC_FLOOR, so the classifier genuinely declines. The
+    `categories_used` assertion is a precondition rather than decoration -- if the
+    classifier ever starts having an opinion about this question, this test must fail
+    loudly instead of quietly testing nothing.
+    """
+    resp = core.query(QueryRequest(question="When is cardboard collected?", location="8003"))
+    assert resp.categories_used == ()      # precondition: no topic constraint was applied
+    assert resp.status == "results"
+    # The untagged chunk surviving is the proof. Any non-empty filter excludes it, so a
+    # filter on nothing would have left this response empty.
+    assert any(c.categories == () for c in resp.citations)
+
+
+# The three tests below go through `hybrid_search` rather than `QueryCore.query`. They
+# pin specific topic values -- one topic, several, none -- and the classifier in front of
+# `QueryCore.query` cannot be made to produce them: its thresholds are calibrated against
+# bge-m3 (see `topics.py`) and under the 8-dimension FakeEmbedder this suite runs on it
+# answers out of hash collisions. The test above covers the one case the classifier does
+# reach honestly here, so the whole path is checked end to end as well.
 # what they are about is the filter itself and `QueryCore.query` would put the topic
 # classifier in front of it. The classifier's thresholds are calibrated against bge-m3
 # (see `topics.py`); under the 8-dimension FakeEmbedder this suite must use, they are

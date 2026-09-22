@@ -91,7 +91,12 @@ def load_fixture_cmd(path: Path) -> None:
 def query_cmd(
     question: str,
     location: str | None = typer.Option(None, "--location", "-l"),
-    categories: str | None = typer.Option(None, "--categories", "-c", help="comma-separated"),
+    categories: str | None = typer.Option(
+        None, "--categories", "-c",
+        help="comma-separated topic ids. A hard filter, not a hint: evidence carrying none "
+             "of them is excluded, and a subject nothing on the path covers gives no_evidence. "
+             "Omit to let the server estimate the topic; categories_used reports what it used.",
+    ),
     as_of: str | None = typer.Option(None, "--as-of", help="ISO date"),
     limit: int = typer.Option(8, "--limit"),
     as_json: bool = typer.Option(False, "--json"),
