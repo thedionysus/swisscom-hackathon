@@ -3,7 +3,7 @@ import json
 import pytest
 
 from swiss_grounding.ingest.llm import AnthropicLLM, FakeLLM, build_llm, parse_tags
-from swiss_grounding.ingest.models import CategoryTag
+from swiss_grounding.ingest.models import CategoryTag, EnrichmentError
 from swiss_grounding.registry.categories import CATEGORIES
 
 
@@ -28,7 +28,7 @@ def test_parse_tags_filters_unknown_and_clamps():
 
 
 def test_parse_tags_bad_json_raises():
-    with pytest.raises(ValueError, match="tag response"):
+    with pytest.raises(EnrichmentError, match="tag response"):
         parse_tags("not json", ("dogs",))
 
 

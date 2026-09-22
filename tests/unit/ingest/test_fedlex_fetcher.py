@@ -1,10 +1,11 @@
 import json
 from datetime import date
 from pathlib import Path
+from urllib.parse import parse_qs
 
 import httpx
 
-from swiss_grounding.ingest.fetchers.fedlex import FedlexFetcher, parse_akoma_ntoso
+from swiss_grounding.ingest.fetchers.fedlex import FedlexFetcher, parse_act_title, parse_akoma_ntoso
 from swiss_grounding.ingest.fetchers.retry import RetryPolicy
 from swiss_grounding.ingest.models import FetchError, KnownUrl
 from swiss_grounding.registry.models import Source
@@ -12,6 +13,9 @@ from swiss_grounding.registry.models import Source
 FIX = Path(__file__).parent.parent.parent / "fixtures" / "fedlex"
 SPARQL = json.loads((FIX / "sparql_455.json").read_text())
 XML = (FIX / "sr455.xml").read_text()
+# Verified against the live endpoint: jolux:title on the abstract's language expression.
+ACT_TITLE = "Tierschutzgesetz vom 16. Dezember 2005 (TSchG)"
+DOC_TITLE = "Tierschutzgesetz"  # the <docTitle> in the Akoma Ntoso preface
 
 
 def source():
@@ -44,7 +48,7 @@ def test_fetch_builds_document_with_dates_and_identifier():
     d = result.documents[0]
     assert d.url == "https://www.fedlex.admin.ch/eli/cc/2008/414/20220101/de"
     assert d.identifier == "SR 455"
-    assert d.title == "Tierschutzgesetz (TSchG)" and d.language == "de"
+    assert d.title == ACT_TITLE and d.language == "de"
     assert d.valid_from == date(2022, 1, 1) and d.valid_to is None and d.in_force is True
     assert d.sections[1].anchor == "art_6"
 
@@ -127,3 +131,48 @@ def test_retry_backoff_uses_injected_sleep():
     http = httpx.Client(transport=httpx.MockTransport(handler))
     FedlexFetcher(http=http, retry=RetryPolicy(attempts=3, backoff_seconds=0.25), sleep=slept.append).fetch(source(), {})
     assert slept == [0.25]
+
+
+# The live endpoint carries jolux:title on the ConsolidationAbstract's language expression, not on
+# the consolidation's own expression. A query that asks the consolidation for a title gets nothing
+# back, which is how five acts came to be titled by their SR number.
+ABSTRACT_EXPRESSION = "?abstract jolux:isRealizedBy"
+
+
+def posted_query(request):
+    return parse_qs(request.content.decode())["query"][0]
+
+
+def live_like_sparql(request):
+    """Stand in for the endpoint: ?title binds only when the query reaches the abstract's expression."""
+    if "sparqlendpoint" not in str(request.url):
+        return handler_xml(request)
+    binding = dict(SPARQL["results"]["bindings"][0])
+    if ABSTRACT_EXPRESSION not in posted_query(request):
+        binding.pop("title", None)
+    return httpx.Response(200, json={"results": {"bindings": [binding]}})
+
+
+def fetch_one(handler):
+    result = FedlexFetcher(http=httpx.Client(transport=httpx.MockTransport(handler))).fetch(source(), {})
+    assert result.errors == () and len(result.documents) == 1
+    return result.documents[0]
+
+
+def test_fedlex_title_is_the_act_title_not_the_sr_number():
+    assert fetch_one(live_like_sparql).title == ACT_TITLE
+
+
+def test_parse_act_title_reads_the_akoma_ntoso_doc_title():
+    assert parse_act_title(XML) == DOC_TITLE
+    assert parse_act_title("<akomaNtoso><act><preface><p/></preface></act></akomaNtoso>") is None
+
+
+def test_title_falls_back_to_the_act_heading_when_the_endpoint_binds_none():
+    def untitled(request):
+        if "sparqlendpoint" not in str(request.url):
+            return handler_xml(request)
+        binding = {k: v for k, v in SPARQL["results"]["bindings"][0].items() if k != "title"}
+        return httpx.Response(200, json={"results": {"bindings": [binding]}})
+
+    assert fetch_one(untitled).title == DOC_TITLE

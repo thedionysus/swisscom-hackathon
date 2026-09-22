@@ -13,10 +13,13 @@ ENGLISH = "en"
 
 
 def _translate_sections(doc: FetchedDocument, llm: LLM) -> tuple[Section, ...]:
+    """A section with no text is left alone: the model is not asked to translate nothing, and an
+    empty reply to a real section is a failure rather than a section quietly lost."""
     if doc.language == ENGLISH:
         return doc.sections
     return tuple(
-        Section(heading_path=s.heading_path, anchor=s.anchor, text=llm.translate(s.text, doc.language))
+        Section(heading_path=s.heading_path, anchor=s.anchor,
+                text=llm.translate(s.text, doc.language) if s.text.strip() else s.text)
         for s in doc.sections
     )
 

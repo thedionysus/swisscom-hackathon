@@ -1,3 +1,4 @@
+import logging
 import time
 from collections.abc import Mapping
 from datetime import date
@@ -16,6 +17,8 @@ from swiss_grounding.ingest.models import (
 )
 from swiss_grounding.registry.models import Source
 
+log = logging.getLogger(__name__)
+
 SPARQL_ENDPOINT = "https://fedlex.data.admin.ch/sparqlendpoint"
 LANGUAGE_URI = {
     "de": "http://publications.europa.eu/resource/authority/language/DEU",
@@ -23,8 +26,12 @@ LANGUAGE_URI = {
     "it": "http://publications.europa.eu/resource/authority/language/ITA",
 }
 XML_FORMAT_URI = "http://publications.europa.eu/resource/authority/file-type/XML"
+DOC_TITLE_TAG = "docTitle"  # the act's own heading in the Akoma Ntoso preface
 
-# Current consolidation of one SR number in one language, with the Akoma Ntoso file URL.
+# Current consolidation of one SR number in one language, with the Akoma Ntoso file URL and the
+# act's title. The title lives on the ConsolidationAbstract's language expression (jolux:title on
+# <.../eli/cc/2008/414/de>); the consolidation's own expression carries none, which is why an
+# earlier OPTIONAL against ?expr never bound and every act was titled by its SR number.
 QUERY = """
 PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -39,7 +46,11 @@ SELECT ?abstract ?consolidation ?dateApplicability ?dateEndApplicability ?title 
   OPTIONAL { ?consolidation jolux:dateEndApplicability ?dateEndApplicability }
   ?expr jolux:language <%(lang)s> ;
         jolux:isEmbodiedBy ?manif .
-  OPTIONAL { ?expr jolux:title ?title }
+  OPTIONAL {
+    ?abstract jolux:isRealizedBy ?abstractExpr .
+    ?abstractExpr jolux:language <%(lang)s> ;
+                  jolux:title ?title .
+  }
   ?manif jolux:format <%(xml)s> ;
          jolux:isExemplifiedBy ?fileUrl .
   FILTER(!bound(?dateEndApplicability) || ?dateEndApplicability >= now())
@@ -64,9 +75,29 @@ def parse_akoma_ntoso(xml: str) -> tuple[Section, ...]:
     return tuple(sections)
 
 
+def parse_act_title(xml: str) -> str | None:
+    """The act's own name from the Akoma Ntoso preface, for when the endpoint names no title."""
+    node = BeautifulSoup(xml, "xml").find(DOC_TITLE_TAG)
+    return (node.get_text(" ", strip=True) if node else "") or None
+
+
+def _sr_label(sr: str) -> str:
+    return f"SR {sr}"
+
+
 def _value(binding: dict[str, Any], key: str) -> str | None:
     node = binding.get(key)
     return node["value"] if node else None
+
+
+def _title(binding: dict[str, Any], xml: str, sr: str) -> str:
+    """The act's name, from the endpoint or from the document itself; the SR number only if neither
+    names it, which leaves a document titled by a number and is worth a line in the log."""
+    title = _value(binding, "title") or parse_act_title(xml)
+    if title:
+        return title
+    log.warning("no act title for SR %s; falling back to the SR number", sr)
+    return _sr_label(sr)
 
 
 def _page_url(abstract_uri: str, date_applicability: str, lang: str) -> str:
@@ -118,8 +149,8 @@ class FedlexFetcher:
                 continue
             end = _value(binding, "dateEndApplicability")
             documents.append(FetchedDocument(
-                source_id=source.id, url=url, identifier=f"SR {sr}",
-                title=_value(binding, "title") or f"SR {sr}", language=lang, sections=sections,
+                source_id=source.id, url=url, identifier=_sr_label(sr),
+                title=_title(binding, xml.text, sr), language=lang, sections=sections,
                 valid_from=date.fromisoformat(date_app), valid_to=date.fromisoformat(end) if end else None,
                 in_force=end is None,
             ))
