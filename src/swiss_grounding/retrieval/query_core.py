@@ -8,6 +8,7 @@ from swiss_grounding.locations.question_scan import resolve_from_question
 from swiss_grounding.locations.resolver import LocationResolver, Resolution, canton_label
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORY_IDS
+from swiss_grounding.retrieval.as_of import as_of_rejection
 from swiss_grounding.retrieval.cite import build_citation
 from swiss_grounding.retrieval.coverage import coverage_rows, resolution_note
 from swiss_grounding.retrieval.diversify import diversify
@@ -15,7 +16,7 @@ from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
 from swiss_grounding.retrieval.no_evidence import no_evidence_message
 from swiss_grounding.retrieval.rerank import RerankWeights, rerank
-from swiss_grounding.retrieval.search import hybrid_search
+from swiss_grounding.retrieval.search import earliest_indexed_version, hybrid_search
 from swiss_grounding.retrieval.topics import resolve_topics
 
 CANDIDATE_TOP_N = 50
@@ -27,7 +28,12 @@ NEEDS_LOCATION_MESSAGE = (
 
 
 def _validate(request: QueryRequest) -> QueryResponse | None:
-    """Reject malformed requests up front. Out-of-range limits are clamped, not rejected."""
+    """Reject malformed requests up front. Out-of-range limits are clamped, not rejected.
+
+    Pure, and it stays that way: `as_of` is the one field whose validity is a property of
+    the corpus rather than of the request, so it is checked in `QueryCore._validate_as_of`
+    where a connection is available, and not here.
+    """
     if not request.question.strip():
         return QueryResponse(
             status="invalid_request", field="question",
@@ -57,6 +63,14 @@ class QueryCore:
 
     def query(self, request: QueryRequest) -> QueryResponse:
         invalid = _validate(request)
+        if invalid is not None:
+            return invalid
+        # Before resolving the location, so a request the index cannot answer for is
+        # reported as the bad field it has rather than as `needs_location`: an `as_of`
+        # the index cannot reach is unanswerable whatever the place turns out to be, and
+        # answering `needs_location` first would send the caller round a loop fixing the
+        # place only to be refused on the date afterwards.
+        invalid = self._validate_as_of(request.as_of)
         if invalid is not None:
             return invalid
         resolved = self._resolve(request)
@@ -102,7 +116,7 @@ class QueryCore:
         )
         if not hits:
             return replace(base, message=no_evidence_message(
-                resolved.location.label("en"), rows, topics,
+                resolved.location.label("en"), rows, topics, request.as_of,
             ))
         # The same topics that filtered, not `request.categories`, so the soft signal and
         # the hard filter can never disagree about what this question is about. They are
@@ -114,6 +128,25 @@ class QueryCore:
         chosen = diversify(ranked, limit=limit, today=today)
         citations = tuple(build_citation(s, self.tree) for s in chosen)
         return replace(base, status="results", citations=citations)
+
+    def _validate_as_of(self, as_of: date | None) -> QueryResponse | None:
+        """Refuse an `as_of` the index cannot reach back to (D2, `retrieval/as_of.py`).
+
+        This is the one boundary check that cannot live in `_validate`: the earliest
+        answerable date is a property of the corpus, so it has to be queried. Rather than
+        make `_validate` impure or thread a date through it, the query runs here, under a
+        connection of its own, and only for a request that actually carries a date -- the
+        rare case. That keeps the cost off every undated query and keeps the whole of
+        `query` from having to be re-indented inside one long-lived connection.
+        """
+        if as_of is None:
+            return None
+        with connect(self.database_url) as conn:
+            earliest = earliest_indexed_version(conn)
+        message = as_of_rejection(as_of, earliest)
+        if message is None:
+            return None
+        return QueryResponse(status="invalid_request", field="as_of", message=message)
 
     def _resolve(self, request: QueryRequest) -> Resolution:
         if request.location and request.location.strip():

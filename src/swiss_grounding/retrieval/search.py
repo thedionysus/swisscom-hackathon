@@ -30,6 +30,17 @@ CHUNK_COLUMNS = """
 # classifier returns no topics for a question it cannot place (`topics.py`), and a chunk
 # may carry no categories at all (`ingest/context.py`) -- and "no opinion" must not be
 # spelled the same way as "an opinion nothing satisfies".
+#
+# The `as_of` arm is D2. `d.valid_from is not null` is the load-bearing half: a document
+# that records no start date cannot be shown to have been in force on the asked-for date,
+# and the clause used to read `d.valid_from is null or ...`, which let every undated
+# document satisfy every date. A question about 2020 then came back holding the undated
+# municipal pages that bypassed the filter, with every act that does carry a date
+# excluded around them. `d.valid_to is null` stays a pass, and is not the same case: a
+# document with no recorded end has not ended, which is a fact about it rather than an
+# absence of one. What this costs is real and deliberate -- most of the index carries no
+# `valid_from`, so a dated query retrieves very little, and `no_evidence.py` has a third
+# cause so an empty dated result is not misreported as an uncovered place or subject.
 FILTER = """
     c.extent_id = any(%(path)s)
     and (%(topics)s::text[] is null or c.categories && %(topics)s::text[])
@@ -37,9 +48,25 @@ FILTER = """
         (%(as_of)s::date is null and d.status = 'current')
         or (%(as_of)s::date is not null
             and d.status in ('current', 'superseded')
-            and (d.valid_from is null or d.valid_from <= %(as_of)s::date)
+            and d.valid_from is not null and d.valid_from <= %(as_of)s::date
             and (d.valid_to is null or d.valid_to > %(as_of)s::date))
     )
+"""
+
+# The oldest date `as_of` can answer for, and it is a property of the corpus rather than
+# a constant: only current consolidations are ingested, so the index holds no version
+# older than the oldest `valid_from` in it and a date before that reaches nothing.
+#
+# The status set and the `valid_from is not null` test are copied from FILTER's `as_of`
+# arm on purpose -- this has to be the minimum over exactly the rows that arm admits, or
+# the boundary `query_core` reports would not be the boundary retrieval actually has.
+# Deliberately not restricted to an extent path: the number goes into a refusal the
+# caller has to act on, and a boundary that moved with the place would make the same date
+# answerable in Zurich and refused in Bern for reasons the message could not explain.
+EARLIEST_VERSION_SQL = """
+select min(d.valid_from) as earliest
+from document d
+where d.status in ('current', 'superseded') and d.valid_from is not null
 """
 
 DENSE_SQL = f"""
@@ -57,6 +84,26 @@ from chunk c join document d on d.id = c.document_id join source s on s.id = d.s
 where {FILTER} and c.tsv @@ q
 order by rank desc
 limit %(top_n)s
+"""
+
+
+def earliest_indexed_version(conn: psycopg.Connection) -> date | None:
+    """The oldest `valid_from` retrieval can reach, or None when nothing records one.
+
+    None is not an error and not zero: it means no indexed document carries a validity
+    date, so no `as_of` is answerable at all. The caller has to tell those two apart --
+    one is fixed by moving the date forward, the other only by dropping the date.
+    """
+    row = conn.execute(EARLIEST_VERSION_SQL).fetchone()
+    return row["earliest"] if row else None
+
+
+# One primary-key lookup. The `<=>` expression is character-for-character the one in
+# DENSE_SQL, so a chunk gets the same number whichever arm retrieved it.
+DISTANCE_SQL = """
+select c.id as chunk_id, c.embedding <=> %(vector)s as distance
+from chunk c
+where c.id = any(%(ids)s)
 """
 
 
