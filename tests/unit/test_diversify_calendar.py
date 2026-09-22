@@ -3,12 +3,12 @@ existing per-series cap.
 
 Five series of upcoming collection dates (waste, organic, cardboard, mobile, paper) can each
 fill PER_SERIES_CAP slots, so together they can fill an entire answer with nothing but dates --
-see diversify.py's module docstring for the live corpus numbers behind this, and for what this
-cap deliberately leaves unbounded (past calendar evidence; an event-dated chunk with no
-identifier). These tests pin that the aggregate ceiling holds regardless of how many series are
-in play, that a single series still gets its nearest dates in order, and that both places the
-ceiling is enforced -- the direct-append branch and the swap-in branch of ``diversify()`` --
-actually enforce it rather than merely intending to.
+see ``diversify()``'s docstring for what this cap does and does not bound (it deliberately
+leaves past calendar evidence, and an event-dated chunk with no identifier, unbounded). These
+tests pin that the aggregate ceiling holds regardless of how many series are in play, that a
+single series still keeps its *nearest* dates in order (not just some subset in order), and
+that both places the ceiling is enforced -- the direct-append branch and the swap-in branch of
+``diversify()`` -- actually enforce it rather than merely intending to.
 """
 from datetime import UTC, date, datetime, timedelta
 from itertools import count
@@ -75,7 +75,7 @@ def _upcoming_calendar_count(chosen, today: date) -> int:
     """How many of ``chosen`` are upcoming, identified calendar evidence -- exactly what
     UPCOMING_CALENDAR_CAP bounds. Deliberately not ``event_date is not None``: that predicate
     also matches past events and identifier-less event-dated chunks, neither of which this cap
-    counts (see diversify.py's module docstring)."""
+    counts (see ``diversify()``'s docstring)."""
     return sum(1 for c in chosen if _capped_series(c, today) is not None)
 
 
@@ -90,9 +90,13 @@ def test_calendar_evidence_cannot_fill_an_answer(today, ids):
 
 
 def test_a_single_series_still_keeps_its_nearest_dates(today, ids):
+    """Five cardboard dates, only PER_SERIES_CAP=3 of them should survive, and they should be
+    the three *nearest* ones in ascending order -- not just "some subset in ascending order",
+    which this fixture's scores (descending as days_ahead increases) would satisfy trivially
+    for any subset diversify() happened to keep."""
     events = [scored_event(ids, series="cardboard", days_ahead=d) for d in (1, 8, 15, 22, 29)]
     chosen = diversify(events, limit=10, today=today)
-    assert [c.hit.chunk.event_date for c in chosen] == sorted(c.hit.chunk.event_date for c in chosen)
+    assert [c.hit.chunk.event_date for c in chosen] == [TODAY + timedelta(days=d) for d in (1, 8, 15)]
 
 
 def _two_series_at_the_ceiling_plus_one_blocked_series(ids):
@@ -126,7 +130,10 @@ def test_append_path_respects_the_upcoming_calendar_ceiling(today, ids):
     """limit=10 leaves ``len(chosen) < limit`` true after ``_select`` (only 7 chunks were
     selectable), so this reaches the direct-append branch with room and both other caps
     satisfied. Its own calendar guard must still refuse to append the blocked, most-specific
-    cardboard chunk on top of an already-full ceiling."""
+    cardboard chunk on top of an already-full ceiling. Note this test is not fully isolated to
+    the append guard alone: a correctly refused append falls through to ``_swap_index``, so
+    neutering *that* guard instead also fails this test (see
+    test_swap_path_respects_the_upcoming_calendar_ceiling for the isolated case)."""
     ranked = _two_series_at_the_ceiling_plus_one_blocked_series(ids)
     chosen = diversify(ranked, limit=10, today=today)
     assert _upcoming_calendar_count(chosen, today) <= UPCOMING_CALENDAR_CAP

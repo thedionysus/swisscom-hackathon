@@ -1,9 +1,11 @@
 from collections.abc import Sequence
+from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
 
 from swiss_grounding.retrieval.calendar import calendar_series
 from swiss_grounding.retrieval.models import ScoredHit
 
+PER_DOCUMENT_CAP = 2
 PER_SERIES_CAP = 3
 UPCOMING_CALENDAR_CAP = 6
 
@@ -14,10 +16,12 @@ def _capped_series(item: ScoredHit, today: date) -> str | None:
     Only *upcoming* occurrences of a series are capped: a series such as cardboard collection
     floods the candidate pool with one document per future date, and that flood is what
     crowds out other evidence. A chunk with no event date, no identifier, or an event date
-    already in the past is never capped by this rule -- the reranker already sinks past
-    events below future ones, so without this exemption a past event would never win a slot
-    in its own series' cap and would stay unreachable, which defeats the point of asking
-    about it.
+    already in the past is never capped by this rule. The reranker applies only a
+    multiplicative penalty to a past event (``PAST_EVENT_PENALTY`` in ``rerank.py``), not a
+    hard floor, so a past event can still outrank some future ones on score alone -- but a
+    series has no bound on how many future occurrences exist, and without this exemption a
+    heavily-recurring series could fill its cap with future dates ahead of the one past event
+    a question is actually about, which defeats the point of asking about it.
 
     A chunk carrying an ``event_date`` but no ``identifier`` is invisible to every cap built
     on this function, same as a past event: it has no series to be counted under. No source
@@ -29,73 +33,94 @@ def _capped_series(item: ScoredHit, today: date) -> str | None:
     return calendar_series(chunk.identifier)
 
 
-def _select(
-    ranked: Sequence[ScoredHit], limit: int, per_document_cap: int, per_series_cap: int,
-    upcoming_calendar_cap: int, today: date,
-) -> tuple[tuple[ScoredHit, ...], dict[int, int], dict[str, int]]:
-    """Greedy top-down pick honouring the per-document, per-series, and upcoming-calendar-
-    aggregate caps.
+@dataclass(frozen=True)
+class Caps:
+    """The three ceilings ``diversify()`` enforces together."""
+    per_document: int
+    per_series: int
+    upcoming_calendar: int
 
-    ``per_series`` only ever holds counts for series that ``_capped_series`` returns a name
-    for -- upcoming, identified calendar evidence -- so ``sum(per_series.values())`` is
-    exactly the amount of *that* evidence chosen so far, across every series combined. It
-    says nothing about past events or event-dated chunks without an identifier: neither is
-    counted here, by the same exemption ``_capped_series`` documents.
+
+@dataclass(frozen=True)
+class _Tally:
+    """Running counts against a ``Caps`` ceiling. Immutable: ``plus`` and ``minus`` return a
+    new ``_Tally`` rather than changing this one, so a hypothetical removal (for a swap) never
+    disturbs the tally anyone else is holding.
+
+    ``per_series`` only ever holds counts for series ``_capped_series`` names -- upcoming,
+    identified calendar evidence -- so ``sum(per_series.values())`` is exactly the amount of
+    *that* evidence counted so far, across every series combined.
     """
+    caps: Caps
+    today: date
+    per_doc: dict[int, int]
+    per_series: dict[str, int]
+
+    def fits(self, item: ScoredHit) -> bool:
+        """Would adding ``item`` stay within every cap?"""
+        doc = item.hit.chunk.document_id
+        if self.per_doc.get(doc, 0) >= self.caps.per_document:
+            return False
+        series = _capped_series(item, self.today)
+        if series is None:
+            return True
+        if self.per_series.get(series, 0) >= self.caps.per_series:
+            return False
+        return sum(self.per_series.values()) < self.caps.upcoming_calendar
+
+    def plus(self, item: ScoredHit) -> "_Tally":
+        """The tally after adding ``item``."""
+        doc = item.hit.chunk.document_id
+        per_doc = {**self.per_doc, doc: self.per_doc.get(doc, 0) + 1}
+        series = _capped_series(item, self.today)
+        per_series = self.per_series if series is None else {
+            **self.per_series, series: self.per_series.get(series, 0) + 1,
+        }
+        return replace(self, per_doc=per_doc, per_series=per_series)
+
+    def minus(self, item: ScoredHit) -> "_Tally":
+        """The tally as if ``item`` had never been added -- used to ask "if I freed this
+        position, would the candidate then fit?" without touching the tally itself."""
+        doc = item.hit.chunk.document_id
+        per_doc = {**self.per_doc, doc: self.per_doc.get(doc, 0) - 1}
+        series = _capped_series(item, self.today)
+        per_series = self.per_series if series is None else {
+            **self.per_series, series: self.per_series.get(series, 0) - 1,
+        }
+        return replace(self, per_doc=per_doc, per_series=per_series)
+
+
+def _select(
+    ranked: Sequence[ScoredHit], limit: int, caps: Caps, today: date,
+) -> tuple[tuple[ScoredHit, ...], _Tally]:
+    """Greedy top-down pick honouring every cap in ``caps``."""
     chosen: list[ScoredHit] = []
-    per_doc: dict[int, int] = {}
-    per_series: dict[str, int] = {}
+    tally = _Tally(caps=caps, today=today, per_doc={}, per_series={})
     for item in ranked:
         if len(chosen) >= limit:
             break
-        doc = item.hit.chunk.document_id
-        if per_doc.get(doc, 0) >= per_document_cap:
+        if not tally.fits(item):
             continue
-        series = _capped_series(item, today)
-        if series is not None:
-            if per_series.get(series, 0) >= per_series_cap:
-                continue
-            if sum(per_series.values()) >= upcoming_calendar_cap:
-                continue
         chosen.append(item)
-        per_doc[doc] = per_doc.get(doc, 0) + 1
-        if series is not None:
-            per_series[series] = per_series.get(series, 0) + 1
-    return tuple(chosen), per_doc, per_series
+        tally = tally.plus(item)
+    return tuple(chosen), tally
 
 
-def _swap_index(
-    chosen: Sequence[ScoredHit], per_doc: dict[int, int], per_series: dict[str, int],
-    candidate: ScoredHit, per_document_cap: int, per_series_cap: int, upcoming_calendar_cap: int,
-    today: date,
-) -> int | None:
-    """Last position whose removal frees a slot for ``candidate`` under all three caps.
+def _swap_index(chosen: Sequence[ScoredHit], tally: _Tally, candidate: ScoredHit) -> int | None:
+    """Last position whose removal frees a slot for ``candidate`` under every cap in ``tally``.
 
-    A candidate that is itself upcoming calendar evidence must not be swapped in past the
-    upcoming-calendar-aggregate ceiling, even when the position it displaces held a
-    non-calendar chunk: freeing a non-calendar slot never frees calendar headroom.
+    Freeing a position that doesn't itself count toward one of ``candidate``'s caps (e.g. a
+    non-calendar chunk, when ``candidate`` is upcoming calendar evidence) frees no headroom for
+    that cap, so ``tally.minus(...).fits(...)`` correctly rejects it and this keeps scanning.
     """
-    document_id = candidate.hit.chunk.document_id
-    series = _capped_series(candidate, today)
-    calendar_total = sum(per_series.values())
     for index in range(len(chosen) - 1, -1, -1):
-        freed = chosen[index]
-        freed_doc = freed.hit.chunk.document_id
-        freed_series = _capped_series(freed, today)
-        doc_count = per_doc.get(document_id, 0) - (1 if freed_doc == document_id else 0)
-        series_count = (
-            per_series.get(series, 0) - (1 if freed_series == series else 0)
-            if series is not None else 0
-        )
-        calendar_count = calendar_total - (1 if freed_series is not None else 0)
-        fits_calendar = series is None or calendar_count < upcoming_calendar_cap
-        if doc_count < per_document_cap and series_count < per_series_cap and fits_calendar:
+        if tally.minus(chosen[index]).fits(candidate):
             return index
     return None
 
 
 def diversify(
-    ranked: Sequence[ScoredHit], limit: int, per_document_cap: int = 2,
+    ranked: Sequence[ScoredHit], limit: int, per_document_cap: int = PER_DOCUMENT_CAP,
     per_series_cap: int = PER_SERIES_CAP, upcoming_calendar_cap: int = UPCOMING_CALENDAR_CAP,
     today: date | None = None,
 ) -> tuple[ScoredHit, ...]:
@@ -104,45 +129,37 @@ def diversify(
 
     The per-document cap limits repeated chunks from the same document; the per-series cap
     limits repeated *upcoming* calendar events (one document per date) that share a series,
-    such as every future cardboard collection date, so a page of near-identical future
-    events cannot crowd out everything else. Both only apply to chunks carrying an
-    ``event_date`` that has not already passed; ``today`` defaults to the real current date.
+    such as every future cardboard collection date, so a page of near-identical future events
+    cannot crowd out everything else. Both only apply to a chunk carrying an ``event_date``
+    that has not already passed *and* a non-empty ``identifier`` (see ``_capped_series``);
+    ``today`` defaults to the real current date.
 
     The per-series cap alone cannot bound calendar evidence overall: several series can each
     have upcoming events (waste, organic, cardboard, mobile, paper collections all repeat
     independently), so several series at the per-series cap can still add up to more than a
     caller's requested limit and fill an answer with nothing but dates. ``upcoming_calendar_cap``
-    is that aggregate ceiling, summed across every series -- but, like the per-series cap, it
-    only counts *upcoming* calendar evidence (see ``_capped_series``). A past event never
-    counts against it, by design: a question about a missed collection must still be able to
-    find that collection. This deliberately leaves two things unbounded here: a pile of *past*
-    calendar evidence (a different risk than the one this cap was built against -- the reranker
-    already sinks past events to the bottom, but nothing yet stops many of them from filling an
-    answer) and a chunk with an ``event_date`` but no ``identifier`` (invisible to every
-    calendar cap, per ``_capped_series``; no such chunk exists in the live corpus today). Task
-    8's hard topic filter is the intended defence for off-topic calendar evidence generally;
-    this cap only targets the measured cause of Task 3, upcoming multi-series flooding.
+    is that aggregate ceiling, summed across every series, with the same upcoming-and-identified
+    scope as the per-series cap -- a past event never counts against it, by design: a question
+    about a missed collection must still be able to find that collection. This leaves past
+    calendar evidence and an identifier-less event-dated chunk unbounded here; both are
+    deliberate scope cuts documented in this feature's implementation plan, not oversights.
+
+    ``upcoming_calendar_cap``'s default of 6 is a judgement call, not derived from a probe: no
+    current probe constrains it from below. Concretely, since ``QueryRequest.limit`` defaults
+    to 8, calendar evidence can still take up to 6 of 8 citations in a default-sized answer.
     """
     if not ranked or limit <= 0:
         return ()
     current = today if today is not None else datetime.now(tz=UTC).date()
-    chosen, per_doc, per_series = _select(
-        ranked, limit, per_document_cap, per_series_cap, upcoming_calendar_cap, current,
-    )
+    caps = Caps(per_document=per_document_cap, per_series=per_series_cap,
+                upcoming_calendar=upcoming_calendar_cap)
+    chosen, tally = _select(ranked, limit, caps, current)
     most_specific = max(ranked, key=lambda s: s.specificity)
     if most_specific.hit.chunk.chunk_id in {s.hit.chunk.chunk_id for s in chosen}:
         return chosen
-    document_id = most_specific.hit.chunk.document_id
-    series = _capped_series(most_specific, current)
-    fits_document = per_doc.get(document_id, 0) < per_document_cap
-    fits_series = series is None or per_series.get(series, 0) < per_series_cap
-    fits_calendar = series is None or sum(per_series.values()) < upcoming_calendar_cap
-    if len(chosen) < limit and fits_document and fits_series and fits_calendar:
+    if len(chosen) < limit and tally.fits(most_specific):
         return (*chosen, most_specific)
-    index = _swap_index(
-        chosen, per_doc, per_series, most_specific, per_document_cap, per_series_cap,
-        upcoming_calendar_cap, current,
-    )
+    index = _swap_index(chosen, tally, most_specific)
     if index is None:
         return chosen
     return (*chosen[:index], most_specific, *chosen[index + 1:])
