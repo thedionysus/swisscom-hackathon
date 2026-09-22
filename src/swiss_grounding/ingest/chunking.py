@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from swiss_grounding.ingest.models import ChunkDraft, Section
+from swiss_grounding.ingest.models import ChunkDraft, EnrichmentError, Section
 
 SENTENCE_BREAK = ". "
 
@@ -41,14 +41,21 @@ def chunk_sections(
 
     The original-language text is attached whole to every piece of a split section, because the
     citation quotes the original and article boundaries are what matter there.
+
+    A section that has text in the original but none in English lost it in translation. That is an
+    error, not a chunk to skip: the section count still matches, so nothing downstream would notice
+    the document is missing an article.
     """
     if len(original) != len(english):
         raise ValueError(f"section count mismatch: {len(original)} original vs {len(english)} english")
     drafts: list[ChunkDraft] = []
     for orig, en in zip(original, english, strict=True):
-        if not en.text.strip():
+        text_en = en.text.strip()
+        if not text_en:
+            if orig.text.strip():
+                raise EnrichmentError(f"section {en.heading_path!r} has no English text to chunk")
             continue
-        for piece in _split(en.text.strip(), limits):
+        for piece in _split(text_en, limits):
             drafts.append(ChunkDraft(
                 ordinal=len(drafts), heading_path=en.heading_path, anchor=en.anchor,
                 text_original=orig.text.strip(), text_en=piece,

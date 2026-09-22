@@ -92,3 +92,14 @@ def test_categories_are_sorted_by_confidence_then_id():
     assert confidences == sorted(confidences, reverse=True)
     ids = [t.id for t in out.categories]
     assert ids == sorted(ids)      # all fake tags share the same confidence, so ids are alphabetical
+
+
+def test_a_blank_section_is_not_sent_to_the_model():
+    """Nothing to translate, so nothing is asked: the model's reply is validated as non-empty, and
+    an empty section is the one case where empty is not a failure."""
+    llm = RecordingLLM()
+    doc = FetchedDocument(source_id="zh_ch", url="https://www.zh.ch/x", title="Hunde", language="de",
+                          sections=(Section("Hunde", None, "  "), Section("Katzen", None, "Miau.")))
+    out = enrich(doc, source(), TREE, llm, CATEGORIES)
+    assert [t for t, _ in llm.translated] == ["Miau.", "Hunde"]
+    assert out.sections_en[0].text == "  " and out.sections_en[1].text == "[de->en] Miau."

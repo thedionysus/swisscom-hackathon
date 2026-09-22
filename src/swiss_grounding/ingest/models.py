@@ -36,6 +36,12 @@ class KnownUrl:
     content_hash: str
 
 
+class EnrichmentError(Exception):
+    """Enrichment produced something unusable -- empty or malformed model output, or a section that
+    lost its text in translation. Raised rather than absorbed: the document is left out of the index
+    and the next run retries it, which is what spec section 10 asks of a translation or tagging failure."""
+
+
 @dataclass(frozen=True)
 class FetchError:
     url: str
