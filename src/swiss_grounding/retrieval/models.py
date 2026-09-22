@@ -113,19 +113,30 @@ class CoverageRow:
 
 @dataclass(frozen=True)
 class QueryRequest:
-    """One search. `topics` and `categories` both name subjects, and they are not the
-    same thing (ADR 0003, ADR 0004).
+    """One search, as ADR 0004 asks the calling model to state it.
 
-    `topics` is the caller's statement of what the question is about, and it is a hard
-    filter: a chunk that does not carry one of them is not evidence for this question.
-    An empty tuple means *no constraint*, never *a constraint nothing satisfies* --
-    `topics.resolve_topics` is where that distinction is made and documented.
+    Three fields carry text and they are not interchangeable. `question` is what the user
+    wrote, in whatever language they wrote it, and it is what the keyword index is asked
+    for. `question_en` is the same question in English, and `topic_en` a short English
+    description of the subject; together they are what gets embedded, because everything
+    in the index is English. `retrieval/query_text.py` is the single place that decides
+    which text reaches which index, and what happens when the English fields are absent.
 
-    `categories` is the older, softer field, kept working for callers that have not been
-    updated to the contract Task 10 introduces. It is read as a topic only when `topics`
-    is empty.
+    `topics` is the caller's statement of what the question is about, drawn from the fixed
+    category ids, and it is a hard filter: a chunk that does not carry one of them is not
+    evidence for this question. An empty tuple means *no constraint*, never *a constraint
+    nothing satisfies* -- `topics.resolve_topics` is where that distinction is made.
+
+    `categories` is a **deprecated alias for `topics`**: identical meaning, identical hard
+    filter, read only when `topics` is empty. It exists because the MCP tool carried it
+    before Task 10 and a registered client that has not been updated sends it; dropping it
+    would turn every such call into a schema error rather than the degrade ADR 0004 asks
+    for. Nothing reads it except `resolve_topics`'s second rung, and `QueryResponse`
+    reports when a request came in on it. New code writes `topics`.
     """
     question: str
+    question_en: str | None = None
+    topic_en: str | None = None
     location: str | None = None
     topics: tuple[str, ...] = ()
     categories: tuple[str, ...] = ()
@@ -152,3 +163,22 @@ class QueryResponse:
     categories_used: tuple[str, ...] = ()
     coverage: tuple[CoverageRow, ...] = ()
     resolution_note: str = ""
+    query_fields: tuple[str, ...] = ()
+    """Which request fields composed the text that was embedded, in the order they were
+    joined: `("question_en", "topic_en")` for a caller on the full ADR 0004 contract, and
+    `("question",)` for one that supplied no English -- meaning the user's own language
+    was matched against an index that is entirely English. ADR 0004 records that nothing
+    in the response revealed which of those happened; this is that field.
+
+    `()` means no query was built at all, which is the case for every refused or
+    unresolved request. It is deliberately distinguishable from `("question",)`: the
+    first says nothing was searched, the second says something was searched badly."""
+    topic_decided_by: str = ""
+    """Who chose the topic filter `categories_used` reports: `"topics"` (the caller said
+    so), `"categories"` (the caller said so on the deprecated field), or `"classifier"`
+    (nobody said, so the server guessed from the question). `""` when no topic was
+    resolved, i.e. the request never got that far.
+
+    `categories_used` says *what* was filtered on and this says *who decided it*, which
+    are different facts: an empty `categories_used` with `"classifier"` here means the
+    local classifier declined to place the question and no topic filter was applied."""

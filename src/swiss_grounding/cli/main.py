@@ -31,6 +31,14 @@ from swiss_grounding.retrieval.embedder import build_embedder
 from swiss_grounding.retrieval.models import Citation, QueryRequest
 
 
+def _ids(value: str | None) -> tuple[str, ...]:
+    """A comma-separated option as topic ids. Blank entries are dropped, so a trailing
+    comma cannot turn into an empty id that matches nothing and reads as a typo."""
+    if not value:
+        return ()
+    return tuple(part.strip() for part in value.split(",") if part.strip())
+
+
 def _link(url: str, anchor: str | None) -> str:
     """Append the anchor unless the URL already carries a fragment."""
     if not anchor or "#" in url:
@@ -111,12 +119,30 @@ def load_fixture_cmd(path: Path) -> None:
 @app.command("query")
 def query_cmd(
     question: str,
+    question_en: str | None = typer.Option(
+        None, "--question-en",
+        help="the same question in English. Embedded, with --topic-en, against an index that "
+             "is entirely English (ADR 0004). Omit it and the verbatim question is embedded "
+             "instead, which still works but matches worse; the printed `query` line says "
+             "which happened.",
+    ),
+    topic_en: str | None = typer.Option(
+        None, "--topic-en",
+        help="a short English description of the subject, e.g. 'household waste collection "
+             "days'. Free text, not an id. Sharpens the embedded query, and is what the local "
+             "topic classifier reads when no --topics is given.",
+    ),
     location: str | None = typer.Option(None, "--location", "-l"),
-    categories: str | None = typer.Option(
-        None, "--categories", "-c",
+    topics: str | None = typer.Option(
+        None, "--topics", "-t",
         help="comma-separated topic ids. A hard filter, not a hint: evidence carrying none "
              "of them is excluded, and a subject nothing on the path covers gives no_evidence. "
              "Omit to let the server estimate the topic; categories_used reports what it used.",
+    ),
+    categories: str | None = typer.Option(
+        None, "--categories", "-c",
+        help="DEPRECATED alias for --topics, read only when --topics is empty. Kept so the "
+             "probe corpus and older scripts keep running unchanged.",
     ),
     as_of: str | None = typer.Option(None, "--as-of", help="ISO date"),
     limit: int = typer.Option(8, "--limit"),
@@ -128,8 +154,8 @@ def query_cmd(
     """
     core = build_query_core(load_settings())
     request = QueryRequest(
-        question=question, location=location,
-        categories=tuple(c.strip() for c in categories.split(",")) if categories else (),
+        question=question, question_en=question_en, topic_en=topic_en, location=location,
+        topics=_ids(topics), categories=_ids(categories),
         as_of=date.fromisoformat(as_of) if as_of else None, limit=limit,
     )
     resp = core.query(request)
@@ -137,6 +163,10 @@ def query_cmd(
         typer.echo(json.dumps(asdict(resp), default=str, ensure_ascii=False, indent=2))
     else:
         typer.echo(f"status: {resp.status}")
+        if resp.query_fields:
+            # Which path the query took, printed before the evidence, because a degraded
+            # answer looks exactly like a good one once the citations start scrolling.
+            typer.echo(f"query: {'+'.join(resp.query_fields)} | topic from: {resp.topic_decided_by}")
         if resp.resolved_location_id:
             typer.echo(f"location: {resp.resolved_location_label} ({resp.resolved_location_id}, {resp.resolution_method})")
         if resp.message:

@@ -15,9 +15,10 @@ from swiss_grounding.retrieval.diversify import diversify
 from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
 from swiss_grounding.retrieval.no_evidence import no_evidence_message
+from swiss_grounding.retrieval.query_text import build_search_query
 from swiss_grounding.retrieval.rerank import RerankWeights, rerank
 from swiss_grounding.retrieval.search import earliest_indexed_version, hybrid_search
-from swiss_grounding.retrieval.topics import resolve_topics
+from swiss_grounding.retrieval.topics import resolve_topics, topic_decided_by
 
 CANDIDATE_TOP_N = 50
 MAX_LIMIT = 25
@@ -92,13 +93,22 @@ class QueryCore:
             return QueryResponse(status="needs_location", message=message)
         limit = max(1, min(request.limit, MAX_LIMIT))
         today = request.as_of or self.today()
+        # One split of the caller's text (ADR 0004): the English rendering for the dense
+        # arm, the verbatim question for the lexical one. Built here and passed to both
+        # arms and to the response, so the text that was embedded and the text the
+        # response claims was embedded cannot disagree.
+        query = build_search_query(request)
         # Empty means no constraint, not a constraint nothing satisfies; `search.FILTER`
-        # and `topics.resolve_topics` both turn on that distinction.
+        # and `topics.resolve_topics` both turn on that distinction. `resolve_topics`
+        # rebuilds the same query for its classifier rung rather than taking it from here:
+        # it owns its whole ladder, including which text it classifies, and the rebuild is
+        # a strip and a join on three strings.
         topics = resolve_topics(request, self.embedder)
         with connect(self.database_url) as conn:
             hits = hybrid_search(
-                conn, self.embedder, question=request.question, extent_path=resolved.path,
+                conn, self.embedder, question=query.lexical, extent_path=resolved.path,
                 as_of=request.as_of, top_n=CANDIDATE_TOP_N, topics=topics,
+                embedded_question=query.dense,
             )
             # Deliberately not passed `topics`: coverage is about places, not subjects
             # (ADR 0001), and it is the same count `swiss_coverage` returns.
@@ -113,6 +123,7 @@ class QueryCore:
             alternatives=tuple(a.id for a in resolved.alternatives),
             categories_used=topics,
             coverage=rows, resolution_note=note,
+            query_fields=query.fields, topic_decided_by=topic_decided_by(request),
         )
         if not hits:
             return replace(base, message=no_evidence_message(
