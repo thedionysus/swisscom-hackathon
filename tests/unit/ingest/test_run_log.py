@@ -6,9 +6,10 @@ T1 = datetime(2026, 9, 10, tzinfo=UTC)
 T2 = datetime(2026, 9, 11, tzinfo=UTC)
 
 
-def run(finished, *, added=0, modified=0, unchanged=0, failed=0, withdrawn=0) -> RunRow:
+def run(finished, *, added=0, modified=0, unchanged=0, failed=0, withdrawn=0, skipped=0) -> RunRow:
     return RunRow(run_id=finished.isoformat(), source_id="zh_ch", started_at=finished, finished_at=finished,
-                  added=added, modified=modified, unchanged=unchanged, withdrawn=withdrawn, failed=failed)
+                  added=added, modified=modified, unchanged=unchanged, withdrawn=withdrawn, failed=failed,
+                  skipped=skipped)
 
 
 def test_no_runs_is_unknown():
@@ -36,3 +37,10 @@ def test_only_failures_is_failing_and_keeps_previous_success():
 def test_failing_with_no_prior_success_has_no_successful_run():
     h = summarize_health("zh_ch", (run(T2, failed=3),))
     assert h.health == "failing" and h.last_successful_run_at is None
+
+
+def test_a_run_whose_only_outcomes_were_skips_is_degraded_not_failing():
+    """A document judged to hold nothing is a document the pipeline got through, so a run that also
+    had failures is degraded: it is not the case that nothing worked."""
+    h = summarize_health("zh_ch", (run(T2, skipped=4, failed=1),))
+    assert h.health == "degraded" and h.last_successful_run_at == T2

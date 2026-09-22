@@ -3,7 +3,8 @@ import re
 from collections.abc import Sequence
 from typing import Any, Protocol
 
-from swiss_grounding.ingest.models import CategoryTag, EnrichmentError
+from swiss_grounding.ingest.errors import EnrichmentError
+from swiss_grounding.ingest.models import CategoryTag
 from swiss_grounding.registry.categories import Category
 
 MAX_TOKENS = 4096
@@ -12,6 +13,7 @@ MAX_CLASSIFY_CHARS = 6000
 MIN_CONFIDENCE = 0.0
 MAX_CONFIDENCE = 1.0
 MAX_ERROR_CHARS = 200
+MAX_TITLE_CHARS = 120
 FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 
 TRANSLATE_PROMPT = (
@@ -30,20 +32,24 @@ class LLM(Protocol):
     def classify(self, title: str, text: str, categories: Sequence[Category]) -> tuple[CategoryTag, ...]: ...
 
 
-def _confidence(item: dict, raw: str) -> float:
+def _confidence(item: dict[str, Any]) -> float:
     """How sure the model says it is, clamped to [0, 1].
 
     A tag with no stated confidence is malformed output, not a zero-confidence tag: confidence is
     dropped at persistence, so such a tag would be stored as a full-strength topic, and a topic is
     about to become a hard filter. We do not invent a constraint the model never asserted.
+
+    The error names the tag rather than the response, because the offending one may sit past any
+    truncation of it.
     """
+    stated = item.get("confidence")
     try:
-        stated = item["confidence"]
         if isinstance(stated, bool):  # bool is an int, and float(True) is full confidence
-            raise TypeError("confidence is a boolean, not a number")
+            raise TypeError("a boolean is not a confidence")
         value = float(stated)
-    except (KeyError, TypeError, ValueError) as exc:
-        raise EnrichmentError(f"tag without a usable confidence: {raw[:MAX_ERROR_CHARS]!r}") from exc
+    except (TypeError, ValueError) as exc:
+        raise EnrichmentError(
+            f"tag {item.get('id')!r} states no usable confidence: {str(stated)[:MAX_ERROR_CHARS]!r}") from exc
     return min(MAX_CONFIDENCE, max(MIN_CONFIDENCE, value))
 
 
@@ -54,8 +60,11 @@ def parse_tags(raw: str, known_ids: Sequence[str]) -> tuple[CategoryTag, ...]:
     tuple. Output that cannot be read as that answer raises instead, so a document with no usable
     tags is retried rather than falling through to its source's declared categories.
 
-    Unknown ids are discarded before their confidence is read: a category we do not have cannot
-    reach storage either way, so a malformed one is no reason to fail the whole document.
+    An unknown id is discarded before its confidence is read: it is a well-formed item naming a
+    category outside our vocabulary, it cannot reach storage either way, and it is no reason to
+    fail the document. Malformed structure raises, because an item that is not an object is the
+    model ignoring the response format -- and read as an empty answer it would quietly hand the
+    document its source's declared categories.
     """
     cleaned = FENCE_RE.sub("", raw.strip())
     try:
@@ -66,9 +75,10 @@ def parse_tags(raw: str, known_ids: Sequence[str]) -> tuple[CategoryTag, ...]:
         raise EnrichmentError(f"unparseable tag response: {raw[:MAX_ERROR_CHARS]!r}") from exc
     tags = []
     for item in items:
-        cid = item.get("id") if isinstance(item, dict) else None
-        if cid in known_ids:
-            tags.append(CategoryTag(id=cid, confidence=_confidence(item, raw)))
+        if not isinstance(item, dict):
+            raise EnrichmentError(f"tag is {type(item).__name__}, not an object")
+        if item.get("id") in known_ids:
+            tags.append(CategoryTag(id=item["id"], confidence=_confidence(item)))
     return tuple(tags)
 
 
@@ -100,12 +110,14 @@ class AnthropicLLM:
 
         return cls(model=model, client=Anthropic(api_key=api_key))
 
-    def _ask(self, prompt: str) -> str:
+    def _ask(self, prompt: str, call: str) -> str:
         """Ask the model and return its text, refusing a reply that carries none.
 
         An empty reply is a failure, not an answer: returned as an empty string it would become an
         empty title, or a section silently dropped from a document, with nothing recording that the
-        model said nothing at all.
+        model said nothing at all. `call` says which call it was, in the caller's own terms -- a
+        slice of the prompt would be mostly the constant instructions, and the rest source text an
+        operator has no use for in a log.
         """
         message = self._client.messages.create(
             model=self._model, max_tokens=MAX_TOKENS,
@@ -113,15 +125,17 @@ class AnthropicLLM:
         )
         text = "".join(getattr(block, "text", "") for block in message.content).strip()
         if not text:
-            raise EnrichmentError(f"model returned no text for prompt: {prompt[:MAX_ERROR_CHARS]!r}")
+            raise EnrichmentError(f"the model returned no text for {call}")
         return text
 
     def translate(self, text: str, source_language: str) -> str:
-        return self._ask(TRANSLATE_PROMPT.format(language=source_language, text=text))
+        return self._ask(TRANSLATE_PROMPT.format(language=source_language, text=text),
+                         call=f"a translation from {source_language} of {len(text)} characters")
 
     def classify(self, title: str, text: str, categories: Sequence[Category]) -> tuple[CategoryTag, ...]:
         listing = "\n".join(f"- {c.id}: {c.label} ({c.description})" for c in categories)
-        raw = self._ask(CLASSIFY_PROMPT.format(categories=listing, title=title, text=text[:MAX_CLASSIFY_CHARS]))
+        raw = self._ask(CLASSIFY_PROMPT.format(categories=listing, title=title, text=text[:MAX_CLASSIFY_CHARS]),
+                        call=f"the classification of {title[:MAX_TITLE_CHARS]!r}")
         return parse_tags(raw, tuple(c.id for c in categories))
 
 

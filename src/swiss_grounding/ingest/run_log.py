@@ -11,15 +11,17 @@ from swiss_grounding.ingest.pipeline import IngestReport
 Health = Literal["ok", "degraded", "failing", "unknown"]
 
 UPSERT = """
-insert into ingest_run (run_id, source_id, started_at, finished_at, added, modified, unchanged, withdrawn, failed)
+insert into ingest_run (run_id, source_id, started_at, finished_at, added, modified, unchanged,
+                        withdrawn, skipped, failed)
 values (%(run_id)s, %(source_id)s, %(started_at)s, %(finished_at)s, %(added)s, %(modified)s, %(unchanged)s,
-        %(withdrawn)s, %(failed)s)
+        %(withdrawn)s, %(skipped)s, %(failed)s)
 on conflict (run_id, source_id) do update set started_at = excluded.started_at,
     finished_at = excluded.finished_at, added = excluded.added, modified = excluded.modified,
-    unchanged = excluded.unchanged, withdrawn = excluded.withdrawn, failed = excluded.failed
+    unchanged = excluded.unchanged, withdrawn = excluded.withdrawn, skipped = excluded.skipped,
+    failed = excluded.failed
 """
 SELECT_RUNS = """
-select run_id, source_id, started_at, finished_at, added, modified, unchanged, withdrawn, failed
+select run_id, source_id, started_at, finished_at, added, modified, unchanged, withdrawn, skipped, failed
 from ingest_run order by source_id, finished_at desc
 """
 
@@ -35,10 +37,12 @@ class RunRow:
     unchanged: int
     withdrawn: int
     failed: int
+    skipped: int = 0
 
     @property
     def succeeded_any(self) -> bool:
-        return (self.added + self.modified + self.unchanged) > 0
+        """A skip counts: the pipeline reached a verdict on that document, it just held nothing."""
+        return (self.added + self.modified + self.unchanged + self.skipped) > 0
 
 
 @dataclass(frozen=True)
@@ -76,7 +80,8 @@ def record_run(conn: psycopg.Connection, report: IngestReport, started_at: datet
     conn.execute(UPSERT, {
         "run_id": report.run_id, "source_id": report.source_id, "started_at": started_at,
         "finished_at": finished_at, "added": report.added, "modified": report.modified,
-        "unchanged": report.unchanged, "withdrawn": report.withdrawn, "failed": report.failed,
+        "unchanged": report.unchanged, "withdrawn": report.withdrawn, "skipped": report.skipped,
+        "failed": report.failed,
     })
 
 

@@ -12,12 +12,13 @@ from swiss_grounding.retrieval.embedder import Embedder
 ADDED = "added"
 MODIFIED = "modified"
 WITHDRAWN = "withdrawn"
+SKIPPED = "skipped"
 
 
 @dataclass(frozen=True)
 class PersistOutcome:
     document_id: int | None
-    change_type: str | None      # "added" | "modified" | None (unchanged)
+    change_type: str | None      # "added" | "modified" | "skipped" | None (unchanged)
 
 
 def _current(conn: psycopg.Connection, url: str) -> dict | None:
@@ -92,15 +93,40 @@ def _log_change(conn: psycopg.Connection, run_id: str, document_id: int | None, 
     )
 
 
+def _skip(conn: psycopg.Connection, doc: EnrichedDocument, chash: str, current: dict | None) -> PersistOutcome:
+    """Record a document that holds nothing to index, without storing it.
+
+    A document with no chunks is invisible to search, so writing one and calling it added would
+    report a success the index cannot show. It is not a failure either: no retry puts chunks into a
+    page that has none, which is why this is an outcome rather than a raised error.
+
+    A URL seen for the first time has its content remembered, so the next run treats it as unchanged
+    instead of fetching, translating and classifying a page it will discard again. A URL whose
+    earlier version is still stored is deliberately not remembered: it held evidence and holds none
+    now, so the stored version stays served and the next run looks again rather than accepting the
+    loss on the strength of one empty read.
+    """
+    f = doc.fetched
+    if current is None:
+        save_known(conn, f.source_id, f.url,
+                   KnownUrl(etag=f.etag, last_modified=f.last_modified, content_hash=chash))
+    return PersistOutcome(document_id=None, change_type=SKIPPED)
+
+
 def persist_document(conn: psycopg.Connection, doc: EnrichedDocument, chunks: tuple[ChunkDraft, ...],
                      embedder: Embedder, run_id: str) -> PersistOutcome:
-    """Insert a new version when content changed; supersede the previous; log a chunk-level diff."""
+    """Insert a new version when content changed; supersede the previous; log a chunk-level diff.
+
+    A document that chunked to nothing is skipped instead: see `_skip`.
+    """
     f = doc.fetched
     chash = content_hash(f)
     current = _current(conn, f.url)
     if current and current["content_hash"] == chash:
         touch_unchanged(conn, f.url)
         return PersistOutcome(document_id=current["id"], change_type=None)
+    if not chunks:
+        return _skip(conn, doc, chash, current)
     version = (current["version"] + 1) if current else 1
     document_id = _insert_document(conn, doc, chash, version)
     new_ids = _insert_chunks(conn, document_id, doc, chunks, embedder)

@@ -86,14 +86,41 @@ def test_enrichment_failure_isolates_document(ctx):
     assert "llm down" in report.errors[0].reason
 
 
-def test_a_document_with_nothing_to_chunk_is_failed_not_reported_as_added(ctx):
-    """No chunks means nothing retrievable, so counting it as added would report a success that the
-    index cannot show. It fails per document, like a source that yields no extractable text."""
+def test_a_document_with_nothing_to_index_is_skipped_not_added_and_not_failed(ctx):
+    """Nothing to index is not a failure we could retry our way out of, and it is not a success the
+    index can show either. It is its own outcome, so the run report says what actually happened."""
     u, tree, source = ctx
     result = FetchResult(documents=(page("https://www.zh.ch/blank", "   "),))
     with connect(u) as conn:
         report = run_ingest(conn, source, StubFetcher(result), FakeLLM(), FakeEmbedder(8), tree, run_id="r1")
         stored = conn.execute("select count(*) as n from document").fetchone()["n"]
-    assert (report.added, report.failed) == (0, 1)
-    assert "no chunkable text" in report.errors[0].reason
-    assert stored == 0
+    assert (report.added, report.failed, report.skipped) == (0, 0, 1)
+    assert report.errors == () and stored == 0
+
+
+def test_a_skipped_document_is_remembered_so_the_next_run_does_not_enrich_it_again(ctx):
+    """No retry can put chunks into a page that holds none, so its content is recorded as seen."""
+    u, tree, source = ctx
+    result = FetchResult(documents=(page("https://www.zh.ch/blank", "   "),))
+    with connect(u) as conn:
+        run_ingest(conn, source, StubFetcher(result), FakeLLM(), FakeEmbedder(8), tree, run_id="r1")
+        second = StubFetcher(FetchResult(documents=()))
+        run_ingest(conn, source, second, FakeLLM(), FakeEmbedder(8), tree, run_id="r2")
+    assert "https://www.zh.ch/blank" in second.known_seen
+
+
+def test_a_stored_document_that_loses_all_its_text_keeps_the_version_already_indexed(ctx):
+    """The page held evidence and holds none now: the stored version stays served, and the content
+    is deliberately not remembered, so the next run looks again instead of accepting the loss."""
+    u, tree, source = ctx
+    url = "https://www.zh.ch/a"
+    with connect(u) as conn:
+        run_ingest(conn, source, StubFetcher(FetchResult(documents=(page(url, "Hunde in Zürich."),))),
+                   FakeLLM(), FakeEmbedder(8), tree, run_id="r1")
+        third = StubFetcher(FetchResult(documents=(page(url, "   "),)))
+        report = run_ingest(conn, source, third, FakeLLM(), FakeEmbedder(8), tree, run_id="r2")
+        rows = conn.execute("select status from document where url = %s", (url,)).fetchall()
+        known = conn.execute("select content_hash from fetch_state where url = %s", (url,)).fetchone()
+    assert (report.skipped, report.added, report.failed) == (1, 0, 0)
+    assert [r["status"] for r in rows] == ["current"]
+    assert known["content_hash"] == third.known_seen[url].content_hash  # unchanged from the first run

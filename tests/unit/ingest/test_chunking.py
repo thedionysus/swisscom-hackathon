@@ -1,7 +1,8 @@
 import pytest
 
 from swiss_grounding.ingest.chunking import ChunkLimits, chunk_sections
-from swiss_grounding.ingest.models import EnrichmentError, Section
+from swiss_grounding.ingest.errors import EnrichmentError
+from swiss_grounding.ingest.models import Section
 
 
 def sec(path, text, anchor=None):
