@@ -359,3 +359,51 @@ async def test_search_description_does_not_sell_distance_as_relevance(server):
     assert "lower-is-better" in description
     assert "NOT a relevance threshold" in description
     assert "question_en + topic_en" in description
+
+
+async def test_search_description_does_not_oversell_the_verbatim_question(server):
+    """The plan, ADR 0004 and the first version of this description all said the verbatim
+    question keeps original-language terms matchable. Measured against the live index it
+    matches nothing: `tsv` is built from `context_en || ' ' || text_en`, so `Leinenpflicht`,
+    `Abfall` and `Gemeinde` each hit 0 chunks while their English words hit 4, 65 and 5
+    (ADR 0004's correction section has the table). A calling model told otherwise will
+    trust a German question to be doing work it is not doing."""
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    description = _flat(next(t for t in tools.tools if t.name == "swiss_search").description)
+    assert "question_en is what actually carries the search" in description
+    assert "ordinary German, French and Italian words do not" in description
+
+
+async def test_search_description_does_not_call_location_optional(server):
+    """`_resolve` scans the question when no location is given, and refuses with
+    'needs_location' when it finds nothing -- whatever the subject. A federal-law question
+    with no location is refused exactly like a local one, so a description that makes the
+    field sound conditional buys the caller a wasted round trip."""
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    description = _flat(next(t for t in tools.tools if t.name == "swiss_search").description)
+    assert "in practice required on every call" in description
+
+
+async def test_a_federal_question_with_no_location_is_still_refused(server):
+    """The behaviour the line above describes, so the description cannot drift away from
+    it. Nothing about this question is local."""
+    data = await call(server, "swiss_search", {
+        "question": "Who maintains the federal hiking trail network?",
+        "question_en": "Who maintains the federal hiking trail network?",
+        "topic_en": "responsibility for hiking trail networks", "topics": ["hiking"],
+    })
+    assert data["status"] == "needs_location"
+
+
+async def test_search_description_links_a_null_tier_to_distance(server):
+    """`specificity_tier` returns None when `hit_distance > floor`, so the two fields are
+    not independent. A model shown `tier: null` beside a distance and told the numbers are
+    unrelated will misread its own results -- while still needing to be told not to filter
+    on distance itself."""
+    async with create_connected_server_and_client_session(server._mcp_server) as client:
+        tools = await client.list_tools()
+    description = _flat(next(t for t in tools.tools if t.name == "swiss_search").description)
+    assert "its distance was beyond the cutoff" in description
+    assert "nothing is ever dropped for its distance" in description

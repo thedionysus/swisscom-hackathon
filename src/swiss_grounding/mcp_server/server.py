@@ -123,7 +123,12 @@ def build_server(settings: Settings) -> FastMCP:
         English description of the subject. Answer quality depends on it.
 
         question: the user's question exactly as they wrote it, in their language. This is
-        what the keyword index is searched for, so the terms they actually used still count.
+        what the keyword index is searched for. That index is built from the English text,
+        so only what survives translation matches: place and organisation names do, ordinary
+        German, French and Italian words do not ("Leinenpflicht", "Abfall" and "Gemeinde"
+        each match nothing). Accents are not folded either, so the spelling has to be the
+        one the English text uses. Send this field anyway -- it costs nothing and names do
+        reach it -- but question_en is what actually carries the search.
         question_en: the same question in English. This, joined to topic_en by a space, is
         what gets embedded and compared against the index. Omit it and the server embeds the
         verbatim question against an English index instead -- that still works and still
@@ -145,10 +150,13 @@ def build_server(settings: Settings) -> FastMCP:
         contract keep working. Same meaning, same hard filter, read only when topics is
         empty. Send topics.
 
-        location: a hard filter. Only documents scoped to the location or one of its parent
-        jurisdictions (city, canton, Switzerland) are returned. If the question concerns a
-        specific place and no location is given, the status is 'needs_location': ask the user
-        for a city, canton, or postal code, then call again. Do not guess a location.
+        location: a hard filter, and in practice required on every call. Only documents
+        scoped to the location or one of its parent jurisdictions (city, canton,
+        Switzerland) are returned. Leave it out and the server looks for a place name in
+        the question; find nothing and the status is 'needs_location' whatever the subject
+        was -- a purely federal question is refused exactly like a local one, so do not
+        assume national topics can skip it. Ask the user for a city, canton, or postal code,
+        then call again. Do not guess a location.
 
         as_of: optional ISO date. The index holds current consolidations only and has no
         version history, so as_of can only exclude, never reach back -- it does NOT retrieve
@@ -167,13 +175,17 @@ def build_server(settings: Settings) -> FastMCP:
         neither is a relevance score:
         - tier: hops from the asked jurisdiction up to the one the evidence applies to. 0 is
           the asked jurisdiction itself, 1 its parent, rising to the federal root. null means
-          the chunk claimed no tier; those citations come last, barring that one exception,
-          and are still evidence.
+          the chunk claimed no tier, which usually means its distance was beyond the cutoff
+          the server requires before a chunk may claim to be the *local* answer; it can also
+          mean the distance was never measured. Those citations come last, barring that one
+          exception, and are still evidence.
         - distance: cosine distance from the chunk to the embedded query, i.e. to
           question_en + topic_en. It moves when you reword the topic and stays put when you
-          only change the location. It is NOT a relevance threshold and nothing filters on
-          it: on this corpus it does not separate relevant from irrelevant, so do not drop a
-          citation for having a high one. null means it was never measured.
+          only change the location. That tier cutoff is the only thing distance decides, and
+          it only demotes: nothing is ever dropped for its distance, and distance is NOT a
+          relevance threshold you should apply yourself. On this corpus it does not separate
+          relevant from irrelevant, so do not drop a citation for having a high one. null
+          means it was never measured.
 
         Calendar-style citations (e.g. waste collections) carry event_date: the day the event
         happens. Treat an event_date before today as already passed; do not present it as the
