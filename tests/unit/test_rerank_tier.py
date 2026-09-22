@@ -144,3 +144,23 @@ def test_the_floor_ships_uncalibrated_but_present():
     """`RerankWeights()` carries a floor without anyone passing one; the value itself is
     a documented default, not a measured one (Task 9 Step 3)."""
     assert RerankWeights().relevance_floor == 0.55
+
+
+def test_the_specificity_term_is_the_tier_decayed():
+    """Both come from one tree walk (`hops_to_extent`), and this is the relationship that
+    walk exists to make unbreakable: the tier is the hop count, the score's specificity
+    term is that same hop count decayed. Deriving them separately let them drift."""
+    hits = (make_hit(1, "CH", 0.1), make_hit(2, "CH-ZH", 0.1), make_hit(3, "CH-ZH-261", 0.1))
+    ranked = rerank(hits, TREE, QUERY_NODE, (), WEIGHTS)
+    assert all(s.tier is not None for s in ranked)
+    for s in ranked:
+        assert s.specificity == 1.0 / (1.0 + s.tier)
+
+
+def test_a_demoted_chunk_keeps_the_specificity_its_extent_earns():
+    """The floor withholds the *tier*; it does not also shrink the score's specificity
+    term. The chunk is as local as it is either way, and docking it twice would count one
+    decision against it in both ordering keys."""
+    ranked = rerank((municipal(0.72),), TREE, QUERY_NODE, (), WEIGHTS)
+    assert ranked[0].tier is None
+    assert ranked[0].specificity == 1.0          # CH-ZH-261 is the question's own node

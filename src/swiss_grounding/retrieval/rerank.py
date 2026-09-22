@@ -43,26 +43,40 @@ class RerankWeights:
     relevance_floor: float = RELEVANCE_FLOOR
 
 
-def specificity_score(tree: LocationTree, query_node_id: str, chunk_extent_id: str) -> float:
-    """1.0 for an exact extent match, decaying with each level of generality."""
-    distance = tree.distance(query_node_id, chunk_extent_id)
-    if distance is None:
+def hops_to_extent(tree: LocationTree, query_node_id: str, chunk_extent_id: str) -> int | None:
+    """Steps up the location tree from the question's node to the chunk's extent, or None
+    when that extent is not on the question's path.
+
+    One walk, feeding both specificity terms below. They are not two measurements of two
+    things: the tier *is* this integer, and the score is this same integer decayed, so
+    computing them from separate walks would let a relationship that has to hold drift
+    apart silently.
+
+    Named `hops` and not `distance` on purpose. `LocationTree.distance` counts steps up a
+    tree; `Hit.distance` is a cosine distance in embedding space. Both reach the reranker,
+    they are published side by side on every citation as `tier` and `distance`, and one
+    word for both is how they get confused (`CONTEXT.md`, *Specificity tier*).
+    """
+    return tree.distance(query_node_id, chunk_extent_id)
+
+
+def specificity_score(hops: int | None) -> float:
+    """1.0 for an exact extent match, decaying with each level of generality.
+
+    This is `hops_to_extent`'s integer smoothed into the additive score and nothing else;
+    None, an extent off the question's path, scores 0.0.
+    """
+    if hops is None:
         return 0.0
-    return 1.0 / (1.0 + distance)
+    return 1.0 / (1.0 + hops)
 
 
-def specificity_tier(
-    tree: LocationTree,
-    query_node_id: str,
-    chunk_extent_id: str,
-    hit_distance: float | None,
-    floor: float,
-) -> int | None:
+def specificity_tier(hops: int | None, hit_distance: float | None, floor: float) -> int | None:
     """The specificity tier a chunk may claim, or None when it may claim none.
 
-    The tier is the integer hop count `specificity_score`'s decay is derived from: 0 for
-    the question's own node, rising a step per level of generality up to the federal root.
-    It is the outer ordering key, which is what makes "most specific first" true.
+    The tier is `hops_to_extent`'s hop count, the integer `specificity_score`'s decay is
+    derived from: 0 for the question's own node, rising a step per level of generality up
+    to the federal root. It is the reranker's outer ordering key.
 
     Three distinct situations all yield None, and all three mean the same thing to the
     caller -- *this chunk earns no claim on specificity*:
@@ -73,16 +87,16 @@ def specificity_tier(
       position, never membership, so it can never produce a false `no_evidence`.
     - `hit_distance` is None. The distance was never measured, which is not the same as
       being far, so the honest answer is to claim nothing rather than to guess either way.
-    - The extent is not on the question's path, so `tree.distance` returns None. The
-      extent predicate in `search.FILTER` means this cannot happen in a real query; if a
-      caller reaches here with an off-path chunk anyway, it must not be able to claim
-      specificity it does not have. Ranking it last is the conservative reading and keeps
-      the reranker out of the business of validating its own input -- raising here would
-      turn one bad row into a failed query for every other row beside it.
+    - `hops` is None, the extent being off the question's path. The extent predicate in
+      `search.FILTER` means this cannot happen in a real query; if a caller reaches here
+      with an off-path chunk anyway, it must not be able to claim specificity it does not
+      have. Ranking it last is the conservative reading and keeps the reranker out of the
+      business of validating its own input -- raising here would turn one bad row into a
+      failed query for every other row beside it.
     """
     if hit_distance is None or hit_distance > floor:
         return None
-    return tree.distance(query_node_id, chunk_extent_id)
+    return hops
 
 
 def category_overlap(query_categories: Sequence[str], chunk_categories: Sequence[str]) -> float:
@@ -141,7 +155,8 @@ def rerank(
     current = today()
     scored = []
     for hit in hits:
-        spec = specificity_score(tree, query_node_id, hit.chunk.extent_id)
+        hops = hops_to_extent(tree, query_node_id, hit.chunk.extent_id)
+        spec = specificity_score(hops)
         cat = category_overlap(query_categories, hit.chunk.categories)
         auth = AUTHORITY_RANK[hit.chunk.authority]
         score = (
@@ -150,9 +165,7 @@ def rerank(
             + weights.authority * auth
             + weights.rrf * weights.rrf_scale * hit.rrf_score
         ) * event_recency_factor(hit.chunk.event_date, current)
-        tier = specificity_tier(
-            tree, query_node_id, hit.chunk.extent_id, hit.distance, weights.relevance_floor,
-        )
+        tier = specificity_tier(hops, hit.distance, weights.relevance_floor)
         scored.append(ScoredHit(hit=hit, score=score, specificity=spec,
                                 category_overlap=cat, authority_score=auth, tier=tier))
     return tuple(sorted(scored, key=_order_key))

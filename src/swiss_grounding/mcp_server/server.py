@@ -160,11 +160,15 @@ def build_server(settings: Settings) -> FastMCP:
         the index can answer for. Omit as_of for what is in force now; that is the normal case.
 
         Results are evidence with citations; write the answer from them and cite the URLs.
-        Never invent URLs. Citations are ordered by tier, most specific first. Both numbers
-        on a citation are lower-is-better and neither is a relevance score:
+        Never invent URLs. Citations are ordered by tier, most specific first, with one
+        exception: to guarantee the most specific jurisdiction is represented at all, one
+        citation may be moved out of tier order, so read each citation's tier rather than
+        inferring it from position. Both numbers on a citation are lower-is-better and
+        neither is a relevance score:
         - tier: hops from the asked jurisdiction up to the one the evidence applies to. 0 is
           the asked jurisdiction itself, 1 its parent, rising to the federal root. null means
-          the chunk claimed no tier; those citations come last but are still evidence.
+          the chunk claimed no tier; those citations come last, barring that one exception,
+          and are still evidence.
         - distance: cosine distance from the chunk to the embedded query, i.e. to
           question_en + topic_en. It moves when you reword the topic and stays put when you
           only change the location. It is NOT a relevance threshold and nothing filters on

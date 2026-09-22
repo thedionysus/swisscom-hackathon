@@ -360,6 +360,25 @@ def test_a_weak_local_chunk_does_not_leapfrog_but_is_still_returned():
 
 **Verification:** unit tests pass; probes re-recorded in Task 12.
 
+> **The Task 9 commit message is wrong about `city-001` and `city-018`, and git log is permanent.**
+> Commit `c92602c` states that those two probes went green -> red on the tier, and blames
+> `event_recency_factor` being a multiplier on `score` now that `score` is only the inner
+> ordering key. **That is a false record.** Both probes were already red at `2de0a10`, the
+> commit before it — measured by checking that commit out and running the harness: `2 failed,
+> 40 passed`. Disabling the tier entirely at the current head (`RELEVANCE_FLOOR = -1.0`, so no
+> chunk claims a tier and the ordering is exactly pre-Task-9) leaves them red as well. The tier
+> is not implicated at any point. The real cause is the one recorded under *CORRECTION: the two
+> red probes are an `as_of` regression, not a tier artefact* below: Task 11 closed the
+> `valid_from is null` bypass, which excludes every undated document — the whole calendar — from
+> any dated query, and both probes carry an `as_of`.
+>
+> The method error is worth keeping too, because it is what produced the false attribution. The
+> isolation harness built a *synthetic* tree — a HEAD snapshot with the Task 9 changes pasted in
+> — rather than checking out the actual parent commit, and that synthetic tree did not carry
+> Task 11's `FILTER` change. Toggling the floor inside it therefore appeared to flip the probes.
+> Isolate a regression by checking out the real parent commit; never by reconstructing what you
+> believe it contained.
+
 ---
 
 ## Task 10: New `swiss_search` contract

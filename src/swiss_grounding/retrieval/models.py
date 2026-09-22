@@ -81,10 +81,16 @@ class Citation:
     retrieved_at: datetime
     license: str | None
     tier: int | None
-    """How specific this evidence is, and the citations are ordered by it, most specific
-    first. 0 is the jurisdiction the question resolved to, 1 its parent, rising to the
-    federal root. `None` means the chunk claimed no tier and is ordered after every chunk
-    that did -- it is still evidence, it simply earned no claim to be the *local* answer.
+    """How specific this evidence is. 0 is the jurisdiction the question resolved to, 1 is
+    its parent, rising to the federal root. `None` means the chunk claimed no tier -- it is
+    still evidence, it simply earned no claim to be the *local* answer.
+
+    Citations are ordered by it, with one exception, so read the field rather than inferring
+    it from position. `rerank` orders strictly by tier and puts every unclaimed one last;
+    `diversify` may then move a single chunk out of that order, because guaranteeing that
+    the most specific extent is represented at all takes precedence over a tidy sequence.
+    A citation with no tier can therefore sit above ones that have a tier.
+    `tests/unit/test_diversify.py` holds the worked case.
 
     Replaces the former `score`, which moved with the question's extent: the same chunk
     measured 1.1918 asked about `CH` and 0.8168 asked about `8003`, entirely on the

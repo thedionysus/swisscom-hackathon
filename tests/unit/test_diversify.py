@@ -5,7 +5,8 @@ from swiss_grounding.retrieval.diversify import diversify
 from swiss_grounding.retrieval.models import ChunkRecord, Hit, ScoredHit
 
 
-def scored(chunk_id, document_id, extent_id, score, specificity, identifier=None, event_date=None):
+def scored(chunk_id, document_id, extent_id, score, specificity, identifier=None, event_date=None,
+           tier=None):
     chunk = ChunkRecord(
         chunk_id=chunk_id, document_id=document_id, ordinal=0, text_original="o", text_en="e",
         heading_path="", anchor=None, extent_id=extent_id, authority=Authority.OFFICIAL_INFO,
@@ -14,7 +15,8 @@ def scored(chunk_id, document_id, extent_id, score, specificity, identifier=None
         source_id="s", event_date=event_date,
     )
     hit = Hit(chunk=chunk, rrf_score=0.0, dense_rank=None, lexical_rank=None)
-    return ScoredHit(hit=hit, score=score, specificity=specificity, category_overlap=0, authority_score=0)
+    return ScoredHit(hit=hit, score=score, specificity=specificity, category_overlap=0,
+                     authority_score=0, tier=tier)
 
 
 def test_caps_chunks_per_document():
@@ -129,3 +131,38 @@ def test_series_cap_exempts_past_events():
     )
     out = diversify(items, limit=4, per_document_cap=2, today=TODAY)
     assert [s.hit.chunk.chunk_id for s in out] == [1, 2, 3, 4]
+
+
+def test_the_most_specific_swap_can_put_a_citation_out_of_tier_order():
+    """`rerank` orders by tier; `diversify` is allowed to break that, and does.
+
+    The reviewer's construction, kept as a regression guard for the docstrings on
+    `Citation.tier` and `swiss_search`, which used to promise tier order unconditionally.
+    Three upcoming occurrences of one calendar series fill the per-series cap and two
+    federal chunks fill the limit, so the most specific chunk -- a fourth occurrence of
+    that same series, below the relevance floor and therefore holding no tier -- is
+    swapped in over one of them. It lands ahead of two tier-2 citations.
+
+    This is not a defect to fix here: that swap is the guarantee that the most specific
+    extent is represented at all, and making it tier-aware is a design decision nobody has
+    taken. The contract has to describe what happens, so the contract is what changed.
+    """
+    today = date(2026, 9, 16)
+    upcoming = date(2026, 9, 20)
+    items = (
+        scored(10, 100, "CH-ZH", 0.9, 0.5, identifier="cardboard-2026-09-20", event_date=upcoming, tier=1),
+        scored(11, 101, "CH-ZH", 0.8, 0.5, identifier="cardboard-2026-09-21", event_date=upcoming, tier=1),
+        scored(12, 102, "CH-ZH", 0.7, 0.5, identifier="cardboard-2026-09-22", event_date=upcoming, tier=1),
+        scored(20, 200, "CH", 0.6, 0.25, tier=2),
+        scored(21, 201, "CH", 0.5, 0.25, tier=2),
+        scored(30, 300, "CH-ZH-261", 0.1, 1.0, identifier="cardboard-2026-09-23", event_date=upcoming, tier=None),
+    )
+    out = diversify(items, limit=5, per_series_cap=3, today=today)
+    assert [s.hit.chunk.chunk_id for s in out] == [10, 11, 30, 20, 21]
+    tiers = [s.tier for s in out]
+    assert tiers == [1, 1, None, 2, 2]
+    # "A citation with no tier comes after every citation that has one" -- the claim the
+    # two docstrings used to make -- is false here, and this is what falsifies it.
+    unclaimed = tiers.index(None)
+    assert any(t is not None for t in tiers[unclaimed:])
+
