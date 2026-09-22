@@ -28,7 +28,7 @@ from swiss_grounding.registry.models import FetchStrategy
 from swiss_grounding.registry.repository import load_sources, upsert_sources
 from swiss_grounding.registry.suggestions import list_suggestions, review_suggestion
 from swiss_grounding.retrieval.embedder import build_embedder
-from swiss_grounding.retrieval.models import QueryRequest
+from swiss_grounding.retrieval.models import Citation, QueryRequest
 
 
 def _link(url: str, anchor: str | None) -> str:
@@ -36,6 +36,27 @@ def _link(url: str, anchor: str | None) -> str:
     if not anchor or "#" in url:
         return url
     return f"{url}#{anchor}"
+
+
+def _citation_line(index: int, citation: Citation) -> str:
+    """The heading line for one citation.
+
+    It prints `tier` and `distance`, which replaced `score` in Task 9: both are
+    lower-is-better, the tier is the hop count from the question's jurisdiction and
+    orders the list, and the distance is reported but is not a relevance threshold.
+    Either can legitimately be absent, and each is spelled out in words rather than
+    printed as a bare `None` that would read like a value.
+    """
+    tier = "no tier" if citation.tier is None else f"tier {citation.tier}"
+    distance = (
+        "distance not measured" if citation.distance is None
+        else f"distance {citation.distance}"
+    )
+    when = f" — event on {citation.event_date.isoformat()}" if citation.event_date else ""
+    return (
+        f"[{index}] {citation.title_en} — {citation.extent_label} / "
+        f"{citation.authority} ({tier}, {distance}){when}"
+    )
 
 
 EXIT_CODES = {"invalid_request": 1, "needs_location": 2}
@@ -121,8 +142,7 @@ def query_cmd(
         if resp.message:
             typer.echo(resp.message)
         for i, c in enumerate(resp.citations, 1):
-            when = f" — event on {c.event_date.isoformat()}" if c.event_date else ""
-            typer.echo(f"\n[{i}] {c.title_en} — {c.extent_label} / {c.authority} (score {c.score}){when}")
+            typer.echo(f"\n{_citation_line(i, c)}")
             typer.echo(f"    {_link(c.url, c.anchor)}")
             typer.echo(f"    {c.snippet_en}")
         typer.echo(f"\n{resp.notice}")

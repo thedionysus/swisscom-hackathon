@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from datetime import date
 
+import numpy as np
 import psycopg
 
 from swiss_grounding.registry.models import Authority
@@ -107,6 +108,30 @@ where c.id = any(%(ids)s)
 """
 
 
+def distances_for(
+    conn: psycopg.Connection, vector: np.ndarray, chunk_ids: Sequence[int],
+) -> dict[int, float]:
+    """Cosine distance from `vector` to each named chunk, keyed by chunk id.
+
+    This exists because only the dense arm measures a distance: a chunk the lexical arm
+    found and the dense arm did not has never been compared to the query vector, and
+    Task 9 needs a distance for every hit -- it is what decides whether a chunk may claim
+    a specificity tier, and it is published on every citation.
+
+    **An id with no row is simply absent from the result.** Every id passed here came out
+    of a select on this same connection moments earlier, so the only way to lose one is a
+    concurrent delete. The caller turns that into `Hit.distance is None`, meaning *not
+    measured*, and a chunk with no measured distance claims no tier (`rerank`). Nothing
+    fabricates a distance for a row it could not find, because a made-up number here would
+    be indistinguishable from a real one downstream.
+    """
+    ids = list(dict.fromkeys(chunk_ids))
+    if not ids:
+        return {}
+    rows = conn.execute(DISTANCE_SQL, {"vector": vector, "ids": ids}).fetchall()
+    return {row["chunk_id"]: row["distance"] for row in rows}
+
+
 def reciprocal_rank_fusion(
     dense: Sequence[int], lexical: Sequence[int], k: int = 60, with_ranks: bool = False,
 ) -> list:
@@ -156,6 +181,14 @@ def hybrid_search(
     rather than a filter nothing satisfies -- see FILTER for why the two must differ.
     Unknown topic ids are the caller's to reject; `query_core._validate` does it, and an
     unknown id reaching here simply matches no chunk.
+
+    Every returned hit carries the cosine distance it would have had in the dense arm,
+    backfilled for the lexically-retrieved ones. The plan sited that backfill after
+    diversification, over the ≤25 surviving ids; it runs here instead, over the fused
+    candidate set, because the distance decides the specificity tier and the tier is the
+    reranker's outer ordering key -- fetching it later would mean publishing a tier that
+    the ordering never used. The cost of moving it is one primary-key lookup over ≤100
+    ids rather than ≤25.
     """
     vector = embedder.embed([question])[0]
     params = {
@@ -167,12 +200,18 @@ def hybrid_search(
     dense_rows = conn.execute(DENSE_SQL, {**params, "vector": vector}).fetchall()
     lexical_rows = conn.execute(LEXICAL_SQL, {**params, "question": question}).fetchall()
     records = {r["chunk_id"]: _record(r) for r in [*dense_rows, *lexical_rows]}
+    measured = {r["chunk_id"]: r["distance"] for r in dense_rows}
+    distances = {
+        **measured,
+        **distances_for(conn, vector, [cid for cid in records if cid not in measured]),
+    }
     fused = reciprocal_rank_fusion(
         dense=[r["chunk_id"] for r in dense_rows],
         lexical=[r["chunk_id"] for r in lexical_rows],
         with_ranks=True,
     )
     return tuple(
-        Hit(chunk=records[cid], rrf_score=score, dense_rank=dr, lexical_rank=lr)
+        Hit(chunk=records[cid], rrf_score=score, dense_rank=dr, lexical_rank=lr,
+            distance=distances.get(cid))
         for cid, score, dr, lr in fused
     )

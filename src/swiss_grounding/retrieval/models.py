@@ -36,6 +36,12 @@ class Hit:
     rrf_score: float
     dense_rank: int | None
     lexical_rank: int | None
+    distance: float | None = None
+    """Raw cosine distance between the chunk's embedding and the vector that was searched,
+    lower being nearer. `None` means *not measured*, not *far*: nothing may read it as a
+    large distance. `search.hybrid_search` fills it in for every hit it returns, including
+    the lexically-retrieved ones the dense arm never scored, so `None` survives only for a
+    chunk deleted underneath the query."""
 
 
 @dataclass(frozen=True)
@@ -45,6 +51,12 @@ class ScoredHit:
     specificity: float
     category_overlap: float
     authority_score: float
+    tier: int | None = None
+    """Hops from the question's node up to the chunk's extent: 0 is the question's own
+    node, rising to the federal root. `None` is *no tier claimed* -- the chunk's distance
+    did not clear the relevance floor, was never measured, or its extent is not on the
+    question's path. A chunk that claims no tier ranks after every chunk that does, and is
+    never dropped for it (`rerank`)."""
 
 
 @dataclass(frozen=True)
@@ -68,7 +80,26 @@ class Citation:
     valid_from: date | None
     retrieved_at: datetime
     license: str | None
-    score: float
+    tier: int | None
+    """How specific this evidence is, and the citations are ordered by it, most specific
+    first. 0 is the jurisdiction the question resolved to, 1 its parent, rising to the
+    federal root. `None` means the chunk claimed no tier and is ordered after every chunk
+    that did -- it is still evidence, it simply earned no claim to be the *local* answer.
+
+    Replaces the former `score`, which moved with the question's extent: the same chunk
+    measured 1.1918 asked about `CH` and 0.8168 asked about `8003`, entirely on the
+    specificity term, so no caller could compare it across calls (decision D1).
+    """
+    distance: float | None
+    """Cosine distance from the chunk to the vector that was searched, lower being nearer.
+    Steady across calls that change only the location, since the location does not enter
+    the query vector; it does move when a caller rewords the topic.
+
+    **It is not a relevance threshold, and nothing filters on it.** On the corpus as it
+    stands it does not separate relevant from irrelevant -- on one measured question a
+    download link sat at 0.5115 and the page's only on-topic sentence at 0.5257 -- so it
+    is published for the caller's information only. `None` means it was never measured.
+    """
     event_date: date | None = None      # calendar-style records: the date the event happens
 
 
