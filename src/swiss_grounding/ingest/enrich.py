@@ -7,7 +7,7 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import Category
 from swiss_grounding.registry.models import Source
 
-SOURCE_DEFAULT_CONFIDENCE = 1.0
+SOURCE_FALLBACK_CONFIDENCE = 0.5  # written only when the classifier tagged nothing; a fallback, not a certainty
 SECTION_SEPARATOR = "\n\n"
 ENGLISH = "en"
 
@@ -22,10 +22,13 @@ def _translate_sections(doc: FetchedDocument, llm: LLM) -> tuple[Section, ...]:
 
 
 def _merge_tags(defaults: Sequence[str], llm_tags: Sequence[CategoryTag]) -> tuple[CategoryTag, ...]:
-    merged = {t.id: t for t in llm_tags}
-    for cid in defaults:
-        merged[cid] = CategoryTag(id=cid, confidence=SOURCE_DEFAULT_CONFIDENCE)
-    return tuple(sorted(merged.values(), key=lambda t: (-t.confidence, t.id)))
+    """The classifier's per-chunk judgement always wins. A source's declared categories are used
+    only as a fallback, when the classifier tagged this chunk with nothing at all -- and then at
+    a confidence below certainty, because a source-level default is not a per-chunk assertion."""
+    tags = {t.id: t for t in llm_tags}
+    if not tags:
+        tags = {cid: CategoryTag(id=cid, confidence=SOURCE_FALLBACK_CONFIDENCE) for cid in defaults}
+    return tuple(sorted(tags.values(), key=lambda t: (-t.confidence, t.id)))
 
 
 def enrich(
