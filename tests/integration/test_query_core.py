@@ -142,3 +142,42 @@ def test_limit_below_minimum_is_clamped_not_rejected(core):
     resp = core.query(QueryRequest(question="dog leash", location="Wiedikon", limit=0))
     assert resp.status == "results"
     assert len(resp.citations) == 1
+
+
+def test_as_of_before_the_earliest_indexed_version_is_refused(core):
+    """D2, end to end. The fixture's oldest `valid_from` is 1987, so 1900 reaches nothing;
+    the old behaviour searched anyway and returned the undated pages that bypassed the
+    date filter as the answer to a question about 1900."""
+    from datetime import date
+
+    resp = core.query(QueryRequest(question="dog leash", location="Zürich",
+                                   categories=("dogs",), as_of=date(1900, 1, 1)))
+    assert resp.status == "invalid_request"
+    assert resp.field == "as_of"
+    assert "1987-01-01" in resp.message
+    assert resp.citations == ()
+
+
+def test_a_date_wipeout_is_not_reported_as_an_uncovered_subject(core):
+    """The reported defect, in the shape the live index actually has it: everything on
+    the Zurich path records no `valid_from`, so the date arm empties the result, while
+    `coverage_rows` -- which counts `status = 'current'` and applies no date -- still
+    reports the path as covered. The off-path Basel document keeps a date so the request
+    clears the earliest-version boundary and reaches retrieval at all.
+
+    Every on-path document carries `dogs` here, so blaming the topic states something
+    false and instructs a calling model to tell the user something untrue."""
+    from datetime import date
+
+    with connect(core.database_url) as conn:
+        conn.execute("update document set valid_from = null where extent_id <> 'CH-BS'")
+        conn.execute("update document set valid_from = date '1987-01-01' where extent_id = 'CH-BS'")
+        conn.execute("update document set categories = '[\"dogs\"]'::jsonb")
+        conn.execute("update chunk set categories = array['dogs']")
+
+    resp = core.query(QueryRequest(question="dog leash", location="Zürich",
+                                   topics=("dogs",), as_of=date(2020, 1, 1)))
+    assert resp.status == "no_evidence"
+    assert "2020-01-01" in resp.message
+    assert "none of them carry the topic" not in resp.message
+    assert any(row.documents for row in resp.coverage)   # coverage still says covered

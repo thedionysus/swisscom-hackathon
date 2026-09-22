@@ -88,3 +88,49 @@ def test_search_uses_document_status_not_the_chunk_copy(url):
             extent_path=("CH",), as_of=None, top_n=50,
         )
     assert doc_id not in {h.chunk.document_id for h in hits}
+
+
+def test_as_of_does_not_admit_a_document_that_records_no_valid_from(url):
+    """The D2 defect: `d.valid_from is null or ...` let an undated document satisfy every
+    `as_of`. A question about what applied in 2000 came back holding undated web pages,
+    presented as the answer, with the acts that do carry dates filtered out around them.
+
+    The second half is the control: those same documents are retrievable when no date is
+    asked for, so this is the date filter excluding them and not the query missing them.
+    """
+    from datetime import date
+
+    with connect(url) as conn:
+        dated = hybrid_search(
+            conn, FakeEmbedder(dim=8), question="hiking with a dog",
+            extent_path=("CH",), as_of=date(2000, 1, 1), top_n=50,
+        )
+        undated = hybrid_search(
+            conn, FakeEmbedder(dim=8), question="hiking with a dog",
+            extent_path=("CH",), as_of=None, top_n=50,
+        )
+
+    assert all(h.chunk.valid_from is not None for h in dated)
+    assert "Hiking with a dog" not in {h.chunk.title_en for h in dated}
+    assert "Hiking with a dog" in {h.chunk.title_en for h in undated}
+
+
+def test_earliest_indexed_version_is_the_oldest_date_as_of_can_answer_for(url):
+    """It is a property of the corpus, never a constant: the index holds only current
+    consolidations, so the oldest `valid_from` is the furthest back any date can reach."""
+    from datetime import date
+
+    from swiss_grounding.retrieval.search import earliest_indexed_version
+
+    with connect(url) as conn:
+        assert earliest_indexed_version(conn) == date(1987, 1, 1)
+
+
+def test_earliest_indexed_version_is_none_when_nothing_records_a_date(url):
+    """Then no `as_of` is answerable at all, and the caller has to be told that rather
+    than handed a boundary that does not exist."""
+    from swiss_grounding.retrieval.search import earliest_indexed_version
+
+    with connect(url) as conn:
+        conn.execute("update document set valid_from = null")
+        assert earliest_indexed_version(conn) is None
