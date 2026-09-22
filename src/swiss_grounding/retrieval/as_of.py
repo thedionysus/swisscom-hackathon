@@ -28,7 +28,22 @@ earliest_indexed_version`) so the wording and the discrimination can be tested w
 database, and so the one thing that needs the index is a single value passed in.
 """
 
+from dataclasses import dataclass
 from datetime import date
+
+
+@dataclass(frozen=True)
+class Rejection:
+    """A refusal, carrying both the sentence and the date that sentence is about.
+
+    `QueryCore` renders `message`; `no_evidence.py` needs the boundary as a date to build
+    a different sentence about it. Handing back one object stops the two call sites
+    growing their own idea of what the boundary is.
+    """
+
+    message: str
+    earliest: date | None
+
 
 # Both name the date that was asked for, because it is usually the caller's own typo or
 # an off-by-a-decade default, and a refusal that does not quote it back is a guess.
@@ -46,8 +61,19 @@ NOTHING_DATED = (
 )
 
 
-def as_of_rejection(as_of: date | None, earliest: date | None) -> str | None:
-    """The message refusing `as_of`, or None when the index can answer for it.
+# The same two states, one scope down: said about an extent path rather than the whole
+# index, for an empty result rather than a refusal. `no_evidence.py` builds on these so
+# that a date `no_evidence` is as actionable as a refusal -- it hands back a date the
+# caller can use, or says plainly that no date will work here.
+REACHABLE = "The earliest date this jurisdiction path can answer for is {earliest}."
+UNREACHABLE = (
+    "Nothing on this jurisdiction path records a validity date, so no as_of can be "
+    "answered for it at all."
+)
+
+
+def as_of_rejection(as_of: date | None, earliest: date | None) -> Rejection | None:
+    """The refusal for `as_of`, or None when the index can answer for it.
 
     `earliest` is what `search.earliest_indexed_version` returned: the oldest `valid_from`
     retrieval can reach, or None when no indexed document records one at all.
@@ -55,7 +81,19 @@ def as_of_rejection(as_of: date | None, earliest: date | None) -> str | None:
     if as_of is None:
         return None
     if earliest is None:
-        return NOTHING_DATED.format(as_of=as_of)
+        return Rejection(NOTHING_DATED.format(as_of=as_of), None)
     if as_of < earliest:
-        return TOO_EARLY.format(as_of=as_of, earliest=earliest)
+        return Rejection(TOO_EARLY.format(as_of=as_of, earliest=earliest), earliest)
     return None
+
+
+def reachable_from(earliest: date | None) -> str:
+    """One sentence about how far back an extent path reaches, for an empty dated result.
+
+    None is the live shape rather than a corner case -- 99 of 104 indexed documents record
+    no validity date -- so it gets a sentence that does not offer a date to retry with,
+    because there is none and suggesting one would be false.
+    """
+    if earliest is None:
+        return UNREACHABLE
+    return REACHABLE.format(earliest=earliest)

@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date
 
 import numpy as np
@@ -40,34 +41,52 @@ CHUNK_COLUMNS = """
 # excluded around them. `d.valid_to is null` stays a pass, and is not the same case: a
 # document with no recorded end has not ended, which is a fact about it rather than an
 # absence of one. What this costs is real and deliberate -- most of the index carries no
-# `valid_from`, so a dated query retrieves very little, and `no_evidence.py` has a third
-# cause so an empty dated result is not misreported as an uncovered place or subject.
-FILTER = """
-    c.extent_id = any(%(path)s)
-    and (%(topics)s::text[] is null or c.categories && %(topics)s::text[])
-    and (
-        (%(as_of)s::date is null and d.status = 'current')
+# `valid_from`, so a dated query retrieves very little, and `no_evidence.py` reports an
+# empty dated result from a census of these arms rather than guessing between them.
+#
+# The three arms are named separately because two other queries in this module have to
+# apply *exactly* these predicates with one arm left out. Sharing the strings is what
+# makes that true; a comment saying "copied from FILTER" was not enough, and a review
+# found the boundary query's status set drifting free with nothing to catch it.
+EXTENT_ARM = "c.extent_id = any(%(path)s)"
+TOPIC_ARM = "(%(topics)s::text[] is null or c.categories && %(topics)s::text[])"
+# The statuses `as_of` can reach. A `withdrawn` or `pending_enrichment` document is
+# unreachable at every date, so it may not shape a boundary or a count either.
+AS_OF_STATUSES = "d.status in ('current', 'superseded')"
+# What the `as_of` arm becomes when no date is supplied -- which is also what "drop the
+# date" means for the census below, so it is spelled once.
+UNDATED_ARM = "d.status = 'current'"
+AS_OF_ARM = f"""(
+        (%(as_of)s::date is null and {UNDATED_ARM})
         or (%(as_of)s::date is not null
-            and d.status in ('current', 'superseded')
+            and {AS_OF_STATUSES}
             and d.valid_from is not null and d.valid_from <= %(as_of)s::date
             and (d.valid_to is null or d.valid_to > %(as_of)s::date))
-    )
+    )"""
+FILTER = f"""
+    {EXTENT_ARM}
+    and {TOPIC_ARM}
+    and {AS_OF_ARM}
 """
 
 # The oldest date `as_of` can answer for, and it is a property of the corpus rather than
 # a constant: only current consolidations are ingested, so the index holds no version
 # older than the oldest `valid_from` in it and a date before that reaches nothing.
 #
-# The status set and the `valid_from is not null` test are copied from FILTER's `as_of`
-# arm on purpose -- this has to be the minimum over exactly the rows that arm admits, or
-# the boundary `query_core` reports would not be the boundary retrieval actually has.
+# `AS_OF_STATUSES` is the shared string, not a copy: this has to be the minimum over
+# exactly the rows FILTER's `as_of` arm admits, or the boundary `query_core` reports
+# would not be the boundary retrieval actually has -- it would promise a reach into
+# withdrawn documents that no date can retrieve.
+#
 # Deliberately not restricted to an extent path: the number goes into a refusal the
 # caller has to act on, and a boundary that moved with the place would make the same date
 # answerable in Zurich and refused in Bern for reasons the message could not explain.
-EARLIEST_VERSION_SQL = """
+# `PATH_EVIDENCE_SQL` computes the path-scoped boundary separately, for the message that
+# does want a local one.
+EARLIEST_VERSION_SQL = f"""
 select min(d.valid_from) as earliest
 from document d
-where d.status in ('current', 'superseded') and d.valid_from is not null
+where {AS_OF_STATUSES} and d.valid_from is not null
 """
 
 DENSE_SQL = f"""
@@ -94,9 +113,81 @@ def earliest_indexed_version(conn: psycopg.Connection) -> date | None:
     None is not an error and not zero: it means no indexed document carries a validity
     date, so no `as_of` is answerable at all. The caller has to tell those two apart --
     one is fixed by moving the date forward, the other only by dropping the date.
+
+    Known and deliberate: this ignores `valid_to`, which FILTER's `as_of` arm applies. A
+    document that has already expired can therefore raise the boundary above the oldest
+    date anything is actually retrievable at. Zero impact today -- no indexed document
+    carries a `valid_to` -- and it only becomes reachable once version history is
+    ingested, at which point the boundary wants to be the oldest date with *coverage*
+    rather than the oldest start date, which is a different query.
     """
     row = conn.execute(EARLIEST_VERSION_SQL).fetchone()
     return row["earliest"] if row else None
+
+
+@dataclass(frozen=True)
+class PathEvidence:
+    """What each arm of `FILTER` would have returned on the extent path, on its own.
+
+    The routing in `no_evidence.py` runs on this, and the reason is worth stating plainly:
+    an empty result names a cause, a calling model repeats that cause to a user, and the
+    only honest way to name it is to check. The coverage signal cannot do it -- it counts
+    *documents* with `status = 'current'` and applies neither the topic nor the date, so
+    it is blind to two of the three arms and cannot see a document that holds no chunks.
+
+    Two counts and a date, and every one of them is read by the routing. There is
+    deliberately no raw "chunks on this path" count: it would be redundant, because both
+    counts below are taken over subsets of exactly those rows and are therefore zero
+    whenever it would be, and a field the routing never reads is a field that rots.
+
+    - `chunks_without_as_of`: what the same request would have returned undated. Greater
+      than zero is what licenses blaming the date.
+    - `chunks_without_topics`: what it would have returned with no topic. Greater than
+      zero is what licenses blaming the topic.
+    - `earliest_valid_from`: the oldest date *this path and topic* can answer for, or None
+      when nothing there records one. The global boundary drives the refusal; this drives
+      the message, which would otherwise offer "try another as_of" for a path no date
+      reaches.
+    """
+
+    chunks_without_as_of: int
+    chunks_without_topics: int
+    earliest_valid_from: date | None
+
+
+# One round trip, four conditional aggregates, each one an arm of FILTER left out. Run
+# only on an empty result, so it never touches the path that returns evidence.
+PATH_EVIDENCE_SQL = f"""
+select
+    count(*) filter (where {TOPIC_ARM} and {UNDATED_ARM}) as chunks_without_as_of,
+    count(*) filter (where {AS_OF_ARM}) as chunks_without_topics,
+    min(d.valid_from) filter (where {TOPIC_ARM} and {AS_OF_STATUSES}) as earliest_valid_from
+from chunk c join document d on d.id = c.document_id
+where {EXTENT_ARM}
+"""
+
+
+def path_evidence(
+    conn: psycopg.Connection,
+    extent_path: tuple[str, ...],
+    as_of: date | None,
+    topics: tuple[str, ...],
+) -> PathEvidence:
+    """Census the extent path with one arm of `FILTER` dropped at a time.
+
+    `topics` follows the same null-versus-empty-array rule as `hybrid_search`: an empty
+    tuple is *no constraint*, which is null here, never an empty array that nothing
+    overlaps.
+    """
+    row = conn.execute(PATH_EVIDENCE_SQL, {
+        "path": list(extent_path), "as_of": as_of,
+        "topics": list(topics) if topics else None,
+    }).fetchone()
+    return PathEvidence(
+        chunks_without_as_of=row["chunks_without_as_of"],
+        chunks_without_topics=row["chunks_without_topics"],
+        earliest_valid_from=row["earliest_valid_from"],
+    )
 
 
 # One primary-key lookup. The `<=>` expression is character-for-character the one in

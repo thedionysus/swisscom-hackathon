@@ -232,3 +232,89 @@ def test_the_lexical_arm_matches_the_verbatim_question_not_the_embedded_one(url)
         )
     assert [h.chunk.identifier for h in verbatim if h.lexical_rank is not None] == ["SR 704 Art. 1"]
     assert [h for h in embedded if h.lexical_rank is not None] == []
+
+
+def test_the_boundary_ignores_a_document_no_as_of_could_ever_retrieve(url):
+    """The status set in `EARLIEST_VERSION_SQL` is load-bearing, and nothing pinned it.
+
+    `FILTER`'s `as_of` arm admits `current` and `superseded` only, so a `withdrawn`
+    document is unreachable at every date. If the boundary counted it, the server would
+    accept -- and promise an answer for -- a date it cannot retrieve anything at. The live
+    index carries withdrawn documents, so this is not hypothetical.
+    """
+    from datetime import date
+
+    from swiss_grounding.retrieval.search import earliest_indexed_version
+
+    with connect(url) as conn:
+        before = earliest_indexed_version(conn)
+        conn.execute(
+            "insert into document (source_id, url, title_original, title_en, language, "
+            "extent_id, authority, content_hash, status, valid_from) values "
+            "('fedlex', 'https://x/withdrawn', 'w', 'w', 'en', 'CH', 'federal_law', 'h', "
+            "'withdrawn', date '1900-01-01')"
+        )
+        assert earliest_indexed_version(conn) == before == date(1987, 1, 1)
+
+
+def test_the_boundary_ignores_a_pending_enrichment_document_too(url):
+    """The other status `FILTER`'s `as_of` arm leaves out."""
+    from datetime import date
+
+    from swiss_grounding.retrieval.search import earliest_indexed_version
+
+    with connect(url) as conn:
+        conn.execute(
+            "insert into document (source_id, url, title_original, title_en, language, "
+            "extent_id, authority, content_hash, status, valid_from) values "
+            "('fedlex', 'https://x/pending', 'p', 'p', 'en', 'CH', 'federal_law', 'h2', "
+            "'pending_enrichment', date '1901-01-01')"
+        )
+        assert earliest_indexed_version(conn) == date(1987, 1, 1)
+
+
+def test_the_boundary_does_count_a_superseded_document(url):
+    """The mirror: `superseded` *is* in the `as_of` arm, so a date reaching it is one the
+    index can answer for, and the boundary must not refuse it."""
+    from datetime import date
+
+    from swiss_grounding.retrieval.search import earliest_indexed_version
+
+    with connect(url) as conn:
+        conn.execute(
+            "insert into document (source_id, url, title_original, title_en, language, "
+            "extent_id, authority, content_hash, status, valid_from) values "
+            "('fedlex', 'https://x/old', 'o', 'o', 'en', 'CH', 'federal_law', 'h3', "
+            "'superseded', date '1950-01-01')"
+        )
+        assert earliest_indexed_version(conn) == date(1950, 1, 1)
+
+
+def test_path_evidence_counts_what_each_arm_would_have_returned_alone(url):
+    """The census the `no_evidence` routing runs on. Each count is the same predicate
+    `FILTER` applies, with one arm left out, so a cause can be established rather than
+    guessed at."""
+    from datetime import date
+
+    from swiss_grounding.retrieval.search import path_evidence
+
+    with connect(url) as conn:
+        # `hiking` chunks exist on the CH path; every fedlex document predates 2000.
+        seen = path_evidence(conn, ("CH",), as_of=date(1900, 1, 1), topics=("hiking",))
+        assert seen.chunks_without_as_of > 0      # on-topic chunks the date excludes
+        assert seen.chunks_without_topics == 0    # nothing at all was in force in 1900
+        assert seen.earliest_valid_from == date(1987, 1, 1)
+
+
+def test_path_evidence_sees_a_path_whose_documents_hold_no_chunks(url):
+    """`coverage_rows` counts documents and would still call this path covered. The census
+    counts chunks, so both counterfactuals come back zero and neither the topic nor the
+    date can be blamed for an empty result there."""
+    from swiss_grounding.retrieval.search import path_evidence
+
+    with connect(url) as conn:
+        conn.execute("delete from chunk")
+        seen = path_evidence(conn, ("CH",), as_of=None, topics=("hiking",))
+        assert seen.chunks_without_as_of == 0
+        assert seen.chunks_without_topics == 0
+        assert seen.earliest_valid_from is None

@@ -177,26 +177,76 @@ def test_as_of_before_the_earliest_indexed_version_is_refused(core):
     assert resp.citations == ()
 
 
-def test_a_date_wipeout_is_not_reported_as_an_uncovered_subject(core):
-    """The reported defect, in the shape the live index actually has it: everything on
-    the Zurich path records no `valid_from`, so the date arm empties the result, while
-    `coverage_rows` -- which counts `status = 'current'` and applies no date -- still
-    reports the path as covered. The off-path Basel document keeps a date so the request
-    clears the earliest-version boundary and reaches retrieval at all.
+def test_a_topic_wipeout_reads_the_same_dated_and_undated(core):
+    """THE CRITICAL DEFECT, end to end on the corpus the reviewer used. No document on the
+    Zurich path carries `waste`, so the topic is the sole cause of the empty result. The
+    previous routing blamed any dated empty result on the date, so the server stated the
+    topic was uncovered when asked undated and stated the opposite one query later."""
+    from datetime import date
 
-    Every on-path document carries `dogs` here, so blaming the topic states something
-    false and instructs a calling model to tell the user something untrue."""
+    undated = core.query(QueryRequest(question="cardboard collection", location="Zürich",
+                                      topics=("waste",)))
+    dated = core.query(QueryRequest(question="cardboard collection", location="Zürich",
+                                    topics=("waste",), as_of=date(2020, 1, 1)))
+    assert undated.status == dated.status == "no_evidence"
+    assert "waste" in undated.message
+    assert undated.message == dated.message
+
+
+def test_a_dated_query_on_documents_that_hold_no_chunks_is_not_blamed_on_the_date(core):
+    """The second half of the same defect: with the chunks gone the documents remain, so
+    `coverage_rows` still calls the path covered, and the date got nothing to exclude."""
     from datetime import date
 
     with connect(core.database_url) as conn:
-        conn.execute("update document set valid_from = null where extent_id <> 'CH-BS'")
-        conn.execute("update document set valid_from = date '1987-01-01' where extent_id = 'CH-BS'")
-        conn.execute("update document set categories = '[\"dogs\"]'::jsonb")
-        conn.execute("update chunk set categories = array['dogs']")
+        conn.execute("delete from chunk")
 
     resp = core.query(QueryRequest(question="dog leash", location="Zürich",
                                    topics=("dogs",), as_of=date(2020, 1, 1)))
     assert resp.status == "no_evidence"
+    assert "2020-01-01" not in resp.message
+    assert "dogs" not in resp.message
+    assert any(row.documents for row in resp.coverage)   # coverage still says covered
+
+
+def _only_basel_is_dated(core):
+    """The live shape: the queried path records no validity date anywhere, while a
+    document off the path keeps the global boundary reachable so the request is not
+    refused before it reaches retrieval."""
+    from datetime import date
+
+    with connect(core.database_url) as conn:
+        conn.execute("update document set valid_from = null where extent_id <> 'CH-BS'")
+        conn.execute("update document set valid_from = date '1987-01-01' "
+                     "where extent_id = 'CH-BS'")
+    return date(2020, 1, 1)
+
+
+def test_a_genuine_date_wipeout_is_reported_as_one(core):
+    """The date really is the sole cause here: on-topic chunks are indexed on the path and
+    every one of them is excluded for recording no validity date."""
+    as_of = _only_basel_is_dated(core)
+
+    resp = core.query(QueryRequest(question="dog leash", location="Zurich",
+                                   topics=("dogs",), as_of=as_of))
+    assert resp.status == "no_evidence"
     assert "2020-01-01" in resp.message
+    assert "dogs" in resp.message
+    # Nothing on this path records a date, so "try another as_of" would be false.
+    assert "no as_of can be answered" in resp.message
     assert "none of them carry the topic" not in resp.message
     assert any(row.documents for row in resp.coverage)   # coverage still says covered
+
+
+def test_a_date_wipeout_names_the_boundary_when_the_path_has_one(core):
+    """And when the path does record a date, the message is as actionable as the refusal
+    is: it hands back the date, not "a different as_of may help"."""
+    as_of = _only_basel_is_dated(core)
+    with connect(core.database_url) as conn:
+        conn.execute("update document set valid_from = date '2022-06-01' "
+                     "where extent_id = 'CH-ZH-261'")
+
+    resp = core.query(QueryRequest(question="dog leash", location="Zurich",
+                                   topics=("dogs",), as_of=as_of))
+    assert resp.status == "no_evidence"
+    assert "2022-06-01" in resp.message   # after the as_of, so the date excluded it

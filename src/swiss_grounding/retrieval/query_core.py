@@ -17,7 +17,11 @@ from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
 from swiss_grounding.retrieval.no_evidence import no_evidence_message
 from swiss_grounding.retrieval.query_text import build_search_query
 from swiss_grounding.retrieval.rerank import RerankWeights, rerank
-from swiss_grounding.retrieval.search import earliest_indexed_version, hybrid_search
+from swiss_grounding.retrieval.search import (
+    earliest_indexed_version,
+    hybrid_search,
+    path_evidence,
+)
 from swiss_grounding.retrieval.topics import resolve_topics, topic_decided_by
 
 CANDIDATE_TOP_N = 50
@@ -113,6 +117,14 @@ class QueryCore:
             # Deliberately not passed `topics`: coverage is about places, not subjects
             # (ADR 0001), and it is the same count `swiss_coverage` returns.
             rows = coverage_rows(conn, self.tree, resolved.path)
+            # Only on the empty path, and only there: this is what lets `no_evidence`
+            # establish which arm of the filter emptied the result instead of guessing
+            # between them. The coverage rows above cannot answer that -- they count
+            # documents, apply neither the topic nor the date, and cannot see a document
+            # whose chunks are gone.
+            evidence = None if hits else path_evidence(
+                conn, resolved.path, as_of=request.as_of, topics=topics,
+            )
         note = resolution_note(
             rows, self.tree, resolved.input_text, resolved.location, resolved.method, resolved.alternatives,
         )
@@ -127,7 +139,7 @@ class QueryCore:
         )
         if not hits:
             return replace(base, message=no_evidence_message(
-                resolved.location.label("en"), rows, topics, request.as_of,
+                resolved.location.label("en"), evidence, topics, request.as_of,
             ))
         # The same topics that filtered, not `request.categories`, so the soft signal and
         # the hard filter can never disagree about what this question is about. They are
@@ -154,10 +166,12 @@ class QueryCore:
             return None
         with connect(self.database_url) as conn:
             earliest = earliest_indexed_version(conn)
-        message = as_of_rejection(as_of, earliest)
-        if message is None:
+        rejection = as_of_rejection(as_of, earliest)
+        if rejection is None:
             return None
-        return QueryResponse(status="invalid_request", field="as_of", message=message)
+        return QueryResponse(
+            status="invalid_request", field="as_of", message=rejection.message,
+        )
 
     def _resolve(self, request: QueryRequest) -> Resolution:
         if request.location and request.location.strip():
