@@ -84,3 +84,16 @@ def test_enrichment_failure_isolates_document(ctx):
     assert report.failed == 1 and report.added == 1
     assert [d["url"] for d in docs] == ["https://www.zh.ch/en"]
     assert "llm down" in report.errors[0].reason
+
+
+def test_a_document_with_nothing_to_chunk_is_failed_not_reported_as_added(ctx):
+    """No chunks means nothing retrievable, so counting it as added would report a success that the
+    index cannot show. It fails per document, like a source that yields no extractable text."""
+    u, tree, source = ctx
+    result = FetchResult(documents=(page("https://www.zh.ch/blank", "   "),))
+    with connect(u) as conn:
+        report = run_ingest(conn, source, StubFetcher(result), FakeLLM(), FakeEmbedder(8), tree, run_id="r1")
+        stored = conn.execute("select count(*) as n from document").fetchone()["n"]
+    assert (report.added, report.failed) == (0, 1)
+    assert "no chunkable text" in report.errors[0].reason
+    assert stored == 0

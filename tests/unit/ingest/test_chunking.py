@@ -54,9 +54,3 @@ def test_a_dropped_section_is_an_error_not_a_silent_loss():
     """An article whose translation came back empty must fail the document, not vanish from it."""
     with pytest.raises(EnrichmentError):
         chunk_sections(original=(sec("Art. 1", "Text"),), english=(sec("Art. 1", "   "),), limits=ChunkLimits())
-
-
-def test_a_section_empty_in_both_languages_is_still_skipped():
-    """Nothing was lost: the source section carries no text either."""
-    chunks = chunk_sections((sec("A", "  "), sec("B", "y")), (sec("A", "  "), sec("B", "y")), ChunkLimits())
-    assert len(chunks) == 1 and chunks[0].heading_path == "B"

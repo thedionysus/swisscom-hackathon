@@ -112,6 +112,10 @@ class ApiFetcher:
                 url = f"{feed_url}#{record_id}"
                 title = _render(cfg["title_template"], record)
                 text = _render(cfg["text_template"], record)
+                if not text:
+                    # As in the PDF and Fedlex fetchers: a record with no text is not evidence, and
+                    # a document built from it would be an empty section nobody can retrieve.
+                    raise ValueError("record rendered no text")
             except ValueError as exc:
                 errors.append(FetchError(url=url or feed_url, reason=str(exc)))
                 continue
