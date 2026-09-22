@@ -13,8 +13,10 @@ from swiss_grounding.retrieval.coverage import coverage_rows, resolution_note
 from swiss_grounding.retrieval.diversify import diversify
 from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
+from swiss_grounding.retrieval.no_evidence import no_evidence_message
 from swiss_grounding.retrieval.rerank import RerankWeights, rerank
 from swiss_grounding.retrieval.search import hybrid_search
+from swiss_grounding.retrieval.topics import resolve_topics
 
 CANDIDATE_TOP_N = 50
 MAX_LIMIT = 25
@@ -31,12 +33,16 @@ def _validate(request: QueryRequest) -> QueryResponse | None:
             status="invalid_request", field="question",
             message="The question is empty. Provide the user's question text.",
         )
-    unknown = sorted(c for c in request.categories if c not in CATEGORY_IDS)
-    if unknown:
-        return QueryResponse(
-            status="invalid_request", field="categories",
-            message=f"Unknown categories: {unknown}. Call swiss_list_categories for valid ids.",
-        )
+    # Both fields are validated, and named separately in the error, because a topic is
+    # now a hard filter: an unknown id silently matches no chunk and would turn into an
+    # unexplained `no_evidence` rather than a typo the caller can see and fix.
+    for field, supplied in (("topics", request.topics), ("categories", request.categories)):
+        unknown = sorted(c for c in supplied if c not in CATEGORY_IDS)
+        if unknown:
+            return QueryResponse(
+                status="invalid_request", field=field,
+                message=f"Unknown {field}: {unknown}. Call swiss_list_categories for valid ids.",
+            )
     return None
 
 
@@ -72,11 +78,16 @@ class QueryCore:
             return QueryResponse(status="needs_location", message=message)
         limit = max(1, min(request.limit, MAX_LIMIT))
         today = request.as_of or self.today()
+        # Empty means no constraint, not a constraint nothing satisfies; `search.FILTER`
+        # and `topics.resolve_topics` both turn on that distinction.
+        topics = resolve_topics(request, self.embedder)
         with connect(self.database_url) as conn:
             hits = hybrid_search(
                 conn, self.embedder, question=request.question, extent_path=resolved.path,
-                as_of=request.as_of, top_n=CANDIDATE_TOP_N,
+                as_of=request.as_of, top_n=CANDIDATE_TOP_N, topics=topics,
             )
+            # Deliberately not passed `topics`: coverage is about places, not subjects
+            # (ADR 0001), and it is the same count `swiss_coverage` returns.
             rows = coverage_rows(conn, self.tree, resolved.path)
         note = resolution_note(
             rows, self.tree, resolved.input_text, resolved.location, resolved.method, resolved.alternatives,
@@ -86,13 +97,17 @@ class QueryCore:
             resolved_location_label=resolved.location.label("en"),
             resolution_method=resolved.method,
             alternatives=tuple(a.id for a in resolved.alternatives),
-            categories_used=request.categories,
+            categories_used=topics,
             coverage=rows, resolution_note=note,
         )
         if not hits:
-            label = resolved.location.label("en")
-            return replace(base, message=f"No indexed evidence for {label} or its parent jurisdictions.")
-        ranked = rerank(hits, self.tree, resolved.location.id, request.categories, self.weights,
+            return replace(base, message=no_evidence_message(
+                resolved.location.label("en"), rows, topics,
+            ))
+        # The same topics that filtered, not `request.categories`, so the soft signal and
+        # the hard filter can never disagree about what this question is about. They are
+        # identical for a caller on the old contract, which is every caller until Task 10.
+        ranked = rerank(hits, self.tree, resolved.location.id, topics, self.weights,
                         today=lambda: today)
         # per_document_cap, per_series_cap, and upcoming_calendar_cap all take diversify()'s
         # own defaults here; there is no query_core-specific override.

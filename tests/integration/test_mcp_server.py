@@ -20,6 +20,12 @@ from swiss_grounding.registry.repository import upsert_sources
 from swiss_grounding.retrieval.embedder import FakeEmbedder
 
 pytestmark = pytest.mark.integration
+# Every swiss_search call that expects citations states its `categories`. Topic is a hard
+# filter now (ADR 0003) and a request stating none falls through to the local classifier,
+# whose thresholds are calibrated against bge-m3 (`retrieval/topics.py`) and decide
+# nothing meaningful under the 8-dimension FakeEmbedder this suite runs on. Before they
+# were pinned, four of these failed and one passed on a hash collision; none of them is
+# about topics, so none of them should depend on that.
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "zurich_hiking.json"
 T1 = datetime(2026, 9, 10, 1, tzinfo=UTC)
 T2 = datetime(2026, 9, 11, 1, tzinfo=UTC)
@@ -54,7 +60,8 @@ async def test_lists_expected_tools(server):
 
 
 async def test_search_returns_results_with_notice(server):
-    data = await call(server, "swiss_search", {"question": "Can my dog run off leash?", "location": "Wiedikon"})
+    data = await call(server, "swiss_search", {"question": "Can my dog run off leash?", "location": "Wiedikon",
+                       "categories": ["dogs"]})
     assert data["status"] == "results"
     assert data["notice"].startswith("Retrieved public information")
     assert data["citations"][0]["url"].startswith("https://")
@@ -62,7 +69,8 @@ async def test_search_returns_results_with_notice(server):
 
 
 async def test_search_detailed_includes_original_snippet(server):
-    data = await call(server, "swiss_search", {"question": "leash", "location": "Wiedikon", "response_format": "detailed"})
+    data = await call(server, "swiss_search", {"question": "leash", "location": "Wiedikon", "categories": ["dogs"],
+                       "response_format": "detailed"})
     assert "snippet_original" in data["citations"][0]
 
 
@@ -78,7 +86,7 @@ async def test_resolve_location(server):
 
 
 async def test_get_document(server):
-    search = await call(server, "swiss_search", {"question": "leash", "location": "Zurich"})
+    search = await call(server, "swiss_search", {"question": "leash", "location": "Zurich", "categories": ["dogs"]})
     doc_id = search["citations"][0]["document_id"]
     data = await call(server, "swiss_get_document", {"document_id": doc_id})
     assert data["document"]["id"] == doc_id
@@ -168,7 +176,7 @@ async def test_invalid_as_of_returns_structured_error(server):
 
 
 async def test_get_document_rejects_chunk_from_another_document(server):
-    search = await call(server, "swiss_search", {"question": "leash", "location": "Zurich", "limit": 8})
+    search = await call(server, "swiss_search", {"question": "leash", "location": "Zurich", "categories": ["dogs"], "limit": 8})
     doc_id = search["citations"][0]["document_id"]
     other = next(c for c in search["citations"] if c["document_id"] != doc_id)
     data = await call(server, "swiss_get_document",
@@ -190,7 +198,8 @@ async def test_search_limit_is_constrained_by_schema(server):
 
 async def test_dates_are_serialized_as_iso(server):
     data = await call(server, "swiss_search",
-                      {"question": "leash", "location": "Wiedikon", "response_format": "detailed"})
+                      {"question": "leash", "location": "Wiedikon", "categories": ["dogs"],
+                       "response_format": "detailed"})
     retrieved = data["citations"][0]["retrieved_at"]
     assert "T" in retrieved
 

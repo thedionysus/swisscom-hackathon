@@ -14,8 +14,25 @@ CHUNK_COLUMNS = """
     d.source_id, s.license, d.event_date
 """
 
+# One predicate, shared by both retrieval arms below, so the dense and the lexical arm
+# can never disagree about what counts as evidence.
+#
+# The topic clause is ADR 0003: a chunk that does not carry one of the question's topics
+# is not evidence for that question, the same way a chunk off the extent path is not.
+# `&&` is array overlap, so a chunk qualifies by carrying *any* one of the topics, not
+# all of them -- the classifier returns a margin band precisely because a near-tie is not
+# evidence for its top entry alone.
+#
+# `null`, not an empty array, is what "no topic was supplied" looks like here, and it
+# makes the clause a no-op. The two are deliberately different queries: `c.categories &&
+# '{}'` is false for every row, so an empty array would filter *on nothing* and return
+# nothing. That matters because both ends of this can legitimately be empty -- the
+# classifier returns no topics for a question it cannot place (`topics.py`), and a chunk
+# may carry no categories at all (`ingest/context.py`) -- and "no opinion" must not be
+# spelled the same way as "an opinion nothing satisfies".
 FILTER = """
     c.extent_id = any(%(path)s)
+    and (%(topics)s::text[] is null or c.categories && %(topics)s::text[])
     and (
         (%(as_of)s::date is null and d.status = 'current')
         or (%(as_of)s::date is not null
@@ -84,10 +101,22 @@ def hybrid_search(
     extent_path: tuple[str, ...],
     as_of: date | None,
     top_n: int = 50,
+    topics: tuple[str, ...] = (),
 ) -> tuple[Hit, ...]:
-    """Dense and lexical retrieval restricted to the extent path, fused with RRF."""
+    """Dense and lexical retrieval restricted to the extent path and the topics, fused with RRF.
+
+    `topics` is a hard filter (ADR 0003), and an empty tuple applies no filter at all
+    rather than a filter nothing satisfies -- see FILTER for why the two must differ.
+    Unknown topic ids are the caller's to reject; `query_core._validate` does it, and an
+    unknown id reaching here simply matches no chunk.
+    """
     vector = embedder.embed([question])[0]
-    params = {"path": list(extent_path), "as_of": as_of, "top_n": top_n}
+    params = {
+        "path": list(extent_path), "as_of": as_of, "top_n": top_n,
+        # `list(topics) or None` would map an empty tuple to null by accident of
+        # falsiness; spell the no-filter case out so it survives a later edit.
+        "topics": list(topics) if topics else None,
+    }
     dense_rows = conn.execute(DENSE_SQL, {**params, "vector": vector}).fetchall()
     lexical_rows = conn.execute(LEXICAL_SQL, {**params, "question": question}).fetchall()
     records = {r["chunk_id"]: _record(r) for r in [*dense_rows, *lexical_rows]}

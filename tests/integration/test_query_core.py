@@ -71,8 +71,17 @@ def test_ambiguous_location_message_names_the_cantons(core):
     assert "St. Gallen" in resp.message
 
 
+# The two tests below state a topic where they previously stated none. Topic is a hard
+# filter now (ADR 0003), so a request carrying none falls through to the local classifier
+# — whose floor and margin are calibrated against bge-m3 (`topics.py`) and mean nothing
+# under the 8-dimension FakeEmbedder this suite runs on, where it picks a category out of
+# hash collisions. Both tests are about extent scoping, not about topics, so they pin the
+# topic their own question is plainly about rather than letting a meaningless classifier
+# decide what they retrieve. `test_topic_filter.py` covers the no-topic case at the level
+# where the classifier is not in the way.
 def test_country_question_returns_only_country_scoped(core):
-    resp = core.query(QueryRequest(question="Who is responsible for hiking trails?", location="Switzerland"))
+    resp = core.query(QueryRequest(question="Who is responsible for hiking trails?",
+                                   location="Switzerland", topics=("hiking",)))
     assert resp.status == "results"
     assert {c.extent_id for c in resp.citations} == {"CH"}
 
@@ -94,7 +103,7 @@ def test_no_evidence_when_nothing_indexed_for_path(core):
 
 
 def test_location_in_question_is_detected(core):
-    resp = core.query(QueryRequest(question="What are the dog rules in Basel?"))
+    resp = core.query(QueryRequest(question="What are the dog rules in Basel?", topics=("dogs",)))
     assert resp.status == "results"
     assert resp.resolved_location_id == "CH-BS-2701"  # city of Basel; the canton is the alternative reading
     assert all(c.extent_id in {"CH", "CH-BS"} for c in resp.citations)
@@ -112,6 +121,15 @@ def test_unknown_categories_are_invalid_request(core):
     assert resp.status == "invalid_request"
     assert resp.field == "categories"
     assert "nope" in resp.message
+
+
+def test_unknown_topics_are_invalid_request_not_a_silent_empty_result(core):
+    """An unknown topic matches no chunk, so without this it would surface as an
+    unexplained `no_evidence` and the caller would never see the typo."""
+    resp = core.query(QueryRequest(question="dog rules", location="Wiedikon", topics=("dgos",)))
+    assert resp.status == "invalid_request"
+    assert resp.field == "topics"
+    assert "dgos" in resp.message
 
 
 def test_limit_above_maximum_is_clamped_not_rejected(core):

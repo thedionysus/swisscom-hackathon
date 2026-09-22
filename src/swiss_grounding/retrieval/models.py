@@ -82,8 +82,21 @@ class CoverageRow:
 
 @dataclass(frozen=True)
 class QueryRequest:
+    """One search. `topics` and `categories` both name subjects, and they are not the
+    same thing (ADR 0003, ADR 0004).
+
+    `topics` is the caller's statement of what the question is about, and it is a hard
+    filter: a chunk that does not carry one of them is not evidence for this question.
+    An empty tuple means *no constraint*, never *a constraint nothing satisfies* --
+    `topics.resolve_topics` is where that distinction is made and documented.
+
+    `categories` is the older, softer field, kept working for callers that have not been
+    updated to the contract Task 10 introduces. It is read as a topic only when `topics`
+    is empty.
+    """
     question: str
     location: str | None = None
+    topics: tuple[str, ...] = ()
     categories: tuple[str, ...] = ()
     as_of: date | None = None
     limit: int = 8
