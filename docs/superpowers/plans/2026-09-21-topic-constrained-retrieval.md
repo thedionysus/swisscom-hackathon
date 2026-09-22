@@ -424,6 +424,30 @@ Not blocked: Tasks 7–12. The local topic classifier embeds category descriptio
 
 **Consequence for Task 12.** Until the backfill runs, every chunk keeps its pre-Task-5 tags and an empty `context_en` — 563 fedlex chunks still assert all five categories. Probe results recorded before the backfill therefore measure the *old* tags through the *new* hard filter, and must be labelled as such rather than read as the finished behaviour.
 
+## The tier mechanism cannot be tested with `FakeEmbedder`
+
+*Measured 2026-09-22, after Task 9.* Structural probes `city-001` and `city-018` went green -> red on the tier. The implementer reported this as a structural collision between the calendar nearness bonus and the tier: `event_recency_factor` multiplies `score`, and `score` is now only the inner ordering key, so an upcoming event can no longer outrank a tier-qualified non-event.
+
+That collision is real in principle, but **it is not what makes these two probes fail.** Measured against the live index with the real bge-m3 embedder, for "When is the next cardboard collection?":
+
+```
+rank extent             source      distance   event_date
+   1 CH-ZH-261-K3       open_erz      0.3830   2026-12-31
+   2 CH-ZH-261-K3       open_erz      0.3853   2026-10-29
+   ...
+  10 CH-ZH-261-K3       open_erz      0.3904   2026-09-17
+qualifying under the 0.55 floor: 10 of 10
+```
+
+Every one clears the floor, claims its tier, and is ordered by nearness within it. The same chunk measures **1.0801** under the 8-dimension `FakeEmbedder` the structural harness uses, so it fails to claim a tier and a less specific chunk at 0.4331 leads. The failure is an artefact of hashed-bucket distances, not of the ranking design.
+
+**The general point, which outlives these two probes:** `FakeEmbedder` buckets SHA-256'd tokens into `dim` slots, so its cosine distances carry no semantic meaning. Any mechanism that thresholds on distance -- `RELEVANCE_FLOOR` and the tier eligibility it governs -- is therefore untestable in the structural harness, and every fixture-based ordering assertion in Task 9 is sensitive to a number nobody has measured. This compounds Task 8's finding that `classify_topics` under the same embedder returns a category chosen by hash collision.
+
+Left open deliberately, since Task 12 is deferred and further pipeline changes are expected:
+- `city-001` and `city-018` stay red. They are correct behaviour under a meaningless distance, not regressions.
+- `RELEVANCE_FLOOR = 0.55` remains uncalibrated, as Task 9 Step 3 instructs. The real-embedder measurement above (~0.38 for a good calendar match) is the first data point toward calibrating it; it says nothing yet about where irrelevant evidence sits.
+- Whether the harness should inject a floor that disables tiering, or use real embeddings, is a design question for whoever revisits the probes.
+
 ## Known gaps this plan does not close
 
 - **No dog-tax or dog-registration content exists in the index** (0 chunks). Contextual retrieval makes evidence findable; it cannot make absent evidence present. Closing this needs new sources — a registry task, not a retrieval one.
