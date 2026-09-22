@@ -1,0 +1,20 @@
+# Ville de Genève — worked example for a municipal html_crawl source.
+# Verified 2026-09-22: extent CH-GE-6621 (Wikidata BFS 6621 -> location.bfs_id); the site links its language-neutral
+# /themes/... paths (150/150 hub links), which serve French; /fr/themes/... are aliases of the same content and
+# would create duplicate documents (persist dedups by URL), so only /themes is allowed.
+# <html lang="fr">, html_to_page yields 18 sections, robots.txt allows /fr/themes.
+# categories left empty on purpose: this is a multi-topic hub, so the LLM classifier tags per page;
+# a non-empty default would stamp every page with that tag at confidence 1.0.
+id: ge_ville
+name: Ville de Genève
+base_url: https://www.geneve.ch
+default_extent_id: CH-GE-6621
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  language: fr
+  path_allowlist: ["/themes"]
+  start_paths: ["/themes/environnement-urbain-espaces-verts"]
+allow_narrowing: true
+license: "geneve.ch terms of use (verify before wide crawl)"
