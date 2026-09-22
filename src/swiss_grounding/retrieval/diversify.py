@@ -5,6 +5,7 @@ from swiss_grounding.retrieval.calendar import calendar_series
 from swiss_grounding.retrieval.models import ScoredHit
 
 PER_SERIES_CAP = 3
+CALENDAR_CAP = 6
 
 
 def _capped_series(item: ScoredHit, today: date) -> str | None:
@@ -25,9 +26,15 @@ def _capped_series(item: ScoredHit, today: date) -> str | None:
 
 
 def _select(
-    ranked: Sequence[ScoredHit], limit: int, per_document_cap: int, per_series_cap: int, today: date,
+    ranked: Sequence[ScoredHit], limit: int, per_document_cap: int, per_series_cap: int,
+    calendar_cap: int, today: date,
 ) -> tuple[tuple[ScoredHit, ...], dict[int, int], dict[str, int]]:
-    """Greedy top-down pick honouring the per-document and per-series caps."""
+    """Greedy top-down pick honouring the per-document, per-series, and calendar-aggregate caps.
+
+    ``per_series`` only ever holds counts for series that ``_capped_series`` returns a name
+    for -- upcoming calendar evidence -- so ``sum(per_series.values())`` is exactly the amount
+    of calendar evidence chosen so far, across every series combined.
+    """
     chosen: list[ScoredHit] = []
     per_doc: dict[int, int] = {}
     per_series: dict[str, int] = {}
@@ -38,8 +45,11 @@ def _select(
         if per_doc.get(doc, 0) >= per_document_cap:
             continue
         series = _capped_series(item, today)
-        if series is not None and per_series.get(series, 0) >= per_series_cap:
-            continue
+        if series is not None:
+            if per_series.get(series, 0) >= per_series_cap:
+                continue
+            if sum(per_series.values()) >= calendar_cap:
+                continue
         chosen.append(item)
         per_doc[doc] = per_doc.get(doc, 0) + 1
         if series is not None:
@@ -49,11 +59,17 @@ def _select(
 
 def _swap_index(
     chosen: Sequence[ScoredHit], per_doc: dict[int, int], per_series: dict[str, int],
-    candidate: ScoredHit, per_document_cap: int, per_series_cap: int, today: date,
+    candidate: ScoredHit, per_document_cap: int, per_series_cap: int, calendar_cap: int, today: date,
 ) -> int | None:
-    """Last position whose removal frees a slot for ``candidate`` under both caps."""
+    """Last position whose removal frees a slot for ``candidate`` under all three caps.
+
+    A candidate that is itself upcoming calendar evidence must not be swapped in past the
+    calendar-aggregate ceiling, even when the position it displaces held a non-calendar chunk:
+    freeing a non-calendar slot never frees calendar headroom.
+    """
     document_id = candidate.hit.chunk.document_id
     series = _capped_series(candidate, today)
+    calendar_total = sum(per_series.values())
     for index in range(len(chosen) - 1, -1, -1):
         freed = chosen[index]
         freed_doc = freed.hit.chunk.document_id
@@ -63,28 +79,39 @@ def _swap_index(
             per_series.get(series, 0) - (1 if freed_series == series else 0)
             if series is not None else 0
         )
-        if doc_count < per_document_cap and series_count < per_series_cap:
+        calendar_count = calendar_total - (1 if freed_series is not None else 0)
+        fits_calendar = series is None or calendar_count < calendar_cap
+        if doc_count < per_document_cap and series_count < per_series_cap and fits_calendar:
             return index
     return None
 
 
 def diversify(
     ranked: Sequence[ScoredHit], limit: int, per_document_cap: int = 2,
-    per_series_cap: int = PER_SERIES_CAP, today: date | None = None,
+    per_series_cap: int = PER_SERIES_CAP, calendar_cap: int = CALENDAR_CAP, today: date | None = None,
 ) -> tuple[ScoredHit, ...]:
-    """Cap chunks per document and per calendar series, and guarantee the most specific
-    extent is represented.
+    """Cap chunks per document, per calendar series, and across calendar evidence as a whole,
+    and guarantee the most specific extent is represented.
 
     The per-document cap limits repeated chunks from the same document; the per-series cap
     limits repeated *upcoming* calendar events (one document per date) that share a series,
     such as every future cardboard collection date, so a page of near-identical future
-    events cannot crowd out everything else. It only applies to chunks carrying an
+    events cannot crowd out everything else. Both only apply to chunks carrying an
     ``event_date`` that has not already passed; ``today`` defaults to the real current date.
+
+    The per-series cap alone cannot bound calendar evidence overall: several series can each
+    have upcoming events (waste, organic, cardboard, mobile, paper collections all repeat
+    independently), so several series at the per-series cap can still add up to more than a
+    caller's requested limit and fill an answer with nothing but dates. ``calendar_cap`` is
+    that aggregate ceiling, summed across every series. Like the per-series cap, it never
+    applies to a past event -- see ``_capped_series`` for why that exemption exists.
     """
     if not ranked or limit <= 0:
         return ()
     current = today if today is not None else datetime.now(tz=UTC).date()
-    chosen, per_doc, per_series = _select(ranked, limit, per_document_cap, per_series_cap, current)
+    chosen, per_doc, per_series = _select(
+        ranked, limit, per_document_cap, per_series_cap, calendar_cap, current,
+    )
     most_specific = max(ranked, key=lambda s: s.specificity)
     if most_specific.hit.chunk.chunk_id in {s.hit.chunk.chunk_id for s in chosen}:
         return chosen
@@ -92,9 +119,12 @@ def diversify(
     series = _capped_series(most_specific, current)
     fits_document = per_doc.get(document_id, 0) < per_document_cap
     fits_series = series is None or per_series.get(series, 0) < per_series_cap
-    if len(chosen) < limit and fits_document and fits_series:
+    fits_calendar = series is None or sum(per_series.values()) < calendar_cap
+    if len(chosen) < limit and fits_document and fits_series and fits_calendar:
         return (*chosen, most_specific)
-    index = _swap_index(chosen, per_doc, per_series, most_specific, per_document_cap, per_series_cap, current)
+    index = _swap_index(
+        chosen, per_doc, per_series, most_specific, per_document_cap, per_series_cap, calendar_cap, current,
+    )
     if index is None:
         return chosen
     return (*chosen[:index], most_specific, *chosen[index + 1:])
