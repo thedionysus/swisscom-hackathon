@@ -400,6 +400,20 @@ Every probe file gains the fields the new contract requires. Ordering changes, s
 
 ---
 
+## Blocked: the two paid live steps
+
+*Recorded 2026-09-22.* `swiss-grounding retitle` was run against the live index and the Anthropic API returned **401, API key is invalid**, once per act. Nothing was written — `_repair` translates before writing, so the run reported `examined=5 updated=0 skipped=0 failed=5` and left every title untouched. The key is well-formed (108 chars, `sk-ant-api03-` prefix), so it is revoked, expired, or from another account.
+
+Blocked until a working key exists:
+- **Task 6 Step 2b** — the five Fedlex title translations.
+- **Task 6 Step 3** — the 649-call backfill (630 describe + 19 summary).
+
+Both are built, reviewed and gated. The order, unchanged: `retitle --dry-run` → `retitle` → `recontext --dry-run` (gate: `failed` must be 0; anything else means a title did not take) → `recontext` (resumable; re-run plain, never `--force`).
+
+Not blocked: Tasks 7–12. The local topic classifier embeds category descriptions with the bge-m3 model already loaded for search and needs no API, per ADR 0004; Tasks 8–11 are code; Task 12 needs the live database and the local embedder only.
+
+**Consequence for Task 12.** Until the backfill runs, every chunk keeps its pre-Task-5 tags and an empty `context_en` — 563 fedlex chunks still assert all five categories. Probe results recorded before the backfill therefore measure the *old* tags through the *new* hard filter, and must be labelled as such rather than read as the finished behaviour.
+
 ## Known gaps this plan does not close
 
 - **No dog-tax or dog-registration content exists in the index** (0 chunks). Contextual retrieval makes evidence findable; it cannot make absent evidence present. Closing this needs new sources — a registry task, not a retrieval one.
