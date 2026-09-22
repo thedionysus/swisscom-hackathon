@@ -19,7 +19,7 @@ from swiss_grounding.ingest.errors import EnrichmentError
 from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import FakeLLM
 from swiss_grounding.ingest.models import CategoryTag, ChunkContext
-from swiss_grounding.ingest.recontext import SourceRecontext, recontext_all
+from swiss_grounding.ingest.recontext import EmptiedDocument, SourceRecontext, recontext_all
 from swiss_grounding.locations.repository import upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
@@ -75,6 +75,27 @@ class RecordingLLM(FakeLLM):
         return ChunkContext(context_en=f"From {summary_en}. Covers {heading_path}.",
                             topics=(CategoryTag("dogs", 0.8),),
                             boilerplate=heading_path in self._furniture)
+
+
+class ResamplingLLM(RecordingLLM):
+    """A model whose first reply about one chunk is unusable, so the client sends twice.
+
+    `messages_sent` is what `AnthropicLLM` keeps: every message actually put on the wire,
+    resamples included. One description of one chunk can cost two of them.
+    """
+
+    def __init__(self, resamples_on: str):
+        super().__init__()
+        self.messages_sent = 0
+        self._resamples_on = resamples_on
+
+    def summarise(self, title_en, text_en):
+        self.messages_sent += 1
+        return super().summarise(title_en, text_en)
+
+    def describe(self, summary_en, heading_path, text_en, text_original, categories):
+        self.messages_sent += 2 if heading_path == self._resamples_on else 1
+        return super().describe(summary_en, heading_path, text_en, text_original, categories)
 
 
 class ForbiddenLLM(FakeLLM):
@@ -238,7 +259,7 @@ def test_a_chunk_the_model_calls_furniture_is_deleted_rather_than_described(url)
     assert (zh.examined, zh.updated, zh.deleted_chunks, zh.deleted_documents) == (2, 1, 1, 0)
 
 
-def test_a_document_whose_every_chunk_was_furniture_is_deleted_with_its_history(url):
+def test_a_document_whose_every_chunk_was_furniture_is_deleted_when_deletion_is_asked_for(url):
     with connect(url) as conn:
         document = conn.execute(
             "select id, url from document where source_id = 'schweizer_wanderwege'").fetchone()
@@ -250,7 +271,8 @@ def test_a_document_whose_every_chunk_was_furniture_is_deleted_with_its_history(
         )
 
     with connect(url) as conn:
-        report = recontext_all(conn, RecordingLLM(furniture=(heading["heading_path"],)), _embedder())
+        report = recontext_all(conn, RecordingLLM(furniture=(heading["heading_path"],)),
+                               _embedder(), delete_emptied=True)
         gone = conn.execute("select id from document where id = %s", (document["id"],)).fetchone()
         history = conn.execute(
             "select id from document_change where document_id = %s", (document["id"],)).fetchall()
@@ -374,3 +396,74 @@ def test_a_split_section_is_described_from_its_english_alone(url):
     assert described["Hunde in Parks"] is None
     assert all(call["text_original"] is not None
                for call in llm.described if call["heading"] == "Leinenpflicht")
+
+
+def test_an_emptied_document_is_left_standing_and_named_unless_deletion_is_asked_for(url):
+    # Which chunks the model calls furniture is exactly what the dry run cannot preview, and
+    # three live documents hold one chunk each. One verdict must not irreversibly erase a
+    # document and its history without a preview, so deletion is opt-in and the rest is reported.
+    with connect(url) as conn:
+        document = conn.execute(
+            "select id, url from document where source_id = 'schweizer_wanderwege'").fetchone()
+        heading = conn.execute(
+            "select heading_path from chunk where document_id = %s", (document["id"],)).fetchone()
+        conn.execute(
+            "insert into document_change (run_id, document_id, change_type) values (%s, %s, %s)",
+            ("test-run", document["id"], "added"),
+        )
+
+    with connect(url) as conn:
+        report = recontext_all(conn, RecordingLLM(furniture=(heading["heading_path"],)), _embedder())
+        standing = conn.execute(
+            "select id from document where id = %s", (document["id"],)).fetchone()
+        chunks_left = _chunks(conn, "schweizer_wanderwege")
+        history = conn.execute(
+            "select id from document_change where document_id = %s", (document["id"],)).fetchall()
+
+    assert standing is not None
+    assert chunks_left == []
+    assert history != []
+    assert report.emptied == (EmptiedDocument(document_id=document["id"],
+                                              source_id="schweizer_wanderwege",
+                                              url=document["url"]),)
+    wanderwege = next(s for s in report.by_source if s.source_id == "schweizer_wanderwege")
+    assert (wanderwege.deleted_chunks, wanderwege.emptied_documents,
+            wanderwege.deleted_documents) == (1, 1, 0)
+
+
+def test_a_document_finished_by_a_later_run_gets_its_topic_roll_up(url):
+    with connect(url) as conn:
+        document = conn.execute("select id from document where source_id = 'zh_ch'").fetchone()
+        _add_chunk(conn, document["id"], ordinal=1, heading="Second", text_en="Second article.")
+        _add_chunk(conn, document["id"], ordinal=2, heading="Third", text_en="Third article.")
+
+    with connect(url) as conn:
+        recontext_all(conn, RecordingLLM(breaks_on="Second"), _embedder())
+        stale = conn.execute(
+            "select categories from document where id = %s", (document["id"],)).fetchone()
+
+    with connect(url) as conn:
+        resumed = recontext_all(conn, RecordingLLM(), _embedder())
+        topics = conn.execute(
+            "select categories from document where id = %s", (document["id"],)).fetchone()
+        on_chunks = conn.execute(
+            "select distinct unnest(categories) as topic from chunk where document_id = %s",
+            (document["id"],)).fetchall()
+
+    assert sorted(t["id"] for t in stale["categories"]) == sorted(STALE_TOPICS)
+    assert resumed.failed == 0
+    assert {t["id"] for t in topics["categories"]} == {row["topic"] for row in on_chunks}
+
+
+def test_the_report_bills_a_description_the_client_had_to_resample_twice(url):
+    with connect(url) as conn:
+        document = conn.execute("select id from document where source_id = 'zh_ch'").fetchone()
+        _add_chunk(conn, document["id"], ordinal=1, heading="Second", text_en="Second article.")
+
+    with connect(url) as conn:
+        report = recontext_all(conn, ResamplingLLM(resamples_on="Second"), _embedder())
+
+    zh = next(s for s in report.by_source if s.source_id == "zh_ch")
+    assert zh.examined == 2
+    assert zh.updated == 2
+    assert zh.describe_calls == 3      # two chunks, one of them sampled twice

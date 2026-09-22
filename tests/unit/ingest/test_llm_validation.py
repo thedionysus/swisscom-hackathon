@@ -397,3 +397,11 @@ def test_a_summary_of_a_document_with_no_title_is_refused():
     nothing would be repeated onto every chunk of it as though it said something."""
     with pytest.raises(EnrichmentError, match="title"):
         anthropic(returns="A summary.").summarise("   ", "Zweck dieses Gesetzes ist es")
+
+
+def test_every_message_put_on_the_wire_is_counted_including_the_resample():
+    """The backfill bills what was actually sent: one chunk resampled once costs two messages."""
+    llm = flaky("I am afraid I cannot help with that.", a_description())
+    assert llm.messages_sent == 0
+    described_with(llm)
+    assert llm.messages_sent == 2

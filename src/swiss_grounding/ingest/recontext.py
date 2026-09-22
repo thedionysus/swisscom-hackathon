@@ -17,6 +17,12 @@ refuses a kept chunk with no context, and a templated source's context is never 
 so nothing that was described reads as pending, and nothing pending reads as described. `--force`
 exists for redoing work deliberately, and is the only way to re-describe a chunk that already has
 a context.
+
+Nothing here erases a document unless it is asked to. The model drops page furniture, and a page
+that is furniture from top to bottom ends with no chunks at all; such a document is reported and
+left standing, because the deletion is irreversible, a dry run cannot preview it, and three stored
+documents hold a single chunk each. `--delete-emptied` is for an operator who has read the list.
+See `_finish`.
 """
 
 import json
@@ -30,10 +36,15 @@ from typing import Any
 
 import psycopg
 
-from swiss_grounding.ingest.context import describe_chunks, document_topics, indexed_text
+from swiss_grounding.ingest.context import (
+    SOURCE_FALLBACK_CONFIDENCE,
+    describe_chunks,
+    document_topics,
+    indexed_text,
+)
 from swiss_grounding.ingest.enrich import SECTION_SEPARATOR
 from swiss_grounding.ingest.llm import LLM
-from swiss_grounding.ingest.models import ChunkContext, ChunkDraft, FetchError
+from swiss_grounding.ingest.models import CategoryTag, ChunkContext, ChunkDraft, FetchError
 from swiss_grounding.ingest.reclean import delete_documents
 from swiss_grounding.registry.categories import CATEGORIES, Category
 from swiss_grounding.registry.models import Source
@@ -52,6 +63,12 @@ order by c.document_id, c.ordinal
 UPDATE_CHUNK = "update chunk set context_en = %s, categories = %s, embedding = %s where id = %s"
 DELETE_CHUNK = "delete from chunk where id = %s"
 UPDATE_DOCUMENT_TOPICS = "update document set categories = %s::jsonb where id = %s"
+SELECT_TOPIC_IDS = "select distinct unnest(categories) as topic from chunk where document_id = %s"
+# What a topic carried by a chunk this run did not describe is rolled up at: the chunk asserts the
+# topic, and the confidence the model gave it was dropped when the chunk was stored. The same value
+# `context.SOURCE_FALLBACK_CONFIDENCE` uses, and for the same reason -- it applies, but nothing here
+# asserts it at full strength.
+RECOVERED_CONFIDENCE = SOURCE_FALLBACK_CONFIDENCE
 # Refused rather than described: see `_untitled`. The message names the repair, because the
 # operator reading it has one command to run before this one can work.
 UNTITLED = ("the document is titled {title!r}, which names nothing; run `retitle` to repair the "
@@ -73,6 +90,7 @@ class SourceRecontext:
     skipped: int = 0
     deleted_chunks: int = 0
     deleted_documents: int = 0
+    emptied_documents: int = 0
     failed: int = 0
     describe_calls: int = 0
     summary_calls: int = 0
@@ -86,11 +104,21 @@ class SourceRecontext:
 
 
 @dataclass(frozen=True)
+class EmptiedDocument:
+    """A document the model left with no chunks at all."""
+
+    document_id: int
+    source_id: str
+    url: str
+
+
+@dataclass(frozen=True)
 class RecontextReport:
     """The full backfill result: the drops and writes per source, and what failed."""
 
     by_source: tuple[SourceRecontext, ...]
     errors: tuple[FetchError, ...] = ()
+    emptied: tuple[EmptiedDocument, ...] = ()
 
     def _total(self, field: str) -> int:
         return sum(getattr(s, field) for s in self.by_source)
@@ -116,6 +144,10 @@ class RecontextReport:
         return self._total("deleted_documents")
 
     @property
+    def emptied_documents(self) -> int:
+        return self._total("emptied_documents")
+
+    @property
     def failed(self) -> int:
         return self._total("failed")
 
@@ -128,6 +160,24 @@ class RecontextReport:
         return self._total("summary_calls")
 
 
+@dataclass(frozen=True)
+class _Options:
+    """How one run behaves: what it redoes, what it spends, and what it may erase."""
+
+    dry_run: bool = False
+    force: bool = False
+    delete_emptied: bool = False
+
+
+@dataclass(frozen=True)
+class _DocumentOutcome:
+    """What became of one document: its counts, why it failed, and whether it ended with nothing."""
+
+    counts: SourceRecontext
+    error: FetchError | None = None
+    emptied: EmptiedDocument | None = None
+
+
 class _DocumentModel:
     """The run's model as one document sees it: its summary bought once, and its calls counted.
 
@@ -137,10 +187,12 @@ class _DocumentModel:
     the backfill. Only `summarise` is memoised, and only for the life of one document; everything
     else is the model itself, untouched.
 
-    The two counters are what the report bills, and they count what was actually asked rather than
+    The two counters are what the report bills, and they count what was actually sent rather than
     what was planned -- a templated source reaches neither call, because `describe_chunks` answers
-    it from its own template. One `describe` here is one chunk's description; the client behind it
-    may resample that description once (`llm.DESCRIBE_ATTEMPTS`).
+    it from its own template, and a description the client had to resample
+    (`llm.DESCRIBE_ATTEMPTS`) cost two messages, not one. Resamples are read off the client's own
+    `messages_sent`, because they happen inside a single `describe`; a stand-in that keeps no such
+    count is billed one message per description, which is what it made.
     """
 
     def __init__(self, llm: LLM):
@@ -164,8 +216,15 @@ class _DocumentModel:
 
     def describe(self, summary_en: str, heading_path: str, text_en: str, text_original: str | None,
                  categories: Sequence[Category]) -> ChunkContext:
-        self._describes += 1
-        return self._llm.describe(summary_en, heading_path, text_en, text_original, categories)
+        before = self._messages_sent()
+        try:
+            return self._llm.describe(summary_en, heading_path, text_en, text_original, categories)
+        finally:
+            self._describes += max(1, self._messages_sent() - before)
+
+    def _messages_sent(self) -> int:
+        """What the client says it has put on the wire, or 0 where it keeps no count."""
+        return getattr(self._llm, "messages_sent", 0)
 
 
 @dataclass(frozen=True)
@@ -264,16 +323,24 @@ def _describe(stored: _StoredChunk, document: _StoredDocument, document_text_en:
 
 def _roll_up(conn: psycopg.Connection, document: _StoredDocument,
              kept: Sequence[ChunkDraft]) -> None:
-    """Rewrite the document's topics as the roll-up of the chunks just described.
+    """Rewrite the document's topics as the roll-up of every chunk it still has.
 
     ADR 0003 makes a document's categories derived, never decided, so leaving the old union of
-    five behind would let the document disagree with every chunk under it. Only a document whose
-    chunks were *all* described in this run is refreshed: after a partial run the confidences of
-    the chunks described earlier are not recoverable -- `chunk.categories` keeps ids alone -- and
-    a roll-up built from part of a document would understate it. Such a document keeps its
-    previous, wider topics until a run describes it whole.
+    five behind would let the document disagree with every chunk under it. This runs whenever the
+    document ends the run fully described -- by this run or by an earlier one that got part of the
+    way -- and reads the ids back from the chunks themselves, so a document finished by a resumed
+    run is repaired rather than left stale forever.
+
+    A chunk described earlier in another run contributes an id but no confidence: `chunk.categories`
+    keeps ids alone, by design, so the number the model gave it is gone. Such an id is rolled up at
+    `RECOVERED_CONFIDENCE` rather than invented at full strength. Nothing reads these confidences as
+    a constraint -- the hard filter of ADR 0003 is `chunk.categories` -- and a `--force` run, which
+    describes every chunk again, restores the real numbers.
     """
-    topics = document_topics(kept)
+    described = {t.id: t for t in document_topics(kept)}
+    stored_ids = [row["topic"] for row in conn.execute(SELECT_TOPIC_IDS, (document.id,)).fetchall()]
+    topics = sorted((described.get(topic_id, CategoryTag(topic_id, RECOVERED_CONFIDENCE))
+                     for topic_id in stored_ids), key=lambda t: (-t.confidence, t.id))
     conn.execute(UPDATE_DOCUMENT_TOPICS,
                  (json.dumps([{"id": t.id, "confidence": t.confidence} for t in topics]), document.id))
     conn.commit()
@@ -319,15 +386,16 @@ def _projected(counts: SourceRecontext, source: Source, pending: Sequence[_Store
 
 def _describe_pending(conn: psycopg.Connection, document: _StoredDocument, source: Source,
                       pending: Sequence[_StoredChunk], model: _DocumentModel, embedder: Embedder,
-                      counts: SourceRecontext) -> tuple[SourceRecontext, FetchError | None]:
+                      counts: SourceRecontext, options: "_Options") -> "_DocumentOutcome":
     """Describe and store one document's pending chunks, committing each as it is paid for.
 
     A chunk that fails stops the document and nothing else. Everything already written stays
     written: the paid artefact is one chunk -- a description and the topics of that chunk alone --
-    and no invariant binds it to the chunks beside it, so discarding up to 112 paid calls would
-    protect nothing. A resumed run picks up exactly where this one stopped, because the chunks
-    that succeeded now carry a context and the ones that did not still carry none. `conn.rollback`
-    is safe for the same reason: there is nothing uncommitted left to lose.
+    and no invariant binds it to the chunks beside it, so discarding up to 195 paid calls (SR
+    741.01, the largest stored act) would protect nothing. A resumed run picks up exactly where
+    this one stopped, because the chunks that succeeded now carry a context and the ones that did
+    not still carry none. `conn.rollback` is safe for the same reason: there is nothing
+    uncommitted left to lose.
     """
     document_text_en = document.text_en
     kept: list[ChunkDraft] = []
@@ -340,21 +408,47 @@ def _describe_pending(conn: psycopg.Connection, document: _StoredDocument, sourc
             conn.rollback()
             log.exception("recontext failed source=%s url=%s chunk=%s",
                           source.id, document.url, stored.id)
-            return _counted(counts, model, updated=len(kept), deleted_chunks=deleted,
-                            failed=len(pending) - done), FetchError(url=document.url, reason=str(exc))
+            return _DocumentOutcome(
+                counts=_counted(counts, model, updated=len(kept), deleted_chunks=deleted,
+                                failed=len(pending) - done),
+                error=FetchError(url=document.url, reason=str(exc)))
         if described is None:
             deleted += 1
         else:
             kept.append(described)
+    return _finish(conn, document, kept, deleted, model, counts, options)
 
-    emptied = len(document.chunks) - deleted == 0
-    if emptied:
+
+def _finish(conn: psycopg.Connection, document: _StoredDocument, kept: Sequence[ChunkDraft],
+            deleted: int, model: _DocumentModel, counts: SourceRecontext,
+            options: "_Options") -> "_DocumentOutcome":
+    """Settle a document whose every chunk has now been described, in this run or an earlier one.
+
+    A document the model left with no chunks at all is reported and, by default, left standing.
+    Deleting it is irreversible -- the document row, and its `document_change` history with it --
+    and it cannot be undone by re-crawling, because `recontext` does not clear `fetch_state`, so
+    the URL is still remembered and the next crawl skips it. Which chunks the model will reject is
+    exactly what a dry run cannot preview, three stored documents hold a single chunk each, and a
+    verdict that is usually right is not a basis for an unrecoverable delete nobody saw coming.
+
+    Leaving it has a cost, and it is the smaller one: `retrieval/coverage.py` counts documents, so
+    a document with no chunks keeps reporting coverage it can no longer serve -- the
+    silent under-coverage failure class of `CONTEXT.md`. That is a visible, reversible wrong
+    number. `--delete-emptied` erases them once an operator has read the list and decided.
+    """
+    if len(document.chunks) - deleted > 0:
+        _roll_up(conn, document, kept)
+        return _DocumentOutcome(_counted(counts, model, updated=len(kept), deleted_chunks=deleted))
+    if options.delete_emptied:
         delete_documents(conn, [document.id])
         conn.commit()
-    elif not counts.skipped:
-        _roll_up(conn, document, kept)
-    return _counted(counts, model, updated=len(kept), deleted_chunks=deleted,
-                    deleted_documents=int(emptied)), None
+    return _DocumentOutcome(
+        counts=_counted(counts, model, updated=len(kept), deleted_chunks=deleted,
+                        deleted_documents=int(options.delete_emptied),
+                        emptied_documents=int(not options.delete_emptied)),
+        emptied=EmptiedDocument(document_id=document.id, source_id=document.source_id,
+                                url=document.url),
+    )
 
 
 def _counted(counts: SourceRecontext, model: _DocumentModel, **outcome: int) -> SourceRecontext:
@@ -364,51 +458,62 @@ def _counted(counts: SourceRecontext, model: _DocumentModel, **outcome: int) -> 
 
 
 def _recontext_document(conn: psycopg.Connection, document: _StoredDocument, source: Source,
-                        llm: LLM, embedder: Embedder, force: bool,
-                        dry_run: bool) -> tuple[SourceRecontext, FetchError | None]:
+                        llm: LLM, embedder: Embedder, options: "_Options") -> "_DocumentOutcome":
     """Decide what one document still needs, then describe it -- or only say what it would cost."""
-    pending = [c for c in document.chunks if force or not c.draft.context_en.strip()]
+    pending = [c for c in document.chunks if options.force or not c.draft.context_en.strip()]
     counts = SourceRecontext(source_id=source.id, examined=len(document.chunks),
                              skipped=len(document.chunks) - len(pending))
     if not pending:
-        return counts, None
+        return _DocumentOutcome(counts)
     if _untitled(document):
         log.warning("refusing an untitled document source=%s url=%s", source.id, document.url)
-        return replace(counts, failed=len(pending)), FetchError(
-            url=document.url, reason=UNTITLED.format(title=document.title_en))
-    if dry_run:
-        return _projected(counts, source, pending), None
-    return _describe_pending(conn, document, source, pending, _DocumentModel(llm), embedder, counts)
+        return _DocumentOutcome(
+            counts=replace(counts, failed=len(pending)),
+            error=FetchError(url=document.url, reason=UNTITLED.format(title=document.title_en)))
+    if options.dry_run:
+        return _DocumentOutcome(_projected(counts, source, pending))
+    return _describe_pending(conn, document, source, pending, _DocumentModel(llm), embedder,
+                             counts, options)
+
+
+def _orphaned(document: _StoredDocument) -> "_DocumentOutcome":
+    """A document whose source has since left the registry: skipped, not fatal, as `renarrow` does."""
+    log.warning("no source %r for document %s; skipped", document.source_id, document.url)
+    return _DocumentOutcome(SourceRecontext(source_id=document.source_id,
+                                            examined=len(document.chunks),
+                                            skipped=len(document.chunks)))
 
 
 def recontext_all(conn: psycopg.Connection, llm: LLM, embedder: Embedder, dry_run: bool = False,
-                  force: bool = False) -> RecontextReport:
+                  force: bool = False, delete_emptied: bool = False) -> RecontextReport:
     """Give every stored chunk a generated context and its own topics, and re-embed it.
 
     One document at a time, one chunk at a time, committed as it goes; see the module docstring
-    for what that buys. A document whose source has since left the registry is skipped, not fatal
-    -- `renarrow` treats an orphan the same way.
+    for what that buys.
 
     With `dry_run=True` nothing is written and nothing is asked of the model: the report says what
     the run would touch and what it would cost, which is the number an operator needs before
-    spending it. With `force=True` a chunk that already carries a context is described again,
-    which is the only way to redo work this command has already done.
+    spending it. Its call count is a lower bound -- a description the model answers unusably is
+    resampled once, and no projection can know which. With `force=True` a chunk that already
+    carries a context is described again, which is the only way to redo work this command has
+    already done. With `delete_emptied=True` a document the model left with no chunks is erased
+    rather than reported; see `_finish` for why that is not the default.
     """
+    options = _Options(dry_run=dry_run, force=force, delete_emptied=delete_emptied)
     sources = {s.id: s for s in load_sources(conn)}
     totals: dict[str, SourceRecontext] = {}
     errors: list[FetchError] = []
+    emptied: list[EmptiedDocument] = []
     for document in _documents(conn):
         source = sources.get(document.source_id)
-        if source is None:
-            log.warning("no source %r for document %s; skipped", document.source_id, document.url)
-            counts = SourceRecontext(source_id=document.source_id, examined=len(document.chunks),
-                                     skipped=len(document.chunks))
-            error = None
-        else:
-            counts, error = _recontext_document(conn, document, source, llm, embedder, force, dry_run)
-        totals[counts.source_id] = totals.get(
-            counts.source_id, SourceRecontext(source_id=counts.source_id)).plus(counts)
-        if error:
-            errors.append(error)
-    by_source = tuple(sorted(totals.values(), key=lambda s: s.source_id))
-    return RecontextReport(by_source=by_source, errors=tuple(errors))
+        outcome = (_recontext_document(conn, document, source, llm, embedder, options)
+                   if source else _orphaned(document))
+        source_id = outcome.counts.source_id
+        totals[source_id] = totals.get(source_id, SourceRecontext(source_id=source_id)).plus(
+            outcome.counts)
+        if outcome.error:
+            errors.append(outcome.error)
+        if outcome.emptied:
+            emptied.append(outcome.emptied)
+    return RecontextReport(by_source=tuple(sorted(totals.values(), key=lambda s: s.source_id)),
+                           errors=tuple(errors), emptied=tuple(emptied))
