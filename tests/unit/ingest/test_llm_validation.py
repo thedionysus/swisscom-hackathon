@@ -151,11 +151,14 @@ def test_an_empty_translation_names_the_call_without_leaking_the_text():
 # --- describe(): context, topics and a boilerplate verdict in one call (ADR 0005) -------------
 
 
+def described_with(llm, text_original="Wer vorsätzlich"):
+    return llm.describe(summary_en="the Animal Welfare Act", heading_path="Art. 28",
+                        text_en="Anyone who intentionally", text_original=text_original,
+                        categories=CATEGORIES)
+
+
 def described(raw):
-    return anthropic(returns=raw).describe(
-        summary_en="the Animal Welfare Act", heading_path="Art. 28",
-        text_en="Anyone who intentionally", text_original="Wer vorsätzlich", categories=CATEGORIES,
-    )
+    return described_with(anthropic(returns=raw))
 
 
 def a_description(**overrides):
@@ -289,3 +292,108 @@ def test_an_empty_summary_is_an_error_not_a_blank_document_subject():
 
 def test_a_summary_is_returned_stripped():
     assert anthropic(returns="  The Animal Welfare Act.  ").summarise("x", "y") == "The Animal Welfare Act."
+
+
+# --- the prompt must ask for what the parser enforces -----------------------------------------
+
+
+def prompt_of(llm):
+    return llm._client.messages.calls[0]["messages"][0]["content"]
+
+
+def test_the_describe_prompt_demands_the_shape_the_parser_requires():
+    """`_categories` fails a document when the key is absent and `_boilerplate_verdict` when the
+    verdict is not a real boolean. An instruction reading "name none if none apply" invites the
+    model to omit the key instead, so the prompt has to ask for exactly what is enforced."""
+    llm = anthropic(returns=a_description())
+    described_with(llm)
+    prompt = prompt_of(llm).lower()
+    assert "all three keys" in prompt
+    assert "empty list" in prompt
+    assert "no preamble" in prompt and "no code fence" in prompt
+
+
+def test_the_describe_prompt_still_asks_for_the_untranslatable_term():
+    """Pinning the instruction, not just the input: an edit could drop it with the suite green."""
+    llm = anthropic(returns=a_description())
+    described_with(llm)
+    assert "no english equivalent" in prompt_of(llm).lower()
+
+
+def test_the_summarise_prompt_asks_for_the_same():
+    llm = anthropic(returns="A summary.")
+    llm.summarise("Animal Welfare Act", "Zweck.")
+    assert "no english equivalent" in prompt_of(llm).lower()
+
+
+# --- a chunk with no original of its own ------------------------------------------------------
+
+
+def test_a_chunk_whose_original_does_not_correspond_is_not_shown_one():
+    """A piece of a split section carries the whole section's original. Showing it under
+    "Chunk (original wording)" asks the model to lift a term out of unrelated German."""
+    llm = anthropic(returns=a_description())
+    described_with(llm, text_original=None)
+    prompt = prompt_of(llm)
+    assert "unavailable" in prompt.lower()
+    assert "Wer vorsätzlich" not in prompt
+
+
+def test_an_absent_original_is_not_rendered_as_an_empty_block():
+    """Silence would let the model infer that the chunk simply had no original wording."""
+    llm = anthropic(returns=a_description())
+    described_with(llm, text_original=None)
+    assert "None" not in prompt_of(llm)
+
+
+# --- recovery: one parse failure must not discard a document's paid calls ----------------------
+
+
+class FlakyMessages(FakeMessages):
+    """Answers badly once, then well: what a non-deterministic model does."""
+
+    def __init__(self, bad, good):
+        super().__init__([Block(bad)])
+        self._replies = [bad, good]
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        return Message([Block(self._replies[min(len(self.calls) - 1, 1)])])
+
+
+def flaky(bad, good):
+    llm = AnthropicLLM(model="m", client=FakeClient(returns=""))
+    llm._client.messages = FlakyMessages(bad, good)
+    return llm
+
+
+def test_a_malformed_description_is_resampled_once_before_the_document_is_lost():
+    """Fedlex is ~112 paid calls in one transaction; one bad parse must not discard them all."""
+    llm = flaky("I am afraid I cannot help with that.", a_description())
+    assert described_with(llm).context_en == "From the Animal Welfare Act. Sets penalties."
+    assert len(llm._client.messages.calls) == 2
+
+
+def test_a_description_that_fails_twice_still_raises():
+    llm = flaky("nonsense", "still nonsense")
+    with pytest.raises(EnrichmentError, match="Art. 28"):
+        described_with(llm)
+    assert len(llm._client.messages.calls) == 2
+
+
+def test_a_preamble_around_the_json_does_not_kill_a_document():
+    assert described(f"Here is the JSON:\n{a_description()}\nHope that helps!").topics == (
+        CategoryTag("dogs", 0.8),)
+
+
+def test_a_parse_error_names_the_chunk_it_was_about():
+    """Mid-backfill the document URL alone does not say which of 112 chunks failed."""
+    with pytest.raises(EnrichmentError, match="Art. 28"):
+        described("not json at all")
+
+
+def test_a_summary_of_a_document_with_no_title_is_refused():
+    """Step 2b exists because one stored Fedlex document has an empty title; a summary built from
+    nothing would be repeated onto every chunk of it as though it said something."""
+    with pytest.raises(EnrichmentError, match="title"):
+        anthropic(returns="A summary.").summarise("   ", "Zweck dieses Gesetzes ist es")

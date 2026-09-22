@@ -4,6 +4,8 @@ Every assertion about cost here is load-bearing: one model call per chunk is pai
 future ingest and on the backfill, so the tests count calls as well as check output.
 """
 
+from dataclasses import replace
+
 import pytest
 
 from swiss_grounding.ingest.context import (
@@ -73,9 +75,15 @@ class ForbiddenLLM(FakeLLM):
         raise AssertionError("describe must not be called")
 
 
-def describe(chunks, llm, src=None, title_en="Animal Welfare Act", document_text_en="Zweck."):
+def described(chunks, llm, src=None, title_en="Animal Welfare Act", document_text_en="Zweck."):
+    """The full result: what was kept and what was dropped."""
     return describe_chunks(chunks, source=src or source(), title_en=title_en,
                            document_text_en=document_text_en, llm=llm, categories=CATEGORIES)
+
+
+def describe(chunks, llm, **kwargs):
+    """Just the survivors, which is what most tests here are about."""
+    return described(chunks, llm, **kwargs).kept
 
 
 # --- what the index sees --------------------------------------------------------------------
@@ -300,3 +308,49 @@ def test_topics_are_sorted_by_confidence_then_id():
 def test_the_source_fallback_is_sorted_the_same_way():
     ids = [t.id for t in merge_topics(source(categories=("waste", "dogs"), llm_tagging=False), ())]
     assert ids == ["dogs", "waste"]
+
+
+# --- what was dropped is part of the answer, not an inference -----------------------------------
+
+
+def test_the_result_names_the_chunks_it_dropped():
+    """`recontext` (Task 6) has to delete stored chunks that are now judged furniture. Inferring
+    them from gaps in the surviving ordinals is an implicit contract that breaks quietly."""
+    llm = CountingLLM(verdict={"Opening hours": True})
+    out = described((draft(heading="Art. 1", ordinal=0), draft(heading="Opening hours", ordinal=1),
+                     draft(heading="Art. 3", ordinal=2)), llm)
+    assert [c.heading_path for c in out.kept] == ["Art. 1", "Art. 3"]
+    assert [c.heading_path for c in out.dropped] == ["Opening hours"]
+
+
+def test_a_chunk_dropped_by_the_heading_rules_is_reported_too():
+    out = described((draft(heading="Navigation"), draft(heading="Art. 28")), CountingLLM())
+    assert [c.heading_path for c in out.dropped] == ["Navigation"]
+
+
+def test_every_chunk_is_accounted_for_exactly_once():
+    llm = CountingLLM(verdict={"Opening hours": True})
+    chunks = (draft(heading="Navigation", ordinal=0), draft(heading="Opening hours", ordinal=1),
+              draft(heading="Art. 3", ordinal=2))
+    out = described(chunks, llm)
+    assert [c.ordinal for c in out.kept + out.dropped] == [2, 0, 1]
+    assert len(out.kept) + len(out.dropped) == len(chunks)
+
+
+def test_a_wholly_furniture_document_reports_all_of_it_as_dropped():
+    out = described((draft(heading="Navigation"), draft(heading="Error Page (404)")), ForbiddenLLM())
+    assert out.kept == () and len(out.dropped) == 2
+
+
+def test_a_piece_of_a_split_section_is_described_without_an_original():
+    """Its `text_original` is the whole section's, so it is not this chunk's original at all."""
+    llm = CountingLLM()
+    piece = replace(draft(text_en="Piece seven."), original_is_parallel=False)
+    describe((piece,), llm)
+    assert llm.described[0]["text_original"] is None
+
+
+def test_an_unsplit_sections_chunk_is_still_described_with_its_original():
+    llm = CountingLLM()
+    describe((draft(text_original="Wer vorsätzlich"),), llm)
+    assert llm.described[0]["text_original"] == "Wer vorsätzlich"

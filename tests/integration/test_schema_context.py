@@ -193,8 +193,13 @@ def test_a_fresh_database_and_a_migrated_one_agree_to_the_byte(url, virgin_url):
 @pytest.mark.parametrize("context_en", ["Sets penalties", ""])
 def test_the_index_joins_the_two_halves_exactly_as_the_embedder_does(url, context_en):
     """`context.indexed_text` builds what is embedded and `schema.sql` builds what is indexed, out
-    of the same two columns. The comment on `CONTEXT_SEPARATOR` says they must agree; this is what
-    makes them, whatever separator either side chooses."""
+    of the same two columns, and the comment on `CONTEXT_SEPARATOR` says the two must agree.
+
+    What this pins is the tsvector, not the string: it would still pass if both sides used a
+    separator Postgres tokenizes away, such as `|`. That is the guarantee that matters for the
+    keyword index -- the two halves stay separately searchable and no boundary word fuses -- and
+    it is the whole guarantee. The embedding sees the raw string, and nothing here compares that.
+    """
     text_en = "Anyone who intentionally"
     with connect(url) as conn:
         chunk_id = _a_chunk(conn, context_en=context_en, text_en=text_en)

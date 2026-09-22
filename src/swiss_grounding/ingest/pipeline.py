@@ -71,7 +71,7 @@ def run_ingest(conn: psycopg.Connection, source: Source, fetcher: Fetcher, llm: 
                     chunks, source=source, title_en=enriched.title_en,
                     document_text_en=document_text(enriched), llm=llm, categories=CATEGORIES,
                 )
-                outcome = persist_document(conn, enriched, described, embedder, run_id)
+                outcome = persist_document(conn, enriched, described.kept, embedder, run_id)
         except Exception as exc:
             log.exception("ingest failed source=%s url=%s", source.id, fetched.url)
             report = report.bump("failed", FetchError(url=fetched.url, reason=str(exc)))

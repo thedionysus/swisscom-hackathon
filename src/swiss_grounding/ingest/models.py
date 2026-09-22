@@ -98,6 +98,11 @@ class ChunkDraft:
     anchor: str | None
     text_original: str
     text_en: str
+    # False when `text_original` is the whole section's and `text_en` only a slice of it, which
+    # `chunking.chunk_sections` does deliberately so a citation can quote the original article.
+    # A reader of the two as a *pair* -- the description call, which lifts untranslatable terms
+    # out of the original -- must not be handed a text that does not correspond to this chunk.
+    original_is_parallel: bool = True
     context_en: str = ""
     topics: tuple[CategoryTag, ...] = ()
 

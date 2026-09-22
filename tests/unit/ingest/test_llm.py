@@ -55,7 +55,7 @@ def test_parse_description_filters_unknown_ids_and_clamps_confidence():
 
 
 def test_parse_description_bad_json_raises():
-    with pytest.raises(EnrichmentError, match="description response"):
+    with pytest.raises(EnrichmentError, match="unparseable response"):
         parse_description("not json", ("dogs",))
 
 

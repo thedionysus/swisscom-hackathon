@@ -7,6 +7,7 @@ from pathlib import Path
 import psycopg
 from pydantic import BaseModel, ConfigDict
 
+from swiss_grounding.ingest.context import indexed_text
 from swiss_grounding.registry.models import Authority
 from swiss_grounding.retrieval.embedder import Embedder
 
@@ -81,7 +82,9 @@ def load_fixture(conn: psycopg.Connection, path: Path, embedder: Embedder) -> Lo
         ).fetchone()
         document_id = row["id"]
         docs_written += 1
-        vectors = embedder.embed([c.text_en for c in doc.chunks]) if doc.chunks else []
+        # No fixture carries a context, so this is `text_en` today; it goes through
+        # `indexed_text` anyway so the join rule lives in exactly one place.
+        vectors = embedder.embed([indexed_text("", c.text_en) for c in doc.chunks]) if doc.chunks else []
         for ordinal, (chunk, vector) in enumerate(zip(doc.chunks, vectors)):
             conn.execute(
                 """

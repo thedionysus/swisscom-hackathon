@@ -18,7 +18,7 @@ split with no model calls in it, and putting a paid call there would make it unt
 """
 
 from collections.abc import Sequence
-from dataclasses import replace
+from dataclasses import dataclass, replace
 
 from swiss_grounding.ingest.boilerplate import is_boilerplate
 from swiss_grounding.ingest.llm import LLM
@@ -107,6 +107,20 @@ def _sorted(topics) -> tuple[CategoryTag, ...]:
     return tuple(sorted(topics, key=lambda t: (-t.confidence, t.id)))
 
 
+@dataclass(frozen=True)
+class DescribedChunks:
+    """What became of a document's chunks: the ones to store, and the ones judged page furniture.
+
+    The dropped ones are returned rather than left to be inferred. `recontext` (Task 6) has to
+    delete chunks already stored that are now judged furniture, and the only other way to find
+    them is to notice which ordinals are missing from `kept` -- a contract written down nowhere
+    and broken silently by anything that renumbers. Every chunk passed in comes back in exactly
+    one of the two.
+    """
+    kept: tuple[ChunkDraft, ...]
+    dropped: tuple[ChunkDraft, ...]
+
+
 def _from_template(chunk: ChunkDraft, source: Source, title_en: str) -> ChunkDraft:
     """Context for a source whose records are rendered from a template and describe themselves.
 
@@ -129,7 +143,7 @@ def describe_chunks(
     document_text_en: str,
     llm: LLM,
     categories: Sequence[Category],
-) -> tuple[ChunkDraft, ...]:
+) -> DescribedChunks:
     """Give every chunk its context and its topics; drop the chunks that are page furniture.
 
     One summary call per document and one description call per chunk. The summary exists to make
@@ -142,22 +156,30 @@ def describe_chunks(
     model's verdict is the general one, covering everything the heading rules cannot see. It
     supersedes the heuristic in reach, not in authority over those two headings.
 
-    A document left with no chunks is returned empty, which `persist` records as skipped. That is
-    the intended outcome for a page that is entirely furniture, not a failure to retry.
+    A document left with nothing to keep is the intended outcome for a page that is entirely
+    furniture, not a failure to retry; `persist` records it as skipped.
+
+    A chunk whose section was split carries the whole section's original text, which is not its
+    own, so it is described from its English alone -- see `ChunkDraft.original_is_parallel`.
     """
-    kept = tuple(c for c in chunks if not is_boilerplate(c.heading_path, c.text_en))
-    if not kept:
-        return ()
+    furniture = [c for c in chunks if is_boilerplate(c.heading_path, c.text_en)]
+    candidates = tuple(c for c in chunks if c not in furniture)
+    if not candidates:
+        return DescribedChunks(kept=(), dropped=tuple(chunks))
     if not source.llm_tagging:
-        return tuple(_from_template(c, source, title_en) for c in kept)
+        return DescribedChunks(kept=tuple(_from_template(c, source, title_en) for c in candidates),
+                               dropped=tuple(furniture))
     summary = llm.summarise(title_en, document_text_en)
-    described = []
-    for chunk in kept:
-        context = llm.describe(summary_en=summary, heading_path=chunk.heading_path,
-                               text_en=chunk.text_en, text_original=chunk.text_original,
-                               categories=categories)
+    kept = []
+    for chunk in candidates:
+        context = llm.describe(
+            summary_en=summary, heading_path=chunk.heading_path, text_en=chunk.text_en,
+            text_original=chunk.text_original if chunk.original_is_parallel else None,
+            categories=categories,
+        )
         if context.boilerplate:
+            furniture.append(chunk)
             continue
-        described.append(replace(chunk, context_en=context.context_en,
-                                 topics=merge_topics(source, context.topics)))
-    return tuple(described)
+        kept.append(replace(chunk, context_en=context.context_en,
+                            topics=merge_topics(source, context.topics)))
+    return DescribedChunks(kept=tuple(kept), dropped=tuple(furniture))
