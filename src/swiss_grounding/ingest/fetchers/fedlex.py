@@ -26,6 +26,9 @@ LANGUAGE_URI = {
     "it": "http://publications.europa.eu/resource/authority/language/ITA",
 }
 XML_FORMAT_URI = "http://publications.europa.eu/resource/authority/file-type/XML"
+# The language a Fedlex source is read in unless it says otherwise. Named because `retitle` has
+# to ask the endpoint the same question in the same language this fetcher would.
+DEFAULT_LANGUAGE = "de"
 DOC_TITLE_TAG = "docTitle"  # the act's own heading in the Akoma Ntoso preface
 
 # Current consolidation of one SR number in one language, with the Akoma Ntoso file URL and the
@@ -81,7 +84,9 @@ def parse_act_title(xml: str) -> str | None:
     return (node.get_text(" ", strip=True) if node else "") or None
 
 
-def _sr_label(sr: str) -> str:
+def sr_label(sr: str) -> str:
+    """The identifier a stored document carries for one SR number. Public because `retitle` reads
+    stored identifiers back, and both sides must spell it the same way."""
     return f"SR {sr}"
 
 
@@ -97,7 +102,7 @@ def _title(binding: dict[str, Any], xml: str, sr: str) -> str:
     if title:
         return title
     log.warning("no act title for SR %s; falling back to the SR number", sr)
-    return _sr_label(sr)
+    return sr_label(sr)
 
 
 def _page_url(abstract_uri: str, date_applicability: str, lang: str) -> str:
@@ -117,7 +122,7 @@ class FedlexFetcher:
         self._sleep = sleep
 
     def fetch(self, source: Source, known: Mapping[str, KnownUrl]) -> FetchResult:
-        lang = source.fetch_config.get("language", "de")
+        lang = source.fetch_config.get("language", DEFAULT_LANGUAGE)
         documents, unchanged, errors = [], [], []
         for sr in source.fetch_config.get("sr_numbers", ()):
             try:
@@ -149,12 +154,21 @@ class FedlexFetcher:
                 continue
             end = _value(binding, "dateEndApplicability")
             documents.append(FetchedDocument(
-                source_id=source.id, url=url, identifier=_sr_label(sr),
+                source_id=source.id, url=url, identifier=sr_label(sr),
                 title=_title(binding, xml.text, sr), language=lang, sections=sections,
                 valid_from=date.fromisoformat(date_app), valid_to=date.fromisoformat(end) if end else None,
                 in_force=end is None,
             ))
         return FetchResult(documents=tuple(documents), unchanged_urls=tuple(unchanged), errors=tuple(errors))
+
+    def current_consolidation(self, sr: str, lang: str) -> dict[str, Any] | None:
+        """The current consolidation binding for one SR number, retried; None if it stays empty.
+
+        The public entry `retitle` uses: it wants the act's title out of the binding and nothing
+        else, and downloading the Akoma Ntoso file to get it would be a crawl this repair does not
+        need. Free and read-only, which is why the dry run may make the call too.
+        """
+        return self._current_with_retry(sr, lang)
 
     def _current_with_retry(self, sr: str, lang: str) -> dict[str, Any] | None:
         """Retry the SPARQL lookup on transport errors, 5xx, timeouts, and empty result sets."""

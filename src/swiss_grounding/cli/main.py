@@ -17,11 +17,14 @@ from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import build_llm
 from swiss_grounding.ingest.pipeline import run_ingest
 from swiss_grounding.ingest.reclean import reclean_all
+from swiss_grounding.ingest.recontext import recontext_all
 from swiss_grounding.ingest.renarrow import renarrow_all
+from swiss_grounding.ingest.retitle import retitle_all
 from swiss_grounding.ingest.run_log import record_run
 from swiss_grounding.locations.repository import load_tree, prune_locations, upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
+from swiss_grounding.registry.models import FetchStrategy
 from swiss_grounding.registry.repository import load_sources, upsert_sources
 from swiss_grounding.registry.suggestions import list_suggestions, review_suggestion
 from swiss_grounding.retrieval.embedder import build_embedder
@@ -190,6 +193,66 @@ def reclean_cmd(
         typer.echo(f"{source.source_id}: dropped_chunks={source.dropped_chunks} dropped_documents={source.dropped_documents}")
     prefix = "dry run: " if dry_run else ""
     typer.echo(f"{prefix}examined={report.examined} dropped_chunks={report.dropped_chunks} dropped_documents={report.dropped_documents}")
+
+
+@app.command("retitle")
+def retitle_cmd(
+    dry_run: bool = typer.Option(False, "--dry-run",
+                                 help="report the titles that would change, without writing"),
+) -> None:
+    """Repair stored Fedlex titles from the SPARQL endpoint. Run this before `recontext`.
+
+    The query is free; each title that actually changes costs one translation call.
+    """
+    settings = load_settings()
+    llm = build_llm(settings.llm_backend, settings.llm_model, settings.anthropic_api_key)
+    fetcher = build_fetcher(FetchStrategy.FEDLEX_SPARQL, settings)
+    with connect(settings.database_url) as conn:
+        report = retitle_all(conn, fetcher, llm, dry_run=dry_run)
+    for change in report.changes:
+        typer.echo(f"{change.identifier}: {change.before!r} -> {change.after!r}")
+    for error in report.errors:
+        typer.echo(f"  ! {error.url}: {error.reason}", err=True)
+    prefix = "dry run: " if dry_run else ""
+    typer.echo(f"{prefix}examined={report.examined} updated={report.updated} "
+               f"skipped={report.skipped} failed={report.failed}")
+
+
+@app.command("recontext")
+def recontext_cmd(
+    dry_run: bool = typer.Option(False, "--dry-run",
+                                 help="report the scope and the bill, without calling or writing"),
+    force: bool = typer.Option(False, "--force",
+                               help="describe chunks that already carry a context"),
+) -> None:
+    """Re-enrich every stored chunk from text already in the database. No fetch, no translation.
+
+    One description call per chunk and one summary call per document, committed as they are paid
+    for, so an interrupted run is resumable. Run `retitle` first: a document titled by its SR
+    number is refused, not described.
+    """
+    settings = load_settings()
+    embedder = build_embedder(settings.embedding_backend, settings.embedding_model,
+                              settings.embedding_dim)
+    llm = build_llm(settings.llm_backend, settings.llm_model, settings.anthropic_api_key)
+    with connect(settings.database_url) as conn:
+        report = recontext_all(conn, llm, embedder, dry_run=dry_run, force=force)
+    for source in report.by_source:
+        typer.echo(
+            f"{source.source_id}: examined={source.examined} updated={source.updated} "
+            f"skipped={source.skipped} deleted={source.deleted_chunks} failed={source.failed} "
+            f"calls={source.describe_calls + source.summary_calls}"
+        )
+    for error in report.errors:
+        typer.echo(f"  ! {error.url}: {error.reason}", err=True)
+    prefix = "dry run: " if dry_run else ""
+    typer.echo(
+        f"{prefix}examined={report.examined} updated={report.updated} skipped={report.skipped} "
+        f"deleted={report.deleted_chunks} failed={report.failed} "
+        f"deleted_documents={report.deleted_documents} "
+        f"calls={report.describe_calls + report.summary_calls} "
+        f"(describe={report.describe_calls} summary={report.summary_calls})"
+    )
 
 
 @sources_app.command("list")

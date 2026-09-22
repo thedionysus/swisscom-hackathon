@@ -46,6 +46,14 @@ _Avoid_: Chrome, navigation junk, nav text
 The maintenance step that deletes boilerplate chunks already sitting in the index, and any document left with none, undoing the fact that they were ingested at all. A separate command run after the fact, not part of ingestion itself, until a later step excludes boilerplate at ingestion time and this has nothing left to do.
 _Avoid_: Cleanup, purge, prune
 
+**Generated context**:
+A short description, written per chunk, of what the chunk's document is about and what the chunk itself covers. It is indexed together with the chunk's text so retrieval can find the chunk, and it is never quoted: a citation draws on the stored text alone.
+_Avoid_: Summary, blurb, annotation
+
+**Recontext**:
+The maintenance step that gives every stored chunk its generated context and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired.
+_Avoid_: Re-enrichment, re-tagging, reprocessing
+
 **Narrowing**:
 The ingestion step that moves a document from its source's default extent to a more specific one found in its text. Only a level marker, or a bare name in the title or a heading, may narrow. A name shared with an ancestor of the default extent never narrows on its own.
 _Avoid_: Localisation, scoping

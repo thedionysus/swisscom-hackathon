@@ -105,3 +105,26 @@ def test_sources_review_approve_reject(monkeypatch):
     assert r.exit_code == 0, r.output
     r = runner.invoke(app, ["sources", "review"])
     assert "sac-cas" not in r.output and "example.com" not in r.output
+
+
+def test_recontext_dry_run_then_backfill(monkeypatch):
+    from swiss_grounding.config import load_settings
+    from swiss_grounding.db.connection import connect
+
+    assert runner.invoke(app, ["db", "init"]).exit_code == 0
+    assert runner.invoke(app, ["db", "seed"]).exit_code == 0
+    _reset_documents()
+    assert runner.invoke(app, ["load-fixture", str(FIXTURE)]).exit_code == 0
+
+    dry = runner.invoke(app, ["recontext", "--dry-run"])
+    assert dry.exit_code == 0, dry.output
+    assert "dry run: examined=8 updated=8" in dry.output
+    with connect(load_settings().database_url) as conn:
+        untouched = conn.execute("select count(*) as n from chunk where context_en <> ''").fetchone()
+    assert untouched["n"] == 0
+
+    run = runner.invoke(app, ["recontext"])
+    assert run.exit_code == 0, run.output
+    assert "examined=8 updated=8 skipped=0" in run.output
+    resumed = runner.invoke(app, ["recontext"])
+    assert "examined=8 updated=0 skipped=8" in resumed.output
