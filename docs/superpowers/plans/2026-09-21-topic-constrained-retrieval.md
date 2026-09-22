@@ -486,6 +486,32 @@ Left open deliberately, since Task 12 is deferred and further pipeline changes a
 - `RELEVANCE_FLOOR = 0.55` remains uncalibrated, as Task 9 Step 3 instructs. The real-embedder measurement above (~0.38 for a good calendar match) is the first data point toward calibrating it; it says nothing yet about where irrelevant evidence sits.
 - Whether the harness should inject a floor that disables tiering, or use real embeddings, is a design question for whoever revisits the probes.
 
+## The language logic is being replaced
+
+*Recorded 2026-09-23, by the user.* The whole approach to language — ADR 0004's "the calling model supplies the English query and the topic" — is expected to change completely. Task 10 shipped that contract (`question_en`, `topic_en`, the deprecated `categories` alias, `query_fields`, `topic_decided_by`), and it works and is reviewed, but it should not be polished further or treated as settled.
+
+**The measured finding that outlives whatever replaces it**, because it is expensive to re-derive and it invalidates ADR 0004's stated premise:
+
+`tsv` is `to_tsvector('english', btrim(context_en || ' ' || text_en))` (`db/schema.sql`). **`text_original` is not in the keyword index at all.** Measured against the live index:
+
+```
+Leinenpflicht -> 0 chunks     leash -> 5
+Hund          -> 0            dog   -> 7
+Wanderwege    -> 0
+"Darf mein Hund im Wald frei laufen?"      -> 0 chunks
+"May my dog run off leash in the forest?"  -> 1 chunk
+Zürich -> 1   vs   Zurich -> 2      (no unaccent extension: the umlaut loses matches
+                                     even on a proper noun)
+```
+
+So a non-English question contributes **nothing** to the lexical arm, and `websearch_to_tsquery('english', ...)` additionally applies English stemming and the English stopword list to non-English input. ADR 0004 justifies keeping the verbatim question "so that original-language terms still have something to match against" — that mechanism does not exist. Any replacement design should start from this rather than from the ADR's premise.
+
+Consequences deliberately left alone, since the rung they describe is going away:
+- The tool docstring's smaller nuances (what "everything is English" means given `snippet_original`; that the classifier reads `question_en + topic_en` rather than `topic_en` alone; the second `as_of` refusal that names no boundary).
+- That a vague `topic_en` blunts the local classifier — measured, benign in direction (it loosens rather than wrongly excludes), undocumented and untested.
+- `hybrid_search(embedded_question=None)` as a defaulted parameter rather than taking the `SearchQuery` that already pairs both strings.
+- Probes still route through the deprecated `categories` rung, so every probe reports `topic_decided_by == "categories"`.
+
 ## Known gaps this plan does not close
 
 - **No dog-tax or dog-registration content exists in the index** (0 chunks). Contextual retrieval makes evidence findable; it cannot make absent evidence present. Closing this needs new sources — a registry task, not a retrieval one.
