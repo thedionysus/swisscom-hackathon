@@ -128,3 +128,33 @@ def test_recontext_dry_run_then_backfill(monkeypatch):
     assert "examined=8 updated=8 skipped=0" in run.output
     resumed = runner.invoke(app, ["recontext"])
     assert "examined=8 updated=0 skipped=8" in resumed.output
+
+
+def test_recontext_shows_progress_and_says_a_rerun_resumes(monkeypatch):
+    from swiss_grounding.cli import main as cli
+
+    assert runner.invoke(app, ["db", "init"]).exit_code == 0
+    assert runner.invoke(app, ["db", "seed"]).exit_code == 0
+    _reset_documents()
+    assert runner.invoke(app, ["load-fixture", str(FIXTURE)]).exit_code == 0
+
+    run = runner.invoke(app, ["recontext"])
+    assert run.exit_code == 0, run.output
+    assert "[1/8]" in run.output and "[8/8]" in run.output
+    assert "calls=" in run.output
+
+    class DeadKey:
+        def translate(self, text, source_language):
+            raise RuntimeError("401 API key is invalid")
+
+        def summarise(self, title_en, text_en):
+            raise RuntimeError("401 API key is invalid")
+
+        def describe(self, summary_en, heading_path, text_en, text_original, categories):
+            raise RuntimeError("401 API key is invalid")
+
+    monkeypatch.setattr(cli, "build_llm", lambda backend, model, api_key: DeadKey())
+    dead = runner.invoke(app, ["recontext", "--force"])
+    assert "stopped early" in dead.output
+    assert "not attempted" in dead.output
+    assert "re-run to resume" in dead.output

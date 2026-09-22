@@ -27,8 +27,9 @@ See `_finish`.
 
 import json
 import logging
+import re
 from collections import Counter
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, fields, replace
 from functools import cache
 from itertools import groupby
@@ -36,12 +37,7 @@ from typing import Any
 
 import psycopg
 
-from swiss_grounding.ingest.context import (
-    SOURCE_FALLBACK_CONFIDENCE,
-    describe_chunks,
-    document_topics,
-    indexed_text,
-)
+from swiss_grounding.ingest.context import describe_chunks, document_topics, indexed_text
 from swiss_grounding.ingest.enrich import SECTION_SEPARATOR
 from swiss_grounding.ingest.llm import LLM
 from swiss_grounding.ingest.models import CategoryTag, ChunkContext, ChunkDraft, FetchError
@@ -64,11 +60,23 @@ UPDATE_CHUNK = "update chunk set context_en = %s, categories = %s, embedding = %
 DELETE_CHUNK = "delete from chunk where id = %s"
 UPDATE_DOCUMENT_TOPICS = "update document set categories = %s::jsonb where id = %s"
 SELECT_TOPIC_IDS = "select distinct unnest(categories) as topic from chunk where document_id = %s"
-# What a topic carried by a chunk this run did not describe is rolled up at: the chunk asserts the
-# topic, and the confidence the model gave it was dropped when the chunk was stored. The same value
-# `context.SOURCE_FALLBACK_CONFIDENCE` uses, and for the same reason -- it applies, but nothing here
-# asserts it at full strength.
-RECOVERED_CONFIDENCE = SOURCE_FALLBACK_CONFIDENCE
+# What a topic carried by a chunk this run did not describe is rolled up at. The model did say the
+# topic applied; the number it gave was dropped when the chunk was stored, because
+# `chunk.categories` keeps ids alone. Below certainty, because nothing here asserts it at full
+# strength. It happens to equal `context.SOURCE_FALLBACK_CONFIDENCE` today and must not be tied to
+# it: that one stands for a source's declaration filling in for a chunk the model named nothing
+# for, which is a different statement, and retuning either must not move the other.
+RECOVERED_CONFIDENCE = 0.5
+# How many documents may fail in a row before the run gives up. One failure is a document -- a page
+# that broke, a reply the model never got right. Two can be coincidence. Three in a row with
+# nothing succeeding between them is a property of the run: a rejected API key answers every call
+# the same way, and the alternative is paying a summary and a description for each of the remaining
+# documents to be told so again. Three caps that waste at about six messages instead of forty.
+MAX_CONSECUTIVE_FAILURES = 3
+# A title that came out of a Markdown conversion can keep its heading marker -- one stored title is
+# `# On the Road with the Kids`. The summary quotes the title and every chunk of the document
+# repeats the summary, so the artefact would reach all of that document's chunks.
+MARKDOWN_HEADING = re.compile(r"^\s*#+\s*")
 # Refused rather than described: see `_untitled`. The message names the repair, because the
 # operator reading it has one command to run before this one can work.
 UNTITLED = ("the document is titled {title!r}, which names nothing; run `retitle` to repair the "
@@ -119,6 +127,10 @@ class RecontextReport:
     by_source: tuple[SourceRecontext, ...]
     errors: tuple[FetchError, ...] = ()
     emptied: tuple[EmptiedDocument, ...] = ()
+    # True when the run gave up after `MAX_CONSECUTIVE_FAILURES`, leaving `not_attempted`
+    # documents untouched. A stopped run and a finished one must never read alike.
+    stopped_early: bool = False
+    not_attempted: int = 0
 
     def _total(self, field: str) -> int:
         return sum(getattr(s, field) for s in self.by_source)
@@ -158,6 +170,25 @@ class RecontextReport:
     @property
     def summary_calls(self) -> int:
         return self._total("summary_calls")
+
+
+@dataclass(frozen=True)
+class DocumentProgress:
+    """One document just finished, and what the run has spent by now.
+
+    A paid run over the live corpus takes the better part of an hour and no logging is configured
+    anywhere in this repo, so without this an operator cannot tell a long document from a hung
+    socket. The caller decides how to show it; `cli/main.py` echoes a line per document.
+    """
+
+    index: int
+    total: int
+    source_id: str
+    url: str
+    updated: int
+    deleted: int
+    failed: int
+    calls_so_far: int
 
 
 @dataclass(frozen=True)
@@ -276,18 +307,35 @@ def _drafts(rows: Sequence[dict[str, Any]]) -> tuple[_StoredChunk, ...]:
     )
 
 
-def _documents(conn: psycopg.Connection) -> Iterator[_StoredDocument]:
-    """Every current document with its chunks, read once and grouped in ordinal order."""
+def _prompt_title(title_en: str) -> str:
+    """The stored title as a prompt should see it, with a Markdown heading marker stripped.
+
+    Repaired here rather than in the row, because this command is deliberately read-only about
+    titles -- `retitle` is what writes them -- and a `#` says nothing a prompt can use. Everything
+    else about the title is passed through: a title is the document's own words, and this is not
+    the place to decide which of them are worth keeping.
+    """
+    return MARKDOWN_HEADING.sub("", title_en).strip()
+
+
+def _documents(conn: psycopg.Connection) -> tuple[_StoredDocument, ...]:
+    """Every current document with its chunks, read once and grouped in ordinal order.
+
+    Materialised rather than streamed: the run has to know how many documents it did not get to
+    when it stops early, and the rows are one query either way.
+    """
     rows = conn.execute(SELECT_CHUNKS).fetchall()
+    documents = []
     for document_id, group in groupby(rows, key=lambda r: r["document_id"]):
         chunk_rows = list(group)
         first = chunk_rows[0]
-        yield _StoredDocument(
+        documents.append(_StoredDocument(
             id=document_id, source_id=first["source_id"], url=first["url"],
-            title_original=first["title_original"], title_en=first["title_en"],
+            title_original=first["title_original"], title_en=_prompt_title(first["title_en"]),
             identifier=first["identifier"],
             chunks=_drafts(chunk_rows),
-        )
+        ))
+    return tuple(documents)
 
 
 def _write(conn: psycopg.Connection, stored: _StoredChunk, described: ChunkDraft | None,
@@ -384,6 +432,37 @@ def _projected(counts: SourceRecontext, source: Source, pending: Sequence[_Store
     return replace(counts, updated=len(pending), describe_calls=len(pending), summary_calls=1)
 
 
+def _safe_rollback(conn: psycopg.Connection) -> None:
+    """End the transaction, and survive a connection too broken to end one.
+
+    There is nothing here to lose -- every paid call was committed as it was made -- so the only
+    reason to roll back is to leave the connection usable for the next document. If the connection
+    itself is gone the rollback raises too, and the handler that exists to keep the run going must
+    not become what ends it.
+    """
+    try:
+        conn.rollback()
+    except Exception:
+        log.exception("rollback failed after a document failure; the run continues")
+
+
+def _failed(conn: psycopg.Connection, document: _StoredDocument, model: _DocumentModel,
+            counts: SourceRecontext, kept: Sequence[ChunkDraft], deleted: int, unreached: int,
+            chunk_id: int | None, exc: Exception) -> "_DocumentOutcome":
+    """One document's failure, reported rather than raised, naming where in the document it was.
+
+    The document url alone does not say which of a hundred-odd chunks failed, which is the first
+    thing an operator reading stderr mid-run wants to know.
+    """
+    _safe_rollback(conn)
+    log.exception("recontext failed source=%s url=%s chunk=%s",
+                  document.source_id, document.url, chunk_id)
+    where = f"chunk {chunk_id}" if chunk_id is not None else "finishing the document"
+    return _DocumentOutcome(
+        counts=_counted(counts, model, updated=len(kept), deleted_chunks=deleted, failed=unreached),
+        error=FetchError(url=document.url, reason=f"{where}: {exc}"))
+
+
 def _describe_pending(conn: psycopg.Connection, document: _StoredDocument, source: Source,
                       pending: Sequence[_StoredChunk], model: _DocumentModel, embedder: Embedder,
                       counts: SourceRecontext, options: "_Options") -> "_DocumentOutcome":
@@ -394,8 +473,11 @@ def _describe_pending(conn: psycopg.Connection, document: _StoredDocument, sourc
     and no invariant binds it to the chunks beside it, so discarding up to 195 paid calls (SR
     741.01, the largest stored act) would protect nothing. A resumed run picks up exactly where
     this one stopped, because the chunks that succeeded now carry a context and the ones that did
-    not still carry none. `conn.rollback` is safe for the same reason: there is nothing
-    uncommitted left to lose.
+    not still carry none.
+
+    Settling the document is inside the same net. `_finish` writes too -- a roll-up, or a deletion
+    -- and a failure there would otherwise end a run that is three quarters through a paid job
+    with a traceback instead of a report.
     """
     document_text_en = document.text_en
     kept: list[ChunkDraft] = []
@@ -404,19 +486,20 @@ def _describe_pending(conn: psycopg.Connection, document: _StoredDocument, sourc
         try:
             described = _describe(stored, document, document_text_en, source, model)
             _write(conn, stored, described, embedder)
-        except Exception as exc:
-            conn.rollback()
-            log.exception("recontext failed source=%s url=%s chunk=%s",
-                          source.id, document.url, stored.id)
-            return _DocumentOutcome(
-                counts=_counted(counts, model, updated=len(kept), deleted_chunks=deleted,
-                                failed=len(pending) - done),
-                error=FetchError(url=document.url, reason=str(exc)))
+        # The per-document boundary of the whole run: anything at all here is this document's
+        # failure and nobody else's, and `_failed` is what logs it with its traceback.
+        except Exception as exc:  # noqa: BLE001
+            return _failed(conn, document, model, counts, kept, deleted,
+                           unreached=len(pending) - done, chunk_id=stored.id, exc=exc)
         if described is None:
             deleted += 1
         else:
             kept.append(described)
-    return _finish(conn, document, kept, deleted, model, counts, options)
+    try:
+        return _finish(conn, document, kept, deleted, model, counts, options)
+    except Exception as exc:  # noqa: BLE001 -- the same boundary, around settling the document
+        return _failed(conn, document, model, counts, kept, deleted, unreached=0,
+                       chunk_id=None, exc=exc)
 
 
 def _finish(conn: psycopg.Connection, document: _StoredDocument, kept: Sequence[ChunkDraft],
@@ -432,9 +515,11 @@ def _finish(conn: psycopg.Connection, document: _StoredDocument, kept: Sequence[
     verdict that is usually right is not a basis for an unrecoverable delete nobody saw coming.
 
     Leaving it has a cost, and it is the smaller one: `retrieval/coverage.py` counts documents, so
-    a document with no chunks keeps reporting coverage it can no longer serve -- the
-    silent under-coverage failure class of `CONTEXT.md`. That is a visible, reversible wrong
-    number. `--delete-emptied` erases them once an operator has read the list and decided.
+    a document with no chunks keeps reporting coverage it can no longer serve -- the silent
+    under-coverage failure class of `CONTEXT.md`. That is a visible, reversible wrong number.
+    `--delete-emptied` erases them once an operator has read the list. What it must not also do is
+    keep asserting topics: the roll-up runs on it like any other document, and over no chunks it
+    writes no topics.
     """
     if len(document.chunks) - deleted > 0:
         _roll_up(conn, document, kept)
@@ -442,6 +527,8 @@ def _finish(conn: psycopg.Connection, document: _StoredDocument, kept: Sequence[
     if options.delete_emptied:
         delete_documents(conn, [document.id])
         conn.commit()
+    else:
+        _roll_up(conn, document, kept)
     return _DocumentOutcome(
         counts=_counted(counts, model, updated=len(kept), deleted_chunks=deleted,
                         deleted_documents=int(options.delete_emptied),
@@ -484,30 +571,52 @@ def _orphaned(document: _StoredDocument) -> "_DocumentOutcome":
                                             skipped=len(document.chunks)))
 
 
+def _systemic(outcome: "_DocumentOutcome") -> bool:
+    """Whether this failure says something about the run rather than about the document.
+
+    Only a failure that reached the model counts. A refusal that costs nothing -- an untitled
+    document -- is a data condition, and the report's job there is to list every one of them; a
+    document that paid for a call and failed anyway is the shape of an outage or a rejected key,
+    which the next document will meet as well.
+    """
+    return outcome.error is not None and _calls(outcome.counts) > 0
+
+
+def _calls(counts: SourceRecontext) -> int:
+    return counts.describe_calls + counts.summary_calls
+
+
 def recontext_all(conn: psycopg.Connection, llm: LLM, embedder: Embedder, dry_run: bool = False,
-                  force: bool = False, delete_emptied: bool = False) -> RecontextReport:
+                  force: bool = False, delete_emptied: bool = False,
+                  on_document: Callable[[DocumentProgress], None] | None = None) -> RecontextReport:
     """Give every stored chunk a generated context and its own topics, and re-embed it.
 
     One document at a time, one chunk at a time, committed as it goes; see the module docstring
-    for what that buys.
+    for what that buys. `on_document` is called as each document is settled, so a caller can show
+    progress through a run that takes the better part of an hour.
 
     With `dry_run=True` nothing is written and nothing is asked of the model: the report says what
     the run would touch and what it would cost, which is the number an operator needs before
-    spending it. Its call count is a lower bound -- a description the model answers unusably is
-    resampled once, and no projection can know which. With `force=True` a chunk that already
-    carries a context is described again, which is the only way to redo work this command has
-    already done. With `delete_emptied=True` a document the model left with no chunks is erased
-    rather than reported; see `_finish` for why that is not the default.
+    spending it. With `force=True` a chunk that already carries a context is described again,
+    which is the only way to redo work this command has already done. With `delete_emptied=True`
+    a document the model left with no chunks is erased rather than reported; see `_finish` for why
+    that is not the default.
+
+    The run gives up after `MAX_CONSECUTIVE_FAILURES` documents fail in a row having spent a call,
+    and says so: `stopped_early` with the count of documents it never reached. Re-running resumes.
     """
     options = _Options(dry_run=dry_run, force=force, delete_emptied=delete_emptied)
     sources = {s.id: s for s in load_sources(conn)}
+    documents = _documents(conn)
     totals: dict[str, SourceRecontext] = {}
     errors: list[FetchError] = []
     emptied: list[EmptiedDocument] = []
-    for document in _documents(conn):
+    consecutive = attempted = 0
+    for index, document in enumerate(documents, start=1):
         source = sources.get(document.source_id)
         outcome = (_recontext_document(conn, document, source, llm, embedder, options)
                    if source else _orphaned(document))
+        attempted = index
         source_id = outcome.counts.source_id
         totals[source_id] = totals.get(source_id, SourceRecontext(source_id=source_id)).plus(
             outcome.counts)
@@ -515,5 +624,27 @@ def recontext_all(conn: psycopg.Connection, llm: LLM, embedder: Embedder, dry_ru
             errors.append(outcome.error)
         if outcome.emptied:
             emptied.append(outcome.emptied)
-    return RecontextReport(by_source=tuple(sorted(totals.values(), key=lambda s: s.source_id)),
-                           errors=tuple(errors), emptied=tuple(emptied))
+        if on_document:
+            on_document(_progress(index, len(documents), document, outcome, totals))
+        consecutive = consecutive + 1 if _systemic(outcome) else 0
+        if consecutive >= MAX_CONSECUTIVE_FAILURES:
+            log.error("giving up after %d documents failed in a row; %d not attempted",
+                      consecutive, len(documents) - attempted)
+            break
+    return RecontextReport(
+        by_source=tuple(sorted(totals.values(), key=lambda s: s.source_id)),
+        errors=tuple(errors), emptied=tuple(emptied),
+        stopped_early=consecutive >= MAX_CONSECUTIVE_FAILURES,
+        not_attempted=len(documents) - attempted,
+    )
+
+
+def _progress(index: int, total: int, document: _StoredDocument, outcome: "_DocumentOutcome",
+              totals: Mapping[str, SourceRecontext]) -> DocumentProgress:
+    """What one settled document looks like from outside, including the run's bill so far."""
+    return DocumentProgress(
+        index=index, total=total, source_id=document.source_id, url=document.url,
+        updated=outcome.counts.updated, deleted=outcome.counts.deleted_chunks,
+        failed=outcome.counts.failed,
+        calls_so_far=sum(_calls(counts) for counts in totals.values()),
+    )
