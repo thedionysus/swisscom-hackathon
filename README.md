@@ -113,7 +113,7 @@ Good first questions:
 | `swiss_resolve_location(query)` | Resolve a place name, canton, district, or postal code to a jurisdiction node. |
 | `swiss_search(question, location, categories, as_of, limit, response_format)` | Hybrid search with jurisdiction filtering. Returns citations with `url`, `snippet_en`, `extent_id`, `authority`, `valid_from`, `event_date`, and a `notice` explaining what was retrieved. `response_format="detailed"` adds original-language snippets and `retrieved_at`. |
 | `swiss_get_document(document_id, chunk_id)` | Full document or one chunk from a previous result. |
-| `swiss_list_categories()` | Topic categories that `swiss_search` accepts as hints. |
+| `swiss_list_categories()` | Topic categories that `swiss_search` filters on. Passing them excludes evidence carrying none of them, rather than reranking it; a question whose subject nothing on the jurisdiction path covers returns `no_evidence`. |
 | `swiss_coverage(location)` | Per source and jurisdiction: document count, last retrieval, and fetch health. `health` is `ok`, `degraded`, `failing`, or `unknown`; `fixture_only` marks rows that come only from demo data. A failing or fixture-only row is not live coverage even if `documents` is non-zero. |
 | `swiss_suggest_source(url, reason, ...)` | Propose a new source. Official government domains are approved automatically as `official_info`; other domains wait for human review. |
 
