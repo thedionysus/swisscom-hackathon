@@ -36,6 +36,7 @@ import numpy as np
 
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.retrieval.embedder import Embedder
+from swiss_grounding.retrieval.models import QueryRequest
 
 # Below this cosine similarity, the best-matching category is not a confident match —
 # return no topics so an unrecognised question degrades to no filter (search still runs
@@ -131,3 +132,32 @@ def classify_topics(question: str, embedder: Embedder) -> tuple[str, ...]:
     if len(band) > TOPIC_MAX_TOPICS:
         return ()
     return band
+
+
+def resolve_topics(request: QueryRequest, embedder: Embedder) -> tuple[str, ...]:
+    """Decide what `swiss_search` filters on for this request, in ADR 0004's order.
+
+    1. `request.topics` -- the caller said what the question is about. ADR 0004 makes the
+       calling model the primary source: it reads the user's question, it already speaks
+       the user's language, and it is paying for its own tokens.
+    2. `request.categories` -- the same caller, on the older contract. It is the only way
+       a client that has not been updated can state a subject at all, and an explicit
+       statement from the caller must outrank a guess made on its behalf. This rung
+       disappears when Task 10 replaces the tool contract; until then, dropping it would
+       mean ignoring what the caller said in favour of what the server guessed.
+    3. `classify_topics` -- the local fallback, used only when the caller said nothing.
+
+    Returns sorted ids so the applied filter is deterministic whatever PYTHONHASHSEED is
+    (ADR 0004 commits probes to determinism), and an empty tuple to mean *no constraint*
+    -- which is not the same as a constraint nothing satisfies. `search.FILTER` documents
+    what that distinction costs if it is lost.
+
+    Raises ValueError on an empty question, from `classify_topics`. `query_core._validate`
+    rejects those before this is reached, so an exception here is a programming error in
+    a new caller rather than a user error to render.
+    """
+    if request.topics:
+        return tuple(sorted(set(request.topics)))
+    if request.categories:
+        return tuple(sorted(set(request.categories)))
+    return classify_topics(request.question, embedder)

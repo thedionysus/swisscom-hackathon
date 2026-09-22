@@ -1,0 +1,138 @@
+{
+  "documents": [
+    {
+      "source_id": "fedlex",
+      "url": "https://www.fedlex.admin.ch/eli/cc/2008/414/de#art_77",
+      "identifier": "SR 455 Art. 77",
+      "title_original": "Tierschutzverordnung",
+      "title_en": "Animal Welfare Ordinance",
+      "language": "de",
+      "extent_id": "CH",
+      "authority": "federal_law",
+      "categories": ["dogs"],
+      "chunks": [
+        {
+          "heading_path": "Umgang mit Hunden",
+          "anchor": "art_77",
+          "text_original": "Hunde sind so zu halten, dass sie Menschen und Tiere nicht gefährden.",
+          "text_en": "Dogs must be kept so that they do not endanger people or animals."
+        }
+      ]
+    },
+    {
+      "source_id": "fedlex",
+      "url": "https://www.fedlex.admin.ch/eli/cc/1984/1122_1122_1122/de#art_30",
+      "identifier": "SR 814.01 Art. 30",
+      "title_original": "Umweltschutzgesetz",
+      "title_en": "Environmental Protection Act",
+      "language": "de",
+      "extent_id": "CH",
+      "authority": "federal_law",
+      "categories": ["waste"],
+      "chunks": [
+        {
+          "heading_path": "Abfälle",
+          "anchor": "art_30",
+          "text_original": "Die Erzeugung von Abfällen ist möglichst zu vermeiden.",
+          "text_en": "The production of waste is to be avoided as far as possible."
+        }
+      ]
+    },
+    {
+      "source_id": "zh_ch",
+      "url": "https://www.zh.ch/de/umwelt-tiere/abfall-rohstoffe.html",
+      "identifier": null,
+      "title_original": "Abfall und Rohstoffe",
+      "title_en": "Waste and raw materials",
+      "language": "de",
+      "extent_id": "CH-ZH",
+      "authority": "official_info",
+      "categories": ["waste"],
+      "chunks": [
+        {
+          "heading_path": "Separatsammlung",
+          "anchor": null,
+          "text_original": "Karton und Papier werden im Kanton Zürich getrennt gesammelt.",
+          "text_en": "Cardboard and paper are collected separately in the Canton of Zurich."
+        }
+      ]
+    },
+    {
+      "source_id": "stadt_zuerich",
+      "url": "https://www.stadt-zuerich.ch/de/umwelt-und-energie/abfall/karton.html",
+      "identifier": null,
+      "title_original": "Karton",
+      "title_en": "Cardboard",
+      "language": "de",
+      "extent_id": "CH-ZH-261",
+      "authority": "official_info",
+      "categories": ["waste"],
+      "chunks": [
+        {
+          "heading_path": "Karton bereitstellen",
+          "anchor": "bereitstellen",
+          "text_original": "Karton gebündelt bis 7 Uhr am Sammeltag bereitstellen.",
+          "text_en": "Bundle cardboard and put it out by 7:00 on collection day."
+        }
+      ]
+    },
+    {
+      "source_id": "open_erz",
+      "url": "https://data.stadt-zuerich.ch/dataset/erz_sammelkalender/karton/8003/2026-09-24",
+      "identifier": null,
+      "title_original": "Kartonabfuhr 8003 am 2026-09-24",
+      "title_en": "Waste collection cardboard in 8003 on 2026-09-24",
+      "language": "de",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": ["waste"],
+      "event_date": "2026-09-24",
+      "chunks": [
+        {
+          "heading_path": "Sammelkalender",
+          "anchor": null,
+          "text_original": "Kartonabfuhr im Postleitzahlgebiet 8003 am 24. September 2026.",
+          "text_en": "Cardboard collection in postal code area 8003 on 24 September 2026."
+        }
+      ]
+    },
+    {
+      "source_id": "stadt_zuerich",
+      "url": "https://www.stadt-zuerich.ch/de/gesundheit-und-praevention/tiere/hundezone-wiedikon.html",
+      "identifier": null,
+      "title_original": "Hundezone Wiedikon",
+      "title_en": "Dog zone Wiedikon",
+      "language": "de",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": ["dogs"],
+      "chunks": [
+        {
+          "heading_path": "Hundezone",
+          "anchor": null,
+          "text_original": "In der Hundezone Wiedikon dürfen Hunde frei laufen.",
+          "text_en": "Dogs may run off leash in the Wiedikon dog zone."
+        }
+      ]
+    },
+    {
+      "source_id": "stadt_zuerich",
+      "url": "https://www.stadt-zuerich.ch/de/politik-und-verwaltung/stadtverwaltung/kreisbuero-3.html",
+      "identifier": null,
+      "title_original": "Kreisbüro 3",
+      "title_en": "District office 3",
+      "language": "de",
+      "extent_id": "CH-ZH-261-K3",
+      "authority": "official_info",
+      "categories": [],
+      "chunks": [
+        {
+          "heading_path": "Kreisbüro",
+          "anchor": null,
+          "text_original": "Das Kreisbüro 3 an der Zweierstrasse ist für Einwohnerdienste zuständig.",
+          "text_en": "District office 3 on Zweierstrasse handles residents' services such as registration and identity documents."
+        }
+      ]
+    }
+  ]
+}

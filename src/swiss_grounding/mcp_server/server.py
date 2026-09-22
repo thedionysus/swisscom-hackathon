@@ -120,7 +120,11 @@ def build_server(settings: Settings) -> FastMCP:
         status is 'needs_location': ask the user for a city, canton, or postal code, then
         call again. Do not guess a location.
 
-        categories: optional hints from swiss_list_categories; they rerank, never exclude.
+        categories: the topic(s) the question is about, from swiss_list_categories. This is a
+        hard filter, not a hint: evidence that does not carry one of them is not returned, and
+        the status is 'no_evidence' when nothing on the path does. Supply none and the server
+        estimates the topic itself; categories_used in the response says what it filtered on,
+        and is empty when no topic constraint was applied.
         as_of: ISO date to retrieve law as it stood on that date.
         Results are evidence with citations; write the answer from them and cite the URLs.
         Calendar-style citations (e.g. waste collections) carry event_date: the day the event
@@ -170,7 +174,8 @@ def build_server(settings: Settings) -> FastMCP:
 
     @mcp.tool(annotations=READ_ONLY)
     def swiss_list_categories() -> str:
-        """List the topic categories that swiss_search accepts as hints."""
+        """List the topic categories swiss_search filters on. Pass the ones a question is about
+        as its `categories`; evidence carrying none of them is not returned."""
         return _json({"categories": [asdict(c) for c in CATEGORIES]})
 
     @mcp.tool(annotations=READ_ONLY)

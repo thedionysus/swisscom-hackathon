@@ -17,7 +17,8 @@ it is actually selected.
 import pytest
 
 from swiss_grounding.retrieval.embedder import build_embedder
-from swiss_grounding.retrieval.topics import classify_topics
+from swiss_grounding.retrieval.models import QueryRequest
+from swiss_grounding.retrieval.topics import classify_topics, resolve_topics
 
 
 @pytest.fixture(scope="session")
@@ -79,3 +80,48 @@ def test_empty_question_is_rejected(embedder):
         classify_topics("", embedder)
     with pytest.raises(ValueError):
         classify_topics("   ", embedder)
+
+
+# --- resolve_topics: where the topic that actually filters comes from (ADR 0004) -------
+#
+# Same real embedder as above, deliberately. The point of these is the *order* of the
+# three sources, and a fake embedder would let the classifier rung pass by accident.
+
+
+def _request(question: str, **kwargs) -> QueryRequest:
+    return QueryRequest(question=question, location="8003", **kwargs)
+
+
+def test_caller_topics_outrank_both_the_hint_and_the_classifier(embedder):
+    """ADR 0004 makes the calling model the primary source. It has read the user's
+    question; the server has only embedded it."""
+    request = _request("When is cardboard collected?", topics=("dogs",), categories=("waste",))
+    assert resolve_topics(request, embedder) == ("dogs",)
+
+
+def test_the_older_categories_hint_is_read_as_the_topic_when_topics_is_empty(embedder):
+    """A client on the pre-Task-10 contract has no other way to say what the question is
+    about. Ignoring it in favour of the classifier would prefer the server's guess to the
+    caller's statement, which is the opposite of what ADR 0004 decided."""
+    request = _request("When is cardboard collected?", categories=("dogs",))
+    assert resolve_topics(request, embedder) == ("dogs",)
+
+
+def test_the_classifier_runs_only_when_the_caller_said_nothing(embedder):
+    request = _request("When is cardboard collected?")
+    assert resolve_topics(request, embedder) == classify_topics(request.question, embedder)
+    assert "waste" in resolve_topics(request, embedder)
+
+
+def test_a_question_the_classifier_declines_resolves_to_no_constraint(embedder):
+    """`()` must reach search as "no filter". If this ever returned a placeholder topic
+    instead, an unplaceable question would retrieve nothing rather than degrading to
+    search on the extent path alone."""
+    assert resolve_topics(_request("Tell me about Hamlet"), embedder) == ()
+
+
+def test_the_applied_filter_is_sorted_and_deduplicated(embedder):
+    """The response reports this tuple back as `categories_used`, and ADR 0004 commits
+    probes to determinism; a caller's argument order must not leak into it."""
+    request = _request("Which rules apply?", topics=("waste", "dogs", "waste"))
+    assert resolve_topics(request, embedder) == ("dogs", "waste")

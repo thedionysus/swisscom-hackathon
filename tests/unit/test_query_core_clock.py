@@ -1,3 +1,11 @@
+"""The clock QueryCore reranks against. Nothing here is about topics.
+
+Every request below states `topics` even so, because a request that states none falls
+through to the local classifier (ADR 0004), which needs a real embedder -- and these
+build QueryCore with `embedder=None` on purpose, having monkeypatched away the only
+thing that used to touch it. The value matches the fixture chunk's own category so the
+hard topic filter is a no-op for what these assert.
+"""
 from dataclasses import fields
 from datetime import date
 
@@ -49,7 +57,7 @@ def test_query_passes_injected_today_to_rerank(monkeypatch):
     monkeypatch.setattr(query_core, "rerank", fake_rerank)
     core = QueryCore(database_url="x", tree=tree, resolver=Resolver(), embedder=None, weights=RerankWeights(),
                      today=lambda: date(2026, 9, 16))
-    core.query(QueryRequest(question="q", location="Switzerland"))
+    core.query(QueryRequest(question="q", location="Switzerland", topics=("waste",)))
     assert seen["today"] == date(2026, 9, 16)
 
 
@@ -93,8 +101,9 @@ def test_as_of_replaces_today_for_the_reranker(monkeypatch):
     core = QueryCore(database_url="x", tree=tree, resolver=Resolver(), embedder=None, weights=RerankWeights(),
                      today=lambda: date(2026, 9, 16))
 
-    core.query(QueryRequest(question="q", location="Switzerland", as_of=date(2026, 9, 8)))
+    core.query(QueryRequest(question="q", location="Switzerland", topics=("waste",),
+                            as_of=date(2026, 9, 8)))
     assert seen["today"] == date(2026, 9, 8)
 
-    core.query(QueryRequest(question="q", location="Switzerland"))
+    core.query(QueryRequest(question="q", location="Switzerland", topics=("waste",)))
     assert seen["today"] == date(2026, 9, 16)
