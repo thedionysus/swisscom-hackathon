@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import psycopg
 
+from swiss_grounding.ingest.context import document_topics, indexed_text
 from swiss_grounding.ingest.fetch_state import forget_known, save_known, touch_known
 from swiss_grounding.ingest.hashing import content_hash, text_hash
 from swiss_grounding.ingest.models import ChunkDraft, EnrichedDocument, KnownUrl
@@ -27,7 +28,11 @@ def _current(conn: psycopg.Connection, url: str) -> dict | None:
     ).fetchone()
 
 
-def _insert_document(conn: psycopg.Connection, doc: EnrichedDocument, chash: str, version: int) -> int:
+def _insert_document(conn: psycopg.Connection, doc: EnrichedDocument, chunks: tuple[ChunkDraft, ...],
+                     chash: str, version: int) -> int:
+    """Insert the document row. Its categories are the roll-up of the chunks being written with it,
+    never a judgement of its own: ADR 0003 decides topic per chunk, and deriving the document's
+    from those same chunks is what stops the two disagreeing."""
     f = doc.fetched
     row = conn.execute(
         """
@@ -39,7 +44,8 @@ def _insert_document(conn: psycopg.Connection, doc: EnrichedDocument, chash: str
         returning id
         """,
         (f.source_id, f.url, f.identifier, f.title, doc.title_en, f.language, doc.extent_id,
-         doc.extent_reason, json.dumps([{"id": t.id, "confidence": t.confidence} for t in doc.categories]),
+         doc.extent_reason,
+         json.dumps([{"id": t.id, "confidence": t.confidence} for t in document_topics(chunks)]),
          f.valid_from, f.valid_to, f.in_force, f.event_date, f.published_at, chash, version, f.source_id),
     ).fetchone()
     if row is None:
@@ -49,20 +55,31 @@ def _insert_document(conn: psycopg.Connection, doc: EnrichedDocument, chash: str
 
 def _insert_chunks(conn: psycopg.Connection, document_id: int, doc: EnrichedDocument,
                    chunks: tuple[ChunkDraft, ...], embedder: Embedder) -> dict[str, int]:
-    """Insert chunks; returns chunk_hash -> chunk id."""
-    vectors = embedder.embed([c.text_en for c in chunks]) if chunks else []
+    """Insert chunks; returns chunk_hash -> chunk id.
+
+    What is embedded is the generated context and the chunk text together (ADR 0005), matching
+    the `tsv` column `db/schema.sql` generates from the same two columns, so both indexes see the
+    same thing. `text_en` and `text_original` are stored exactly as chunked, because those two
+    are all a citation may quote.
+
+    `chunk_hash` stays a hash of `text_en` alone. It is the identity used to diff one version of
+    a document against the next, and folding a regenerated description into it would report every
+    chunk as modified on any run that reworded a description.
+    """
+    vectors = embedder.embed([indexed_text(c.context_en, c.text_en) for c in chunks]) if chunks else []
     authority = conn.execute("select authority from document where id = %s", (document_id,)).fetchone()["authority"]
     ids: dict[str, int] = {}
     for chunk, vector in zip(chunks, vectors, strict=True):
         chash = text_hash(chunk.text_en)
         row = conn.execute(
             """
-            insert into chunk (document_id, ordinal, text_original, text_en, heading_path, anchor, embedding,
-                               chunk_hash, extent_id, authority, categories)
-            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning id
+            insert into chunk (document_id, ordinal, text_original, text_en, context_en, heading_path,
+                               anchor, embedding, chunk_hash, extent_id, authority, categories)
+            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning id
             """,
-            (document_id, chunk.ordinal, chunk.text_original, chunk.text_en, chunk.heading_path, chunk.anchor,
-             vector, chash, doc.extent_id, authority, [t.id for t in doc.categories]),
+            (document_id, chunk.ordinal, chunk.text_original, chunk.text_en, chunk.context_en,
+             chunk.heading_path, chunk.anchor, vector, chash, doc.extent_id, authority,
+             [t.id for t in chunk.topics]),
         ).fetchone()
         ids[chash] = row["id"]
     return ids
@@ -128,7 +145,7 @@ def persist_document(conn: psycopg.Connection, doc: EnrichedDocument, chunks: tu
     if not chunks:
         return _skip(conn, doc, chash, current)
     version = (current["version"] + 1) if current else 1
-    document_id = _insert_document(conn, doc, chash, version)
+    document_id = _insert_document(conn, doc, chunks, chash, version)
     new_ids = _insert_chunks(conn, document_id, doc, chunks, embedder)
     save_known(conn, f.source_id, f.url, KnownUrl(etag=f.etag, last_modified=f.last_modified, content_hash=chash))
     if current is None:

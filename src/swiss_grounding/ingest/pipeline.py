@@ -4,7 +4,8 @@ from dataclasses import dataclass, replace
 import psycopg
 
 from swiss_grounding.ingest.chunking import ChunkLimits, chunk_sections
-from swiss_grounding.ingest.enrich import enrich
+from swiss_grounding.ingest.context import describe_chunks
+from swiss_grounding.ingest.enrich import document_text, enrich
 from swiss_grounding.ingest.fetch_state import load_known
 from swiss_grounding.ingest.fetchers.base import Fetcher
 from swiss_grounding.ingest.llm import LLM
@@ -43,7 +44,12 @@ class IngestReport:
 
 def run_ingest(conn: psycopg.Connection, source: Source, fetcher: Fetcher, llm: LLM, embedder: Embedder,
                tree: LocationTree, run_id: str, limits: ChunkLimits = DEFAULT_LIMITS) -> IngestReport:
-    """Run one source through fetch → enrich → chunk → persist. Failures are per document."""
+    """Run one source through fetch → enrich → chunk → describe → persist.
+
+    Failures are per document. `describe_chunks` is where the model calls of ADR 0005 are made and
+    where page furniture is dropped, so a document that was nothing but furniture arrives at
+    `persist_document` with no chunks and is recorded as skipped, not as a failure.
+    """
     report = IngestReport(source_id=source.id, run_id=run_id)
     known = load_known(conn, source.id)
     result = fetcher.fetch(source, known)
@@ -59,9 +65,13 @@ def run_ingest(conn: psycopg.Connection, source: Source, fetcher: Fetcher, llm: 
     for fetched in result.documents:
         try:
             with conn.transaction():
-                enriched = enrich(fetched, source, tree, llm, CATEGORIES)
+                enriched = enrich(fetched, source, tree, llm)
                 chunks = chunk_sections(fetched.sections, enriched.sections_en, limits)
-                outcome = persist_document(conn, enriched, chunks, embedder, run_id)
+                described = describe_chunks(
+                    chunks, source=source, title_en=enriched.title_en,
+                    document_text_en=document_text(enriched), llm=llm, categories=CATEGORIES,
+                )
+                outcome = persist_document(conn, enriched, described, embedder, run_id)
         except Exception as exc:
             log.exception("ingest failed source=%s url=%s", source.id, fetched.url)
             report = report.bump("failed", FetchError(url=fetched.url, reason=str(exc)))

@@ -46,6 +46,10 @@ def chunk_sections(
     A section that has text in the original but none in English lost it in translation. That is an
     error, not a chunk to skip: the section count still matches, so nothing downstream would notice
     the document is missing an article.
+
+    The drafts come back with no `context_en` and no `topics`. Both are decided per chunk by
+    `ingest/context.py`, which is where the model calls of ADR 0005 live; splitting text is pure
+    and stays that way, so it can be tested without a model and run without spending anything.
     """
     if len(original) != len(english):
         raise ValueError(f"section count mismatch: {len(original)} original vs {len(english)} english")

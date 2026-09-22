@@ -1,9 +1,14 @@
-from swiss_grounding.ingest.enrich import SOURCE_FALLBACK_CONFIDENCE, _merge_tags, enrich
-from swiss_grounding.ingest.llm import FAKE_KEYWORD_CONFIDENCE, FakeLLM
-from swiss_grounding.ingest.models import CategoryTag, FetchedDocument, Section
+"""`enrich` translates a document and places it at an extent. It no longer decides its topics.
+
+ADR 0003 moved that judgement to the chunk, and `ingest/context.py` makes it; the tests that
+covered `_merge_tags` and the per-document classifier now live in `test_context.py`.
+"""
+
+from swiss_grounding.ingest.enrich import enrich
+from swiss_grounding.ingest.llm import FakeLLM
+from swiss_grounding.ingest.models import FetchedDocument, Section
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.locations.tree import LocationTree
-from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.registry.models import Source
 
 TREE = LocationTree.from_locations(seed_locations())
@@ -32,7 +37,7 @@ def fetched(language="de", text="Hunde in der Stadt Zürich müssen an die Leine
 
 def test_translates_non_english_title_and_sections_and_narrows():
     llm = RecordingLLM()
-    out = enrich(fetched(), source(), TREE, llm, CATEGORIES)
+    out = enrich(fetched(), source(), TREE, llm)
     assert out.title_en == "[de->en] Hunde"
     assert out.sections_en[0].text.startswith("[de->en]")
     assert out.sections_en[0].heading_path == "Hunde"
@@ -42,56 +47,29 @@ def test_translates_non_english_title_and_sections_and_narrows():
 
 def test_english_is_not_translated():
     llm = RecordingLLM()
-    out = enrich(fetched(language="en", text="Dogs in Zurich."), source(), TREE, llm, CATEGORIES)
+    out = enrich(fetched(language="en", text="Dogs in Zurich."), source(), TREE, llm)
     assert llm.translated == [] and out.title_en == "Hunde"
 
 
-def test_source_categories_do_not_override_the_classifier():
-    tags = _merge_tags(defaults=("dogs", "hiking"), llm_tags=(CategoryTag("waste", 0.9),))
-    assert {t.id for t in tags} == {"waste"}
-
-
-def test_source_categories_apply_only_when_the_classifier_is_silent():
-    tags = _merge_tags(defaults=("waste",), llm_tags=())
-    assert {t.id for t in tags} == {"waste"}
-    assert tags[0].confidence == SOURCE_FALLBACK_CONFIDENCE
-    assert tags[0].confidence < 1.0        # a fallback is not a certainty
-
-
-def test_source_categories_do_not_override_the_classifier_through_enrich():
-    out = enrich(fetched(language="en", text="Waste collection for dogs."), source(categories=("dogs",)), TREE, FakeLLM(), CATEGORIES)
-    ids = {t.id: t.confidence for t in out.categories}
-    assert ids["dogs"] == FAKE_KEYWORD_CONFIDENCE   # classifier's own confidence, not the source default
-    assert "waste" in ids
-
-
 def test_law_sources_never_narrow():
-    out = enrich(fetched(language="en", text="Applies in Zurich only."), source(authority="cantonal_law", allow_narrowing=False), TREE, FakeLLM(), CATEGORIES)
+    out = enrich(fetched(language="en", text="Applies in Zurich only."),
+                 source(authority="cantonal_law", allow_narrowing=False), TREE, FakeLLM())
     assert out.extent_id == "CH-ZH" and out.extent_reason == "source_default"
 
 
 class RaisingLLM(FakeLLM):
-    def translate(self, text, source_language):
-        raise AssertionError("translate must not be called for an English document")
+    def summarise(self, title_en, text_en):
+        raise AssertionError("enrich must not summarise: that call belongs to the chunk step")
 
-    def classify(self, title, text, categories):
-        raise AssertionError("classify must not be called when llm_tagging is False")
-
-
-def test_llm_tagging_false_skips_classify_and_uses_source_defaults_only():
-    llm = RaisingLLM()
-    out = enrich(fetched(language="en", text="Waste collection for dogs."),
-                 source(categories=("dogs",), llm_tagging=False), TREE, llm, CATEGORIES)
-    ids = {t.id: t.confidence for t in out.categories}
-    assert ids == {"dogs": SOURCE_FALLBACK_CONFIDENCE}
+    def describe(self, summary_en, heading_path, text_en, text_original, categories):
+        raise AssertionError("enrich must not describe: that call belongs to the chunk step")
 
 
-def test_categories_are_sorted_by_confidence_then_id():
-    out = enrich(fetched(language="en", text="Hiking with dogs and waste bins."), source(categories=()), TREE, FakeLLM(), CATEGORIES)
-    confidences = [t.confidence for t in out.categories]
-    assert confidences == sorted(confidences, reverse=True)
-    ids = [t.id for t in out.categories]
-    assert ids == sorted(ids)      # all fake tags share the same confidence, so ids are alphabetical
+def test_enrichment_asks_the_model_for_nothing_but_translation():
+    """The per-document classify call is gone, not moved: every topic judgement is now per chunk,
+    and paying for a document-level one as well would be a call per document of pure waste."""
+    out = enrich(fetched(language="en", text="Waste collection for dogs."), source(), TREE, RaisingLLM())
+    assert out.title_en == "Hunde"
 
 
 def test_a_blank_section_is_not_sent_to_the_model():
@@ -100,6 +78,6 @@ def test_a_blank_section_is_not_sent_to_the_model():
     llm = RecordingLLM()
     doc = FetchedDocument(source_id="zh_ch", url="https://www.zh.ch/x", title="Hunde", language="de",
                           sections=(Section("Hunde", None, "  "), Section("Katzen", None, "Miau.")))
-    out = enrich(doc, source(), TREE, llm, CATEGORIES)
+    out = enrich(doc, source(), TREE, llm)
     assert [t for t, _ in llm.translated] == ["Miau.", "Hunde"]
     assert out.sections_en[0].text == "  " and out.sections_en[1].text == "[de->en] Miau."

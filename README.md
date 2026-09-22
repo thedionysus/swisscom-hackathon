@@ -163,10 +163,15 @@ To add a source by hand, drop a YAML file in `src/swiss_grounding/registry/sourc
 following an existing one (`fetch_strategy` is `html_crawl`, `api`, `fedlex_sparql`, or `pdf`),
 then run `db seed`.
 
-Set `llm_tagging: false` to skip `llm.classify` and tag documents from the source's own
-`categories` alone. This only suits a single-category feed such as a waste calendar: the
-LLM tags it skips are never merged away, only never fetched, so a source spanning several
-categories would silently keep documents tagged with just its declared defaults.
+Set `llm_tagging: false` for a source whose records describe themselves. Ingestion then makes
+no model call for it at all: each chunk's context comes from the record template the source
+already renders, and its topics from the source's own `categories`. This only suits a
+single-category feed such as a waste calendar -- a source spanning several categories would
+silently keep every chunk tagged with just its declared defaults.
+
+Every other source costs one model call per document for a shared summary, plus one per chunk
+for that chunk's context, topics and page-furniture verdict (ADR 0005). Chunks whose heading is
+known page furniture are dropped before any call is made.
 
 ## Tests
 
