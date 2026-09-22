@@ -10,7 +10,7 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORY_IDS
 from swiss_grounding.retrieval.cite import build_citation
 from swiss_grounding.retrieval.coverage import coverage_rows, resolution_note
-from swiss_grounding.retrieval.diversify import CALENDAR_CAP, PER_SERIES_CAP, diversify
+from swiss_grounding.retrieval.diversify import PER_SERIES_CAP, UPCOMING_CALENDAR_CAP, diversify
 from swiss_grounding.retrieval.embedder import Embedder
 from swiss_grounding.retrieval.models import QueryRequest, QueryResponse
 from swiss_grounding.retrieval.rerank import RerankWeights, rerank
@@ -97,7 +97,7 @@ class QueryCore:
                         today=lambda: today)
         chosen = diversify(
             ranked, limit=limit, per_document_cap=PER_DOCUMENT_CAP, per_series_cap=PER_SERIES_CAP,
-            calendar_cap=CALENDAR_CAP, today=today,
+            upcoming_calendar_cap=UPCOMING_CALENDAR_CAP, today=today,
         )
         citations = tuple(build_citation(s, self.tree) for s in chosen)
         return replace(base, status="results", citations=citations)
