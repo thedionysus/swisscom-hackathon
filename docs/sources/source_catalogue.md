@@ -15,7 +15,7 @@ and categories; chunking makes one chunk per section, splitting only when the En
 cap. Anything that can be expressed as *text with a heading, a URL, a jurisdiction and dates* lands
 in the existing `document` and `chunk` tables without schema change.
 
-**Authority rule (decided 2026-09-22, issue #39):** `federal_law`, `cantonal_law`, `municipal_law`
+**Authority rule (decided 2026-09-22, issue #39; ADR 0007 on draft PR #42):** `federal_law`, `cantonal_law`, `municipal_law`
 only for the legal text itself from the official law platforms; `official_info` for official
 entities and the online systems they run (governments, municipalities, offices, gazettes, portals,
 calendars, data services); `institutional` for non-government publishers. Court decisions from a
@@ -188,4 +188,4 @@ Tages-Anzeiger and 20 Minuten articles (commercial media; 20min forbids automate
 | `api` pagination | 9, 10, 11, 13 | #38 |
 | `api` / `pdf` YAML only | 9, 10, 11, 12, 15 | #45 (per-source config) |
 | parliament / opencaselaw decisions + relation table | 13, 14 | #47 |
-| authority and extent routing (ADR 0003) | all | #44 / PR #42 |
+| authority and extent routing (ADR 0007, draft PR #42) | all | #44 / PR #42 |
