@@ -230,3 +230,23 @@ async def test_coverage_lists_pending_suggestions(server, monkeypatch):
     await call(server, "swiss_suggest_source", {"url": "https://www.sac-cas.ch/de/huetten", "reason": "huts"})
     data = await call(server, "swiss_coverage", {})
     assert data["pending_suggestions"][0]["url"] == "https://www.sac-cas.ch/de/huetten"
+
+
+GENERATED = "Sets penalties for mistreating animals"
+
+
+async def test_swiss_get_document_never_hands_back_generated_context(server):
+    """The one caller path the citation guard does not cover.
+
+    `swiss_get_document` selects an explicit column list that excludes `context_en`, which is
+    correct -- but `fixture_loader` never writes a context, so every chunk the MCP suite loads
+    has an empty one and adding `context_en` to that select would leak into tool output with the
+    whole suite still green. This seeds a real context so the leak has something to carry.
+    """
+    url = os.environ["DATABASE_URL"]
+    with connect(url) as conn:
+        chunk = conn.execute("select id, document_id from chunk order by id limit 1").fetchone()
+        conn.execute("update chunk set context_en = %s where id = %s", (GENERATED, chunk["id"]))
+    data = await call(server, "swiss_get_document", {"document_id": chunk["document_id"]})
+    assert data["chunks"], "nothing came back, so nothing was actually checked"
+    assert GENERATED not in json.dumps(data)

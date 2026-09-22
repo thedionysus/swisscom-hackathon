@@ -115,6 +115,12 @@ alter table chunk add column if not exists context_en text not null default '';
 -- exists: the column exists in both the old and the new shape, and only the expression tells
 -- them apart. A database already on the new definition falls through untouched, which is what
 -- keeps `db init` idempotent -- rebuilding on every run would rewrite the whole table each time.
+--
+-- It is a substring test, so it carries a database forward across the one change it was written
+-- for and no other: a later definition that still mentions `context_en` will not trigger a
+-- rebuild, and whoever makes that change has to widen this test themselves. The definition below
+-- is also written twice, here and inline in `create table` above; they must stay identical, and
+-- `tests/integration/test_schema_context.py` compares a database made by each.
 do $$
 declare
     stored_definition text;

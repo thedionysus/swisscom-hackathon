@@ -209,6 +209,31 @@ def test_a_blank_context_is_accepted_for_a_chunk_being_discarded():
     assert out.boilerplate is True
 
 
+def test_a_discarded_chunk_is_validated_only_for_the_verdict_that_discards_it():
+    """A missing key and an empty one must behave alike: the exemption exists to stop a chunk on
+    its way to the bin failing the whole document, and it fails at that if the shape decides."""
+    for raw in (json.dumps({"boilerplate": True}),
+                json.dumps({"boilerplate": True, "context": ""}),
+                json.dumps({"boilerplate": True, "context": "Navigation menu."})):
+        assert described(raw).boilerplate is True
+
+
+def test_a_kept_chunk_with_no_context_key_is_an_error():
+    with pytest.raises(EnrichmentError, match="context"):
+        described(json.dumps({"boilerplate": False, "categories": []}))
+
+
+def test_a_missing_categories_key_is_not_an_answer_of_none():
+    """`{"categories": []}` is the model saying none apply. Omitting the key is the model ignoring
+    the schema, and reading it as "none named" is what decides whether the source fallback fires."""
+    with pytest.raises(EnrichmentError, match="categories"):
+        described(json.dumps({"context": "About dogs.", "boilerplate": False}))
+
+
+def test_an_empty_categories_list_is_still_an_answer():
+    assert described(a_description(categories=[])).topics == ()
+
+
 def test_a_missing_boilerplate_verdict_is_an_error():
     """Read as false, an absent verdict would index page furniture as evidence."""
     raw = json.dumps({"context": "Navigation menu.", "categories": []})
@@ -236,7 +261,7 @@ def test_naming_no_category_is_an_answer_not_an_error():
     assert described(a_description(categories=[])).topics == ()
 
 
-def test_the_describe_prompt_carries_the_original_wording():
+def test_context_keeps_the_original_term():
     """A term with no English cognate can only be kept if the model is shown the original."""
     llm = anthropic(returns=a_description())
     llm.describe(summary_en="the waste calendar", heading_path="Grüngut",

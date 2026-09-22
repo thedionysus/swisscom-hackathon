@@ -228,14 +228,14 @@ ADR 0005. One model call per chunk returns a short description of what the docum
 
 **Files:** Create `src/swiss_grounding/ingest/context.py`, `tests/unit/ingest/test_context.py`. Modify `llm.py`, `chunking.py`, `persist.py`, `db/schema.sql`.
 
-- [ ] **Step 1: Schema change** (idempotent, as the repo requires):
+- [x] **Step 1: Schema change** (idempotent, as the repo requires):
 ```sql
 alter table chunk add column if not exists context_en text not null default '';
 -- tsv becomes a generated column over context and text together
 ```
 The `tsv` generated column must be dropped and recreated; write it as a guarded `do $$ ... $$` block so `db init` stays idempotent.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 ```python
 def test_context_is_indexed_but_never_cited():
@@ -252,11 +252,11 @@ def test_context_keeps_the_original_term():
     assert "Grüngutabfuhr" in ctx.context_en
 ```
 
-- [ ] **Step 3: Add `LLM.describe()`** returning context, topics and a boilerplate verdict in one call. One call per chunk; batch by document to share the document summary.
+- [x] **Step 3: Add `LLM.describe()`** returning context, topics and a boilerplate verdict in one call. One call per chunk; batch by document to share the document summary.
 
-- [ ] **Step 4: Embed `context_en + text_en`** in `persist.py`, not `text_en` alone. Citations continue to read `text_en` and `text_original` only.
+- [x] **Step 4: Embed `context_en + text_en`** in `persist.py`, not `text_en` alone. Citations continue to read `text_en` and `text_original` only.
 
-- [ ] **Step 5: Skip templated sources.** `open_erz` records are already self-describing and `llm_tagging: false`; generate their context from the existing template rather than a model call.
+- [x] **Step 5: Skip templated sources.** `open_erz` records are already self-describing and `llm_tagging: false`; generate their context from the existing template rather than a model call.
 
 **Verification:** unit tests pass; integration test asserts a citation never contains generated text.
 

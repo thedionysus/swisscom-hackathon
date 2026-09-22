@@ -173,6 +173,11 @@ Every other source costs one model call per document for a shared summary, plus 
 for that chunk's context, topics and page-furniture verdict (ADR 0005). Chunks whose heading is
 known page furniture are dropped before any call is made.
 
+For those sources, `categories` stands in for a chunk the model tagged with nothing only when
+exactly one category is declared. A source declaring several says what it *covers*, which is no
+statement about an individual chunk: writing all five of `fedlex`'s onto one article would be
+the very defect ADR 0003 removes. Such a chunk is stored with no topics at all.
+
 ## Tests
 
     uv run pytest tests/unit

@@ -8,11 +8,15 @@ database gets the new definition, and a database still carrying the old one is r
 """
 
 import os
+import uuid
+from collections.abc import Iterator
 
+import psycopg
 import pytest
 
 from swiss_grounding.db.connection import connect
 from swiss_grounding.db.migrate import apply_schema
+from swiss_grounding.ingest.context import indexed_text
 from swiss_grounding.locations.repository import upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
@@ -143,3 +147,59 @@ def test_a_database_still_holding_the_old_definition_is_rebuilt(url):
         index = conn.execute(INDEX).fetchone()
     assert definition is not None and "context_en" in definition
     assert index is not None, "chunk_tsv_idx was not recreated"
+
+
+@pytest.fixture
+def virgin_url() -> Iterator[str]:
+    """A database with no `chunk` table at all.
+
+    The session database already has one, so `create table if not exists` skips it there and the
+    inline definition is never executed -- which is precisely the hazard, and would make a test
+    that reads the session database's expression vacuous for the inline copy.
+    """
+    base = os.environ["DATABASE_URL"]
+    name = f"swiss_grounding_virgin_{uuid.uuid4().hex[:8]}"
+    with psycopg.connect(base, autocommit=True) as admin:
+        admin.execute(f'create database "{name}"')
+    try:
+        yield str(psycopg.conninfo.make_conninfo(base, dbname=name))
+    finally:
+        with psycopg.connect(base, autocommit=True) as admin:
+            admin.execute(f'drop database if exists "{name}" with (force)')
+
+
+def test_a_fresh_database_and_a_migrated_one_agree_to_the_byte(url, virgin_url):
+    """The expression is written twice -- inline in `create table` and again in the guard. A
+    database created from scratch takes the first, a database carried forward takes the second,
+    and editing one alone is the same silent half-migration the guard exists to prevent, one
+    level down. Nothing but this comparison notices."""
+    apply_schema(virgin_url, embedding_dim=DIM)
+    with connect(virgin_url) as conn:
+        from_create_table = _tsv_definition(conn)
+
+    with connect(url) as conn:
+        conn.execute("alter table chunk drop column tsv")
+        conn.execute(
+            f"alter table chunk add column tsv tsvector generated always as ({OLD_TSV_DEFINITION}) stored"
+        )
+    apply_schema(url, embedding_dim=DIM)
+    with connect(url) as conn:
+        from_the_guard = _tsv_definition(conn)
+
+    assert from_create_table is not None and "context_en" in from_create_table
+    assert from_the_guard == from_create_table
+
+
+@pytest.mark.parametrize("context_en", ["Sets penalties", ""])
+def test_the_index_joins_the_two_halves_exactly_as_the_embedder_does(url, context_en):
+    """`context.indexed_text` builds what is embedded and `schema.sql` builds what is indexed, out
+    of the same two columns. The comment on `CONTEXT_SEPARATOR` says they must agree; this is what
+    makes them, whatever separator either side chooses."""
+    text_en = "Anyone who intentionally"
+    with connect(url) as conn:
+        chunk_id = _a_chunk(conn, context_en=context_en, text_en=text_en)
+        row = conn.execute(
+            "select tsv = to_tsvector('english', %s) as same from chunk where id = %s",
+            (indexed_text(context_en, text_en), chunk_id),
+        ).fetchone()
+    assert row["same"] is True
