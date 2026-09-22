@@ -162,7 +162,7 @@ def ingest_cmd(
             record_run(conn, report, started_at=started_at, finished_at=datetime.now(UTC))
             typer.echo(
                 f"{source.id}: added={report.added} modified={report.modified} unchanged={report.unchanged} "
-                f"withdrawn={report.withdrawn} failed={report.failed} run={run_id}"
+                f"withdrawn={report.withdrawn} skipped={report.skipped} failed={report.failed} run={run_id}"
             )
             for error in report.errors:
                 typer.echo(f"  ! {error.url}: {error.reason}", err=True)

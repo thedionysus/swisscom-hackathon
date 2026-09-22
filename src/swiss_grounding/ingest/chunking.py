@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from swiss_grounding.ingest.models import ChunkDraft, EnrichmentError, Section
+from swiss_grounding.ingest.errors import EnrichmentError
+from swiss_grounding.ingest.models import ChunkDraft, Section
 
 SENTENCE_BREAK = ". "
 

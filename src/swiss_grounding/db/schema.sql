@@ -134,9 +134,12 @@ create table if not exists ingest_run (
     modified     integer not null default 0,
     unchanged    integer not null default 0,
     withdrawn    integer not null default 0,
+    -- fetched and enriched, but held nothing worth indexing: neither a success nor a failure
+    skipped      integer not null default 0,
     failed       integer not null default 0,
     primary key (run_id, source_id)
 );
+alter table ingest_run add column if not exists skipped integer not null default 0;
 create index if not exists ingest_run_source_idx on ingest_run(source_id, finished_at desc);
 
 -- One row per probe per eval run. observed is the probe's Observed block as JSON.

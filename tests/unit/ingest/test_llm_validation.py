@@ -4,8 +4,9 @@ import json
 
 import pytest
 
+from swiss_grounding.ingest.errors import EnrichmentError
 from swiss_grounding.ingest.llm import AnthropicLLM, parse_tags
-from swiss_grounding.ingest.models import CategoryTag, EnrichmentError
+from swiss_grounding.ingest.models import CategoryTag
 from swiss_grounding.registry.categories import CATEGORIES
 
 KNOWN = ("dogs", "waste")
@@ -128,3 +129,45 @@ def test_a_well_formed_tag_still_parses():
 def test_parse_tags_rejects_a_category_list_that_is_not_a_list():
     with pytest.raises(EnrichmentError, match="tag response"):
         parse_tags(json.dumps({"categories": 5}), KNOWN)
+
+
+def test_a_tag_that_is_not_an_object_is_malformed_output():
+    """`{"categories": ["dogs"]}` is the model dropping the schema, not naming no category. Read as
+    an empty answer it would hand the document its source's declared categories instead."""
+    for raw in ('{"categories": ["dogs", "waste"]}', '{"categories": [["dogs"]]}', '{"categories": [null]}'):
+        with pytest.raises(EnrichmentError, match="not an object"):
+            parse_tags(raw, KNOWN)
+
+
+def test_one_malformed_tag_among_well_formed_ones_is_not_dropped_quietly():
+    """A partial silent drop is undetectable by a caller counting tags."""
+    raw = json.dumps({"categories": [{"id": "dogs", "confidence": 0.5}, "waste"]})
+    with pytest.raises(EnrichmentError, match="not an object"):
+        parse_tags(raw, KNOWN)
+
+
+def test_the_confidence_error_names_the_offending_tag_not_the_whole_response():
+    """The bad tag may be the seventh item, past any truncation of the response."""
+    raw = json.dumps({"categories": [{"id": "waste", "confidence": 0.5}, {"id": "dogs", "confidence": "high"}]})
+    with pytest.raises(EnrichmentError) as caught:
+        parse_tags(raw, KNOWN)
+    message = str(caught.value)
+    assert "dogs" in message and "waste" not in message
+
+
+def test_an_empty_translation_names_the_call_without_leaking_the_text():
+    """The exception type already says a translation came back empty; the message says which call,
+    and does not spill source text into the log to do it."""
+    with pytest.raises(EnrichmentError) as caught:
+        anthropic(returns="").translate("Tierschutzgesetz vom 16. Dezember 2005", "de")
+    message = str(caught.value)
+    assert "translat" in message and "de" in message
+    assert "Tierschutzgesetz" not in message and "Translate the following" not in message
+
+
+def test_an_empty_classification_names_the_document_it_was_about():
+    with pytest.raises(EnrichmentError) as caught:
+        anthropic(returns="").classify("Animal Welfare Act", "Zweck dieses Gesetzes ist es", CATEGORIES)
+    message = str(caught.value)
+    assert "classif" in message and "Animal Welfare Act" in message
+    assert "Zweck dieses Gesetzes" not in message

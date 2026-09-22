@@ -8,8 +8,13 @@ from swiss_grounding.ingest.enrich import enrich
 from swiss_grounding.ingest.fetch_state import load_known
 from swiss_grounding.ingest.fetchers.base import Fetcher
 from swiss_grounding.ingest.llm import LLM
-from swiss_grounding.ingest.models import EnrichmentError, FetchError
-from swiss_grounding.ingest.persist import mark_withdrawn, persist_document, touch_unchanged
+from swiss_grounding.ingest.models import FetchError
+from swiss_grounding.ingest.persist import (
+    SKIPPED,
+    mark_withdrawn,
+    persist_document,
+    touch_unchanged,
+)
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.registry.categories import CATEGORIES
 from swiss_grounding.registry.models import Source
@@ -27,6 +32,7 @@ class IngestReport:
     modified: int = 0
     unchanged: int = 0
     withdrawn: int = 0
+    skipped: int = 0        # held nothing worth indexing; not a success, and not a retryable failure
     failed: int = 0
     errors: tuple[FetchError, ...] = ()
 
@@ -55,18 +61,13 @@ def run_ingest(conn: psycopg.Connection, source: Source, fetcher: Fetcher, llm: 
             with conn.transaction():
                 enriched = enrich(fetched, source, tree, llm, CATEGORIES)
                 chunks = chunk_sections(fetched.sections, enriched.sections_en, limits)
-                if not chunks:
-                    # Persisting it would add a document no search can return, and report it as
-                    # added. A document with nothing to index is a per-document failure instead.
-                    raise EnrichmentError(f"no chunkable text in {len(fetched.sections)} sections")
                 outcome = persist_document(conn, enriched, chunks, embedder, run_id)
         except Exception as exc:
             log.exception("ingest failed source=%s url=%s", source.id, fetched.url)
             report = report.bump("failed", FetchError(url=fetched.url, reason=str(exc)))
             continue
-        if outcome.change_type is None:
-            report = report.bump("unchanged")
-        else:
-            report = report.bump(outcome.change_type)
+        if outcome.change_type == SKIPPED:
+            log.info("nothing to index source=%s url=%s", source.id, fetched.url)
+        report = report.bump(outcome.change_type or "unchanged")
     log.info("ingest done %s", report)
     return report

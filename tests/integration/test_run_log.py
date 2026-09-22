@@ -50,3 +50,11 @@ def test_record_run_is_idempotent_per_run_and_source(url):
         record_run(conn, report, started_at=T1, finished_at=T2)
         rows = conn.execute("select finished_at from ingest_run where source_id = 'ch_ch'").fetchall()
     assert len(rows) == 1 and rows[0]["finished_at"] == T2
+
+
+def test_skipped_documents_are_recorded_with_the_run(url):
+    report = IngestReport(source_id="zh_ch", run_id="r9", added=1, skipped=2)
+    with connect(url) as conn:
+        record_run(conn, report, started_at=T1, finished_at=T1)
+        row = conn.execute("select added, skipped from ingest_run where run_id = 'r9'").fetchone()
+    assert (row["added"], row["skipped"]) == (1, 2)
