@@ -134,3 +134,47 @@ def test_earliest_indexed_version_is_none_when_nothing_records_a_date(url):
     with connect(url) as conn:
         conn.execute("update document set valid_from = null")
         assert earliest_indexed_version(conn) is None
+
+
+def test_every_hit_carries_a_distance_including_the_lexical_only_ones(url):
+    """Task 9: the tier is decided by the chunk's cosine distance, so a hit that only the
+    lexical arm retrieved still needs one. A one-word question (`websearch_to_tsquery`
+    ANDs its terms, so a sentence matches nothing here) with a tiny `top_n` makes the two
+    arms disagree, and at least one hit reaches the caller without a dense rank."""
+    with connect(url) as conn:
+        hits = hybrid_search(
+            conn, FakeEmbedder(dim=8), question="dog",
+            extent_path=("CH", "CH-ZH", "CH-ZH-261", "CH-ZH-261-K3"), as_of=None, top_n=2,
+        )
+    assert any(h.dense_rank is None for h in hits), "fixture no longer yields a lexical-only hit"
+    assert all(h.distance is not None for h in hits)
+    assert all(0.0 <= h.distance <= 2.0 for h in hits)
+
+
+def test_a_dense_hit_keeps_the_distance_the_dense_arm_measured(url):
+    """The backfill must agree with `DENSE_SQL` to the bit, or a citation's distance would
+    depend on which arm happened to retrieve it."""
+    from swiss_grounding.retrieval.search import distances_for
+
+    embedder = FakeEmbedder(dim=8)
+    vector = embedder.embed(["dog"])[0]
+    with connect(url) as conn:
+        hits = hybrid_search(
+            conn, embedder, question="dog",
+            extent_path=("CH", "CH-ZH", "CH-ZH-261", "CH-ZH-261-K3"), as_of=None, top_n=50,
+        )
+        dense = [h for h in hits if h.dense_rank is not None]
+        refetched = distances_for(conn, vector, [h.chunk.chunk_id for h in dense])
+    assert dense
+    assert {h.chunk.chunk_id: h.distance for h in dense} == refetched
+
+
+def test_distances_for_omits_an_id_it_finds_no_row_for(url):
+    """A missing id gets no entry rather than a fabricated distance: the caller has to see
+    "not measured" as its own outcome, which is what `Hit.distance is None` means."""
+    from swiss_grounding.retrieval.search import distances_for
+
+    vector = FakeEmbedder(dim=8).embed(["leash"])[0]
+    with connect(url) as conn:
+        assert distances_for(conn, vector, []) == {}
+        assert distances_for(conn, vector, [10**9]) == {}

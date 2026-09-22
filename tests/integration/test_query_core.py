@@ -41,14 +41,33 @@ def core():
     )
 
 
-def test_neighborhood_question_prefers_specific_and_excludes_siblings(core):
+def test_neighborhood_question_leads_with_the_nearest_specific_evidence(core):
+    """Task 9 changed what "prefers specific" means, and this test changed with it.
+
+    It used to assert that the district chunk (`CH-ZH-261-K3`) led, because specificity
+    was a term in a single score and the most specific extent always won it. Ordering is
+    now `(tier, -score)`, and a chunk only claims a tier when its cosine distance clears
+    `RerankWeights.relevance_floor`. On this fixture the district chunk sits at 0.9197
+    against a floor of 0.55 and the city chunk at 0.4969, so the city chunk leads and the
+    district chunk is demoted -- which is the plan's own worked case, "a weak local chunk
+    does not leapfrog but is still returned".
+
+    The sibling-exclusion half is untouched, and the assertions below are deliberately
+    stronger than the ones they replace: they pin the *mechanism* (the leader claimed a
+    tier, the demoted chunk did not) rather than only the resulting order, and they hold
+    the district chunk to being present, which is the guarantee the floor must never
+    break.
+    """
     resp = core.query(QueryRequest(question="Where can my dog run off leash?", location="Wiedikon", categories=("dogs",)))
     assert resp.status == "results"
     assert resp.resolved_location_id == "CH-ZH-261-K3-ALT-WIEDIKON"
     extents = [c.extent_id for c in resp.citations]
-    assert extents[0] == "CH-ZH-261-K3"
+    assert extents[0] == "CH-ZH-261"
+    assert resp.citations[0].tier is not None
     assert "CH-BS" not in extents
-    assert any(e == "CH-ZH-261" for e in extents)
+    assert "CH-ZH-261-K3" in extents                                    # demoted, not dropped
+    district = next(c for c in resp.citations if c.extent_id == "CH-ZH-261-K3")
+    assert district.tier is None and district.distance > RerankWeights().relevance_floor
 
 
 def test_missing_location_returns_needs_location(core):

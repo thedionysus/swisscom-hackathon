@@ -35,7 +35,7 @@ def _cit(event_date=None) -> Citation:
                     url="https://x", anchor=None, identifier=None, snippet_en="s", snippet_original="s",
                     language="en", heading_path="", extent_id="CH", extent_label="CH",
                     authority="official_info", categories=("waste",), valid_from=None,
-                    retrieved_at=datetime(2026, 9, 14, tzinfo=UTC), license=None, score=1.0,
+                    retrieved_at=datetime(2026, 9, 14, tzinfo=UTC), license=None, tier=0, distance=0.5,
                     event_date=event_date)
 
 

@@ -31,7 +31,7 @@ def _cit(source="fedlex", extent="CH", url="https://www.fedlex.admin.ch/eli/cc/2
         anchor=None, identifier=identifier, snippet_en="s", snippet_original="s", language="de",
         heading_path="", extent_id=extent, extent_label=extent, authority=authority,
         categories=("dogs",), valid_from=None, retrieved_at=datetime(2026, 9, 14, tzinfo=UTC),
-        license=None, score=1.0, event_date=event_date,
+        license=None, tier=0, distance=0.5, event_date=event_date,
     )
 
 
