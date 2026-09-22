@@ -254,7 +254,12 @@ Most volume is commercial-register and bankruptcy notices; the value is in the g
 municipal rubrics: temporary rules, closures, changed collection days, new ordinances entering
 into force. Needs an XML fetcher (new code): filter by rubric and date, map `municipalityId` →
 commune node and `cantons` → canton node, `valid_from = publicationDate`, `valid_to =
-expirationDate`, cite the portal URL. The web UI's robots.txt disallows crawling; the API is the
+expirationDate`, cite the portal URL. **Authority: `official_info` for every rubric, including
+"Beschlüsse und Erlasse"** — a gazette is a publication organ, not a law collection; the law
+authorities are reserved for legal text fetched from the official law platforms (Fedlex, the
+cantonal collections via LexFind/opencaselaw, municipal collections), `official_info` for official
+entities and the online systems they run, `institutional` for non-government publishers (decision
+2026-09-22, recorded in #39). The web UI's robots.txt disallows crawling; the API is the
 intended access path.
 
 ## 4. Evaluation assets
