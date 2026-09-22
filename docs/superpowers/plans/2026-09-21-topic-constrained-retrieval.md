@@ -390,6 +390,16 @@ ADR 0004. The tool asks the caller for the question as written, the question in 
 
 ## Task 12: Probes, re-record, and reconcile
 
+> **DEFERRED 2026-09-22, by the user.** Do not start this task. Further changes to the pipeline are expected, and they may change how eval probes are handled at all — not merely what they expect. Re-recording 47 probes against a contract that is about to move would be wasted twice over.
+>
+> What this leaves open, so it is not rediscovered later:
+> - Probes still carry no `question_en` or `topics`. Task 8 made that load-bearing rather than tidy: under `FakeEmbedder`, `classify_topics` does not saturate and collapse to no opinion — in 8 dimensions one category wins outright, so a topic-free probe gets a hard filter chosen by hash collision. Deterministic, and meaningless. Any probe that does not state its own subject is not testing what it claims.
+> - Probes flipped by Tasks 9 and 11 are left unreconciled. The structural harness may therefore report failures or `XPASS(strict)` that are correct behaviour changes, not regressions.
+> - `README.md` is not updated: the `swiss_search` row in the tool table, the probe counts, and the `ingest` per-source commit note all still describe the pre-plan server.
+> - The plan's expected movement (`com-015` and `city-007` green on the tier, `city-020` staying red because SR 704 is not in the registry) is unverified.
+
+
+
 Every probe file gains the fields the new contract requires. Ordering changes, so expectations change.
 
 - [ ] **Step 1:** Add `question_en` and `topics` to all 47 probes, written by hand — a probe stays deterministic and must not depend on a model (`CONTEXT.md`, *Probe*).
