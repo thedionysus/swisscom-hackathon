@@ -51,7 +51,7 @@ A short description, written per chunk, of what the chunk's document is about an
 _Avoid_: Summary, blurb, annotation
 
 **Recontext**:
-The maintenance step that gives every stored chunk its generated context and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired.
+The maintenance step that gives every stored chunk its generated context and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired. The same pass deletes the chunks the model judges boilerplate, which is the only thing it destroys; a document those drops leave with no chunks at all is reported and left standing, and erased only when a run is told to.
 _Avoid_: Re-enrichment, re-tagging, reprocessing
 
 **Narrowing**:

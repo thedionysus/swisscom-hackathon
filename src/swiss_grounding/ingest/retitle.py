@@ -44,6 +44,11 @@ UPDATE_TITLE = "update document set title_original = %s, title_en = %s where id 
 NO_CONSOLIDATION = "empty SPARQL result: an upstream outage, or no current consolidation"
 NO_TITLE = "the endpoint named no title for this act, and a title is not worth guessing"
 UNLISTED = "identifier %r is not one of the SR numbers its source lists; left alone"
+# Which stored column a repair actually moved. An act whose title is right but whose `title_en` is
+# blank is repaired without its title changing at all, and `before -> after` alone then reads as a
+# run that did nothing.
+ORIGINAL_AND_ENGLISH = "title and English title"
+ENGLISH_ONLY = "English title only"
 
 
 class ConsolidationSource(Protocol):
@@ -58,11 +63,12 @@ class ConsolidationSource(Protocol):
 
 @dataclass(frozen=True)
 class TitleChange:
-    """One act's title before and after, so an operator can read what the run actually did."""
+    """One act's title before and after, and which stored column the repair moved."""
 
     identifier: str
     before: str
     after: str
+    repaired: str
 
 
 @dataclass(frozen=True)
@@ -103,24 +109,32 @@ def _endpoint_title(binding: Mapping[str, Any] | None) -> str:
     return title
 
 
-def _needs_repair(document: Mapping[str, Any], title: str) -> bool:
-    """Whether this document's stored titles still differ from what the endpoint says.
+def _repair_needed(document: Mapping[str, Any], title: str) -> str | None:
+    """Which columns this document still needs rewritten, or None when it is already right.
 
-    Both columns are checked, not just the original: one stored act has a `title_en` of `''`, and
-    a run that compared the original alone would call it repaired and leave the English blank --
-    which is the column `recontext` and every citation actually read.
+    Both are checked, not just the original: one stored act has a `title_en` of `''`, and a run
+    that compared the original alone would call it repaired and leave the English blank -- which
+    is the column `recontext` and every citation actually read.
     """
-    return document["title_original"] != title or not document["title_en"].strip()
+    if document["title_original"] != title:
+        return ORIGINAL_AND_ENGLISH
+    if not document["title_en"].strip():
+        return ENGLISH_ONLY
+    return None
 
 
 def _repair(conn: psycopg.Connection, document: Mapping[str, Any], title: str, language: str,
-            llm: LLM) -> TitleChange:
+            llm: LLM, repaired: str) -> TitleChange:
     """Translate the act's name and store both titles. Committed on its own, like `recontext`."""
     title_en = llm.translate(title, language)
     conn.execute(UPDATE_TITLE, (title, title_en, document["id"]))
     conn.commit()
+    return _change(document, title, repaired)
+
+
+def _change(document: Mapping[str, Any], title: str, repaired: str) -> TitleChange:
     return TitleChange(identifier=document["identifier"], before=document["title_original"],
-                       after=title)
+                       after=title, repaired=repaired)
 
 
 def _retitle_document(conn: psycopg.Connection, document: Mapping[str, Any], sr: str,
@@ -128,12 +142,12 @@ def _retitle_document(conn: psycopg.Connection, document: Mapping[str, Any], sr:
                       llm: LLM, dry_run: bool) -> TitleChange | None:
     """One act: ask the endpoint, and rewrite the stored titles unless they already match."""
     title = _endpoint_title(consolidations.current_consolidation(sr, language))
-    if not _needs_repair(document, title):
+    repaired = _repair_needed(document, title)
+    if repaired is None:
         return None
     if dry_run:
-        return TitleChange(identifier=document["identifier"], before=document["title_original"],
-                           after=title)
-    return _repair(conn, document, title, language, llm)
+        return _change(document, title, repaired)
+    return _repair(conn, document, title, language, llm, repaired)
 
 
 def retitle_all(conn: psycopg.Connection, consolidations: ConsolidationSource, llm: LLM,

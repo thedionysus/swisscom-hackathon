@@ -19,7 +19,12 @@ from swiss_grounding.ingest.errors import EnrichmentError
 from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import FakeLLM
 from swiss_grounding.ingest.models import CategoryTag, ChunkContext
-from swiss_grounding.ingest.recontext import EmptiedDocument, SourceRecontext, recontext_all
+from swiss_grounding.ingest.recontext import (
+    RECOVERED_CONFIDENCE,
+    EmptiedDocument,
+    SourceRecontext,
+    recontext_all,
+)
 from swiss_grounding.locations.repository import upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
@@ -58,22 +63,25 @@ def url():
 class RecordingLLM(FakeLLM):
     """Describes everything, and remembers what it was asked, so a test can count the bill."""
 
-    def __init__(self, furniture: tuple[str, ...] = (), breaks_on: str | None = None):
+    def __init__(self, furniture: tuple[str, ...] = (), breaks_on: str | None = None,
+                 topic: str = "dogs", breaks_always: bool = False):
         self.summarised: list[str] = []
         self.described: list[dict] = []
         self._furniture = furniture
         self._breaks_on = breaks_on
+        self._topic = topic
+        self._breaks_always = breaks_always
 
     def summarise(self, title_en, text_en):
         self.summarised.append(title_en)
         return f"a summary of {title_en}"
 
     def describe(self, summary_en, heading_path, text_en, text_original, categories):
-        if heading_path == self._breaks_on:
+        if self._breaks_always or heading_path == self._breaks_on:
             raise EnrichmentError(f"unusable reply for {heading_path!r}")
         self.described.append({"heading": heading_path, "text_original": text_original})
         return ChunkContext(context_en=f"From {summary_en}. Covers {heading_path}.",
-                            topics=(CategoryTag("dogs", 0.8),),
+                            topics=(CategoryTag(self._topic, 0.8),),
                             boilerplate=heading_path in self._furniture)
 
 
@@ -467,3 +475,161 @@ def test_the_report_bills_a_description_the_client_had_to_resample_twice(url):
     assert zh.examined == 2
     assert zh.updated == 2
     assert zh.describe_calls == 3      # two chunks, one of them sampled twice
+
+
+def test_the_run_stops_once_three_documents_in_a_row_have_failed(url):
+    # A dead API key answers 401 to every call. Without a breaker the run pays a summary and a
+    # description for each of the remaining documents to be told the same thing every time.
+    llm = RecordingLLM(breaks_always=True)
+    with connect(url) as conn:
+        documents = conn.execute("select count(*) as n from document").fetchone()["n"]
+        report = recontext_all(conn, llm, _embedder())
+
+    assert report.stopped_early is True
+    assert len(llm.summarised) == 3
+    assert report.not_attempted == documents - 3
+    assert len(report.errors) == 3
+
+
+def test_refusals_that_cost_nothing_never_stop_the_run(url):
+    # The untitled guard refuses before any call, so a corpus of them is a data condition to be
+    # listed in full, not a systemic failure to abort on.
+    with connect(url) as conn:
+        conn.execute("update document set title_en = ''")
+
+    with connect(url) as conn:
+        report = recontext_all(conn, RecordingLLM(), _embedder())
+
+    assert report.stopped_early is False
+    assert report.not_attempted == 0
+    assert report.failed == report.examined
+    assert len(report.errors) == 8
+
+
+def test_a_document_that_fails_while_being_finished_is_reported_not_raised(url, monkeypatch):
+    from swiss_grounding.ingest import recontext as module
+
+    real = module._roll_up
+    seen: list[int] = []
+
+    def flaky(conn, document, kept):
+        seen.append(document.id)
+        if len(seen) == 1:
+            raise RuntimeError("roll-up exploded")
+        return real(conn, document, kept)
+
+    monkeypatch.setattr(module, "_roll_up", flaky)
+    with connect(url) as conn:
+        report = recontext_all(conn, RecordingLLM(), _embedder())
+        contexts = [row["context_en"] for row in _chunks(conn)]
+
+    assert all(contexts)                       # every chunk was described and committed anyway
+    assert [e.reason for e in report.errors if "roll-up exploded" in e.reason]
+    assert report.updated == report.examined
+    assert report.stopped_early is False
+
+
+def test_a_rollback_that_itself_fails_does_not_end_the_run(url):
+    class BrittleConnection:
+        """A connection that cannot even roll back, as a dead one cannot."""
+
+        def __init__(self, conn):
+            self._conn = conn
+
+        def __getattr__(self, name):
+            return getattr(self._conn, name)
+
+        def rollback(self):
+            raise RuntimeError("the connection is gone")
+
+    with connect(url) as conn:
+        document = conn.execute("select id from document where source_id = 'zh_ch'").fetchone()
+        _add_chunk(conn, document["id"], ordinal=1, heading="Second", text_en="Second article.")
+
+    with connect(url) as conn:
+        report = recontext_all(BrittleConnection(conn), RecordingLLM(breaks_on="Second"),
+                               _embedder())
+
+    assert report.failed == 1
+    assert next(s for s in report.by_source if s.source_id == "fedlex").updated == 2
+
+
+def test_every_document_reports_its_progress_as_the_run_goes(url):
+    seen = []
+    with connect(url) as conn:
+        report = recontext_all(conn, RecordingLLM(), _embedder(), on_document=seen.append)
+
+    assert len(seen) == 8
+    assert (seen[0].index, seen[0].total) == (1, 8)
+    assert all(p.source_id and p.url for p in seen)
+    assert [p.calls_so_far for p in seen] == sorted(p.calls_so_far for p in seen)
+    assert seen[-1].calls_so_far == report.describe_calls + report.summary_calls
+
+
+def test_a_markdown_heading_left_in_a_title_never_reaches_a_prompt(url):
+    # One stored title is `# On the Road with the Kids`; the summary quotes the title and every
+    # chunk repeats the summary, so the artefact would land in nine chunks' context.
+    with connect(url) as conn:
+        conn.execute("update document set title_en = %s where source_id = 'schweizer_wanderwege'",
+                     ("# On the Road with the Kids",))
+
+    llm = RecordingLLM()
+    with connect(url) as conn:
+        recontext_all(conn, llm, _embedder())
+        contexts = [row["context_en"] for row in _chunks(conn, "schweizer_wanderwege")]
+
+    assert "On the Road with the Kids" in llm.summarised
+    assert not any("#" in title for title in llm.summarised)
+    assert not any("#" in context for context in contexts)
+
+
+def test_a_topic_described_by_an_earlier_run_is_rolled_up_below_certainty(url):
+    with connect(url) as conn:
+        document = conn.execute("select id from document where source_id = 'zh_ch'").fetchone()
+        _add_chunk(conn, document["id"], ordinal=1, heading="Second", text_en="Second article.")
+        _add_chunk(conn, document["id"], ordinal=2, heading="Third", text_en="Third article.")
+
+    with connect(url) as conn:
+        recontext_all(conn, RecontextLLM_dogs := RecordingLLM(breaks_on="Second"), _embedder())
+        assert RecontextLLM_dogs.described
+
+    with connect(url) as conn:
+        recontext_all(conn, RecordingLLM(topic="hiking"), _embedder())
+        topics = conn.execute(
+            "select categories from document where id = %s", (document["id"],)).fetchone()
+
+    # `dogs` comes from the chunk described by the first run: the chunk still asserts it, but the
+    # confidence the model gave it was dropped when the chunk was stored.
+    assert topics["categories"] == [
+        {"id": "hiking", "confidence": 0.8},
+        {"id": "dogs", "confidence": RECOVERED_CONFIDENCE},
+    ]
+
+
+def test_an_emptied_document_left_standing_asserts_no_topics(url):
+    with connect(url) as conn:
+        document = conn.execute(
+            "select id from document where source_id = 'schweizer_wanderwege'").fetchone()
+        heading = conn.execute(
+            "select heading_path from chunk where document_id = %s", (document["id"],)).fetchone()
+
+    with connect(url) as conn:
+        recontext_all(conn, RecordingLLM(furniture=(heading["heading_path"],)), _embedder())
+        topics = conn.execute(
+            "select categories from document where id = %s", (document["id"],)).fetchone()
+
+    assert topics["categories"] == []
+
+
+def test_a_failure_names_the_chunk_it_happened_on(url):
+    with connect(url) as conn:
+        document = conn.execute("select id from document where source_id = 'zh_ch'").fetchone()
+        _add_chunk(conn, document["id"], ordinal=1, heading="Second", text_en="Second article.")
+        chunk_id = conn.execute(
+            "select id from chunk where document_id = %s and heading_path = 'Second'",
+            (document["id"],)).fetchone()["id"]
+
+    with connect(url) as conn:
+        report = recontext_all(conn, RecordingLLM(breaks_on="Second"), _embedder())
+
+    assert f"chunk {chunk_id}" in report.errors[0].reason

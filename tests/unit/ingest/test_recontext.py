@@ -6,6 +6,7 @@ from swiss_grounding.ingest.recontext import (
     SourceRecontext,
     _drafts,
     _projected,
+    _prompt_title,
     _StoredDocument,
     _untitled,
 )
@@ -94,3 +95,14 @@ def test_one_documents_counts_fold_into_its_sources_running_total():
 def test_counts_of_two_different_sources_are_never_added_together():
     with pytest.raises(ValueError, match="ch_ch"):
         SourceRecontext(source_id="fedlex").plus(SourceRecontext(source_id="ch_ch"))
+
+
+def test_a_markdown_heading_marker_is_not_part_of_a_title():
+    assert _prompt_title("# On the Road with the Kids") == "On the Road with the Kids"
+    assert _prompt_title("  ### Deep heading ") == "Deep heading"
+
+
+def test_a_title_that_only_looks_like_prose_is_left_exactly_as_stored():
+    assert _prompt_title("Tierschutzgesetz vom 16. Dezember 2005 (TSchG)") == (
+        "Tierschutzgesetz vom 16. Dezember 2005 (TSchG)")
+    assert _prompt_title("C# for beginners") == "C# for beginners"

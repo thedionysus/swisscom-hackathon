@@ -17,7 +17,7 @@ from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import build_llm
 from swiss_grounding.ingest.pipeline import run_ingest
 from swiss_grounding.ingest.reclean import reclean_all
-from swiss_grounding.ingest.recontext import recontext_all
+from swiss_grounding.ingest.recontext import MAX_CONSECUTIVE_FAILURES, recontext_all
 from swiss_grounding.ingest.renarrow import renarrow_all
 from swiss_grounding.ingest.retitle import retitle_all
 from swiss_grounding.ingest.run_log import record_run
@@ -218,6 +218,15 @@ def retitle_cmd(
                f"skipped={report.skipped} failed={report.failed}")
 
 
+def _document_line(progress) -> None:
+    """One line per document while a paid run is in flight, so silence never looks like progress."""
+    typer.echo(
+        f"[{progress.index}/{progress.total}] {progress.source_id} {progress.url}: "
+        f"updated={progress.updated} deleted={progress.deleted} failed={progress.failed} "
+        f"calls={progress.calls_so_far}"
+    )
+
+
 @app.command("recontext")
 def recontext_cmd(
     dry_run: bool = typer.Option(False, "--dry-run",
@@ -240,7 +249,8 @@ def recontext_cmd(
     llm = build_llm(settings.llm_backend, settings.llm_model, settings.anthropic_api_key)
     with connect(settings.database_url) as conn:
         report = recontext_all(conn, llm, embedder, dry_run=dry_run, force=force,
-                               delete_emptied=delete_emptied)
+                               delete_emptied=delete_emptied,
+                               on_document=None if dry_run else _document_line)
     for source in report.by_source:
         typer.echo(
             f"{source.source_id}: examined={source.examined} updated={source.updated} "
@@ -254,10 +264,11 @@ def recontext_cmd(
     for error in report.errors:
         typer.echo(f"  ! {error.url}: {error.reason}", err=True)
     calls = report.describe_calls + report.summary_calls
-    # A dry run cannot know which replies the model will answer unusably, and each of those costs
-    # a resample (`llm.DESCRIBE_ATTEMPTS`), so its projection is a floor and says so.
-    billed = f"calls>={calls} (a lower bound: an unusable reply is resampled once)" if dry_run \
-        else f"calls={calls}"
+    # A dry run misses in both directions: it bills a description for every pending chunk, when
+    # heading boilerplate is dropped before any call is made, and it cannot know which replies the
+    # model will answer unusably, each of which costs a resample (`llm.DESCRIBE_ATTEMPTS`).
+    billed = (f"calls~={calls} (an estimate: page furniture is dropped before any call, and an "
+              "unusable reply is resampled once)") if dry_run else f"calls={calls}"
     prefix = "dry run: " if dry_run else ""
     typer.echo(
         f"{prefix}examined={report.examined} updated={report.updated} skipped={report.skipped} "
@@ -266,6 +277,12 @@ def recontext_cmd(
         f"deleted_documents={report.deleted_documents} {billed} "
         f"(describe={report.describe_calls} summary={report.summary_calls})"
     )
+    if report.stopped_early:
+        typer.echo(
+            f"stopped early: {MAX_CONSECUTIVE_FAILURES} documents failed in a row, "
+            f"{report.not_attempted} not attempted", err=True)
+    if report.failed or report.stopped_early:
+        typer.echo("re-run to resume: a chunk that already carries a context is not described again")
 
 
 @sources_app.command("list")

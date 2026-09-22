@@ -18,7 +18,12 @@ from swiss_grounding.db.connection import connect
 from swiss_grounding.db.migrate import apply_schema
 from swiss_grounding.ingest.fixture_loader import load_fixture
 from swiss_grounding.ingest.llm import FakeLLM
-from swiss_grounding.ingest.retitle import TitleChange, retitle_all
+from swiss_grounding.ingest.retitle import (
+    ENGLISH_ONLY,
+    ORIGINAL_AND_ENGLISH,
+    TitleChange,
+    retitle_all,
+)
 from swiss_grounding.locations.repository import upsert_locations
 from swiss_grounding.locations.seed import seed_locations
 from swiss_grounding.registry.loader import load_seed_sources
@@ -97,7 +102,8 @@ def test_retitle_replaces_the_sr_number_with_the_acts_name(url):
     assert stored == (TSCHG, f"English: {TSCHG}")
     assert llm.translated == [TSCHG]
     assert ("455", "de") in endpoint.asked
-    assert report.changes == (TitleChange(identifier="SR 455", before="SR 455", after=TSCHG),)
+    assert report.changes == (TitleChange(identifier="SR 455", before="SR 455", after=TSCHG,
+                                          repaired=ORIGINAL_AND_ENGLISH),)
     assert report.updated == 1
 
 
@@ -163,6 +169,9 @@ def test_a_stored_english_title_that_was_lost_is_rewritten_even_when_the_origina
 
     assert stored == (TSCHG, f"English: {TSCHG}")
     assert report.updated == 1
+    # The title itself did not move, so `before -> after` reads as no change at all; the report
+    # has to say which column was actually repaired.
+    assert report.changes[0].repaired == ENGLISH_ONLY
 
 
 def test_a_dry_run_names_the_change_without_translating_or_writing(url):
@@ -175,7 +184,8 @@ def test_a_dry_run_names_the_change_without_translating_or_writing(url):
 
     assert stored == ("SR 455", "SR 455")
     assert llm.translated == []
-    assert report.changes == (TitleChange(identifier="SR 455", before="SR 455", after=TSCHG),)
+    assert report.changes == (TitleChange(identifier="SR 455", before="SR 455", after=TSCHG,
+                                          repaired=ORIGINAL_AND_ENGLISH),)
 
 
 def test_a_repaired_title_survives_a_later_failure(url):
