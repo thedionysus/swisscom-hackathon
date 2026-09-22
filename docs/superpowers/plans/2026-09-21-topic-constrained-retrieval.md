@@ -424,6 +424,25 @@ Not blocked: Tasks 7–12. The local topic classifier embeds category descriptio
 
 **Consequence for Task 12.** Until the backfill runs, every chunk keeps its pre-Task-5 tags and an empty `context_en` — 563 fedlex chunks still assert all five categories. Probe results recorded before the backfill therefore measure the *old* tags through the *new* hard filter, and must be labelled as such rather than read as the finished behaviour.
 
+## CORRECTION: the two red probes are an `as_of` regression, not a tier artefact
+
+*Corrected 2026-09-22.* The section below attributed `city-001` and `city-018` to `FakeEmbedder` distances defeating the specificity tier. **That attribution is wrong.** Both probes carry an `as_of` — `city-001` at `2026-09-16` (the field sits after its `expect` block, which is how it was missed) and `city-018` at `2026-09-08` — and both fail for the reason Task 11 identified:
+
+```
+city-001: must_include: no citation matched source=open_erz url_contains=#cardboard-2026-09-17
+          first_event: first citation carries no event_date
+city-018: first_url_contains: '#cardboard-2026-09-10' not in https://www.fedlex.admin.ch/...
+          first_event: first citation carries no event_date
+```
+
+Task 11 Step 2 closed the `valid_from is null` bypass, so a document recording no `valid_from` is now excluded by any `as_of`. On the live index **99 of 104 current documents record no `valid_from`** — every `open_erz` calendar record and every municipal page. So a dated query returns at most the five Fedlex acts, and the calendar disappears.
+
+**This is a real product regression, not a fixture artefact.** "What was the next cardboard collection as of 8 September?" is the headline calendar query and it now returns no calendar evidence at all.
+
+The likely resolution, recommended by Task 11 and not yet implemented: **a calendar record's temporal identity is its `event_date`, not a `valid_from`.** A law has a validity interval and can be outside it; a collection date has no interval to be outside of. `CONTEXT.md` already defines **Calendar evidence** as "a chunk that describes one dated event". A carve-out — a document carrying an `event_date` is governed by that date under `as_of`, not by `valid_from` — keeps both probes green without reopening the bypass for law. It contradicts the letter of D2 Step 2, so it is a decision for the user.
+
+The tier measurement below stands as a measurement, and its general point about `FakeEmbedder` remains true and useful. It is simply not the cause of these two failures.
+
 ## The tier mechanism cannot be tested with `FakeEmbedder`
 
 *Measured 2026-09-22, after Task 9.* Structural probes `city-001` and `city-018` went green -> red on the tier. The implementer reported this as a structural collision between the calendar nearness bonus and the tier: `event_recency_factor` multiplies `score`, and `score` is now only the inner ordering key, so an upcoming event can no longer outrank a tier-qualified non-event.
