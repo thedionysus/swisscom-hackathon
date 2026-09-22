@@ -3,9 +3,25 @@ name: Fedlex (Federal law, Classified Compilation)
 base_url: https://www.fedlex.admin.ch
 default_extent_id: CH
 authority: federal_law
-categories: [hiking, waste, dogs, safety, transport]
+# Source defaults are stamped on EVERY document at confidence 1.0 (enrich._merge_tags), so a
+# multi-topic source must leave them empty and let the classifier tag each act.
+categories: []
 fetch_strategy: fedlex_sparql
 fetch_config:
-  sr_numbers: ["451", "455", "741.01", "814.01", "921.0"]
+  # All 25 resolve on the Fedlex SPARQL endpoint (checked 2026-09-22). The 16 below have their
+  # newest consolidation already in force, so the current fetcher selects the right text.
+  sr_numbers: [
+    "814.01", "814.600", "814.610",           # waste / environment
+    "455", "916.40",                          # animals / dogs
+    "741.01",                                 # road traffic
+    "704", "451", "921.0", "922.0",           # hiking / nature / forest / hunting
+    "700",                                    # spatial planning
+    "641.20",                                 # VAT
+    "832.10", "818.101",                      # health
+    "520.1", "514.54",                        # safety
+  ]
+  # Held back until #26 is fixed: each has a consolidation scheduled in the future, which the
+  # fetcher currently selects over the one in force (fedlex.py:45-48).
+  #   "814.81", "455.1", "741.11", "741.21", "741.51", "220", "642.11", "642.14", "414.20"
 allow_narrowing: false
 license: "Fedlex terms for third-party users (commercial reuse permitted)"
