@@ -278,3 +278,49 @@ def label_check_cmd() -> None:
     typer.echo(f"agreement on {len(human)} checked pairs: {score:.2f} (need {MIN_AGREEMENT})")
     if score < MIN_AGREEMENT:
         raise typer.Exit(code=1)
+
+
+@eval_app.command("fit")
+def fit_cmd() -> None:
+    """Fit the relevance probability on dev labels; threshold from out-of-fold dev; report on holdout."""
+    import numpy as np
+
+    from swiss_grounding.app import build_search_service, relevance_path
+    from swiss_grounding.evals.fit import (
+        TARGET_PRECISION,
+        choose_threshold,
+        fit_model,
+        out_of_fold_probabilities,
+        write_model,
+    )
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.serving.models import SearchRequest
+    from swiss_grounding.serving.relevance import ProvisionalRelevance
+
+    settings = load_settings()
+    base = build_search_service(settings, today=_today)
+    service = replace(base, relevance=ProvisionalRelevance(threshold=0.0))  # keep every candidate
+    labels = _load_labels(LABELS_PATH)
+    rows: dict[str, list[tuple[tuple[float, ...], bool]]] = {"dev": [], "holdout": []}
+    for probe in load_golden().probes:
+        if probe.expect.status != "results" or probe.tool != "swiss_search":
+            continue
+        for features, key in service.scored_for_eval(SearchRequest(probe.question, probe.locations, {}, None, 10)):
+            if (probe.id, key) in labels:
+                rows[probe.split].append((features, labels[(probe.id, key)]))
+    x_dev = np.array([r[0] for r in rows["dev"]])
+    y_dev = np.array([r[1] for r in rows["dev"]])
+    weights, bias = fit_model(x_dev, y_dev)
+    threshold = choose_threshold(list(out_of_fold_probabilities(x_dev, y_dev)), list(y_dev), TARGET_PRECISION)
+    z = np.array([bias + float(np.dot(weights, r[0])) for r in rows["holdout"]])
+    kept = [label for p, (_, label) in zip(1 / (1 + np.exp(-z)), rows["holdout"], strict=True) if p >= threshold]
+    positives = sum(label for _, label in rows["holdout"])
+    precision = sum(kept) / len(kept) if kept else float("nan")
+    recall = sum(kept) / positives if positives else float("nan")
+    out = relevance_path(settings, base.reranker.name)
+    write_model(out, weights=weights, bias=bias, threshold=float(threshold), reranker=base.reranker.name,
+                meta={"dev_pairs": len(rows["dev"]), "holdout_pairs": len(rows["holdout"]),
+                      "holdout_precision": precision, "holdout_recall": recall,
+                      "dataset_version": load_golden().version, "git_commit": _git_commit()})
+    typer.echo(f"{base.reranker.name}: fitted on {len(rows['dev'])} dev pairs, threshold {threshold:.3f}; "
+               f"holdout precision {precision:.3f}, recall {recall:.3f}; wrote {out}")
