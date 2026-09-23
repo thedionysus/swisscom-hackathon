@@ -9,18 +9,21 @@ FUNCTION_WORDS: dict[str, frozenset[str]] = {
                      "mein", "meine", "meinem", "nach", "für", "mit", "nicht", "ein", "eine", "im",
                      "den", "dem", "des", "zu", "auf", "was", "welche", "muss", "kann"}),
     "fr": frozenset({"la", "de", "le", "les", "des", "et", "est", "mon", "ma", "mes", "dans", "pour", "combien",
-                     "quand", "comment", "une", "du", "au", "aux", "je", "que", "qui", "sur", "en",
+                     "quand", "comment", "une", "du", "au", "aux", "je", "que", "qui", "sur", "en", "ils",
                      "pas", "quel", "quelle", "doit", "peut"}),
     "it": frozenset({"la", "il", "lo", "gli", "le", "di", "del", "della", "per", "con", "un", "una", "è",
                      "più", "quando", "come", "quanto", "mio", "mia", "che", "non", "sono", "nel",
-                     "alla", "dove", "quale", "devo", "posso"}),
+                     "alla", "dove", "quale", "devo", "posso", "dov'è", "com'è", "cos'è", "c'è", "quant'è"}),
     "en": frozenset({"the", "is", "what", "when", "how", "for", "my", "of", "and", "to", "in", "do",
                      "does", "can", "which", "a", "an", "i", "must", "should"}),
 }
 # Words only Romansh uses. Romansh shares many short words with Italian and French, so it wins
 # only when one of these matched; then it also wins ties (a Romansh question must reach the rm store).
+# "da", "dal" and "ils" are deliberately excluded: they are ordinary Italian/French words and would
+# wrongly force an it/fr question into the rm store.
 ROMANSH_MARKERS: frozenset[str] = frozenset({"cura", "èn", "tge", "betg", "brich", "vschinauncha", "vischnanca",
-                                             "scoula", "atun", "d'atun", "vegn", "nossa", "vossa", "quai", "dals"})
+                                             "scoula", "atun", "d'atun", "vegn", "nossa", "vossa", "quai", "dals",
+                                             "co", "nus", "vus", "pli", "las"})
 # Order breaks remaining ties: German before English, French before Italian.
 TIE_ORDER: tuple[str, ...] = ("de", "fr", "it", "en")
 WORD = re.compile(r"[a-zà-ÿ']+")
