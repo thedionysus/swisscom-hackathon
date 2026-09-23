@@ -116,3 +116,35 @@ def test_the_openai_index_needs_an_openai_key(monkeypatch):
     _corpus_env(monkeypatch, "bge-m3,openai-3l")
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
         Settings(_env_file=None)
+
+
+SERVING_ENV = ("RERANKER_MODEL", "SERVING_INDEX", "QUERY_EMBEDDER", "OPENAI_API_KEY", "RERANK_CANDIDATES")
+
+
+def test_serving_defaults_are_keyless(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x/y")
+    for name in SERVING_ENV:   # the integration session fixture sets some of these
+        monkeypatch.delenv(name, raising=False)
+    from swiss_grounding.config import Settings
+    s = Settings(_env_file=None)
+    assert s.rerank_candidates_cpu == 20
+    assert s.serving_index == "bge-m3"
+    assert s.query_embedder == "auto"      # real bge-m3; "fake" only in tests
+    assert s.reranker_model == "auto"
+    assert s.rerank_candidates == 30
+    assert s.local_candidate_quota == 10
+    assert s.hnsw_ef_search == 100
+    assert s.transport_base_url == "https://transport.opendata.ch/v1"
+    assert s.lookup_timeout_seconds == 8.0
+    assert s.relevance_model_path == "evals/relevance_model.json"
+
+
+def test_openai_serving_index_needs_a_key(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x/y")
+    for name in SERVING_ENV:
+        monkeypatch.delenv(name, raising=False)
+    import pytest
+
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+        Settings(_env_file=None, serving_index="openai-3l")

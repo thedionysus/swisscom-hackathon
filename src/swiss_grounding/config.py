@@ -53,6 +53,30 @@ class Settings(BaseSettings):
     )
     data_dir: str = "data"
 
+    # Serving track. Keyless by default (ADR 0006): bge-m3 embeds the question locally.
+    # Deliberately separate from the legacy EMBEDDING_BACKEND (default "fake"): serving never uses
+    # fake query vectors unless a test asks for them with QUERY_EMBEDDER=fake.
+    serving_index: Literal["bge-m3", "openai-3l"] = "bge-m3"
+    query_embedder: Literal["auto", "fake"] = "auto"
+    # "auto" picks by hardware (ADR 0012): bge-reranker-v2-m3 on MPS/CUDA, the small model on CPU.
+    reranker_model: str = "auto"
+    reranker_gpu_model: str = "BAAI/bge-reranker-v2-m3"
+    reranker_cpu_model: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
+    reranker_max_tokens: int = 512
+    rerank_candidates: int = 30
+    # On CPU the reranker is ~10x slower (RESEARCH §H1): fewer, shorter candidates.
+    rerank_candidates_cpu: int = 20
+    reranker_max_tokens_cpu: int = 256
+    local_candidate_quota: int = 10
+    hnsw_ef_search: int = 100
+    relevance_model_path: str = "evals/relevance_model.json"
+    transport_base_url: str = "https://transport.opendata.ch/v1"
+    reference_rate_url: str = "https://www.bwo.admin.ch/de/referenzzinssatz"
+    lookup_timeout_seconds: float = 8.0
+    # ADR 0017 (amended): the dump is a release asset of our private repository, downloaded with `gh`.
+    dump_release_repo: str = "thedionysus/swisscom-hackathon"
+    dump_release_tag: str = "corpus-latest"
+
     @field_validator("corpus_indexes", mode="before")
     @classmethod
     def _split_indexes(cls, value: object) -> object:
@@ -87,6 +111,12 @@ class Settings(BaseSettings):
             raise ValueError("OPENAI_API_KEY is required when CORPUS_LLM_PROVIDER=openai")
         if self.corpus_llm_provider == "anthropic" and not self.anthropic_api_key:
             raise ValueError("ANTHROPIC_API_KEY is required when CORPUS_LLM_PROVIDER=anthropic")
+        return self
+
+    @model_validator(mode="after")
+    def _openai_serving_needs_key(self) -> "Settings":
+        if self.serving_index == "openai-3l" and not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY is required when SERVING_INDEX=openai-3l")
         return self
 
 
