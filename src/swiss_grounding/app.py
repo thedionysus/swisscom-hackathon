@@ -7,17 +7,23 @@ from swiss_grounding.db.connection import connect
 from swiss_grounding.locations.geoadmin import GeoAdminClient
 from swiss_grounding.locations.repository import load_tree
 from swiss_grounding.locations.resolver import LocationResolver
+from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.retrieval.embedder import build_embedder
 from swiss_grounding.retrieval.query_core import QueryCore
 from swiss_grounding.retrieval.rerank import RerankWeights
 
 
+def load_location_tree(conn) -> LocationTree:
+    tree = load_tree(conn)
+    if not tree.by_id:
+        raise RuntimeError("location table is empty; run `swiss-grounding db seed` first")
+    return tree
+
+
 def build_query_core(settings: Settings, today: Callable[[], date] = date.today) -> QueryCore:
     """today is the clock the reranker uses to tell past calendar events from upcoming ones."""
     with connect(settings.database_url) as conn:
-        tree = load_tree(conn)
-    if not tree.by_id:
-        raise RuntimeError("location table is empty; run `swiss-grounding db seed` first")
+        tree = load_location_tree(conn)
     geo = GeoAdminClient.from_settings(settings.geoadmin_base_url, settings.geoadmin_timeout_seconds)
     embedder = build_embedder(settings.embedding_backend, settings.embedding_model, settings.embedding_dim)
     return QueryCore(
