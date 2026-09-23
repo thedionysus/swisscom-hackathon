@@ -31,7 +31,7 @@ The Federal Statistical Office list of every Swiss commune with its BFS number a
 _Avoid_: Municipality list, gazetteer
 
 **Topic**:
-The subject a question is about, drawn from the fixed category list. Fixed before searching, alongside the extent path: a chunk that does not carry the topic is not evidence for that question.
+The subject a question is about, drawn from the fixed list of twenty citizen-facing topics. Fixed before searching, alongside the extent path: a chunk that does not carry the topic is not evidence for that question.
 _Avoid_: Category hint, tag, subject area
 
 **Off-topic evidence**:
@@ -46,12 +46,8 @@ _Avoid_: Chrome, navigation junk, nav text
 The maintenance step that deletes boilerplate chunks already sitting in the index, and any document left with none, undoing the fact that they were ingested at all. A separate command run after the fact, not part of ingestion itself, until a later step excludes boilerplate at ingestion time and this has nothing left to do.
 _Avoid_: Cleanup, purge, prune
 
-**Generated context**:
-A short description, written per chunk, of what the chunk's document is about and what the chunk itself covers. It is indexed together with the chunk's text so retrieval can find the chunk, and it is never quoted: a citation draws on the stored text alone.
-_Avoid_: Summary, blurb, annotation
-
 **Recontext**:
-The maintenance step that gives every stored chunk its generated context and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired. The same pass deletes the chunks the model judges boilerplate, which is the only thing it destroys; a document those drops leave with no chunks at all is reported and left standing, and erased only when a run is told to.
+The maintenance step that gives every stored chunk a description and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired. The same pass deletes the chunks the model judges boilerplate, which is the only thing it destroys; a document those drops leave with no chunks at all is reported and left standing, and erased only when a run is told to.
 _Avoid_: Re-enrichment, re-tagging, reprocessing
 
 **Narrowing**:
@@ -73,6 +69,76 @@ _Avoid_: Relevance threshold, cutoff, minimum score
 **Distance**:
 Overloaded, and both senses reach the reranker and are published side by side on every citation. A citation's `distance` is a *cosine distance* in embedding space, from the chunk to the vector that was searched. Its `tier` is a distance in the *location tree*, counted in hops up the extent path. Name the sense whenever both are in scope; in code `Hit.distance` is the first and `hops_to_extent` the second, and `LocationTree.distance` is the second under the ambiguous name.
 _Avoid_: Similarity or relevance for the cosine sense; tree distance or depth for the hop sense
+
+### Scope
+
+**Declared scope**:
+The topics and places the server states it answers for: federal information for all of Switzerland, six named cantons, seven named municipalities, and a named set of live lookups. Answer quality is promised inside it and nowhere else.
+_Avoid_: Coverage, supported area
+
+**Outside-scope question**:
+A question about a place outside Switzerland, or about a topic or place outside the declared scope. It is answered by saying so, never by asking the user for a location and never by answering from nearby evidence.
+_Avoid_: Unsupported query, out-of-coverage, fallback
+
+**Live lookup**:
+An answer read at question time from an official data service rather than retrieved from the index, such as a premium, a connection, or a collection date. It carries the service's own reference date.
+_Avoid_: Real-time search, API tool
+
+**Source unavailable**:
+The state in which the official source for an in-scope question could not be reached. It is reported as such, distinct from the source being reachable and holding no answer.
+_Avoid_: Error, no results
+
+### Languages and versions
+
+**Language store**:
+The part of the index holding every chunk written in one language: German, French, Italian or English. A chunk lives in the store of the language it was published in, and is never translated into another store.
+_Avoid_: Language index, language collection
+
+**Language version**:
+One publication of a document in one language, such as the French text of the Code of Obligations. Versions of the same document are not duplicates; each is evidence in its own right.
+_Avoid_: Translation, copy
+
+**Translation group**:
+The set of language versions that publish the same document. A document published in only one language forms a group of one.
+_Avoid_: Language family, document cluster
+
+**Aligned chunk**:
+A chunk's counterpart in another language version of its translation group, matched by position in the document's structure (for law, the same article and paragraph).
+_Avoid_: Parallel chunk, sibling chunk
+
+**Authentic version**:
+A language version that has legal force. German, French and Italian federal law are equally authentic; an English version is published for information only.
+_Avoid_: Official translation, original
+
+**Corroboration**:
+The evidence that a chunk is relevant because its aligned chunks in other language versions were also retrieved for the same question. Measured only over the versions that exist, so a document published in one language is never marked down for lacking others.
+_Avoid_: Cross-check, consensus, agreement score
+
+**Corroboration basis**:
+How the aligned chunks were found: `independent` when each language store was queried in its own language, `cross_lingual` when one multilingual query found them all. The two carry different weight.
+_Avoid_: Corroboration type, mode
+
+### Descriptions
+
+**Document description**:
+A short generated statement of what a whole document is, who published it and which jurisdiction it applies to.
+_Avoid_: Summary, abstract
+
+**Chunk description**:
+A short generated statement of what one chunk covers and what questions it answers, written once per translation group in each language the group has.
+_Avoid_: Generated context, summary, blurb
+
+**Breadcrumb**:
+The path of headings above a chunk within its document, such as Code of Obligations > Employment contract > Art. 336c.
+_Avoid_: Heading path, section trail
+
+Descriptions and breadcrumbs are indexed with the chunk so retrieval can find it, and are never quoted: a citation draws on the published text alone.
+
+### Index
+
+**Embedding index**:
+The set of vectors one embedding model, at one version and dimension, produced for the corpus. Two indexes are never compared with each other; changing the model means building a new index.
+_Avoid_: Vector store, embeddings table
 
 ### Evaluation
 
