@@ -7,8 +7,26 @@ CLI as implemented (`uv run swiss-grounding corpus --help`, `corpus_commands.py`
 from the shipped CLI in a few places — see the notes at the bottom.
 
 **What the run uses:** the API key (OpenAI or Anthropic) pays for OCR of scanned PDF pages and for the document
-and chunk descriptions. Embeddings are computed locally with bge-m3 (§11). The OpenAI index (§8, §10) is optional
-and skipped unless explicitly requested.
+and chunk descriptions. Which embedding indexes are built is configuration: `CORPUS_INDEXES` (default `bge-m3`,
+computed locally, §11). The OpenAI index (§8, §10) is built only when `openai-3l` is in `CORPUS_INDEXES`, and the
+code refuses it otherwise.
+
+**The short path:** set `.env` (§2), `corpus fetch` (§1), `corpus estimate`, `corpus run`.
+
+```bash
+uv run swiss-grounding corpus describe --what docs --limit 1 --sync   # smoke-test the key (under a cent)
+uv run swiss-grounding corpus estimate                                # go/no-go, see §4
+uv run swiss-grounding corpus run --dry-run                           # the plan, no writes
+uv run swiss-grounding corpus run                                     # in tmux; re-run to continue
+```
+
+`corpus run` does OCR, document descriptions, chunk descriptions (repeated until the second-pass duplicates are
+done), then embeds and indexes every index in `CORPUS_INDEXES`, local first. A paid stage that does not fit the
+remaining budget runs only the part that fits (or is skipped with a note); if the credit runs out before every
+chunk is described, the indexes still cover every chunk, and those chunks are re-embedded once described. It ends
+with a summary: per stage done/failed/skipped/refused, spend per kind against the cap, described/undescribed
+chunks and embeddings per index. `--skip-ocr` leaves scanned pages for later; `--sync` avoids the Batch API.
+The sections below are the **manual path**, stage by stage, for when you need to inspect or control each step.
 
 **Starting point:** on a fresh machine the database is empty; §1 crawls every source in the manifest (free, several
 hours; some sites ask for 10 s between requests). `fetch` is incremental — re-running it resumes and only adds what
@@ -84,10 +102,11 @@ CORPUS_LLM_PROVIDER=anthropic     # OCR and descriptions via Claude (CORPUS_ANTH
 CORPUS_BUDGET_USD=<your credit>   # e.g. 5 — the cap stops paid work when the credit is used up
 CORPUS_OCR_BUDGET_USD=<share of it for OCR, e.g. 1>
 EMBEDDING_BACKEND=sentence_transformers
+CORPUS_INDEXES=bge-m3             # the default; openai-3l needs an OpenAI key
 ```
 
-Differences on Anthropic: calls run synchronously (no Batch API), and spend is priced at Claude rates. Skip §8 and
-§10 (the `openai-3l` index needs an OpenAI key). The local `bge-m3` index (§11) is the one the server answers from.
+Differences on Anthropic: calls run synchronously (no Batch API), and spend is priced at Claude rates. §8 and
+§10 do not apply (the `openai-3l` index needs an OpenAI key). The local `bge-m3` index (§11) is the one the server answers from.
 
 **With an OpenAI key**, edit `.env` (based on `.env.example`):
 
@@ -99,6 +118,7 @@ CORPUS_OCR_BUDGET_USD=10
 EMBEDDING_BACKEND=sentence_transformers   # needed later for the local bge-m3 pass (uv sync --extra embed first)
 CORPUS_CHAT_TOKENS_PER_FILE=<account limit>
 CORPUS_EMBED_TOKENS_PER_FILE=<account limit>
+CORPUS_INDEXES=bge-m3             # add openai-3l (bge-m3,openai-3l) only to also pay for the OpenAI index
 ```
 
 `CORPUS_CHAT_TOKENS_PER_FILE` / `CORPUS_EMBED_TOKENS_PER_FILE` (config.py defaults: 2,000,000 each) are the
@@ -108,7 +128,8 @@ value means many sequential batches, each up to 24h. A batch that exceeds the ac
 its tasks pending (see "Resuming" below).
 
 **When the credit is smaller than the estimate:** the cap refuses a stage whose estimate exceeds what is left, and
-the refusal message says how many tasks fit. Re-run that stage with `--limit <that number>`. Spend the credit in
+the refusal message says how many tasks fit. Re-run that stage with `--limit <that number>` (`corpus run` does
+this by itself). Spend the credit in
 this order: document descriptions, then chunk descriptions, then OCR. Chunks left without a description are still
 embedded locally with `--allow-undescribed` (§11), and get described when more credit arrives.
 
@@ -135,16 +156,17 @@ PRICES = {
 uv run swiss-grounding corpus estimate
 ```
 
-Prints per-stage estimates (OCR, describe docs, describe chunks, embed openai-3l), batches in flight, total
+Prints per-stage estimates (OCR, describe docs, describe chunks, embed per index), batches in flight, total
 spent so far, and last a single go/no-go line:
 
 ```
 total estimate (batch price): $X
 ```
 
-`$X` = OCR + describe docs + the projected chunk pass (every group, once documents are described) + openai-3l
-projected with descriptions. **Subtract the `embed openai-3l` line** when §8 is skipped (the default): the paid run
-is then OCR + descriptions only. **Stop and re-scope (lower `max_pages` on the largest HTML sources, re-fetch) if that
+`$X` = OCR + describe docs + the projected chunk pass (every group, once documents are described) + the paid
+indexes in `CORPUS_INDEXES` projected with descriptions. An index outside `CORPUS_INDEXES` is printed with
+`(not configured, excluded)` and left out of `$X`; with the default (`bge-m3` only) the paid run is OCR +
+descriptions only. **Stop and re-scope (lower `max_pages` on the largest HTML sources, re-fetch) if that
 total is above roughly $90** — the $100 cap (`CORPUS_BUDGET_USD`) refuses the run outright above $100, but leave headroom
 for re-runs and the bge-m3 pass. Fedlex alone is ≈$2.70 at batch price (chunk descriptions ≈$1.68, embeddings
 ≈$0.95, doc descriptions ≈$0.03); HTML/PDF/OCR adds the rest.
@@ -221,10 +243,10 @@ align_key repeats within a group are left for a second pass, so the first full r
 Only then move on to embedding. (`--what all` also exists — docs then chunks in one command — but running the
 two phases separately, as above, is what lets you inspect docs before spending on chunks.)
 
-## 8. Embed (openai-3l) — OPTIONAL, skip by default
+## 8. Embed (openai-3l) — only when `openai-3l` is in CORPUS_INDEXES
 
-**Skip this step and §10 unless the OpenAI index was explicitly requested.** The API key is for OCR and
-descriptions only; embeddings are computed locally in §11, and the server answers from that local index.
+Otherwise `embed --index openai-3l` is refused (`openai-3l is not in CORPUS_INDEXES ...`). With the default
+configuration embeddings are computed locally in §11, and the server answers from that local index.
 
 ```bash
 uv run swiss-grounding corpus embed --index openai-3l --dry-run
@@ -258,7 +280,7 @@ raising `CORPUS_INDEX_PARALLEL_WORKERS`, check that the container really has the
 docker exec swisscom-hackathon-db-1 df -h /dev/shm     # Size must read 2.0G, not 64M
 ```
 
-## 10. Build the openai-3l index — OPTIONAL, only if §8 was run
+## 10. Build the openai-3l index — only when `openai-3l` is in CORPUS_INDEXES
 
 ```bash
 uv run swiss-grounding corpus index --index openai-3l
@@ -268,9 +290,9 @@ uv run swiss-grounding corpus index --index openai-3l
 
 ```bash
 uv sync --extra embed
-uv run swiss-grounding corpus embed --index bge-m3                       # described chunks
-uv run swiss-grounding corpus embed --index bge-m3 --allow-undescribed   # only if the credit ran out before every chunk was described
-uv run swiss-grounding corpus index --index bge-m3
+uv run swiss-grounding corpus embed                       # every configured index (default: bge-m3), described chunks
+uv run swiss-grounding corpus embed --allow-undescribed   # only if the credit ran out before every chunk was described
+uv run swiss-grounding corpus index
 ```
 
 `--allow-undescribed` embeds the remaining chunks as breadcrumb + text. When they are described later, their
