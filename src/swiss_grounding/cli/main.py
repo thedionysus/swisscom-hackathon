@@ -10,7 +10,7 @@ import typer
 from swiss_grounding.app import build_query_core
 from swiss_grounding.cli.corpus_run import corpus_app
 from swiss_grounding.cli.eval_commands import eval_app
-from swiss_grounding.cli.serving_commands import serving_app
+from swiss_grounding.cli.serving_commands import lookups_app, serving_app
 from swiss_grounding.config import load_settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.db.migrate import apply_schema
@@ -82,6 +82,7 @@ app.add_typer(corpus_app, name="corpus")
 locations_app = typer.Typer(help="Location tree data.")
 app.add_typer(locations_app, name="locations")
 app.add_typer(serving_app, name="serving")
+app.add_typer(lookups_app, name="lookups")
 
 
 @db_app.command("init")
