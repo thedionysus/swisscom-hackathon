@@ -1,0 +1,502 @@
+import json
+from datetime import UTC, datetime
+from types import SimpleNamespace
+
+import pytest
+from PIL import Image
+from typer.testing import CliRunner
+
+from swiss_grounding.cli import corpus_commands
+from swiss_grounding.cli.main import app
+from swiss_grounding.corpus.budget import estimate_tokens, spent
+from swiss_grounding.corpus.describe import build_doc_tasks, estimate_describe
+from swiss_grounding.corpus.embed import pending_for_index
+from swiss_grounding.corpus.models import ParsedDocument, ParsedSection, SourceSpec
+from swiss_grounding.corpus.persist import persist_document, upsert_source
+from swiss_grounding.corpus.providers import INDEXES, Usage
+from swiss_grounding.db.connection import connect
+
+pytestmark = pytest.mark.integration
+NOW = datetime(2026, 9, 24, tzinfo=UTC)
+MANIFEST = """
+version: 1
+sources:
+  - id: tiny
+    name: Tiny
+    publisher: Tiny
+    authority: official_info
+    level: municipal
+    extent_id: CH-BE-351
+    connector: html
+    tier: 1
+    languages: [de]
+    config: {start_urls: ["http://127.0.0.1:9/"], allow_prefixes: ["http://127.0.0.1:9/"]}
+"""
+FEDLEX = SourceSpec(id="fedlex", name="Fedlex", publisher="Federal Chancellery", authority="federal_law",
+                    level="federal", extent_id="CH", connector="fedlex", tier=1, languages=("de", "fr"),
+                    config={"sr_numbers": ["220"]})
+AHV = SourceSpec(id="ahv", name="AHV", publisher="AHV/IV", authority="official_info", level="federal",
+                 extent_id="CH", connector="html", tier=1, languages=("de",), config={})
+TEXT = {"de": "1 Nach Ablauf der Probezeit darf der Arbeitgeber nicht kündigen.",
+        "fr": "1 Après le temps d'essai, l'employeur ne peut pas résilier le contrat."}
+
+
+def _seed_law(url):
+    with connect(url) as conn:
+        upsert_source(conn, FEDLEX)
+        for lang in ("de", "fr"):
+            persist_document(conn, ParsedDocument(
+                source_id="fedlex", url=f"https://f/{lang}", language=lang, work_key="eli/220", title=f"OR {lang}",
+                identifier="SR 220", sections=(ParsedSection("art_336_c", (f"SR 220 OR {lang}", "Art. 336c"),
+                                                             "art_336_c", TEXT[lang]),)), FEDLEX, NOW)
+
+
+def _seed_scan(url, tmp_path, pages=1):
+    sections = []
+    for n in range(1, pages + 1):
+        image = tmp_path / f"p{n}.png"
+        Image.new("RGB", (10, 10), "white").save(image)
+        sections.append(ParsedSection(f"de:p{n}", ("Merkblatt", f"p. {n}"), f"page={n}", "", needs_ocr=True,
+                                      ocr_image=str(image), ocr_digest=f"d{n}"))
+    with connect(url) as conn:
+        upsert_source(conn, AHV)
+        persist_document(conn, ParsedDocument(
+            source_id="ahv", url="https://ahv/m.pdf", language="de", work_key="pdf:https://ahv/m.pdf",
+            title="Merkblatt", extraction="pdf_text", sections=tuple(sections)), AHV, NOW)
+
+
+def _insert_batch(url, batch_id, kind, estimated=0.5):
+    with connect(url) as conn:
+        conn.execute("insert into corpus.batch_job (id, kind, endpoint, status, request_count, input_path, "
+                     "estimated_usd) values (%s, %s, '/v1/x', 'submitted', 1, 'in.jsonl', %s)",
+                     (batch_id, kind, estimated))
+
+
+def _no_openai(monkeypatch):
+    def refuse(settings):
+        raise AssertionError("an OpenAI client must not be built when CORPUS_LLM_PROVIDER=fake")
+    monkeypatch.setattr(corpus_commands, "_openai_client", refuse)
+
+
+class _FinishedBatches:
+    """An OpenAI client whose batches already finished: `outputs` maps a batch id to its result lines."""
+
+    def __init__(self, outputs: dict[str, list[dict]]):
+        self.created: list = []
+        outer = self
+
+        class Batches:
+            def retrieve(self, batch_id):
+                return SimpleNamespace(status="completed", output_file_id=f"out-{batch_id}", error_file_id=None,
+                                       errors=None)
+
+            def create(self, **kwargs):
+                outer.created.append(kwargs)
+                raise AssertionError("no new batch expected")
+
+        class Files:
+            def content(self, file_id):
+                lines = outputs[file_id.removeprefix("out-")]
+                return SimpleNamespace(text="\n".join(json.dumps(line) for line in lines))
+
+            def create(self, file, purpose):
+                raise AssertionError("no upload expected")
+
+        self.batches = Batches()
+        self.files = Files()
+
+
+def _with_openai_index(monkeypatch):
+    monkeypatch.setenv("CORPUS_INDEXES", "bge-m3,openai-3l")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+
+def _openai_mode(monkeypatch, client, tmp_path):
+    _with_openai_index(monkeypatch)
+    monkeypatch.setenv("CORPUS_LLM_PROVIDER", "openai")
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(corpus_commands, "_openai_client", lambda settings: client)
+
+
+def _invoke(*args):
+    return CliRunner().invoke(app, ["corpus", *args])
+
+
+def test_init_status_and_estimate_run(corpus_db):
+    assert _invoke("init").exit_code == 0
+    status = _invoke("status")
+    assert status.exit_code == 0 and "spend" in status.output.lower()
+    assert _invoke("estimate").exit_code == 0
+
+
+def test_check_manifest_reports_an_unreachable_start_url(corpus_db, tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST)
+    result = _invoke("check-manifest", str(path))
+    assert result.exit_code == 1 and "tiny" in result.output
+
+
+def test_describe_dry_run_spends_nothing(corpus_db):
+    result = _invoke("describe", "--what", "chunks", "--dry-run")
+    assert result.exit_code == 0 and "estimate" in result.output.lower()
+
+
+def test_fake_describe_all_sync_describes_everything_and_spends_nothing(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    result = _invoke("describe", "--what", "all", "--sync")
+    assert result.exit_code == 0, result.output
+    with connect(corpus_db) as conn:
+        assert spent(conn) == 0.0
+        group = conn.execute("select description_by_lang from corpus.translation_group").fetchone()
+        chunks = conn.execute("select description from corpus.chunk").fetchall()
+    assert set(group["description_by_lang"]) == {"de", "fr"}
+    assert chunks and all(c["description"] for c in chunks)
+
+
+@pytest.mark.parametrize("what", ["docs", "all"])
+def test_describe_docs_marks_repeated_furniture_before_building_doc_tasks(corpus_db, monkeypatch, what):
+    _no_openai(monkeypatch)
+    with connect(corpus_db) as conn:
+        upsert_source(conn, AHV)
+        for i in range(3):
+            persist_document(conn, ParsedDocument(
+                source_id="ahv", url=f"https://ahv/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+                sections=(ParsedSection("de:0", ("Seite",), None, f"Eigener Inhalt {i}."),
+                          ParsedSection("de:9", ("Seite",), None, "Kontakt: AHV, Bundesgasse 1, 3011 Bern"))),
+                AHV, NOW)
+    built = []
+
+    def spy(conn, model, limit):
+        tasks = build_doc_tasks(conn, model, limit)
+        built.extend(tasks)
+        return tasks
+    monkeypatch.setattr(corpus_commands, "build_doc_tasks", spy)
+    result = _invoke("describe", "--what", what, "--sync")
+    assert result.exit_code == 0, result.output
+    assert len(built) == 3 and not any("Bundesgasse" in t.user for t in built)
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.chunk where status = 'boilerplate'").fetchone()["n"] == 3
+
+
+def test_fake_ocr_and_embed_spend_nothing(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    _with_openai_index(monkeypatch)
+    _seed_scan(corpus_db, tmp_path)
+    assert _invoke("ocr", "--sync").exit_code == 0
+    result = _invoke("embed", "--index", "openai-3l", "--allow-undescribed")
+    assert result.exit_code == 0, result.output
+    with connect(corpus_db) as conn:
+        assert spent(conn) == 0.0
+        assert conn.execute("select needs_ocr from corpus.chunk").fetchone()["needs_ocr"] is False
+        assert conn.execute("select count(*) as n from corpus.emb_openai_3l").fetchone()["n"] == 1
+
+
+def test_ocr_pilot_prints_the_projection(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    _seed_scan(corpus_db, tmp_path)
+    result = _invoke("ocr", "--pilot", "1")
+    assert result.exit_code == 0, result.output
+    assert "per page" in result.output and "projection" in result.output
+
+
+def test_budget_cap_blocks_a_paid_run(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    monkeypatch.setenv("CORPUS_BUDGET_USD", "0")
+    result = _invoke("describe", "--what", "docs", "--sync")
+    assert result.exit_code == 2 and "budget" in result.output.lower()
+    with connect(corpus_db) as conn:
+        assert conn.execute("select description_by_lang from corpus.translation_group").fetchone()[
+            "description_by_lang"] == {}
+
+
+def test_budget_refusal_says_how_many_tasks_fit(corpus_db, monkeypatch):
+    """A9 follow-up: a refused stage tells the operator how many of its tasks fit in what is left,
+    computed from the price it would actually pay, instead of leaving them to guess --limit."""
+    with connect(corpus_db) as conn:
+        upsert_source(conn, AHV)
+        for i in range(3):
+            persist_document(conn, ParsedDocument(
+                source_id="ahv", url=f"https://ahv/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+                sections=(ParsedSection("de:0", ("Seite",), None, "Eigener, gleich langer Inhalt hier."),)),
+                AHV, NOW)
+        tasks = build_doc_tasks(conn, "gpt-5-mini", None)
+        per_task = estimate_describe(tasks, "gpt-5-mini", batch=False) / len(tasks)
+    assert len(tasks) == 3
+    monkeypatch.setenv("CORPUS_BUDGET_USD", str(per_task * 2.5))
+    result = _invoke("describe", "--what", "docs", "--sync", "--allow-fake")
+    assert result.exit_code == 2, result.output
+    assert "about 2 of 3 tasks fit" in result.output
+    assert "--limit 2" in result.output
+
+
+def test_budget_refusal_says_when_nothing_fits(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    monkeypatch.setenv("CORPUS_BUDGET_USD", "0")
+    result = _invoke("describe", "--what", "docs", "--sync", "--allow-fake")
+    assert result.exit_code == 2 and "no tasks fit" in result.output.lower()
+
+
+def test_batches_lists_batch_jobs(corpus_db):
+    _insert_batch(corpus_db, "batch_abc", "describe-doc")
+    result = _invoke("batches")
+    assert result.exit_code == 0 and "batch_abc" in result.output and "describe-doc" in result.output
+
+
+def test_describe_ingests_unfinished_batches_before_building_tasks(corpus_db, monkeypatch, tmp_path):
+    _seed_law(corpus_db)
+    with connect(corpus_db) as conn:
+        [task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    reply = {"descriptions": {"de": "Obligationenrecht", "fr": "Code des obligations"}, "topics": ["work"]}
+    line = {"custom_id": task.custom_id, "response": {"status_code": 200, "body": {
+        "choices": [{"message": {"content": json.dumps(reply)}}],
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 100}}}}
+    client = _FinishedBatches({"batch_1": [line]})
+    _openai_mode(monkeypatch, client, tmp_path)
+    _insert_batch(corpus_db, "batch_1", "describe-doc")
+    result = _invoke("describe", "--what", "docs")
+    assert result.exit_code == 0, result.output
+    assert client.created == []
+    with connect(corpus_db) as conn:
+        job = conn.execute("select status, ingested_at from corpus.batch_job").fetchone()
+        group = conn.execute("select description_by_lang from corpus.translation_group").fetchone()
+        assert spent(conn, "describe") > 0
+    assert job["status"] == "completed" and job["ingested_at"] is not None
+    assert group["description_by_lang"]["fr"] == "Code des obligations"
+
+
+def test_embed_ingests_unfinished_batches_before_building_new_ones(corpus_db, monkeypatch, tmp_path):
+    _seed_law(corpus_db)
+    with connect(corpus_db) as conn:
+        conn.execute("update corpus.chunk set description = 'Kündigungsschutz'")
+        conn.commit()
+        pending = pending_for_index(conn, INDEXES["openai-3l"], require_description=True, limit=None)
+    lines = [{"custom_id": f"{p['language']}|{p['id']}|{p['hash']}", "response": {"status_code": 200, "body": {
+        "data": [{"embedding": [0.01] * 3072}], "usage": {"prompt_tokens": 20}}}} for p in pending]
+    client = _FinishedBatches({"batch_e": lines})
+    _openai_mode(monkeypatch, client, tmp_path)
+    _insert_batch(corpus_db, "batch_e", "embed")
+    result = _invoke("embed", "--index", "openai-3l")
+    assert result.exit_code == 0, result.output
+    assert client.created == []
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.emb_openai_3l").fetchone()["n"] == len(pending) == 2
+        assert conn.execute("select ingested_at from corpus.batch_job").fetchone()["ingested_at"] is not None
+
+
+def test_fetch_prints_a_tally_per_source_and_the_promotion_line(corpus_db, tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("CRAWL_DELAY_SECONDS", "0")
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST)
+    result = _invoke("fetch", "--manifest", str(path), "--source", "tiny")
+    assert result.exit_code == 0, result.output
+    assert "tiny:" in result.output and "promote: promoted=0" in result.output
+    assert _invoke("fetch", "--manifest", str(path), "--source", "nope").exit_code != 0
+
+
+def test_fake_providers_refuse_to_write_into_a_real_database(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    _with_openai_index(monkeypatch)
+    monkeypatch.setattr(corpus_commands, "TEST_DB_PREFIX", "not_this_database_")
+    _seed_law(corpus_db)
+    for args in (("describe", "--what", "docs", "--sync"), ("ocr",), ("embed", "--index", "bge-m3"),
+                 ("embed", "--index", "openai-3l", "--allow-undescribed"), ("run",)):
+        refused = _invoke(*args)
+        assert refused.exit_code == 2 and "--allow-fake" in refused.output, args
+    assert _invoke("describe", "--what", "docs", "--dry-run").exit_code == 0
+    assert _invoke("estimate").exit_code == 0
+    with connect(corpus_db) as conn:
+        assert conn.execute("select description_by_lang from corpus.translation_group").fetchone()[
+            "description_by_lang"] == {}
+    allowed = _invoke("describe", "--what", "docs", "--sync", "--allow-fake")
+    assert allowed.exit_code == 0, allowed.output
+
+
+def test_estimate_projects_chunk_descriptions_before_documents_are_described(corpus_db):
+    _seed_law(corpus_db)
+    result = _invoke("estimate")
+    assert result.exit_code == 0, result.output
+    assert "describe chunks projected: 1 tasks" in result.output
+    assert "embed openai-3l before descriptions: 2 chunks" in result.output
+    assert "embed openai-3l projected with descriptions: 2 chunks" in result.output
+
+
+def _fixed_estimates(monkeypatch):
+    monkeypatch.setattr(corpus_commands, "estimate_ocr", lambda conn, model, batch=True: 1.0)
+    monkeypatch.setattr(corpus_commands, "estimate_describe", lambda tasks, model, batch=True: 2.0)
+    monkeypatch.setattr(corpus_commands, "project_chunk_tasks", lambda conn, model, batch=True: (1, 3.0))
+    monkeypatch.setattr(corpus_commands, "estimate_embeddings", lambda pending, model, batch=True: 4.0)
+    monkeypatch.setattr(corpus_commands, "PROJECTED_DESCRIPTION_TOKENS", 0)
+
+
+def test_estimate_ends_with_a_total_of_ocr_docs_projected_chunks_and_projected_embeddings(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    _with_openai_index(monkeypatch)
+    _fixed_estimates(monkeypatch)
+    result = _invoke("estimate")
+    assert result.exit_code == 0, result.output
+    # ocr 1 + docs 2 + projected chunks 3 + openai-3l projected 4; the described-groups chunk line is not added
+    assert result.output.rstrip().splitlines()[-1] == "total estimate (batch price): $10.00"
+
+
+def test_anthropic_fallback_is_estimated_at_its_own_price(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    monkeypatch.setenv("CORPUS_LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "k")
+    result = _invoke("describe", "--what", "docs", "--dry-run")
+    assert result.exit_code == 0, result.output
+    assert "claude-haiku-4-5-20251001" in result.output
+
+
+def test_ocr_without_a_limit_runs_in_slices_until_nothing_is_pending(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    monkeypatch.setattr(corpus_commands, "OCR_SLICE", 1)
+    _seed_scan(corpus_db, tmp_path, pages=2)
+    result = _invoke("ocr")
+    assert result.exit_code == 0, result.output
+    assert result.output.count("ocr: {'done': 1") == 2
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.chunk where needs_ocr").fetchone()["n"] == 0
+
+
+def test_an_unreachable_database_is_one_friendly_line(corpus_db, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://nobody:x@127.0.0.1:9/nothing")
+    result = _invoke("describe", "--what", "docs", "--dry-run")
+    assert result.exit_code == 1
+    assert "database" in result.output.lower() and "Traceback" not in result.output
+
+
+# --- CORPUS_INDEXES ----------------------------------------------------------------------------------
+
+def _count(url, sql):
+    with connect(url) as conn:
+        return conn.execute(sql).fetchone()["n"]
+
+
+def test_estimate_marks_unconfigured_indexes_and_leaves_them_out_of_the_total(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    _fixed_estimates(monkeypatch)
+    result = _invoke("estimate")
+    assert result.exit_code == 0, result.output
+    assert "embed openai-3l before descriptions: 2 chunks, estimate $4.00 (not configured, excluded)" in result.output
+    assert "(not configured, excluded)" not in next(line for line in result.output.splitlines()
+                                                    if line.startswith("embed bge-m3"))
+    # ocr 1 + docs 2 + projected chunks 3; openai-3l is not in CORPUS_INDEXES
+    assert result.output.rstrip().splitlines()[-1] == "total estimate (batch price): $6.00"
+
+
+@pytest.mark.parametrize("command", [("embed", "--index", "openai-3l"), ("embed", "--index", "openai-3l", "--dry-run"),
+                                     ("index", "--index", "openai-3l")])
+def test_an_index_not_in_corpus_indexes_is_refused(corpus_db, command):
+    _seed_law(corpus_db)
+    result = _invoke(*command)
+    assert result.exit_code == 2, result.output
+    assert "openai-3l is not in CORPUS_INDEXES (currently: bge-m3); add it there to build it" in result.output
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_openai_3l") == 0
+
+
+def test_embed_without_an_index_embeds_every_configured_index(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    result = _invoke("embed", "--allow-undescribed")
+    assert result.exit_code == 0, result.output
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 2
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_openai_3l") == 0
+    assert _invoke("index").exit_code == 0
+
+
+# --- corpus run --------------------------------------------------------------------------------------
+
+def _positions(output: str, markers: list[str]) -> list[int]:
+    return [output.index(marker) for marker in markers]
+
+
+def test_run_with_fake_providers_does_every_stage_in_order_for_free(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    _seed_scan(corpus_db, tmp_path)
+    result = _invoke("run", "--allow-fake")
+    assert result.exit_code == 0, result.output
+    order = _positions(result.output, ["== ocr", "== describe docs", "== describe chunks", "== embed bge-m3",
+                                       "== index bge-m3", "run summary"])
+    assert order == sorted(order)
+    assert "openai-3l" not in result.output.split("run summary")[0]
+    with connect(corpus_db) as conn:
+        assert spent(conn) == 0.0
+        chunks = conn.execute("select description, needs_ocr from corpus.chunk").fetchall()
+    assert len(chunks) == 3 and all(c["description"] and not c["needs_ocr"] for c in chunks)
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 3
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_openai_3l") == 0
+    assert "chunks: described=3 undescribed=0" in result.output
+    assert "embeddings: bge-m3=3 openai-3l=0" in result.output
+
+    again = _invoke("run", "--allow-fake")
+    assert again.exit_code == 0, again.output
+    summary = again.output.split("run summary")[1]
+    assert "ocr: done=0 failed=0 skipped=0 refused=0" in summary
+    assert "describe docs: done=0 failed=0 skipped=0 refused=0" in summary
+    assert "describe chunks: done=0 failed=0 skipped=0 refused=0" in summary
+    assert "embed bge-m3: written=0" in summary
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 3
+    with connect(corpus_db) as conn:
+        assert spent(conn) == 0.0
+
+
+class _BillingFakeLLM:
+    """Fake replies billed at exactly the tokens the estimate assumes, so the cap binds as it would for real."""
+
+    def complete(self, task):
+        languages = corpus_commands._fake_reply(task)["descriptions"]
+        return (corpus_commands._fake_reply(task),
+                Usage(estimate_tokens(task.system + task.user), 110 * len(languages) + 40))
+
+
+def _seed_pages(url, count=3):
+    with connect(url) as conn:
+        upsert_source(conn, AHV)
+        for i in range(count):
+            persist_document(conn, ParsedDocument(
+                source_id="ahv", url=f"https://ahv/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+                sections=(ParsedSection("de:0", ("Seite",), None, f"Eigener Inhalt der Seite {i}."),)),
+                AHV, NOW)
+        tasks = build_doc_tasks(conn, "gpt-5-mini", None)
+    return estimate_describe(tasks, "gpt-5-mini", batch=False) / len(tasks)
+
+
+def test_run_under_a_tiny_cap_describes_what_fits_and_still_embeds_every_chunk(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    per_doc = _seed_pages(corpus_db)
+    cap = per_doc * 2.5
+    monkeypatch.setenv("CORPUS_BUDGET_USD", str(cap))
+    monkeypatch.setattr(corpus_commands, "_llm", lambda settings: _BillingFakeLLM())
+    result = _invoke("run", "--skip-ocr", "--allow-fake")
+    assert result.exit_code == 0, result.output
+    assert "== ocr" not in result.output
+    assert "budget" in result.output
+    with connect(corpus_db) as conn:
+        described = conn.execute("select count(*) as n from corpus.translation_group "
+                                 "where description_by_lang <> '{}'::jsonb").fetchone()["n"]
+        undescribed = conn.execute("select count(*) as n from corpus.chunk where description = ''").fetchone()["n"]
+        assert 0 < spent(conn) <= cap
+    assert described == 2 and undescribed >= 1
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 3
+
+
+def test_run_dry_run_prints_the_plan_and_writes_nothing(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    _seed_scan(corpus_db, tmp_path)
+    hnsw = "select count(*) as n from pg_indexes where schemaname = 'corpus' and indexname like '%hnsw%'"
+    indexes_before = _count(corpus_db, hnsw)
+    result = _invoke("run", "--dry-run")
+    assert result.exit_code == 0, result.output
+    assert "plan:" in result.output and "estimate" in result.output
+    for sql in ("select count(*) as n from corpus.emb_bge_m3", "select count(*) as n from corpus.emb_openai_3l",
+                "select count(*) as n from corpus.llm_spend", "select count(*) as n from corpus.batch_job",
+                "select count(*) as n from corpus.quarantine",
+                "select count(*) as n from corpus.chunk where description <> ''",
+                "select count(*) as n from corpus.translation_group where description_by_lang <> '{}'::jsonb"):
+        assert _count(corpus_db, sql) == 0, sql
+    assert _count(corpus_db, hnsw) == indexes_before
+    assert _count(corpus_db, "select count(*) as n from corpus.chunk where needs_ocr") == 1

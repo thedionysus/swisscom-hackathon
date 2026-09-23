@@ -69,6 +69,41 @@ What to expect:
 - The embedding dimension is fixed when the schema is created. Changing it means
   `docker compose down -v` and starting over.
 
+## Which steps need an API key
+
+The declared-scope corpus (`swiss-grounding corpus …`, steps in `docs/ENCODING-RUNBOOK.md`)
+is built in stages. Only some of them call a paid API:
+
+| Stage | Needs a key? |
+|---|---|
+| `corpus fetch` (crawl Fedlex and the official sites) | No |
+| `corpus ocr` (transcribe scanned PDF pages) | Yes: OpenAI (or Anthropic) |
+| `corpus describe` (a short description of every document and chunk) | Yes: OpenAI (or Anthropic) |
+| `corpus embed` for `openai-3l` (only when it is in `CORPUS_INDEXES`) | Yes: OpenAI |
+| `corpus embed` for `bge-m3` (local model, the `CORPUS_INDEXES` default) | No, but it embeds the descriptions |
+| Search and the MCP server | No: questions are embedded locally with bge-m3 |
+
+**Even the local bge-m3 index needs the API, indirectly.** Every chunk is embedded as
+breadcrumb + description + text (ADR 0005). The description is what places a bare
+article under its subject and adds the words a resident would use, and it is written by
+a language model. So a full-quality local index can only be built after `corpus describe`
+has run with a key. At the current corpus size (about 130k chunks) the whole paid part
+costs roughly $14 at batch prices, well under the $100 cap.
+
+`CORPUS_INDEXES` decides which embedding indexes are built, and so whether the key also
+pays for embeddings: the default `bge-m3` is local; add `openai-3l` to also build the
+OpenAI index. `corpus run` does every stage after `corpus fetch` in order, within the budget.
+
+Two ways around it:
+
+- **Use the prebuilt database dump** (published after the encoding run). It contains the
+  descriptions and both indexes, so evaluators need no key at all. A key is only needed
+  to rebuild the corpus.
+- **Build without descriptions:** `corpus embed --index bge-m3 --allow-undescribed`
+  embeds breadcrumb + text only. It runs fully offline and gives a working index, at lower
+  retrieval quality. Once descriptions exist, the changed text is detected and those
+  chunks are embedded again.
+
 ## Connect a chat client
 
 The server speaks MCP over stdio. Register it once and the client starts it on demand.

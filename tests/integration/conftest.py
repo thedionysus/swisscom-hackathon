@@ -16,7 +16,13 @@ import pytest
 
 TEST_DB_PREFIX = "swiss_grounding_test_"
 # Environment variables override .env, so the suite never uses a developer's real backends.
-FAKE_BACKENDS = {"LLM_BACKEND": "fake", "EMBEDDING_BACKEND": "fake", "EMBEDDING_DIM": "8"}
+FAKE_BACKENDS = {
+    "LLM_BACKEND": "fake",
+    "EMBEDDING_BACKEND": "fake",
+    "EMBEDDING_DIM": "8",
+    "CORPUS_LLM_PROVIDER": "fake",
+    "CORPUS_INDEXES": "bge-m3",
+}
 
 
 def pytest_collection_modifyitems(config, items):
@@ -55,3 +61,28 @@ def isolated_database_url() -> Iterator[str | None]:
         finally:
             with _admin_connection(base_url) as admin:
                 admin.execute(f'drop database if exists "{name}" with (force)')
+
+
+CORPUS_TABLES = (
+    "corpus.emb_openai_3l, corpus.emb_bge_m3, corpus.chunk, corpus.document, corpus.translation_group, "
+    "corpus.fetch_state, corpus.quarantine, corpus.llm_spend, corpus.batch_job, corpus.source"
+)
+
+
+@pytest.fixture
+def corpus_db() -> str:
+    """A database with the public schema, the location tree, and an empty corpus schema."""
+    from swiss_grounding.corpus.db import apply_corpus_schema
+    from swiss_grounding.db.connection import connect
+    from swiss_grounding.db.migrate import apply_schema
+    from swiss_grounding.locations.repository import upsert_locations
+    from swiss_grounding.locations.seed import seed_locations
+
+    url = os.environ["DATABASE_URL"]
+    apply_schema(url, 8)
+    apply_corpus_schema(url)
+    with connect(url) as conn:
+        if conn.execute("select count(*) as n from location").fetchone()["n"] == 0:
+            upsert_locations(conn, seed_locations())
+        conn.execute(f"truncate {CORPUS_TABLES} restart identity cascade")
+    return url

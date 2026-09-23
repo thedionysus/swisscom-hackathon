@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 import typer
 
 from swiss_grounding.app import build_query_core
+from swiss_grounding.cli.corpus_run import corpus_app
 from swiss_grounding.cli.eval_commands import eval_app
 from swiss_grounding.config import load_settings
 from swiss_grounding.db.connection import connect
@@ -76,6 +77,7 @@ app.add_typer(db_app, name="db")
 sources_app = typer.Typer(help="Source registry and suggestions.")
 app.add_typer(sources_app, name="sources")
 app.add_typer(eval_app, name="eval")
+app.add_typer(corpus_app, name="corpus")
 locations_app = typer.Typer(help="Location tree data.")
 app.add_typer(locations_app, name="locations")
 

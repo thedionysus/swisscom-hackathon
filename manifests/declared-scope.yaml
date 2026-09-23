@@ -1,0 +1,501 @@
+# Declared-scope source manifest (ADR 0009). Tier 1 = the declared scope.
+# Site adaptations (A11): language_links_selector, content_selector, pdf_link_patterns,
+# sitemap_urls/sitemap_include. Start URLs verified live on 2026-09-23 with the corpus user agent.
+version: 1
+sources:
+  # ---------------- Federal: law ----------------
+  - id: fedlex
+    name: Fedlex — Systematic Compilation of Federal Law
+    publisher: Swiss Federal Chancellery
+    authority: federal_law
+    level: federal
+    extent_id: CH
+    connector: fedlex
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      sr_numbers: ["101", "141.0", "142.20", "142.201", "161.1", "210", "220", "221.213.11", "281.1", "311.0",
+                   "455", "631.0", "641.20", "642.11", "704", "741.01", "741.11", "741.51", "784.40", "814.01",
+                   "814.600", "822.11", "831.10", "831.40", "832.10", "832.102", "837.0", "451",
+                   # from the registry (Lundrim, 2026-09-22): weapons, civil protection, spatial planning,
+                   # waste ordinance, epidemics, animal health, forests, hunting
+                   "514.54", "520.1", "700", "814.610", "818.101", "916.40", "921.0", "922.0",
+                   # commercial register ordinance (topic 14: companies, commercial register, VAT)
+                   "221.411"]
+
+  # ---------------- Federal: citizen portal and offices ----------------
+  - id: ch_ch
+    name: ch.ch — the Swiss authorities online
+    publisher: Swiss Confederation, cantons and communes (ch.ch)
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en, rm]
+    config:
+      start_urls: ["https://www.ch.ch/de/", "https://www.ch.ch/fr/", "https://www.ch.ch/it/", "https://www.ch.ch/en/", "https://www.ch.ch/rm/"]
+      allow_prefixes: ["https://www.ch.ch/de/", "https://www.ch.ch/fr/", "https://www.ch.ch/it/", "https://www.ch.ch/en/", "https://www.ch.ch/rm/"]
+      language_links_selector: "nav#language a[href]"
+      # The sitemap lists the whole site (~1,730 pages in five languages), so it is seeded unfiltered.
+      sitemap_urls: ["https://www.ch.ch/sitemap.xml"]
+      max_pages: 1800
+      max_pdfs: 0
+  - id: sem
+    name: State Secretariat for Migration
+    publisher: State Secretariat for Migration SEM
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.sem.admin.ch/sem/de/home/themen/aufenthalt.html", "https://www.sem.admin.ch/sem/fr/home/themen/aufenthalt.html", "https://www.sem.admin.ch/sem/it/home/themen/aufenthalt.html", "https://www.sem.admin.ch/sem/en/home/themen/aufenthalt.html"]
+      allow_prefixes: ["https://www.sem.admin.ch/sem/de/home/themen/", "https://www.sem.admin.ch/sem/fr/home/themen/", "https://www.sem.admin.ch/sem/it/home/themen/", "https://www.sem.admin.ch/sem/en/home/themen/"]
+      pdf_allow_prefixes: ["https://www.sem.admin.ch/dam/sem/"]
+      content_selector: "#content"
+      max_pages: 600
+      max_pdfs: 40
+  - id: bag_kv
+    name: Federal Office of Public Health — health insurance
+    publisher: Federal Office of Public Health FOPH
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.bag.admin.ch/de/krankenversicherung", "https://www.bag.admin.ch/fr/assurance-maladie", "https://www.bag.admin.ch/it/assicurazione-malattie", "https://www.bag.admin.ch/en/health-insurance"]
+      allow_prefixes: ["https://www.bag.admin.ch/de/", "https://www.bag.admin.ch/fr/", "https://www.bag.admin.ch/it/", "https://www.bag.admin.ch/en/"]
+      pdf_allow_prefixes: ["https://www.bag.admin.ch/dam/"]
+      sitemap_urls: ["https://www.bag.admin.ch/sitemap/de.xml", "https://www.bag.admin.ch/sitemap/fr.xml", "https://www.bag.admin.ch/sitemap/it.xml", "https://www.bag.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(krankenversicherung|krankenkasse|praemie|franchise|grundversicherung|kostenbeteiligung|selbstbehalt)"
+        - "/fr/.*(assurance-maladie|caisse-maladie|primes?(-|$)|franchise|assurance-de-base|participation-aux-couts|quote-part)"
+        - "/it/.*(assicurazione-malattie|cassa-malati|premi(-|$)|franchigia|assicurazione-di-base|partecipazione-ai-costi|aliquota)"
+        - "/en/.*(health-insurance|health-insurer|premium|deductible|basic-insurance|cost-sharing|co-payment)"
+      max_pages: 400
+      max_pdfs: 20
+  - id: bwo
+    name: Federal Office for Housing — tenancy law and reference rate
+    publisher: Federal Office for Housing FOH
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it]
+    config:
+      start_urls: ["https://www.bwo.admin.ch/de/mietrecht", "https://www.bwo.admin.ch/fr/droit-du-bail", "https://www.bwo.admin.ch/it/diritto-di-locazione"]
+      allow_prefixes: ["https://www.bwo.admin.ch/de/", "https://www.bwo.admin.ch/fr/", "https://www.bwo.admin.ch/it/"]
+      pdf_allow_prefixes: ["https://www.bwo.admin.ch/dam/"]
+      sitemap_urls: ["https://www.bwo.admin.ch/sitemap/de.xml", "https://www.bwo.admin.ch/sitemap/fr.xml", "https://www.bwo.admin.ch/sitemap/it.xml"]
+      sitemap_include:
+        - "/de/.*(miet|referenzzins|kuendigung|nebenkosten|wohnung|schlichtung)"
+        - "/fr/.*(bail|loyer|locataire|taux-de-reference|resiliation|frais-accessoires|logement|conciliation)"
+        - "/it/.*(locazione|pigion|affitt|inquilin|tasso-di-riferimento|disdetta|spese-accessorie|alloggi|conciliazione)"
+      max_pages: 200
+      max_pdfs: 20
+  - id: bk_votes
+    name: Federal Chancellery — political rights and votes
+    publisher: Swiss Federal Chancellery
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en, rm]
+    config:
+      start_urls: ["https://www.bk.admin.ch/de/politische-rechte", "https://www.bk.admin.ch/fr/droits-politiques", "https://www.bk.admin.ch/it/diritti-politici", "https://www.bk.admin.ch/en/political-rights", "https://www.bk.admin.ch/rm/secziun-dals-dretgs-politics"]
+      allow_prefixes: ["https://www.bk.admin.ch/de/", "https://www.bk.admin.ch/fr/", "https://www.bk.admin.ch/it/", "https://www.bk.admin.ch/en/", "https://www.bk.admin.ch/rm/"]
+      sitemap_urls: ["https://www.bk.admin.ch/sitemap/de.xml", "https://www.bk.admin.ch/sitemap/fr.xml", "https://www.bk.admin.ch/sitemap/it.xml", "https://www.bk.admin.ch/sitemap/en.xml", "https://www.bk.admin.ch/sitemap/rm.xml"]
+      sitemap_include:
+        - "/de/.*(politische-rechte|abstimm|wahl|volksinitiativ|referend|stimmrecht|stimmbe|e-voting|auslandschweizer)"
+        - "/fr/.*(droits-politiques|votation|election|initiative-populaire|referendum|droit-de-vote|vote-electronique|suisses-de-l-etranger)"
+        - "/it/.*(diritti-politici|votazion|elezion|iniziativ|referendum|diritto-di-voto|voto-elettronico|svizzeri-all-estero)"
+        - "/en/.*(political-rights|vote|votes|voting|election|popular-initiative|referendum|e-voting|swiss-abroad)"
+        - "/rm/.*(dretgs-politics|votaziun|elecziun|iniziativ|referendum|confederaziun-en-furma-concisa$)"
+      max_pages: 500
+      max_pdfs: 0
+  - id: bazg
+    name: Federal Office for Customs and Border Security — private individuals
+    publisher: Federal Office for Customs and Border Security FOCBS
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.bazg.admin.ch/de/information-private", "https://www.bazg.admin.ch/fr/infos-pour-particuliers", "https://www.bazg.admin.ch/it/informazioni-per-privati", "https://www.bazg.admin.ch/en/information-individuals"]
+      allow_prefixes: ["https://www.bazg.admin.ch/de/", "https://www.bazg.admin.ch/fr/", "https://www.bazg.admin.ch/it/", "https://www.bazg.admin.ch/en/"]
+      pdf_allow_prefixes: ["https://www.bazg.admin.ch/dam/"]
+      sitemap_urls: ["https://www.bazg.admin.ch/sitemap/de.xml", "https://www.bazg.admin.ch/sitemap/fr.xml", "https://www.bazg.admin.ch/sitemap/it.xml", "https://www.bazg.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(privat|reise|freimenge|wertfreigrenze|umzug|uebersiedlung|vignette|einkauf|geschenk|erbschaft|heimtier|haustier|lebensmittel|fleisch|bargeld|medikament|waffen|quickzoll|souvenir|empfangen-von)"
+        - "/fr/.*(particulier|prive|voyage|franchise|valeur|demenagement|vignette|achat|cadeau|succession|animaux-de-compagnie|denrees|viande|argent-liquide|medicament|armes|quickzoll|souvenir)"
+        - "/it/.*(privat|viaggi|franchigi|trasloco|vignetta|acquist|regal|eredit|animali-da-compagnia|derrate|carne|contanti|medicament|armi|quickzoll|souvenir)"
+        - "/en/.*(private|individual|travel|allowance|duty-free|removal|relocat|vignette|shopping|purchase|gift|inherit|pets|foodstuff|meat|cash|medicin|weapon|quickzoll|souvenir)"
+      max_pages: 300
+      max_pdfs: 10
+  - id: arbeit_swiss
+    name: arbeit.swiss — unemployment insurance
+    publisher: State Secretariat for Economic Affairs SECO
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.arbeit.swiss/de/", "https://www.arbeit.swiss/fr/", "https://www.arbeit.swiss/it/", "https://www.arbeit.swiss/en/"]
+      allow_prefixes: ["https://www.arbeit.swiss/de/", "https://www.arbeit.swiss/fr/", "https://www.arbeit.swiss/it/", "https://www.arbeit.swiss/en/"]
+      pdf_allow_prefixes: ["https://www.arbeit.swiss/api/media/"]
+      sitemap_urls: ["https://www.arbeit.swiss/__sitemap__/de-CH.xml", "https://www.arbeit.swiss/__sitemap__/fr-CH.xml", "https://www.arbeit.swiss/__sitemap__/it-CH.xml", "https://www.arbeit.swiss/__sitemap__/en-CH.xml"]
+      max_pages: 400
+      max_pdfs: 20
+  - id: ahv_iv
+    name: AHV/IV information centre — leaflets
+    publisher: AHV/IV Information Centre
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.ahv-iv.ch/de/Merkblätter", "https://www.ahv-iv.ch/fr/Mémentos", "https://www.ahv-iv.ch/it/Opuscoli", "https://www.ahv-iv.ch/en/Leaflets"]
+      allow_prefixes: ["https://www.ahv-iv.ch/de/", "https://www.ahv-iv.ch/fr/", "https://www.ahv-iv.ch/it/", "https://www.ahv-iv.ch/en/"]
+      pdf_allow_prefixes: ["https://www.ahv-iv.ch/p/"]
+      pdf_link_patterns: ['^https://www\.ahv-iv\.ch/p/\d+\.\d+\.[dfie]$']
+      language_links_selector: "ul.ly-language a[href]"
+      content_selector: "#dnn_ContentPane"
+      max_pages: 300
+      max_pdfs: 150
+
+  # ---------------- Federal: companies, commercial register and VAT ----------------
+  # All three are on the new federal CMS (flat /{lang}/{slug} URLs, __NUXT_DATA__ translationPages,
+  # /sitemap/{lang}.xml), so sitemap_include keeps the seeds on topic. zefix.ch / zefix.admin.ch is not
+  # crawled: its robots.txt disallows everything for "*" (only Googlebot/Bingbot get the welcome pages).
+  - id: ehra
+    name: Federal Commercial Registry Office (EHRA) at the Federal Office of Justice
+    publisher: Federal Office of Justice FOJ
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    # The office's commercial-register pages exist in de/fr/it only (none in the en sitemap).
+    languages: [de, fr, it]
+    config:
+      start_urls: ["https://www.bj.admin.ch/de/handelsregister-zefix-und-regix", "https://www.bj.admin.ch/fr/registre-du-commerce-zefix-et-regix", "https://www.bj.admin.ch/it/registro-di-commercio-zefix-e-regix"]
+      allow_prefixes: ["https://www.bj.admin.ch/de/", "https://www.bj.admin.ch/fr/", "https://www.bj.admin.ch/it/"]
+      pdf_allow_prefixes: ["https://www.bj.admin.ch/dam/"]
+      sitemap_urls: ["https://www.bj.admin.ch/sitemap/de.xml", "https://www.bj.admin.ch/sitemap/fr.xml", "https://www.bj.admin.ch/sitemap/it.xml"]
+      sitemap_include:
+        - "/de/.*(handelsregister|ehra|zefix|regix|firmenrecherche|gmbh|aktienrecht)"
+        - "/fr/.*(registre-du-commerce|ofrc|zefix|regix|raisons-de-commerce|sarl|societe-anonyme)"
+        - "/it/.*(registro-di-commercio|ufrc|zefix|regix|sagl|societa-anonima)"
+      max_pages: 150
+      max_pdfs: 10
+  - id: estv_vat
+    name: Federal Tax Administration — value added tax
+    publisher: Federal Tax Administration FTA
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.estv.admin.ch/de/mehrwertsteuer", "https://www.estv.admin.ch/fr/taxe-sur-la-valeur-ajoutee", "https://www.estv.admin.ch/it/imposta-sul-valore-aggiunto", "https://www.estv.admin.ch/en/value-added-tax"]
+      allow_prefixes: ["https://www.estv.admin.ch/de/", "https://www.estv.admin.ch/fr/", "https://www.estv.admin.ch/it/", "https://www.estv.admin.ch/en/"]
+      pdf_allow_prefixes: ["https://www.estv.admin.ch/dam/"]
+      sitemap_urls: ["https://www.estv.admin.ch/sitemap/de.xml", "https://www.estv.admin.ch/sitemap/fr.xml", "https://www.estv.admin.ch/sitemap/it.xml", "https://www.estv.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(mwst|mehrwertsteuer|saldosteuersatz|vorsteuer)"
+        - "/fr/.*(tva|taxe-sur-la-valeur-ajoutee|taux-de-la-dette-fiscale|impot-prealable)"
+        - "/it/.*((^|[/-])iva([-/]|$)|imposta-sul-valore-aggiunto|aliquote-saldo|imposta-precedente)"
+        - "/en/.*((^|[/-])vat([-/]|$)|value-added-tax|net-tax-rate|input-tax)"
+      max_pages: 300
+      max_pdfs: 20
+  - id: kmu_admin
+    name: SME portal — founding a company, legal forms and the commercial register
+    publisher: State Secretariat for Economic Affairs SECO
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.kmu.admin.ch/de/gruendung-uebersicht", "https://www.kmu.admin.ch/fr/creation-apercu", "https://www.kmu.admin.ch/it/costituzione", "https://www.kmu.admin.ch/en/creation-en"]
+      allow_prefixes: ["https://www.kmu.admin.ch/de/", "https://www.kmu.admin.ch/fr/", "https://www.kmu.admin.ch/it/", "https://www.kmu.admin.ch/en/"]
+      sitemap_urls: ["https://www.kmu.admin.ch/sitemap/de.xml", "https://www.kmu.admin.ch/sitemap/fr.xml", "https://www.kmu.admin.ch/sitemap/it.xml", "https://www.kmu.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(gruend|handelsregister|rechtsform|einzelunternehmen|gmbh|aktiengesellschaft|kollektivgesellschaft|kommanditgesellschaft|genossenschaft|mehrwertsteuer|mwst)"
+        - "/fr/.*(creer-son-entreprise|creation-d|creations-d|creation-apercu|creation-fr|fonder|registre-du-commerce|forme-juridique|raison-individuelle|entreprise-individuelle|sarl|societe-anonyme|societe-en-nom-collectif|societe-en-commandite|societe-cooperative|tva)"
+        - "/it/.*(costituzione|fondare|creare-una?-(ditta|impresa)|creazione-di|registro-di-commercio|forma-giuridica|ditta-individuale|sagl|societa-anonima|societa-in-nome-collettivo|societa-in-accomandita|societa-cooperativa|(^|[/-])iva([-/]|$))"
+        - "/en/.*(start-up|starting-a|setting-up|founder|founding|business-creation|companies-created|creation-en|commercial-register|legal-form|sole-proprietorship|limited-liability|limited-company|limited-partnership|general-partnership|corporation|cooperative|(^|[/-])vat([-/]|$))"
+      max_pages: 300
+      max_pdfs: 0
+
+  # ---------------- Federal: weather and climate ----------------
+  # English lives on meteoswiss.admin.ch, German/French/Italian on their own hosts, linked by hreflang.
+  # Scope: danger levels and warnings, the weather-and-climate glossary, climate change, services.
+  # Forecast, local-forecast and publication pages are left out. The page body sits in web-component
+  # templates, so <main> is empty; mch-detail-page is the element that holds it.
+  - id: meteoswiss
+    name: MeteoSwiss — hazards, climate and weather explained
+    publisher: Federal Office of Meteorology and Climatology MeteoSwiss
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.meteoswiss.admin.ch/weather/hazards.html", "https://www.meteoschweiz.admin.ch/wetter/gefahren.html", "https://www.meteosuisse.admin.ch/meteo/dangers.html", "https://www.meteosvizzera.admin.ch/tempo/pericoli.html",
+                   "https://www.meteoswiss.admin.ch/climate/climate-change.html", "https://www.meteoschweiz.admin.ch/klima/klimawandel.html", "https://www.meteosuisse.admin.ch/climat/changement-climatique.html", "https://www.meteosvizzera.admin.ch/clima/i-cambiamenti-climatici.html",
+                   "https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z.html", "https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-von-a-bis-z.html", "https://www.meteosuisse.admin.ch/meteo/meteo-et-climat-de-a-a-z.html", "https://www.meteosvizzera.admin.ch/tempo/tempo-e-clima-dalla-a-alla-z.html",
+                   "https://www.meteoswiss.admin.ch/services-and-publications/service.html", "https://www.meteoschweiz.admin.ch/service-und-publikationen/service.html", "https://www.meteosuisse.admin.ch/services-et-publications/service.html", "https://www.meteosvizzera.admin.ch/servizi-e-pubblicazioni/prestazioni.html"]
+      allow_prefixes: ["https://www.meteoswiss.admin.ch/weather/hazards", "https://www.meteoschweiz.admin.ch/wetter/gefahren", "https://www.meteosuisse.admin.ch/meteo/dangers", "https://www.meteosvizzera.admin.ch/tempo/pericoli",
+                       "https://www.meteoswiss.admin.ch/climate/climate-change", "https://www.meteoschweiz.admin.ch/klima/klimawandel", "https://www.meteosuisse.admin.ch/climat/changement-climatique", "https://www.meteosvizzera.admin.ch/clima/i-cambiamenti-climatici",
+                       "https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z", "https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-von-a-bis-z", "https://www.meteosuisse.admin.ch/meteo/meteo-et-climat-de-a-a-z", "https://www.meteosvizzera.admin.ch/tempo/tempo-e-clima-dalla-a-alla-z",
+                       "https://www.meteoswiss.admin.ch/services-and-publications/service", "https://www.meteoschweiz.admin.ch/service-und-publikationen/service", "https://www.meteosuisse.admin.ch/services-et-publications/service", "https://www.meteosvizzera.admin.ch/servizi-e-pubblicazioni/prestazioni"]
+      content_selector: "mch-detail-page"
+      max_pages: 400
+      max_pdfs: 0
+
+  # ---------------- Institutional ----------------
+  - id: schweizer_wanderwege
+    name: Schweizer Wanderwege / Suisse Rando / Sentieri Svizzeri
+    publisher: Schweizer Wanderwege
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it]
+    config:
+      # Scope from the registry entry (/de/wandern, /de/wissen) plus the fr/it versions that hreflang
+      # names (/fr/randonner, /it/escursionismo, /fr/savoir; "wissen" has no Italian version).
+      # robots.txt sets Crawl-delay: 10, which the crawler honours.
+      start_urls: ["https://www.schweizer-wanderwege.ch/de/wandern", "https://www.schweizer-wanderwege.ch/fr/randonner", "https://www.schweizer-wanderwege.ch/it/escursionismo", "https://www.schweizer-wanderwege.ch/de/wissen", "https://www.schweizer-wanderwege.ch/fr/savoir"]
+      allow_prefixes: ["https://www.schweizer-wanderwege.ch/de/wandern", "https://www.schweizer-wanderwege.ch/fr/randonner", "https://www.schweizer-wanderwege.ch/it/escursionismo", "https://www.schweizer-wanderwege.ch/de/wissen", "https://www.schweizer-wanderwege.ch/fr/savoir"]
+      max_pages: 300
+      max_pdfs: 0
+
+  # ---------------- Cantons ----------------
+  - id: zh_canton
+    name: Kanton Zürich
+    publisher: Kanton Zürich
+    authority: official_info
+    level: cantonal
+    extent_id: CH-ZH
+    connector: html
+    tier: 1
+    languages: [de]
+    config:
+      start_urls: ["https://www.zh.ch/de/steuern-finanzen.html", "https://www.zh.ch/de/migration-integration.html", "https://www.zh.ch/de/mobilitaet.html", "https://www.zh.ch/de/bildung.html", "https://www.zh.ch/de/soziales.html"]
+      allow_prefixes: ["https://www.zh.ch/de/steuern-finanzen", "https://www.zh.ch/de/migration-integration", "https://www.zh.ch/de/mobilitaet", "https://www.zh.ch/de/bildung", "https://www.zh.ch/de/soziales", "https://www.zh.ch/de/umwelt-tiere"]
+      pdf_allow_prefixes: ["https://www.zh.ch/content/dam/"]
+      max_pages: 800
+      max_pdfs: 60
+  - id: be_canton
+    name: Kanton Bern / Canton de Berne
+    publisher: Kanton Bern
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BE
+    connector: html
+    tier: 1
+    languages: [de, fr]
+    config:
+      start_urls: ["https://www.be.ch/de/start.html", "https://www.be.ch/fr/start.html"]
+      allow_prefixes: ["https://www.be.ch/de/", "https://www.be.ch/fr/"]
+      # robots.txt: "Disallow: /content/" then "Allow: /content/dam/" and Crawl-delay: 10. Python's
+      # robotparser applies the first matching rule, so these PDFs are refused until that changes.
+      pdf_allow_prefixes: ["https://www.be.ch/content/dam/"]
+      content_selector: "#main"
+      max_pages: 800
+      max_pdfs: 60
+  - id: vd_canton
+    name: Canton de Vaud
+    publisher: Canton de Vaud
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VD
+    connector: html
+    tier: 1
+    languages: [fr]
+    config:
+      start_urls: ["https://www.vd.ch/mobilite", "https://www.vd.ch/etat-droit-finances/impots", "https://www.vd.ch/population", "https://www.vd.ch/formation"]
+      allow_prefixes: ["https://www.vd.ch/mobilite", "https://www.vd.ch/etat-droit-finances/impots", "https://www.vd.ch/population", "https://www.vd.ch/formation", "https://www.vd.ch/sante-soins-et-handicap"]
+      pdf_allow_prefixes: ["https://www.vd.ch/fileadmin/"]
+      max_pages: 800
+      max_pdfs: 60
+  - id: ge_canton
+    name: République et canton de Genève
+    publisher: République et canton de Genève
+    authority: official_info
+    level: cantonal
+    extent_id: CH-GE
+    connector: html
+    tier: 1
+    languages: [fr]
+    config:
+      start_urls: ["https://www.ge.ch/demarches/vivre-dans-canton", "https://www.ge.ch/vacances-scolaires-jours-feries"]
+      allow_prefixes: ["https://www.ge.ch/"]
+      max_pages: 800
+      max_pdfs: 60
+  - id: ti_canton
+    name: Repubblica e Cantone Ticino
+    publisher: Repubblica e Cantone Ticino
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TI
+    connector: html
+    tier: 1
+    languages: [it]
+    config:
+      start_urls: ["https://www4.ti.ch/dfe/dc/", "https://www4.ti.ch/di/sc/", "https://www4.ti.ch/decs/"]
+      allow_prefixes: ["https://www4.ti.ch/"]
+      pdf_allow_prefixes: ["https://www4.ti.ch/fileadmin/", "http://www4.ti.ch/fileadmin/"]
+      max_pages: 800
+      max_pdfs: 60
+  - id: gr_canton
+    name: Kanton Graubünden / Chantun Grischun / Cantone dei Grigioni
+    publisher: Kanton Graubünden
+    authority: official_info
+    level: cantonal
+    extent_id: CH-GR
+    connector: html
+    tier: 1
+    languages: [de, rm, it]
+    config:
+      start_urls: ["https://www.gr.ch/DE/themen/wirtschaftundsteuern/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/RM/temas/economiataglias/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/IT/temi/economiaimposte/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/DE/themen/mobilitaetundverkehr/Seiten/MobilitaetundVerkehr.aspx", "https://www.gr.ch/DE/themen/gesundheitundpraevention/Seiten/GesundheitundPraevention.aspx", "https://www.gr.ch/DE/themen/bildungundforschung/Seiten/BildungundForschung.aspx", "https://www.gr.ch/DE/themen/bauundplanung/Seiten/BauundPlanung.aspx", "https://www.gr.ch/DE/themen/energieundumwelt/Seiten/EnergieundUmwelt.aspx", "https://www.gr.ch/DE/themen/schutz/Seiten/default.aspx"]
+      allow_prefixes: ["https://www.gr.ch/DE/", "https://www.gr.ch/RM/", "https://www.gr.ch/IT/"]
+      # Topic hubs have no text of their own; div.pageContent skips the hidden "Inhaltsbereich" h1.
+      language_links_selector: "#LanguageSelectionList a[href]"
+      content_selector: "div.pageContent"
+      max_pages: 800
+      max_pdfs: 60
+
+  # ---------------- Municipalities ----------------
+  - id: zuerich_city
+    name: Stadt Zürich
+    publisher: Stadt Zürich
+    authority: official_info
+    level: municipal
+    extent_id: CH-ZH-261
+    connector: html
+    tier: 1
+    languages: [de, en]
+    config:
+      start_urls: ["https://www.stadt-zuerich.ch/de/stadtleben.html", "https://www.stadt-zuerich.ch/de/umwelt-und-energie.html", "https://www.stadt-zuerich.ch/de/politik-und-verwaltung.html"]
+      allow_prefixes: ["https://www.stadt-zuerich.ch/de/", "https://www.stadt-zuerich.ch/en/"]
+      max_pages: 800
+      max_pdfs: 60
+  - id: bern_city
+    name: Stadt Bern
+    publisher: Stadt Bern
+    authority: official_info
+    level: municipal
+    extent_id: CH-BE-351
+    connector: html
+    tier: 1
+    languages: [de, fr]
+    config:
+      start_urls: ["https://www.bern.ch/themen", "https://www.bern.ch/politik-und-verwaltung", "https://www.bern.ch/fr"]
+      allow_prefixes: ["https://www.bern.ch/"]
+      # The language switcher links only the language homepages (/fr, /en, /it), so it gives no
+      # page-level alternates and is not configured.
+      content_selector: "#content"
+      max_pages: 800
+      max_pdfs: 60
+  - id: lausanne_city
+    name: Ville de Lausanne
+    publisher: Ville de Lausanne
+    authority: official_info
+    level: municipal
+    extent_id: CH-VD-5586
+    connector: html
+    tier: 1
+    languages: [fr]
+    config:
+      start_urls: ["https://www.lausanne.ch/prestations.html", "https://www.lausanne.ch/vie-pratique/logement.html", "https://www.lausanne.ch/vie-pratique/aides-assurances-sociales.html", "https://www.lausanne.ch/vie-pratique/mobilite.html", "https://www.lausanne.ch/officiel/votations-elections.html"]
+      allow_prefixes: ["https://www.lausanne.ch/"]
+      sitemap_urls: ["https://www.lausanne.ch/sitemaps/lausanne.xml"]
+      sitemap_include: ['^https://www\.lausanne\.ch/(vie-pratique|officiel|prestations)/']
+      max_pages: 1000
+      max_pdfs: 60
+  - id: geneve_city
+    name: Ville de Genève
+    publisher: Ville de Genève
+    authority: official_info
+    level: municipal
+    extent_id: CH-GE-6621
+    connector: html
+    tier: 1
+    languages: [fr]
+    config:
+      # /themes/ itself answers 403; theme pages are seeded from the sitemap instead.
+      start_urls: ["https://www.geneve.ch/"]
+      allow_prefixes: ["https://www.geneve.ch/"]
+      sitemap_urls: ["https://www.geneve.ch/sitemap.xml"]
+      sitemap_include: ["/themes/.+/.+"]
+      max_pages: 900
+      max_pdfs: 40
+  - id: lugano_city
+    name: Città di Lugano
+    publisher: Città di Lugano
+    authority: official_info
+    level: municipal
+    extent_id: CH-TI-5192
+    connector: html
+    tier: 1
+    languages: [it]
+    config:
+      # Italian lives at the site root; both hubs redirect to their first child page.
+      start_urls: ["https://www.lugano.ch/vivere-lugano.html", "https://www.lugano.ch/temi-servizi.html"]
+      allow_prefixes: ["https://www.lugano.ch/vivere-lugano", "https://www.lugano.ch/temi-servizi"]
+      pdf_allow_prefixes: ["https://www.lugano.ch/dam/"]
+      content_selector: "#main-container"
+      max_pages: 600
+      max_pdfs: 40
+  - id: chur_city
+    name: Stadt Chur
+    publisher: Stadt Chur
+    authority: official_info
+    level: municipal
+    extent_id: CH-GR-3901
+    connector: html
+    tier: 1
+    languages: [de]
+    config:
+      start_urls: ["https://www.chur.ch/einwohnerdienste", "https://www.chur.ch/neuinchur", "https://www.chur.ch/steuernfinanzen", "https://www.chur.ch/schulebildung", "https://www.chur.ch/sozialleistungenchur", "https://www.chur.ch/verkehrmobilitaet", "https://www.chur.ch/entsorgungrecycling"]
+      allow_prefixes: ["https://www.chur.ch/"]
+      # #maincontent opens with a visually hidden <h1>Inhalt</h1>; html_sections now skips hidden headings,
+      # so titles come from the real h1. The narrower div.icms-content-col-a drops content on pages with
+      # several such blocks. (The host was briefly unreachable on 2026-09-23; it is back.)
+      content_selector: "#maincontent"
+      max_pages: 500
+      max_pdfs: 40
+  - id: scuol_commune
+    name: Vschinauncha Scuol / Gemeinde Scuol
+    publisher: Gemeinde Scuol
+    authority: official_info
+    level: municipal
+    extent_id: CH-GR-3762
+    connector: html
+    tier: 1
+    languages: [rm, de]
+    config:
+      start_urls: ["https://www.scuol.net/rm", "https://www.scuol.net/de"]
+      allow_prefixes: ["https://www.scuol.net/"]
+      max_pages: 300
+      max_pdfs: 40
+      delay_seconds: 3

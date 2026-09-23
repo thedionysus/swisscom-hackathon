@@ -161,3 +161,83 @@ def test_extract_links_reads_href_from_custom_elements_but_not_head_resources():
     links = extract_links(html, base_url="https://www.stadt-zuerich.ch/de/stadtleben.html")
     assert links == ("https://www.stadt-zuerich.ch/de/stadtleben/kultur.html",
                      "https://www.stadt-zuerich.ch/de/service/impressum.html")
+
+
+def test_content_selector_overrides_the_default_content_root():
+    html = """<html lang="de"><body><div id="skip"><h1>Kopfzeile</h1><p>Menü Startseite Kontakt</p></div>
+      <div id="content"><h1>Merkblätter</h1><p>Die Merkblätter der AHV.</p></div></body></html>"""
+    default = html_to_page(html, url="https://x/", default_language="de")
+    chosen = html_to_page(html, url="https://x/", default_language="de", content_selector="#content")
+    assert default.title == "Kopfzeile"
+    assert chosen.title == "Merkblätter"
+    assert "Menü" not in " ".join(s.text for s in chosen.sections)
+    assert "Die Merkblätter der AHV." in chosen.sections[0].text
+
+
+def test_content_selector_that_matches_nothing_falls_back_to_the_default_root():
+    html = "<html><body><main><h1>Hi</h1><p>Text.</p></main></body></html>"
+    page = html_to_page(html, url="https://x/", default_language="de", content_selector="#missing")
+    assert page.title == "Hi" and page.sections
+
+
+# --- visually-hidden headings inside the content root itself -----------------------------------
+# chur.ch's #maincontent opens with a visually-hidden <h1>Inhalt</h1> before the real title; other
+# sites use "Navigation" or "Kopfzeire" the same way. Unlike the nav/footer h1s (already dropped
+# because their whole tag is removed), this hidden h1 lives INSIDE the content root, so it must be
+# recognised and skipped by class, not by ancestry.
+
+def test_hidden_h1_inside_content_root_does_not_win_the_title():
+    html = """<html><body><div id="maincontent">
+    <h1 class="sr-only">Inhalt</h1>
+    <h1>Steuererklärung</h1>
+    <p>Informationen zur Steuererklärung.</p>
+    </div></body></html>"""
+    page = html_to_page(html, url="https://x/", default_language="de", content_selector="#maincontent")
+    assert page.title == "Steuererklärung"
+
+
+def test_hidden_h1_with_no_visible_h1_falls_back_to_title_tag():
+    html = """<html><head><title>Neu in Chur | Stadt Chur</title></head><body>
+    <div id="maincontent">
+    <h1 class="sr-only">Inhalt</h1>
+    <p>Willkommen in Chur.</p>
+    </div></body></html>"""
+    page = html_to_page(html, url="https://x/", default_language="de", content_selector="#maincontent")
+    assert page.title == "Neu in Chur"
+
+
+def test_hidden_heading_is_not_a_section_break_and_its_text_is_dropped():
+    html = """<main>
+    <h1 class="visually-hidden">Navigation</h1>
+    <h2>Kopfzeile</h2>
+    <p>Real content here.</p>
+    </main>"""
+    page = html_to_page(html, url="https://x/", default_language="de")
+    joined = " ".join(s.heading_path for s in page.sections)
+    assert "Navigation" not in joined
+    texts = " ".join(s.text for s in page.sections)
+    assert "Navigation" not in texts
+
+
+def test_various_hidden_markers_are_all_recognised():
+    variants = [
+        '<h1 hidden>Hidden Attr</h1>',
+        '<h1 aria-hidden="true">Aria Hidden</h1>',
+        '<h1 style="display:none">Style Display None</h1>',
+        '<h1 style="visibility: hidden;">Style Visibility Hidden</h1>',
+        '<h1 class="visuallyhidden">Visually Hidden</h1>',
+        '<h1 class="screen-reader-text">Screen Reader Text</h1>',
+        '<h1 class="offscreen">Offscreen</h1>',
+    ]
+    for hidden_h1 in variants:
+        html = f"<main>{hidden_h1}<h2>Real</h2><p>Body.</p></main>"
+        page = html_to_page(html, url="https://x/", default_language="de")
+        for banned in ("Hidden", "Aria", "Style", "Visually", "Screen", "Offscreen"):
+            assert banned not in page.title, hidden_h1
+
+
+def test_responsive_hidden_utility_class_is_not_treated_as_hidden():
+    # Tailwind's `hidden md:block` hides a heading only on small screens; it is a real heading.
+    html = '<main><h1 class="hidden md:block">Steuererklärung</h1><p>Body.</p></main>'
+    page = html_to_page(html, url="https://x/", default_language="de")
+    assert page.title == "Steuererklärung"

@@ -31,7 +31,7 @@ The Federal Statistical Office list of every Swiss commune with its BFS number a
 _Avoid_: Municipality list, gazetteer
 
 **Topic**:
-The subject a question is about, drawn from the fixed category list. Fixed before searching, alongside the extent path: a chunk that does not carry the topic is not evidence for that question.
+The subject a question is about, drawn from the fixed list of twenty citizen-facing topics. Fixed before searching, alongside the extent path: a chunk that does not carry the topic is not evidence for that question.
 _Avoid_: Category hint, tag, subject area
 
 **Off-topic evidence**:
@@ -46,12 +46,8 @@ _Avoid_: Chrome, navigation junk, nav text
 The maintenance step that deletes boilerplate chunks already sitting in the index, and any document left with none, undoing the fact that they were ingested at all. A separate command run after the fact, not part of ingestion itself, until a later step excludes boilerplate at ingestion time and this has nothing left to do.
 _Avoid_: Cleanup, purge, prune
 
-**Generated context**:
-A short description, written per chunk, of what the chunk's document is about and what the chunk itself covers. It is indexed together with the chunk's text so retrieval can find the chunk, and it is never quoted: a citation draws on the stored text alone.
-_Avoid_: Summary, blurb, annotation
-
 **Recontext**:
-The maintenance step that gives every stored chunk its generated context and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired. The same pass deletes the chunks the model judges boilerplate, which is the only thing it destroys; a document those drops leave with no chunks at all is reported and left standing, and erased only when a run is told to.
+The maintenance step that gives every stored chunk a description and its own topics, read from the English text already in the index -- no re-crawl and no re-translation. One model call per chunk, committed as it is paid for, so an interrupted run resumes where it stopped and a chunk that already carries a context is left alone. It quotes the document's title, so a document whose title is only its own identifier is refused until that title is repaired. The same pass deletes the chunks the model judges boilerplate, which is the only thing it destroys; a document those drops leave with no chunks at all is reported and left standing, and erased only when a run is told to.
 _Avoid_: Re-enrichment, re-tagging, reprocessing
 
 **Narrowing**:
@@ -63,22 +59,126 @@ A word that fixes which level a place name means: Kanton, Stadt, Gemeinde, Kreis
 _Avoid_: Qualifier, prefix
 
 **Specificity tier**:
-How far a chunk's extent sits from the jurisdiction a question resolved to, counted in steps up the extent path: 0 is that jurisdiction itself, 1 its parent, rising to the federal root. The reranker's outer ordering key, published on every citation as `tier`. A chunk claims one only if it also clears the relevance floor, so `null` means no claim was earned -- never a large tier.
+How far a chunk's extent sits from the jurisdiction a question resolved to, counted in steps up the extent path: 0 is that jurisdiction itself, 1 its parent, rising to the federal root. Published on every citation as `tier`, and one of the features of the relevance probability. It no longer orders results by itself.
 _Avoid_: Level, depth, rank, specificity score
 
 **Relevance floor**:
-The cosine distance at or below which a chunk may claim a specificity tier. It governs eligibility for that claim and nothing else: a chunk above the floor keeps its place in the result, ordered by score among the others that claimed no tier, so the floor can never turn a result into `no_evidence`. Uncalibrated today and deliberately so -- the corpus cannot yet support a measured value.
-_Avoid_: Relevance threshold, cutoff, minimum score
+Retired. The uncalibrated cosine distance that let a chunk claim a specificity tier. Replaced by the reranker score and, once fitted, the relevance probability.
+
+**Reranker**:
+The cross-encoder model that reads the question and a candidate passage together and scores how well the passage answers it. Not the old tier-first ordering, which also went by this name.
+_Avoid_: Scorer, ranking stage
+
+**Relevance probability**:
+The calibrated probability that a passage answers the question, fitted on judged pairs from the golden set. It orders results and decides abstention. Until it is fitted, the reranker score stands in for it.
+_Avoid_: Confidence score, similarity
+
+**Abstention threshold**:
+The relevance probability below which the server answers `no_evidence` rather than cite its best passage. It is chosen for a target precision, not set by hand.
+_Avoid_: Cutoff, floor
 
 **Distance**:
-Overloaded, and both senses reach the reranker and are published side by side on every citation. A citation's `distance` is a *cosine distance* in embedding space, from the chunk to the vector that was searched. Its `tier` is a distance in the *location tree*, counted in hops up the extent path. Name the sense whenever both are in scope; in code `Hit.distance` is the first and `hops_to_extent` the second, and `LocationTree.distance` is the second under the ambiguous name.
+Overloaded, and both senses are published side by side on every citation. A citation's `distance` is a *cosine distance* in embedding space, from the chunk to the vector that was searched. Its `tier` is a distance in the *location tree*, counted in hops up the extent path. Name the sense whenever both are in scope; in code `Hit.distance` is the first and `hops_to_extent` the second, and `LocationTree.distance` is the second under the ambiguous name.
 _Avoid_: Similarity or relevance for the cosine sense; tree distance or depth for the hop sense
+
+### Scope
+
+**Declared scope**:
+The topics and places the server states it answers for: federal information for all of Switzerland, six named cantons, seven named municipalities, and three live lookups. It also names what is not covered: computed amounts (tax bills, pensions), the commercial register, statistics, geodata and weather. Answer quality is promised inside it and nowhere else.
+_Avoid_: Coverage, supported area
+
+**Outside-scope question**:
+A question about a place outside Switzerland, or about a topic or place outside the declared scope. It is answered by saying so, never by asking the user for a location and never by answering from nearby evidence. For a place outside Switzerland, the answer also tells the calling model to look elsewhere. For a Swiss place outside the declared scope, federal evidence is still given and only the local part is declared not covered.
+_Avoid_: Unsupported query, out-of-coverage, fallback
+
+**Unresolved place**:
+A place named in a question that the Swiss commune register cannot match. It is treated as outside Switzerland, with a hint to retry if it was a misspelled Swiss place. Distinct from a question that names no place at all.
+_Avoid_: Unknown location, missing location
+
+**Live lookup**:
+An answer read at question time from an official data service, or from an official table shipped with the server, rather than retrieved from the index. There are three: health insurance premiums, public transport connections, and the reference interest rate. Each carries the service's own reference date. School holidays and waste collection dates are not live lookups; they are retrieved from indexed official pages.
+_Avoid_: Real-time search, API tool
+
+**Source unavailable**:
+The state in which the official source for an in-scope question could not be reached. It is reported as such, distinct from the source being reachable and holding no answer.
+_Avoid_: Error, no results
+
+### Languages and versions
+
+**Language store**:
+The part of the index holding every chunk written in one language: German, French, Italian or English. A chunk lives in the store of the language it was published in, and is never translated into another store.
+_Avoid_: Language index, language collection
+
+**Language version**:
+One publication of a document in one language, such as the French text of the Code of Obligations. Versions of the same document are not duplicates; each is evidence in its own right.
+_Avoid_: Translation, copy
+
+**Translation group**:
+The set of language versions that publish the same document. A document published in only one language forms a group of one.
+_Avoid_: Language family, document cluster
+
+**Aligned chunk**:
+A chunk's counterpart in another language version of its translation group, matched by position in the document's structure (for law, the same article and paragraph).
+_Avoid_: Parallel chunk, sibling chunk
+
+**Authentic version**:
+A language version that has legal force. German, French and Italian federal law are equally authentic; an English version is published for information only.
+_Avoid_: Official translation, original
+
+**Corroboration**:
+The evidence that a chunk is relevant because its aligned chunks in other language versions were also retrieved for the same question. It is the share of the group's other existing authentic versions found among the candidates. A group with no other authentic version is "not applicable", not zero, so a page published in one language is never marked down. English federal law is shown but never counts. Aligned versions that carry different validity dates are divergent and do not corroborate each other.
+_Avoid_: Cross-check, consensus, agreement score
+
+**Divergent versions**:
+Aligned chunks of one translation group whose language versions disagree on validity date or were fetched from different consolidations. Flagged on the citation; never counted as corroboration.
+_Avoid_: Conflict, mismatch
+
+**Corroboration basis**:
+How the aligned chunks were found: `independent` when each language store was queried in its own language, `cross_lingual` when one multilingual query found them all. Each is a separate feature of the relevance probability, so the weight comes from the evals.
+_Avoid_: Corroboration type, mode
+
+### Descriptions
+
+**Document description**:
+A short generated statement of what a whole document is, who published it and which jurisdiction it applies to.
+_Avoid_: Summary, abstract
+
+**Chunk description**:
+A short generated statement of what one chunk covers and what questions it answers, written once per translation group in each language the group has.
+_Avoid_: Generated context, summary, blurb
+
+**Breadcrumb**:
+The path of headings above a chunk within its document, such as Code of Obligations > Employment contract > Art. 336c.
+_Avoid_: Heading path, section trail
+
+Descriptions and breadcrumbs are indexed with the chunk so retrieval can find it, and are never quoted: a citation draws on the published text alone.
+
+### Index
+
+**Embedding index**:
+The set of vectors one embedding model, at one version and dimension, produced for the corpus. Two indexes are never compared with each other; changing the model means building a new index.
+_Avoid_: Vector store, embeddings table
 
 ### Evaluation
 
 **Probe**:
 A hand-written question with a location, and the behaviour the raw tool response must show: status, resolved extent, required and forbidden sources or documents, coverage signal, event date rule. Graded deterministically without a model.
 _Avoid_: Test case, gold question, eval
+
+**Golden set**:
+The versioned set of about 150 probes that gates a release, stratified by topic area, language (including Romansh), jurisdiction level and expected status. Each probe also names its expected source and key fact. A held-out split is kept for choosing thresholds.
+_Avoid_: Gold questions, benchmark
+
+**Generated question**:
+A question written by a model from a chunk already known to answer it. Used only to measure recall, never to tune thresholds or weights.
+_Avoid_: Synthetic probe, gold question
+
+**Relevance label**:
+A yes/no judgement that one retrieved chunk answers one golden-set question. The training data for the relevance probability; made by a model judge and trusted only after a human-checked sample agrees.
+_Avoid_: Ground truth, annotation
+
+**Status accuracy**:
+The share of probes whose response status is the expected one: answer, ask back, not covered, source unavailable, or no evidence. The first gate, because the evaluators grade these outcomes before answer quality.
 
 **Structural probe**:
 A probe whose expected behaviour does not depend on ranking: status, resolved extent, coverage signal, event date rule. Runs on fixture data in CI.
