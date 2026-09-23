@@ -16,7 +16,12 @@ sources:
     config:
       sr_numbers: ["101", "141.0", "142.20", "142.201", "161.1", "210", "220", "221.213.11", "281.1", "311.0",
                    "455", "631.0", "641.20", "642.11", "704", "741.01", "741.11", "741.51", "784.40", "814.01",
-                   "814.600", "822.11", "831.10", "831.40", "832.10", "832.102", "837.0", "451"]
+                   "814.600", "822.11", "831.10", "831.40", "832.10", "832.102", "837.0", "451",
+                   # from the registry (Lundrim, 2026-09-22): weapons, civil protection, spatial planning,
+                   # waste ordinance, epidemics, animal health, forests, hunting
+                   "514.54", "520.1", "700", "814.610", "818.101", "916.40", "921.0", "922.0",
+                   # commercial register ordinance (topic 14: companies, commercial register, VAT)
+                   "221.411"]
 
   # ---------------- Federal: citizen portal and offices ----------------
   - id: ch_ch
