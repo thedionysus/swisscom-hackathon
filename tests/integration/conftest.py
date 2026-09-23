@@ -88,3 +88,18 @@ def corpus_db() -> str:
             upsert_locations(conn, seed_locations())
         conn.execute(f"truncate {CORPUS_TABLES} restart identity cascade")
     return url
+
+
+SERVING_TABLES = "serving.call_log, serving.lookup_cache, serving.premium_region, serving.premium"
+
+
+@pytest.fixture
+def serving_db(corpus_db) -> str:
+    """corpus_db plus an empty serving schema."""
+    from swiss_grounding.db.connection import connect
+    from swiss_grounding.serving.db import apply_serving_schema
+
+    apply_serving_schema(corpus_db)
+    with connect(corpus_db) as conn:
+        conn.execute(f"truncate {SERVING_TABLES} restart identity")
+    return corpus_db
