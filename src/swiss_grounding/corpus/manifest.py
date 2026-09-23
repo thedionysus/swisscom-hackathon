@@ -56,6 +56,23 @@ class Manifest(BaseModel):
             raise ValueError(f"duplicate source ids: {dupes}")
         return self
 
+    @model_validator(mode="after")
+    def _disjoint_prefixes(self) -> "Manifest":
+        """Two sources crawling overlapping URL spaces would fight over who owns each document."""
+        owned = [(s.id, _url_prefixes(s)) for s in self.sources]
+        for i, (first_id, first) in enumerate(owned):
+            for second_id, second in owned[i + 1:]:
+                clash = next(((a, b) for a in first for b in second if a.startswith(b) or b.startswith(a)), None)
+                if clash:
+                    raise ValueError(f"sources {first_id} and {second_id} have overlapping URL prefixes: "
+                                     f"{clash[0]!r} and {clash[1]!r}")
+        return self
+
+
+def _url_prefixes(source: SourceEntry) -> tuple[str, ...]:
+    config = source.config
+    return tuple(config.get("allow_prefixes") or ()) + tuple(config.get("pdf_allow_prefixes") or ())
+
 
 def load_manifest(path: Path) -> Manifest:
     return Manifest.model_validate(yaml.safe_load(Path(path).read_text(encoding="utf-8")))

@@ -85,3 +85,32 @@ def test_select_sources_rejects_unknown_source_ids(tmp_path):
     manifest = load_manifest(path)
     with pytest.raises(ValueError, match="unknown_id"):
         select_sources(manifest, tier=2, source_ids=("bern_city", "unknown_id"))
+
+
+OVERLAP = """
+  - id: bern_docs
+    name: Bern Dokumente
+    publisher: Stadt Bern
+    authority: official_info
+    level: municipal
+    extent_id: CH-BE-351
+    connector: html
+    tier: 2
+    languages: [de]
+    config: {start_urls: ["https://www.example.ch/"], allow_prefixes: ["https://www.example.ch/"],
+             pdf_allow_prefixes: ["https://www.bern.ch/docs/"]}
+"""
+
+
+def test_rejects_sources_with_overlapping_prefixes(tmp_path):
+    """Two sources crawling the same URLs would fight over who owns each document."""
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST + OVERLAP)
+    with pytest.raises(ValueError, match=r"bern_city.*bern_docs"):
+        load_manifest(path)
+
+
+def test_accepts_sources_with_disjoint_prefixes(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST + OVERLAP.replace("https://www.bern.ch/docs/", "https://www.stadt-bern.ch/"))
+    assert len(load_manifest(path).sources) == 3

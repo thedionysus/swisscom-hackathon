@@ -4,9 +4,10 @@ Rules:
 1. Same URL, same content hash: touch `last_seen_at`; a status change (scheduled -> current) is applied
    in place. Outcome `unchanged`.
 2. Same URL, different hash: the old row is superseded by a new row. Outcome `modified`.
-3. A new dated (`valid_from` set) `current` version retires the other `current` row of the same
-   translation group, language and source. Undated documents (HTML, PDF) are versioned by URL only
-   (amendment A1). Outcome `added`.
+3. A new dated (`valid_from` set) `current` version retires the `current` and `scheduled` rows of the
+   same translation group, language and source that start no later than it. Undated documents
+   (HTML, PDF) are versioned by URL only (amendment A1). Outcome `added`.
+   A URL already owned by another source is left alone: outcome `duplicate` (first owner wins).
 4. `fetched_at` is when this content was fetched; `last_seen_at` when it was last confirmed.
 5. Chunks carry document status, extent, authority and, for Fedlex, the SR prior topics.
 """
@@ -70,14 +71,19 @@ def _set_status(conn: psycopg.Connection, doc_ids: list[int], status: str) -> No
                      (status, doc_ids))
 
 
-def _supersede_others(conn, gid: str, language: str, source_id: str, keep_id: int, valid_to: date) -> None:
+def _supersede_others(conn, gid: str, language: str, source_id: str, keep_id: int, keep_from: date) -> None:
+    """Retire the current and scheduled peers that `keep_id` replaces: those in force no later than it.
+
+    A peer with a later `valid_from` is newer than `keep_id` and stays (a stale version never retires it).
+    """
     rows = conn.execute(
         "select id from corpus.document where translation_group_id = %s and language = %s and source_id = %s "
-        "and status = 'current' and id <> %s", (gid, language, source_id, keep_id)).fetchall()
+        "and status in ('current','scheduled') and id <> %s and (valid_from is null or valid_from <= %s)",
+        (gid, language, source_id, keep_id, keep_from)).fetchall()
     ids = [r["id"] for r in rows]
     if ids:
         conn.execute("update corpus.document set superseded_by = %s, valid_to = coalesce(valid_to, %s) "
-                     "where id = any(%s)", (keep_id, valid_to, ids))
+                     "where id = any(%s)", (keep_id, keep_from, ids))
         _set_status(conn, ids, "superseded")
 
 
@@ -117,12 +123,15 @@ def _reuse_descriptions(conn, doc_id: int) -> None:
     Identity is (translation group, language, align_key, chunk_hash), so a changed text is described again.
     """
     conn.execute(
-        "update corpus.chunk n set description = o.description, topics = o.topics, "
-        "status = case when o.status = 'boilerplate' then 'boilerplate' else n.status end "
-        "from corpus.chunk o where n.document_id = %s and o.document_id <> n.document_id "
-        "and o.translation_group_id = n.translation_group_id and o.language = n.language "
-        "and o.align_key = n.align_key and o.chunk_hash = n.chunk_hash and o.description <> ''",
-        (doc_id,))
+        "update corpus.chunk n set description = m.description, topics = m.topics, "
+        "status = case when m.status = 'boilerplate' then 'boilerplate' else n.status end "
+        "from (select distinct on (c.id) c.id as chunk_id, o.description, o.topics, o.status "
+        "      from corpus.chunk c join corpus.chunk o on o.translation_group_id = c.translation_group_id "
+        "       and o.language = c.language and o.align_key = c.align_key and o.chunk_hash = c.chunk_hash "
+        "       and o.document_id <> c.document_id and o.description <> '' "
+        "      where c.document_id = %s order by c.id, o.id desc) m "
+        "where n.id = m.chunk_id and n.document_id = %s",
+        (doc_id, doc_id))
 
 
 def _upsert_fetch_state(conn, doc: ParsedDocument, digest: str, now: datetime) -> None:
@@ -134,49 +143,82 @@ def _upsert_fetch_state(conn, doc: ParsedDocument, digest: str, now: datetime) -
         (doc.url, doc.source_id, doc.etag, doc.last_modified, digest, now))
 
 
+def _reissue_end(live_from: date | None, doc: ParsedDocument, now: datetime) -> date | None:
+    """When a row replaced at its own URL stops applying; never a zero-length or negative interval.
+
+    A re-issue with a later `valid_from` ends the old row on that date; an undated or same-date
+    re-issue ends it today. A row that would end on or before its own start was never in force: None.
+    """
+    end = doc.valid_from if (doc.valid_from and live_from and doc.valid_from > live_from) else now.date()
+    return None if live_from is not None and end <= live_from else end
+
+
+def _clear_quarantine(conn, source_id: str, url: str) -> None:
+    conn.execute("delete from corpus.quarantine where source_id = %s and url = %s and stage in ('fetch','persist')",
+                 (source_id, url))
+
+
 def persist_document(conn: psycopg.Connection, doc: ParsedDocument, spec: SourceSpec, now: datetime) -> str:
-    """Write one parsed document. Returns 'added', 'modified' or 'unchanged'."""
+    """Write one parsed document. Returns 'added', 'modified', 'unchanged' or 'duplicate'.
+
+    'duplicate' means another source already owns the URL; first owner wins and nothing is touched.
+    """
+    live = conn.execute("select id, content_hash, status, source_id, valid_from from corpus.document "
+                        "where url = %s and status in ('current','scheduled')", (doc.url,)).fetchone()
+    if live and live["source_id"] != doc.source_id:
+        return "duplicate"
     gid = group_id(doc.work_key)
     conn.execute("insert into corpus.translation_group (id, work_key) values (%s, %s) on conflict (id) do nothing",
                  (gid, doc.work_key))
     digest = content_hash(doc)
-    retire_date = doc.valid_from or now.date()
-    live = conn.execute("select id, content_hash, status from corpus.document "
-                        "where url = %s and status in ('current','scheduled')", (doc.url,)).fetchone()
     if live and live["content_hash"] == digest:
         conn.execute("update corpus.document set last_seen_at = %s where id = %s", (now, live["id"]))
         if live["status"] != doc.status:
             _set_status(conn, [live["id"]], doc.status)
             if _retires_group_peers(doc):
-                _supersede_others(conn, gid, doc.language, doc.source_id, live["id"], retire_date)
-        _upsert_fetch_state(conn, doc, digest, now)
-        return "unchanged"
-    if live:
-        _set_status(conn, [live["id"]], "superseded")
-    doc_id = _insert(conn, doc, spec, gid, digest, now)
-    if live:
-        conn.execute("update corpus.document set superseded_by = %s, valid_to = coalesce(valid_to, %s) where id = %s",
-                     (doc_id, retire_date, live["id"]))
-    if _retires_group_peers(doc):
-        _supersede_others(conn, gid, doc.language, doc.source_id, doc_id, retire_date)
+                _supersede_others(conn, gid, doc.language, doc.source_id, live["id"], doc.valid_from)
+        outcome = "unchanged"
+    else:
+        if live:
+            _set_status(conn, [live["id"]], "superseded")
+        doc_id = _insert(conn, doc, spec, gid, digest, now)
+        if live:
+            conn.execute("update corpus.document set superseded_by = %s, valid_to = coalesce(valid_to, %s) "
+                         "where id = %s", (doc_id, _reissue_end(live["valid_from"], doc, now), live["id"]))
+        if _retires_group_peers(doc):
+            _supersede_others(conn, gid, doc.language, doc.source_id, doc_id, doc.valid_from)
+        outcome = "modified" if live else "added"
     _upsert_fetch_state(conn, doc, digest, now)
-    return "modified" if live else "added"
+    _clear_quarantine(conn, doc.source_id, doc.url)
+    return outcome
 
 
 def promote_due(conn: psycopg.Connection, today: date) -> int:
     """Make every scheduled version whose `valid_from` has arrived current (amendment A5).
 
-    Each promoted version retires the other current row of its group/language/source with
-    `valid_to = valid_from`. Boilerplate chunks stay boilerplate. Returns the number promoted.
+    Each promoted version retires the older current row of its group/language/source with
+    `valid_to = valid_from`. A scheduled version that a current peer with the same or a later
+    `valid_from` already overtook is superseded by that peer instead. Boilerplate chunks stay
+    boilerplate. Returns the number promoted.
     """
     due = conn.execute(
         "select id, translation_group_id, language, source_id, valid_from from corpus.document "
         "where status = 'scheduled' and valid_from <= %s order by valid_from, id", (today,)).fetchall()
+    promoted = 0
     for row in due:
+        newer = conn.execute(
+            "select id from corpus.document where translation_group_id = %s and language = %s and source_id = %s "
+            "and status = 'current' and valid_from >= %s order by valid_from desc, id desc limit 1",
+            (row["translation_group_id"], row["language"], row["source_id"], row["valid_from"])).fetchone()
+        if newer:
+            conn.execute("update corpus.document set superseded_by = %s where id = %s", (newer["id"], row["id"]))
+            _set_status(conn, [row["id"]], "superseded")
+            continue
         _set_status(conn, [row["id"]], "current")
         _supersede_others(conn, row["translation_group_id"], row["language"], row["source_id"], row["id"],
                           row["valid_from"])
-    return len(due)
+        promoted += 1
+    return promoted
 
 
 def touch_unchanged(conn: psycopg.Connection, url: str, now: datetime) -> None:
