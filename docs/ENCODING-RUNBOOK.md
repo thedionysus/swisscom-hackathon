@@ -11,6 +11,11 @@ from the shipped CLI in a few places — see the notes at the bottom.
 (`corpus fetch --manifest manifests/declared-scope.yaml --tier 1`) started 2026-09-23 evening and may still be
 running or finished. `fetch` is incremental and free — re-running it just resumes, so Step 1 is safe either way.
 
+**Why the local index waits for the key:** bge-m3 runs locally, but it embeds breadcrumb + description + text
+(ADR 0005), and the descriptions come from the paid `describe` stage. Run `embed --index bge-m3` after `describe`,
+or you will embed every chunk twice. A keyless build is possible with `--allow-undescribed` (lower quality; those
+chunks are embedded again once described). See "Which steps need an API key" in the README.
+
 **Where to run:** every command below runs from the repo root — page-image paths stored for OCR are relative to
 `DATA_DIR`, which is resolved from the working directory. Run the paid commands (§5–§8) inside `tmux` (or
 `nohup … &`, logging to a file): Batch API commands poll for hours, and a closed terminal kills the poll. If one
