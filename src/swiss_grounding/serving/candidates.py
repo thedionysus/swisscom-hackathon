@@ -144,7 +144,8 @@ def gather_candidates(conn: psycopg.Connection, q: ArmQuery, *, index: str, ef_s
 
     The local arms (the resolved places' own extents) are fused separately and only feed the
     local quota, so a local chunk found by both scopes is not counted twice. A local chunk the
-    full-path arms missed takes its score and arms from the local fusion.
+    full-path arms missed takes its score and arms from the local fusion and ranks after every
+    full-path candidate.
     """
     _check_index(index)
     conn.execute("select set_config('hnsw.ef_search', %s, true)", (str(ef_search),))
@@ -153,9 +154,15 @@ def gather_candidates(conn: psycopg.Connection, q: ArmQuery, *, index: str, ef_s
     full = _search(conn, q, index, q.extent_path, rows)
     local = _search(conn, q, index, q.local_extents, rows) if q.local_extents else {}
     chosen = select_with_pool(list(full), list(local), n=q.top_n, quota=q.local_quota)
-    info = {k: full.get(k) or local[k] for k in chosen}
-    ranked = sorted(chosen, key=lambda k: -info[k][0])
-    return [_candidate(rows[k], *info[k], rank, q) for rank, k in enumerate(ranked, start=1)]
+    ranked = _rank(chosen, full, local)
+    return [_candidate(rows[k], *info, rank, q) for rank, (k, info) in enumerate(ranked, start=1)]
+
+
+def _rank(chosen: list[Key], full: Fused, local: Fused) -> list[tuple[Key, tuple[float, frozenset[str]]]]:
+    """Full-path candidates by their full-path score, then local-only ones by their local score."""
+    in_full = sorted((k for k in chosen if k in full), key=lambda k: -full[k][0])
+    local_only = sorted((k for k in chosen if k not in full), key=lambda k: -local[k][0])
+    return [(k, full[k]) for k in in_full] + [(k, local[k]) for k in local_only]
 
 
 def _candidate(row: dict, score: float, arms: frozenset[str], rank: int, q: ArmQuery) -> Candidate:

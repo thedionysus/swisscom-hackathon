@@ -14,7 +14,7 @@ def _query(text, **kw):
     return ArmQuery(question=text, question_lang=kw.get("lang"), question_vec=EMB.embed([text])[0], question_sparse=kw.get("sparse"),
                     translations={}, translation_vecs={}, extent_path=kw.get("path", PATH_ZH),
                     local_extents=kw.get("local", ("CH-ZH", "CH-ZH-261")), as_of=kw.get("as_of"),
-                    per_arm=10, top_n=kw.get("top_n", 30), local_quota=kw.get("quota", 10))
+                    per_arm=kw.get("per_arm", 10), top_n=kw.get("top_n", 30), local_quota=kw.get("quota", 10))
 
 
 def test_finds_a_chunk_on_the_path_by_keyword_and_vector(corpus_db):
@@ -111,3 +111,17 @@ def test_local_scope_gives_no_extra_rrf_score(corpus_db):
 def test_unknown_index_names_the_allowed_ones(corpus_db):
     with connect(corpus_db) as conn, pytest.raises(ValueError, match=", ".join(sorted(EMB_TABLE))):
         gather_candidates(conn, _query("Frist"), index="nope", ef_search=100)
+
+
+def test_local_only_candidates_rank_after_full_path_ones(corpus_db):
+    # per_arm=1: the full-path arms each return only the federal chunk (exact vector, breadcrumb match),
+    # the local arms only the city chunk, which scores as high in its own fusion (two arms at rank 1).
+    with connect(corpus_db) as conn:
+        add_doc(conn, group="fed", lang="de", text="Abfall Frist", breadcrumb=("Abfall Frist",))
+        add_doc(conn, group="city", lang="de", text="Abfall Frist Stadt", extent="CH-ZH-261", source="zh")
+        found = gather_candidates(conn, _query("Abfall Frist", per_arm=1, top_n=3, quota=1), index="bge-m3",
+                                  ef_search=100)
+    by_group = {c.translation_group_id: c for c in found}
+    assert by_group["city"].rrf == by_group["fed"].rrf
+    assert by_group["fed"].rrf_rank == 1
+    assert by_group["city"].rrf_rank == 2
