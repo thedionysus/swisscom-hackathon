@@ -9,6 +9,7 @@ from swiss_grounding.corpus.calendar import (
     calendar_document,
     fetch_events,
     now,
+    swiss_today,
 )
 from swiss_grounding.corpus.persist import persist_document, upsert_source
 from swiss_grounding.db.connection import connect
@@ -20,7 +21,7 @@ serving_app = typer.Typer(help="Serving: schema, calendars, latency stats.")
 def calendar_cmd() -> None:
     """Import the Zürich waste calendar (OpenERZ) as corpus documents. Run `corpus embed` afterwards."""
     settings = load_settings()
-    today = now().date()
+    today = swiss_today()
     with httpx.Client(timeout=settings.fetch_timeout_seconds,
                        headers={"user-agent": settings.corpus_user_agent}) as client, \
             connect(settings.database_url) as conn:
