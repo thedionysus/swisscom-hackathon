@@ -20,6 +20,10 @@ All of these were settled on 2026-09-23 and are recorded; do not re-open them wh
 | 20 citizen topics with SR-number priors | `docs/adr/0007-*.md` |
 | Cantonal law via official portals / opencaselaw is `cantonal_law` — **not in this plan's tier 1** (ADR 0009 moved it down) | `docs/adr/0008-*.md` |
 | Declared scope: federal CH-wide, cantons ZH BE VD GE TI GR, cities Zürich Bern Lausanne Genève Lugano Chur Scuol | `docs/adr/0009-*.md` |
+
+> **Note (2026-09-24): two rows above no longer match the code or the manifest; the decisions are open in #52.**
+> - **"Primary index OpenAI":** the code default is bge-m3 only, and the OpenAI index is opt-in (`config.py`, `DEFAULT_CORPUS_INDEXES`; `AGENTS.md`).
+> - **"Declared scope":** the manifest adds `ehra` (commercial register) and `meteoswiss` (weather) at tier 1, which `CONTEXT.md` lists as not covered.
 | One `corpus.chunk` table partitioned by language (de fr it en rm), per-language keyword config with accent folding, one embedding table per model | `docs/adr/0010-*.md` |
 | Law chunk = article; an article over 1,800 chars is split into one chunk per paragraph (Abs.); Art./Abs./lit. labels stay in the text | this plan, Task 5 |
 | Descriptions: document description per translation group with `gpt-5-mini`; chunk description per (translation group, aligned position) with `gpt-5-nano`; each written **in every language the group has** | `CONTEXT.md` (Chunk description) |
@@ -1342,6 +1346,12 @@ git commit -m "feat: Akoma Ntoso parser keeps Abs./lit. labels and chapter bread
 ---
 
 ### Task 7: Fedlex connector — every language, current and scheduled
+
+> **Note (2026-09-24): the connector differs from the Behaviour list below in two ways that no amendment (A1–A11) records. Tracked in #52.**
+> - With no in-force English consolidation, it stores the newest *ended* one as `current`.
+> - When any language version of a group is new, it downloads the known versions again.
+>
+> Also, PR #51 moves act-file downloads to `www.fedlex.admin.ch/filestore/`, because `fedlex.data.admin.ch`'s robots.txt disallows `/filestore/`.
 
 **Files:**
 - Create: `src/swiss_grounding/corpus/connectors/fedlex.py`
@@ -4910,6 +4920,13 @@ The Fedlex connector reports a known URL as unchanged without re-emitting it, so
 
 **A6 — Jurisdiction name in document prompts (Task 17).**
 `public.location.names` is flat (`{"de": "Bern", "en": "Bern", ...}`); there is no `labels` key. Use `l.names->>'en'`, else every document is described as applying to "Switzerland". Assert the place name appears in the doc task's prompt in the integration test (seed a municipal source).
+
+> **Correction (2026-09-24): the paragraph above is wrong about the data; the code is right. Do not change the code to match it.**
+> - `public.location.names` is **not** flat. It is `{"labels": {lang: name}, "aliases": [...]}`, written by `locations/repository.py:49` and read back as `names["labels"]` (`:82`). In the live database, all 2,183 rows have a `labels` key and none has a top-level language key.
+> - `l.names->>'en'` therefore returns NULL for every place, which produces exactly the "Switzerland" failure this amendment warns about.
+> - `corpus/describe.py` uses `names->'labels'->>'en'` falling back to `de`, `fr`, `it`. Communes carry only a German label, for example `CH-BE-351` → `{"de": "Bern"}`.
+> - The integration test this amendment asks for exists and passes: `tests/integration/test_corpus_describe.py::test_document_prompt_names_the_municipality` asserts `"applies to (Bern)"`.
+> - Tracked in #52.
 
 **A7 — Reuse vectors on the paid path, and index the lookup (Tasks 2, 18, 19).**
 - *Task 2:* add `create index if not exists emb_openai_3l_hash_idx on corpus.emb_openai_3l (text_hash, language)` and the same for `emb_bge_m3`.
