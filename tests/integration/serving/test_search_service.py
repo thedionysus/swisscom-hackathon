@@ -7,11 +7,24 @@ from swiss_grounding.db.connection import connect
 from swiss_grounding.locations.models import ResolvedLocation
 from swiss_grounding.serving.models import SearchRequest
 from swiss_grounding.serving.relevance import ProvisionalRelevance
-from swiss_grounding.serving.reranker import OverlapReranker
+from swiss_grounding.serving.reranker import OverlapReranker, passage_text
 from swiss_grounding.serving.search_service import SearchService, query_embedder
 from tests.integration.serving.corpus_fixture import EMB, add_doc
 
 pytestmark = pytest.mark.integration
+
+
+class CountingReranker:
+    """Wraps OverlapReranker and records every passage handed to `score`, call by call."""
+    name = "overlap"
+
+    def __init__(self):
+        self._inner = OverlapReranker()
+        self.scored_passages: list[str] = []
+
+    def score(self, question, passages):
+        self.scored_passages.extend(passages)
+        return self._inner.score(question, passages)
 
 
 class TreeResolver:
@@ -76,3 +89,81 @@ def test_nothing_relevant_is_no_evidence_with_the_scope_statement(serving_db):
         add_doc(conn, group="x", lang="de", text="Hundesteuer")
     resp = service(serving_db).search(SearchRequest(question="Wetter morgen?"))
     assert resp.status == "no_evidence" and "weather" in resp.scope
+
+
+def test_placeless_question_cites_only_federal_evidence(serving_db):
+    """ADR 0013: a placeless answer must never mix in a passage that applies to one place only."""
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c",
+                breadcrumb=("SR 220 OR", "Art. 266c"))
+        add_doc(conn, group="zh", lang="de", text="Kündigungsfrist Wohnung Zürich Formular",
+                extent="CH-ZH-261", source="zh")
+    resp = service(serving_db).search(SearchRequest(question="Kündigungsfrist Wohnung?"))
+    assert resp.status == "results"
+    [place] = resp.places
+    assert place.citations
+    assert all(c.extent_id == "CH" for c in place.citations)
+
+
+def test_place_outside_scope_still_cites_only_the_federal_passage(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c")
+        add_doc(conn, group="bs", lang="de", text="Kündigungsfrist Wohnung Basel Formular",
+                extent="CH-BS-2701", source="bs")
+    resp = service(serving_db).search(SearchRequest(question="Kündigungsfrist Wohnung?", locations=("Basel",)))
+    assert resp.status == "results"
+    [place] = resp.places
+    assert place.uncovered_levels == ("cantonal", "municipal")
+    assert place.citations
+    assert all(c.extent_id == "CH" for c in place.citations)
+
+
+def test_as_of_cites_the_version_valid_on_that_date(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="rent", lang="de", text="Mietzins Anpassung Regel alt", align="art_1",
+                status="superseded", chunk_status="superseded",
+                valid_from=date(2020, 1, 1), valid_to=date(2025, 1, 1),
+                url="https://example.ch/rent/de/old")
+        add_doc(conn, group="rent", lang="de", text="Mietzins Anpassung Regel neu", align="art_1",
+                status="current", chunk_status="current",
+                valid_from=date(2025, 1, 1), valid_to=None,
+                url="https://example.ch/rent/de/new")
+    resp = service(serving_db).search(
+        SearchRequest(question="Mietzins Anpassung Regel?", as_of=date(2023, 6, 1)))
+    assert resp.status == "results"
+    [place] = resp.places
+    assert place.citations
+    assert all(c.valid_from == date(2020, 1, 1) for c in place.citations)
+
+
+def test_limit_keeps_the_most_relevant_groups_sorted_by_relevance(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="g1", lang="de", text="Alpha Beta Gamma Delta Epsilon", align="a1")
+        add_doc(conn, group="g2", lang="de", text="Alpha Beta Gamma Delta", align="a2")
+        add_doc(conn, group="g3", lang="de", text="Alpha Beta Gamma", align="a3")
+    resp = service(serving_db).search(SearchRequest(question="Alpha Beta Gamma Delta Epsilon", limit=2))
+    assert resp.status == "results"
+    [place] = resp.places
+    assert len(place.citations) == 2
+    assert place.citations[0].relevance >= place.citations[1].relevance
+    assert {c.relevance for c in place.citations} == {1.0, 0.8}
+
+
+def test_reranker_cache_scores_a_shared_federal_passage_once(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c",
+                breadcrumb=("SR 220 OR", "Art. 266c"))
+        add_doc(conn, group="zh", lang="de", text="Kündigungsfrist Wohnung Zürich Formular",
+                extent="CH-ZH-261", source="zh")
+        add_doc(conn, group="be", lang="de", text="Kündigungsfrist Wohnung Bern Formular",
+                extent="CH-BE-351", source="be")
+    with connect(serving_db) as conn:
+        tree = load_location_tree(conn)
+    reranker = CountingReranker()
+    svc = SearchService(database_url=serving_db, tree=tree, resolver=TreeResolver(tree), embed=query_embedder(EMB),
+                        reranker=reranker, relevance=ProvisionalRelevance(0.3), index="bge-m3",
+                        rerank_candidates=30, local_quota=10, ef_search=100, today=lambda: date(2026, 9, 24))
+    resp = svc.search(SearchRequest(question="Kündigungsfrist Wohnung?", locations=("Zürich", "Bern")))
+    assert resp.status == "results"
+    federal = passage_text(("SR 220 OR", "Art. 266c"), "Kündigungsfrist Wohnung drei Monate")
+    assert reranker.scored_passages.count(federal) == 1
