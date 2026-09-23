@@ -24,6 +24,8 @@ eval_app = typer.Typer(help="Evaluation: probes and judge cases.")
 
 DEFAULT_MODELS = "claude-fable-5-1,claude-opus-5,claude-sonnet-5,claude-haiku-4-5-20251001"
 DEFAULT_JUDGE_OUT = Path("evals/judge/results.json")
+GOLDEN_RUNS = Path("evals/golden/runs")
+LABELS_PATH = Path("evals/golden/labels.jsonl")
 EXIT_STATUS_MISMATCH = 3
 RUN_ID_LENGTH = 12
 SWISS_TZ = ZoneInfo("Europe/Zurich")
@@ -98,7 +100,7 @@ def probes_cmd(
     ),
     probe_dir: Annotated[Path, typer.Option("--probe-dir")] = PROBE_DIR,
 ) -> None:
-    """Run probes against the live database and store results in eval_run.
+    """Run probes against the live database; with --record, store results in eval_run and write observed blocks.
 
     Exit code 3 when a probe's red/green status disagrees with the live result.
     """
@@ -119,10 +121,10 @@ def probes_cmd(
     results = [(t, run_probe(p, core, today, git_commit=commit)) for t, p in selected]
     _print_table(results)
     grouped = _by_tier(results)
-    with connect(settings.database_url) as conn:
-        for t, rs in grouped.items():
-            insert_results(conn, run_id=run_id, git_commit=commit, tier=t, results=rs)
     if record:
+        with connect(settings.database_url) as conn:
+            for t, rs in grouped.items():
+                insert_results(conn, run_id=run_id, git_commit=commit, tier=t, results=rs)
         for t, rs in grouped.items():
             # Probe files are named after their tier (city.yaml, communes.yaml, lookalikes.yaml); see README.
             record_observed(probe_dir / f"{t}.yaml", {r.probe.id: r.observed for r in rs})
@@ -149,3 +151,46 @@ def judge_cmd(
     cases = [p for _, p in all_probes if p.judge]
     table = run_judge_suite(cases, tuple(m.strip() for m in models.split(",")), out, resume=resume)
     typer.echo(table)
+
+
+def _load_labels(path: Path) -> dict[tuple[str, str], bool]:
+    import json
+    if not path.exists():
+        return {}
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return {(r["probe_id"], r["key"]): bool(r["relevant"]) for r in rows}
+
+
+@eval_app.command("golden")
+def golden_cmd(
+    split: str = typer.Option("dev", "--split", help="dev, holdout or all"),
+    record: bool = typer.Option(False, "--record", help="write the report to evals/golden/runs/"),
+) -> None:
+    """Run the golden set; print per-probe results and the summary against ADR 0016 thresholds."""
+    import json
+    from dataclasses import asdict
+
+    from swiss_grounding.app import build_search_service
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.evals.golden_runner import run_golden
+    from swiss_grounding.evals.metrics import passes
+
+    settings = load_settings()
+    service = build_search_service(settings, today=_today)
+    report = run_golden(service, load_golden(), labels=_load_labels(LABELS_PATH), split=split)
+    for o in report.outcomes:
+        mark = "ok " if o.status == o.expected_status else "BAD"
+        typer.echo(f"{mark} {o.probe_id:<32} {o.status:<16} (want {o.expected_status}) recall={o.recall}")
+    verdict = passes(report.summary)
+    for name, value in report.summary.items():
+        shown = "n/a" if value is None else f"{value:.3f}"
+        typer.echo(f"{name:<16} {shown:<7} {'PASS' if verdict.get(name) else 'FAIL'}")
+    if record:
+        GOLDEN_RUNS.mkdir(parents=True, exist_ok=True)
+        config = {"reranker": service.reranker.name, "fitted": service.relevance.fitted,
+                  "threshold": service.relevance.threshold, "index": settings.serving_index,
+                  "rerank_candidates": settings.rerank_candidates, "git_commit": _git_commit()}
+        path = GOLDEN_RUNS / f"{datetime.now(SWISS_TZ):%Y%m%dT%H%M%S}-{split}.json"
+        path.write_text(json.dumps({"config": config, **asdict(report)}, ensure_ascii=False, indent=2,
+                                   default=str), encoding="utf-8")
+        typer.echo(f"report written to {path}")

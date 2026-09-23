@@ -99,3 +99,21 @@ def test_probes_cmd_exit_code_on_status_mismatch(monkeypatch):
     result = CliRunner().invoke(app, ["eval", "probes"])
     assert result.exit_code == 3
     assert "p-mismatch" in result.output
+
+
+def test_probes_cmd_does_not_write_to_the_database_without_record(monkeypatch):
+    """Without --record, insert_results must not run (and connect must not even be called)."""
+    probe = Probe(id="p-ok", question="q", kind="structural", failure_class="none",
+                  status="red", expect=Expectation(status="results"))
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("insert_results must not be called without --record")
+
+    monkeypatch.setattr(eval_commands, "build_query_core", lambda settings, today: _StubCore())
+    monkeypatch.setattr(eval_commands, "connect", lambda url: (_ for _ in ()).throw(
+        AssertionError("connect must not be called without --record")))
+    monkeypatch.setattr(eval_commands, "load_all_probes", lambda probe_dir: (("city", probe),))
+    monkeypatch.setattr(eval_commands, "insert_results", _boom)
+    result = CliRunner().invoke(app, ["eval", "probes"])
+    assert result.exit_code == 0
+    assert "p-ok" in result.output
