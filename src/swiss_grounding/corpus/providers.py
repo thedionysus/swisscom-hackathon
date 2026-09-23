@@ -1,5 +1,4 @@
 import json
-import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Protocol
@@ -105,6 +104,8 @@ class LocalBgeM3:
         return [dense for dense, _ in self.embed_with_sparse(texts)]
 
     def embed_with_sparse(self, texts: Sequence[str]) -> list[tuple[np.ndarray, dict[int, float] | None]]:
+        if not texts:
+            return []
         if self._flag is not None:
             out = self._flag.encode(list(texts), batch_size=self._batch_size, max_length=BGE_MAX_TOKENS,
                                     return_dense=True, return_sparse=True, return_colbert_vecs=False)
@@ -115,14 +116,28 @@ class LocalBgeM3:
 
 
 def extract_json(text: str) -> dict:
-    """The outermost JSON object in a model reply, tolerating code fences."""
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if not match:
+    """The first JSON object in a model reply, tolerating code fences and trailing text."""
+    start = text.find("{")
+    if start == -1:
         raise ValueError("no JSON object in model reply")
-    value = json.loads(match.group(0))
+    try:
+        value, _end = json.JSONDecoder().raw_decode(text, start)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid JSON in model reply: {exc}") from exc
     if not isinstance(value, dict):
-        raise TypeError("model reply is not a JSON object")
+        raise ValueError("model reply is not a JSON object")  # noqa: TRY004 - a JSON parse-shape check
     return value
+
+
+class ReplyError(RuntimeError):
+    """A paid reply that could not be parsed as JSON. Carries the usage that was still billed
+    (and the model's finish/stop reason, when available) so the caller can record spend even
+    though the task failed."""
+
+    def __init__(self, message: str, usage: Usage, finish_reason: str | None = None):
+        super().__init__(message)
+        self.usage = usage
+        self.finish_reason = finish_reason
 
 
 class LLMProvider(Protocol):
@@ -162,8 +177,13 @@ class OpenAILLM:
 
     def complete(self, task: LlmTask) -> tuple[dict, Usage]:
         response = self._client.chat.completions.create(**self.chat_body(task))
-        text = response.choices[0].message.content or ""
-        return extract_json(text), Usage(response.usage.prompt_tokens, response.usage.completion_tokens)
+        choice = response.choices[0]
+        text = choice.message.content or ""
+        usage = Usage(response.usage.prompt_tokens, response.usage.completion_tokens)
+        try:
+            return extract_json(text), usage
+        except ValueError as exc:
+            raise ReplyError(f"unparseable reply: {exc}", usage, getattr(choice, "finish_reason", None)) from exc
 
 
 class AnthropicLLM:
@@ -182,4 +202,8 @@ class AnthropicLLM:
         response = self._client.messages.create(model=self._model, max_tokens=task.max_output_tokens,
                                                 system=task.system, messages=[{"role": "user", "content": content}])
         text = "".join(block.text for block in response.content if block.type == "text")
-        return extract_json(text), Usage(response.usage.input_tokens, response.usage.output_tokens)
+        usage = Usage(response.usage.input_tokens, response.usage.output_tokens)
+        try:
+            return extract_json(text), usage
+        except ValueError as exc:
+            raise ReplyError(f"unparseable reply: {exc}", usage, getattr(response, "stop_reason", None)) from exc

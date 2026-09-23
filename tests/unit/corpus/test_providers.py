@@ -34,6 +34,17 @@ def test_extract_json_tolerates_fences():
         extract_json("no json here")
 
 
+def test_extract_json_rejects_non_dict_json():
+    with pytest.raises(ValueError):
+        extract_json("[1, 2, 3]")
+
+
+def test_local_bge_m3_embed_with_sparse_of_no_texts_returns_empty_without_touching_the_model():
+    from swiss_grounding.corpus.providers import LocalBgeM3
+    bare = object.__new__(LocalBgeM3)  # skip __init__: no model load, no disk/network use
+    assert bare.embed_with_sparse([]) == []
+
+
 def test_fake_llm_calls_the_responder():
     llm = FakeLLM(lambda task: {"echo": task.custom_id})
     from swiss_grounding.corpus.runner import LlmTask
@@ -50,3 +61,57 @@ def test_openai_chat_body_uses_json_mode_and_minimal_reasoning():
     content = body["messages"][1]["content"]
     assert content[1]["image_url"]["url"].startswith("data:image/png;base64,")
     json.dumps(body)
+
+
+def test_openai_llm_raises_reply_error_but_keeps_billed_usage():
+    from swiss_grounding.corpus.providers import ReplyError
+    from swiss_grounding.corpus.runner import LlmTask
+
+    llm = OpenAILLM(api_key="test")
+
+    class FakeMessage:
+        content = "not json"
+
+    class FakeChoice:
+        message = FakeMessage()
+        finish_reason = "stop"
+
+    class FakeUsage:
+        prompt_tokens = 11
+        completion_tokens = 3
+
+    class FakeResponse:
+        choices = (FakeChoice(),)
+        usage = FakeUsage()
+
+    llm._client.chat.completions.create = lambda **kwargs: FakeResponse()
+    with pytest.raises(ReplyError) as exc_info:
+        llm.complete(LlmTask("t", "gpt-5-nano", "s", "u"))
+    assert exc_info.value.usage == Usage(11, 3)
+    assert exc_info.value.finish_reason == "stop"
+
+
+def test_anthropic_llm_raises_reply_error_but_keeps_billed_usage():
+    from swiss_grounding.corpus.providers import AnthropicLLM, ReplyError
+    from swiss_grounding.corpus.runner import LlmTask
+
+    llm = AnthropicLLM(api_key="test", model="claude-x")
+
+    class FakeBlock:
+        type = "text"
+        text = "not json"
+
+    class FakeUsage:
+        input_tokens = 21
+        output_tokens = 4
+
+    class FakeResponse:
+        content = (FakeBlock(),)
+        stop_reason = "end_turn"
+        usage = FakeUsage()
+
+    llm._client.messages.create = lambda **kwargs: FakeResponse()
+    with pytest.raises(ReplyError) as exc_info:
+        llm.complete(LlmTask("t", "claude-x", "s", "u"))
+    assert exc_info.value.usage == Usage(21, 4)
+    assert exc_info.value.finish_reason == "end_turn"

@@ -1,6 +1,10 @@
 import json
 
-from swiss_grounding.corpus.providers import FakeLLM
+import httpx
+import pytest
+from openai import APIConnectionError
+
+from swiss_grounding.corpus.providers import FakeLLM, ReplyError, Usage
 from swiss_grounding.corpus.runner import BatchRunner, LlmTask, SyncRunner, parse_batch_line
 
 
@@ -24,6 +28,20 @@ def test_sync_runner_turns_exceptions_into_errors():
     assert out.data is None and "bad reply" in out.error
 
 
+class _RaisingReplyLLM:
+    """Simulates OpenAILLM/AnthropicLLM raising ReplyError after billing tokens."""
+
+    def complete(self, task):
+        raise ReplyError("unparseable reply: no JSON object in model reply", Usage(42, 7))
+
+
+def test_sync_runner_keeps_billed_usage_on_an_unparseable_reply():
+    [out] = SyncRunner(_RaisingReplyLLM(), workers=1).run([LlmTask("a", "m", "s", "u")])
+    assert out.data is None
+    assert out.input_tokens == 42 and out.output_tokens == 7
+    assert "unparseable reply" in out.error
+
+
 def test_parse_batch_line_for_chat_completion():
     line = {"custom_id": "a", "response": {"status_code": 200, "body": {
         "choices": [{"message": {"content": '{"x": 1}'}}], "usage": {"prompt_tokens": 10, "completion_tokens": 5}}}}
@@ -37,9 +55,15 @@ def test_parse_batch_line_error():
 
 
 class FakeOpenAI:
-    """Stands in for the openai client's files and batches resources."""
-    def __init__(self):
+    """Stands in for the openai client's files and batches resources.
+
+    `statuses` maps a batch id to a terminal status other than "completed" (e.g. "failed"), to
+    simulate a batch that OpenAI rejected at validation (no output file).
+    """
+
+    def __init__(self, statuses: dict[str, str] | None = None):
         self.submitted = []
+        self.statuses = statuses or {}
         outer = self
 
         class Files:
@@ -60,6 +84,10 @@ class FakeOpenAI:
 
             def retrieve(self, batch_id):
                 n = batch_id.split("-")[-1]
+                status = outer.statuses.get(batch_id, "completed")
+                if status != "completed":
+                    return type("B", (), {"status": status, "output_file_id": None, "error_file_id": None,
+                                          "errors": {"message": "Enqueued token limit reached"}})()
                 return type("B", (), {"status": "completed", "output_file_id": f"out-{n}", "error_file_id": None})()
 
         self.files, self.batches = Files(), Batches()
@@ -80,10 +108,10 @@ def test_batch_runner_splits_files_and_collects_results(tmp_path):
     assert sum(r[5] for r in records) == 10.0
 
 
-def test_batch_runner_marks_batches_done_after_collecting():
+def test_batch_runner_marks_batches_done_after_collecting(tmp_path):
     client = FakeOpenAI()
     done = []
-    runner = BatchRunner(client, work_dir="/tmp", max_per_file=50, poll_seconds=0,
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0,
                          record=lambda *a: None, mark_done=lambda batch_id, status: done.append((batch_id, status)))
     tasks = [LlmTask("0", "gpt-5-nano", "s", "u")]
     list(runner.run(tasks, kind="describe"))
@@ -100,6 +128,21 @@ def test_submit_lines_splits_on_max_bytes(tmp_path):
     assert sum(len(f) for f in client.submitted) == 4
 
 
+def test_submit_lines_splits_on_max_tokens_per_file(tmp_path):
+    """A line's estimated input tokens (system + user text) also forces a new file, so a run
+    never enqueues more than one file's worth of tokens at a time against the org's queue limit."""
+    client = FakeOpenAI()
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=100, max_bytes=10**9, max_tokens_per_file=100,
+                         poll_seconds=0, record=lambda *a: None)
+    lines = [{"custom_id": str(i), "method": "POST", "url": "/v1/chat/completions",
+              "body": {"model": "gpt-5-nano",
+                       "messages": [{"role": "system", "content": ""}, {"role": "user", "content": "x" * 150}]}}
+             for i in range(3)]
+    batch_ids = runner.submit_lines(lines, kind="describe", endpoint="/v1/chat/completions")
+    assert len(batch_ids) == 2
+    assert [len(f) for f in client.submitted] == [2, 1]
+
+
 def test_resume_collects_already_submitted_batches(tmp_path):
     client = FakeOpenAI()
     runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0, record=lambda *a: None)
@@ -110,3 +153,82 @@ def test_resume_collects_already_submitted_batches(tmp_path):
     out = list(runner.resume(batch_ids))
     assert sorted(o.custom_id for o in out) == ["0", "1", "2"]
     assert all(o.data == {"ok": o.custom_id} for o in out)
+
+
+def test_run_reports_missing_outcomes_for_a_failed_batch_and_continues(tmp_path):
+    """A batch that OpenAI fails at validation (e.g. the enqueued token limit) produces no output
+    file; every custom id that was in it gets an error outcome instead of silently vanishing, and
+    the next file is still submitted and collected."""
+    client = FakeOpenAI(statuses={"batch-1": "failed"})
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=2, poll_seconds=0, record=lambda *a: None)
+    tasks = [LlmTask(str(i), "gpt-5-nano", "s", "u") for i in range(4)]
+    out = list(runner.run(tasks, kind="describe"))
+    assert len(client.submitted) == 2
+
+    failed = {o.custom_id: o for o in out if o.custom_id in {"0", "1"}}
+    assert set(failed) == {"0", "1"}
+    assert all(o.data is None and "no result: batch batch-1 failed" in o.error for o in failed.values())
+
+    succeeded = {o.custom_id: o for o in out if o.custom_id in {"2", "3"}}
+    assert set(succeeded) == {"2", "3"}
+    assert all(o.data == {"ok": o.custom_id} for o in succeeded.values())
+
+
+def test_resume_reports_missing_outcomes_for_a_failed_batch_when_input_is_known(tmp_path):
+    client = FakeOpenAI(statuses={"batch-1": "failed"})
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0, record=lambda *a: None)
+    lines = [{"custom_id": "0", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-5-nano"}}]
+    batch_ids = runner.submit_lines(lines, kind="describe", endpoint="/v1/chat/completions")
+    out = list(runner.resume(batch_ids))
+    assert len(out) == 1 and out[0].custom_id == "0" and out[0].data is None
+    assert "no result: batch batch-1 failed" in out[0].error
+
+
+def test_resume_logs_when_a_failed_batchs_input_is_not_known_locally(tmp_path, caplog):
+    client = FakeOpenAI(statuses={"batch-9": "failed"})
+    runner = BatchRunner(client, work_dir=tmp_path, poll_seconds=0, record=lambda *a: None)
+    with caplog.at_level("WARNING"):
+        out = list(runner.resume(["batch-9"]))
+    assert out == []
+    assert any("batch-9" in record.message for record in caplog.records)
+
+
+def test_submit_logs_and_reraises_when_record_fails(tmp_path, caplog):
+    client = FakeOpenAI()
+
+    def bad_record(*args):
+        raise RuntimeError("db down")
+
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0, record=bad_record)
+    tasks = [LlmTask("0", "gpt-5-nano", "s", "u")]
+    with caplog.at_level("ERROR"), pytest.raises(RuntimeError, match="db down"):
+        list(runner.run(tasks, kind="describe"))
+    assert any("batch-1" in record.message for record in caplog.records)
+
+
+def test_submit_appends_to_submitted_log_before_recording(tmp_path):
+    client = FakeOpenAI()
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0, record=lambda *a: None)
+    tasks = [LlmTask("0", "gpt-5-nano", "s", "u")]
+    list(runner.run(tasks, kind="describe"))
+    content = (tmp_path / "submitted.log").read_text(encoding="utf-8")
+    assert "batch-1 describe" in content
+
+
+def test_collect_retries_after_a_network_error(tmp_path):
+    client = FakeOpenAI()
+    calls = {"n": 0}
+    real_retrieve = client.batches.retrieve
+
+    def flaky(batch_id):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise APIConnectionError(request=httpx.Request("GET", "https://api.openai.com"))
+        return real_retrieve(batch_id)
+
+    client.batches.retrieve = flaky
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0, record=lambda *a: None)
+    tasks = [LlmTask("0", "gpt-5-nano", "s", "u")]
+    out = list(runner.run(tasks, kind="describe"))
+    assert out[0].data == {"ok": "0"}
+    assert calls["n"] == 2
