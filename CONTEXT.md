@@ -165,6 +165,21 @@ _Avoid_: Vector store, embeddings table
 A hand-written question with a location, and the behaviour the raw tool response must show: status, resolved extent, required and forbidden sources or documents, coverage signal, event date rule. Graded deterministically without a model.
 _Avoid_: Test case, gold question, eval
 
+**Golden set**:
+The versioned set of about 150 probes that gates a release, stratified by topic area, language (including Romansh), jurisdiction level and expected status. Each probe also names its expected source and key fact. A held-out split is kept for choosing thresholds.
+_Avoid_: Gold questions, benchmark
+
+**Generated question**:
+A question written by a model from a chunk already known to answer it. Used only to measure recall, never to tune thresholds or weights.
+_Avoid_: Synthetic probe, gold question
+
+**Relevance label**:
+A yes/no judgement that one retrieved chunk answers one golden-set question. The training data for the relevance probability; made by a model judge and trusted only after a human-checked sample agrees.
+_Avoid_: Ground truth, annotation
+
+**Status accuracy**:
+The share of probes whose response status is the expected one: answer, ask back, not covered, source unavailable, or no evidence. The first gate, because the evaluators grade these outcomes before answer quality.
+
 **Structural probe**:
 A probe whose expected behaviour does not depend on ranking: status, resolved extent, coverage signal, event date rule. Runs on fixture data in CI.
 
