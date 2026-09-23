@@ -63,17 +63,17 @@ def _hreflang_alternates(soup: BeautifulSoup, url: str) -> dict[str, str]:
 
 
 def _switcher_language(link: Any, target: str) -> str | None:
-    """Language of a language-switcher link: its hreflang/lang attribute, else its text (a
+    """Language of a language-switcher link: its hreflang/lang attribute, else its whole text (a
     two-letter code or a language name), else a leading /xx/ segment of the URL it points to."""
     for attribute in ("hreflang", "lang"):
         if link.get(attribute):
             return _language_code(link[attribute])
+    # Only a text that is wholly a code or a language name counts: "Lire en ligne" is not English.
     text = " ".join(link.get_text(" ").split()).lower()
-    for candidate in (text, *text.split()):
-        if len(candidate) == 2 and candidate in LANGUAGES:
-            return candidate
-        if candidate in LANGUAGE_NAMES:
-            return LANGUAGE_NAMES[candidate]
+    if text in LANGUAGES:
+        return text
+    if text in LANGUAGE_NAMES:
+        return LANGUAGE_NAMES[text]
     match = _PATH_LANGUAGE.match(urlparse(target).path)
     return _language_code(match.group(1)) if match else None
 
@@ -111,12 +111,19 @@ def _nuxt_alternates(soup: BeautifulSoup, url: str) -> dict[str, str]:
         return {}
 
     def at(index: Any) -> Any:
-        if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < len(data):
-            return None
-        value = data[index]
-        if isinstance(value, list) and len(value) == 2 and value[0] in _NUXT_WRAPPERS:
-            return at(value[1])
-        return value
+        """The value at `index`, unwrapping reactive wrappers iteratively; a wrapper cycle or a
+        dangling index resolves to None."""
+        visited: set[int] = set()
+        while True:
+            if (isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < len(data)
+                    or index in visited):
+                return None
+            visited.add(index)
+            value = data[index]
+            if isinstance(value, list) and len(value) == 2 and value[0] in _NUXT_WRAPPERS:
+                index = value[1]
+                continue
+            return value
 
     record = next((node for node in data if isinstance(node, dict)
                    and "groupId" in node and "translationPages" in node), None)

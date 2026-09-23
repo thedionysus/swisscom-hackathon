@@ -29,6 +29,22 @@ class _Unreadable(Exception):
     pass
 
 
+def _download(http: httpx.Client, url: str) -> tuple[int, bytes]:
+    """(status, body), streamed and aborted past MAX_SITEMAP_BYTES; body is empty for errors."""
+    with http.stream("GET", url, follow_redirects=True, timeout=60) as response:
+        if response.status_code >= 400:
+            return response.status_code, b""
+        declared = response.headers.get("content-length")
+        if declared and declared.isdigit() and int(declared) > MAX_SITEMAP_BYTES:
+            raise _Unreadable(f"sitemap larger than {MAX_SITEMAP_BYTES} bytes")
+        body = bytearray()
+        for chunk in response.iter_bytes():
+            body += chunk
+            if len(body) > MAX_SITEMAP_BYTES:
+                raise _Unreadable(f"sitemap larger than {MAX_SITEMAP_BYTES} bytes")
+        return response.status_code, bytes(body)
+
+
 def _decompress(body: bytes) -> bytes:
     if not body.startswith(b"\x1f\x8b"):
         return body
@@ -61,10 +77,11 @@ def _entries(body: bytes) -> tuple[list[str], list[str]]:
 
 def collect_sitemap_urls(http: httpx.Client, sitemap_urls: Sequence[str], include: Sequence[str], limit: int,
                          accept: Callable[[str], bool], fetchable: Callable[[str], bool],
-                         pause: Callable[[], None]) -> SitemapSeeds:
+                         before: Callable[[str], None]) -> SitemapSeeds:
     """Page URLs from `sitemap_urls` matching any `include` regex (all when empty) and `accept`.
 
-    `fetchable` gates each sitemap request (robots.txt); `pause` runs after each request.
+    `fetchable` gates each sitemap request (robots.txt); `before(url)` runs before each request
+    (per-host politeness).
     Unreadable sitemaps become errors; the crawl continues without them.
     """
     patterns = [re.compile(p) for p in include]
@@ -80,18 +97,20 @@ def collect_sitemap_urls(http: httpx.Client, sitemap_urls: Sequence[str], includ
         if not fetchable(sitemap):
             errors.append((sitemap, "sitemap disallowed by robots.txt"))
             continue
+        before(sitemap)
         try:
-            response = http.get(sitemap, follow_redirects=True, timeout=60)
+            status, body = _download(http, sitemap)
         except httpx.HTTPError as exc:
             errors.append((sitemap, f"sitemap fetch failed: {exc}"))
             continue
-        finally:
-            pause()
-        if response.status_code >= 400:
-            errors.append((sitemap, f"sitemap HTTP {response.status_code}"))
+        except _Unreadable as exc:
+            errors.append((sitemap, str(exc)))
+            continue
+        if status >= 400:
+            errors.append((sitemap, f"sitemap HTTP {status}"))
             continue
         try:
-            children, pages = _entries(_decompress(response.content))
+            children, pages = _entries(_decompress(body))
         except _Unreadable as exc:
             errors.append((sitemap, str(exc)))
             continue

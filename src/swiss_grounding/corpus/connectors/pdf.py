@@ -12,6 +12,7 @@ import pypdfium2 as pdfium
 from pypdf import PdfReader
 
 from swiss_grounding.corpus.artifacts import save_artifact
+from swiss_grounding.corpus.connectors.politeness import SHARED_THROTTLE, HostThrottle
 from swiss_grounding.corpus.models import (
     ConnectorResult,
     DiscoveredPdf,
@@ -92,11 +93,12 @@ def _media_type(headers: httpx.Headers) -> str:
 
 class PdfConnector:
     def __init__(self, http: httpx.Client, data_dir: Path | str, sleep: Callable[[float], None] = time.sleep,
-                 delay_seconds: float = 0.5):
+                 delay_seconds: float = 0.5, throttle: HostThrottle | None = None):
         self._http = http
         self._data_dir = Path(data_dir)
         self._sleep = sleep
         self._delay = delay_seconds
+        self._throttle = throttle or SHARED_THROTTLE
 
     def _download(self, url: str, headers: dict[str, str]):
         """Stream the response, aborting as soon as MAX_PDF_BYTES is exceeded.
@@ -137,6 +139,7 @@ class PdfConnector:
                 headers["if-none-match"] = prior.etag
             if prior and prior.last_modified:
                 headers["if-modified-since"] = prior.last_modified
+            self._throttle.wait(pdf.url, self._delay, self._sleep)
             try:
                 status, response_headers, content = self._download(pdf.url, headers)
             except _TooLarge:
@@ -148,8 +151,6 @@ class PdfConnector:
             except httpx.HTTPError as exc:
                 errors.append((pdf.url, f"fetch failed: {exc}"))
                 continue
-            finally:
-                self._sleep(self._delay)
             if status == 304:
                 unchanged.append(pdf.url)
                 continue

@@ -6,7 +6,7 @@ from pathlib import Path
 import httpx
 
 from swiss_grounding.corpus.connectors.html import CrawlPolicy, HtmlConnector
-from swiss_grounding.corpus.models import SourceSpec
+from swiss_grounding.corpus.models import KnownState, SourceSpec
 
 FIXTURES = Path(__file__).parents[2] / "fixtures" / "corpus"
 CHCH_DE = "https://www.ch.ch/de/gesundheit/krankenkasse/kosten-fur-krankenkasse/"
@@ -214,3 +214,25 @@ def test_alternate_already_queued_behind_other_links_is_pulled_forward():
     by_url = {d.url: d for d in _run(_client(pages), spec).documents}
     assert set(by_url) == set(pages)
     assert by_url["https://www.s.ch/de/b"].work_key == by_url["https://www.s.ch/fr/b"].work_key
+
+
+def test_sitemap_seed_budget_goes_to_urls_not_already_known_or_queued():
+    known_urls = [f"https://www.s.ch/de/old{i}" for i in range(3)]
+    new = "https://www.s.ch/de/fresh"
+    pages = {u: _page(u[-4:]) for u in [*known_urls, new, "https://www.s.ch/de/start"]}
+    raw = {"https://www.s.ch/sitemap.xml": (_urlset("https://www.s.ch/de/start", *known_urls, new), "application/xml")}
+    spec = _spec(languages=("de",), start_urls=["https://www.s.ch/de/start"], allow_prefixes=["https://www.s.ch/de/"],
+                 sitemap_urls=["https://www.s.ch/sitemap.xml"], max_pages=2)
+    known = {u: KnownState(None, None, "h") for u in known_urls}
+    result = HtmlConnector(_client(pages, raw), CrawlPolicy(True, 0)).run(spec, known=known)
+    assert [d.url for d in result.documents] == ["https://www.s.ch/de/start", new]
+
+
+def test_alternate_matching_pdf_patterns_is_not_crawled_as_a_page():
+    seen: list[str] = []
+    html = """<html lang="de"><head><link rel="alternate" hreflang="fr" href="https://www.s.ch/p/doc.f"></head>
+      <body><main><h1>A</h1><p>Text.</p></main></body></html>"""
+    spec = _spec(start_urls=["https://www.s.ch/de/a"], allow_prefixes=["https://www.s.ch/"],
+                 pdf_link_patterns=[r"^https://www\.s\.ch/p/"])
+    _run(_client({"https://www.s.ch/de/a": html}, seen=seen), spec)
+    assert "https://www.s.ch/p/doc.f" not in seen

@@ -1,7 +1,6 @@
 import logging
 import re
 import time
-from collections import deque
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from urllib import robotparser
@@ -9,18 +8,18 @@ from urllib.parse import urldefrag, urlparse
 
 import httpx
 
-from swiss_grounding.corpus.connectors.html_meta import page_meta, work_key
+from swiss_grounding.corpus.connectors.crawl_queue import CrawlQueue
+from swiss_grounding.corpus.connectors.html_meta import work_key
+from swiss_grounding.corpus.connectors.html_page import CrawledPage, parse_crawled_page
+from swiss_grounding.corpus.connectors.politeness import SHARED_THROTTLE, HostThrottle
 from swiss_grounding.corpus.connectors.sitemap import collect_sitemap_urls
 from swiss_grounding.corpus.models import (
-    LANGUAGES,
     ConnectorResult,
     DiscoveredPdf,
     KnownState,
     ParsedDocument,
-    ParsedSection,
     SourceSpec,
 )
-from swiss_grounding.ingest.html_sections import extract_links, html_to_page
 
 logger = logging.getLogger(__name__)
 
@@ -92,10 +91,12 @@ def _matches(url: str, patterns: tuple[re.Pattern[str], ...]) -> bool:
 
 
 class HtmlConnector:
-    def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep):
+    def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep,
+                 throttle: HostThrottle | None = None):
         self._http = http
         self._policy = policy
         self._sleep = sleep
+        self._throttle = throttle or SHARED_THROTTLE
         self._robots: dict[str, robotparser.RobotFileParser] = {}
         self._warned_hosts: set[str] = set()
 
@@ -104,6 +105,10 @@ class HtmlConnector:
             self._warned_hosts.add(root)
             logger.warning("robots.txt for %s: %s -- disallowing the whole host", root, message)
 
+    def _before(self, url: str) -> None:
+        """Per-host politeness, shared with every other connector and thread (see politeness)."""
+        self._throttle.wait(url, self._policy.delay_seconds, self._sleep)
+
     def _robots_allow(self, url: str) -> bool:
         if not self._policy.respect_robots:
             return True
@@ -111,6 +116,7 @@ class HtmlConnector:
         root = f"{host.scheme}://{host.netloc}"
         if root not in self._robots:
             parser = robotparser.RobotFileParser()
+            self._before(root + "/robots.txt")
             try:
                 response = self._http.get(root + "/robots.txt", timeout=20, follow_redirects=True)
             except httpx.HTTPError as exc:
@@ -131,164 +137,147 @@ class HtmlConnector:
     def _in_prefixes(url: str, prefixes: tuple[str, ...]) -> bool:
         return any(url.startswith(p) for p in prefixes)
 
+    def _crawlable(self, url: str, prefixes: tuple[str, ...], pdf_patterns: tuple[re.Pattern[str], ...]) -> bool:
+        """In scope as a page (robots aside): inside the prefixes, not a file, not a PDF pattern."""
+        path = urlparse(url).path.lower()
+        return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
+                and not _matches(url, pdf_patterns))
+
     def _allowed(self, url: str, prefixes: tuple[str, ...]) -> bool:
         path = urlparse(url).path.lower()
         return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
                 and self._robots_allow(url))
 
-    def _pause(self) -> None:
-        if self._policy.delay_seconds:
-            self._sleep(self._policy.delay_seconds)
-
-    def _sitemap_seeds(self, cfg: Mapping, prefixes: tuple[str, ...], limit: int,
-                       pdf_patterns: tuple[re.Pattern[str], ...]) -> tuple[tuple[str, ...], list[tuple[str, str]]]:
-        """URLs from config.sitemap_urls matching config.sitemap_include (A11), at most `limit`."""
+    def _seed_from_sitemaps(self, cfg: Mapping, queue: CrawlQueue, limit: int, prefixes: tuple[str, ...],
+                            pdf_patterns: tuple[re.Pattern[str], ...]) -> list[tuple[str, str]]:
+        """Queue URLs from config.sitemap_urls matching config.sitemap_include (A11), at most
+        `limit`. Known or already-queued URLs do not use up the budget: it is for new pages."""
         if not cfg.get("sitemap_urls"):
-            return (), []
+            return []
 
         def accept(url: str) -> bool:
-            path = urlparse(url).path.lower()
-            return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
-                    and not _matches(url, pdf_patterns))
+            return not queue.is_known_or_queued(url) and self._crawlable(url, prefixes, pdf_patterns)
 
         seeds = collect_sitemap_urls(self._http, tuple(cfg["sitemap_urls"]), tuple(cfg.get("sitemap_include", ())),
-                                     limit, accept=accept, fetchable=self._robots_allow, pause=self._pause)
-        return seeds.urls, list(seeds.errors)
+                                     limit, accept=accept, fetchable=self._robots_allow, before=self._before)
+        for url in seeds.urls:
+            queue.add(url)
+        return list(seeds.errors)
+
+    def _get(self, url: str, conditional: bool, known: Mapping[str, KnownState]) -> httpx.Response:
+        headers = {}
+        # Only revisit-queue pages (known, and linked from nowhere reachable this run) are sent
+        # conditionally: a 304 on any other page would hide the links it carries.
+        prior = known.get(url) if conditional else None
+        if prior and prior.etag:
+            headers["if-none-match"] = prior.etag
+        if prior and prior.last_modified:
+            headers["if-modified-since"] = prior.last_modified
+        self._before(url)
+        return self._http.get(url, headers=headers, follow_redirects=True, timeout=30)
 
     def run(self, spec: SourceSpec, known: Mapping[str, KnownState]) -> ConnectorResult:
         cfg = spec.config
         prefixes = tuple(cfg["allow_prefixes"])
-        pdf_prefixes = tuple(cfg.get("pdf_allow_prefixes", prefixes))
         max_pages = int(cfg.get("max_pages", DEFAULT_MAX_PAGES))
-        max_pdfs = int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS))
-        language_links_selector = cfg.get("language_links_selector")
-        content_selector = cfg.get("content_selector")
         pdf_patterns = tuple(re.compile(p) for p in cfg.get("pdf_link_patterns", ()))
-        start_urls = tuple(cfg["start_urls"])
-        frontier = deque(start_urls)
-        revisit = deque(u for u in known if u not in start_urls)
-        queued = set(frontier) | set(revisit)
-        seeded, errors = self._sitemap_seeds(cfg, prefixes, max_pages, pdf_patterns)
-        for url in seeded:
-            if url not in queued:
-                frontier.append(url)
-                queued.add(url)
-        seen: set[str] = set()
-        pending: list[ParsedDocument] = []
-        alternates_by_url: dict[str, dict[str, str]] = {}
-        page_languages: dict[str, str] = {}
-        unchanged, gone = [], []
-        pdfs: dict[str, DiscoveredPdf] = {}
+        queue = CrawlQueue(cfg["start_urls"], known)
+        errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns)
+        crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)),
+                              tuple(cfg.get("pdf_allow_prefixes", prefixes)))
+        crawl.errors.extend(errors)
         pages = 0
-        while (frontier or revisit) and pages < max_pages:
-            from_revisit = not frontier
-            url = frontier.popleft() if frontier else revisit.popleft()
-            if url in seen or not self._allowed(url, prefixes):
+        while pages < max_pages and (item := queue.pop()) is not None:
+            url, conditional = item
+            if url in queue.seen or not self._allowed(url, prefixes):
                 continue
-            seen.add(url)
+            queue.seen.add(url)
             pages += 1
-            headers = {}
-            # A page fresh from the frontier (a start URL or a link just discovered) is always
-            # fetched in full: it may be new, and a 304 would silently kill discovery of whatever
-            # it links to. Only URLs pulled from the revisit queue -- already-known pages being
-            # re-checked, not linked from anywhere reachable this run -- get conditional headers.
-            if from_revisit:
-                prior = known.get(url)
-                if prior and prior.etag:
-                    headers["if-none-match"] = prior.etag
-                if prior and prior.last_modified:
-                    headers["if-modified-since"] = prior.last_modified
             try:
-                response = self._http.get(url, headers=headers, follow_redirects=True, timeout=30)
+                response = self._get(url, conditional, known)
             except httpx.HTTPError as exc:
-                errors.append((url, f"fetch failed: {exc}"))
+                crawl.errors.append((url, f"fetch failed: {exc}"))
                 continue
-            finally:
-                self._pause()
-            final = str(response.url)
-            if final != url:
-                # A redirect's own destination scope matters more than whatever status it ends
-                # on: report it as out-of-scope rather than as e.g. a 404 at the target.
-                if not self._allowed(final, prefixes):
-                    errors.append((final, "redirected outside scope"))
-                    continue
-                if final in seen:
-                    continue
-                seen.add(final)
+            final = self._settle(url, str(response.url), response.status_code, queue, known, prefixes, crawl)
+            if final is None or "html" not in response.headers.get("content-type", "text/html").lower():
+                continue
+            try:
+                page = parse_crawled_page(response.text, final, spec, pdf_patterns)
+            except Exception as exc:  # noqa: BLE001 - one malformed page fails that URL, never the source
+                logger.warning("parse failed for %s: %r", final, exc)
+                crawl.errors.append((final, f"parse failed: {exc!r}"))
+                continue
+            for alt_lang, href in page.alternates.items():
+                # Language versions jump the queue, ahead of the page's own links (which often
+                # include the language switcher): A1 groups only pages crawled in the same run.
+                if alt_lang in spec.languages and self._crawlable(href, prefixes, pdf_patterns):
+                    queue.add(href, front=True)
+            for link in page.links:
+                if self._crawlable(link, prefixes, pdf_patterns):
+                    queue.add(link)
+            crawl.record(final, page, response)
+        return crawl.result()
 
-            if response.status_code == 304:
-                unchanged.append(url)
-                continue
-            if response.status_code in (404, 410):
-                if url in known:
-                    gone.append(url)
-                else:
-                    errors.append((url, f"HTTP {response.status_code}"))
-                continue
-            if response.status_code >= 400:
-                errors.append((url, f"HTTP {response.status_code}"))
-                continue
+    def _settle(self, url: str, final: str, status: int, queue: CrawlQueue, known: Mapping[str, KnownState],
+                prefixes: tuple[str, ...], crawl: "_CrawlResults") -> str | None:
+        """The URL to parse the response as, or None after recording why it is not parsed."""
+        if final != url:
+            if url in known:
+                crawl.gone[url] = None  # a known URL that now redirects is retired either way
+            # A redirect's destination scope matters more than whatever status it ends on.
+            if not self._allowed(final, prefixes):
+                crawl.errors.append((final, "redirected outside scope"))
+                return None
+            if final in queue.seen:
+                return None
+            queue.seen.add(final)
+        if status == 304:
+            crawl.unchanged.append(url)
+            return None
+        if status in (404, 410) and url in known:
+            crawl.gone[url] = None
+            return None
+        if status >= 400:
+            if url not in crawl.gone:
+                crawl.errors.append((url, f"HTTP {status}"))
+            return None
+        return final
 
-            if "html" not in response.headers.get("content-type", "text/html").lower():
-                continue
-            html = response.text
-            default_lang = spec.languages[0]
-            # Sentinel default so we can tell "no <html lang>" apart from "declared as the
-            # source's default language" -- both would otherwise read as default_lang.
-            page = html_to_page(html, url=final, default_language="", content_selector=content_selector)
-            meta = page_meta(html, final, language_links_selector=language_links_selector,
-                             pdf_link_patterns=pdf_patterns)
-            self_lang = next((lang for lang, href in meta.alternates.items()
-                              if urldefrag(href)[0] == urldefrag(final)[0]), None)
-            declared_lang = self_lang or (page.language or None)
-            if declared_lang is None:
-                lang = default_lang
-                emit = True
-            else:
-                lang = declared_lang
-                emit = lang in LANGUAGES and lang in spec.languages
 
-            # Language versions go to the front of the queue, before the page's own links (which
-            # often include the language switcher): A1 groups only pages crawled in the same run,
-            # so a pair split by max_pages would lose its shared work_key. An alternate already
-            # queued further back (linked from an earlier page) is pulled forward; the later
-            # duplicate entry is skipped as seen.
-            for alt_lang, href in meta.alternates.items():
-                if alt_lang in spec.languages and href not in seen and self._in_prefixes(href, prefixes):
-                    frontier.appendleft(href)
-                    queued.add(href)
-            for link in extract_links(html, base_url=final):
-                if (link not in seen and link not in queued and self._in_prefixes(link, prefixes)
-                        and not _matches(link, pdf_patterns)):
-                    frontier.append(link)
-                    queued.add(link)
+class _CrawlResults:
+    """What one run collects: emitted documents, their alternates for A1 grouping, PDFs, errors."""
 
-            if not emit:
-                continue
+    def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...]):
+        self._spec = spec
+        self._max_pdfs = max_pdfs
+        self._pdf_prefixes = pdf_prefixes
+        self.pending: list[ParsedDocument] = []
+        self.alternates_by_url: dict[str, dict[str, str]] = {}
+        self.page_languages: dict[str, str] = {}
+        self.pdfs: dict[str, DiscoveredPdf] = {}
+        self.unchanged: list[str] = []
+        self.gone: dict[str, None] = {}
+        self.errors: list[tuple[str, str]] = []
 
-            alternates_by_url[final] = dict(meta.alternates)
-            page_languages[final] = lang
-            for pdf_url, text in meta.pdf_links:
-                if len(pdfs) < max_pdfs and pdf_url not in pdfs and self._in_prefixes(pdf_url, pdf_prefixes):
-                    pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=lang, title_hint=text or page.title,
-                                                  source_id=spec.id)
-            if not page.sections:
-                continue
-            title = page.title or final
-            sections = []
-            for i, s in enumerate(page.sections):
-                parts = [p for p in s.heading_path.split(" > ") if p]
-                crumbs = tuple(parts) if parts and parts[0] == title else (title, *parts)
-                sections.append(ParsedSection(align_key=f"{lang}:{i}", breadcrumb=crumbs, anchor=s.anchor, text=s.text))
-            pending.append(ParsedDocument(
-                source_id=spec.id, url=final, language=lang, work_key="", title=title,
-                sections=tuple(sections), published_at=meta.published, modified_at=meta.modified,
-                retrieved_via=spec.retrieved_via, etag=response.headers.get("etag"),
+    def record(self, final: str, page: CrawledPage, response: httpx.Response) -> None:
+        if not page.emit:
+            return
+        self.alternates_by_url[final] = dict(page.alternates)
+        self.page_languages[final] = page.language
+        for pdf_url, text in page.pdf_links:
+            if (len(self.pdfs) < self._max_pdfs and pdf_url not in self.pdfs
+                    and any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
+                self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=page.language,
+                                                   title_hint=text or page.title_hint, source_id=self._spec.id)
+        if page.sections:
+            self.pending.append(ParsedDocument(
+                source_id=self._spec.id, url=final, language=page.language, work_key="", title=page.title,
+                sections=page.sections, published_at=page.published, modified_at=page.modified,
+                retrieved_via=self._spec.retrieved_via, etag=response.headers.get("etag"),
                 last_modified=response.headers.get("last-modified")))
-        keys = _language_groups(alternates_by_url, page_languages)
-        documents = tuple(
-            replace(doc, work_key=keys.get(doc.url, work_key(doc.url, {})))
-            for doc in pending
-        )
-        return ConnectorResult(documents=documents, unchanged_urls=tuple(unchanged), gone_urls=tuple(gone),
-                               errors=tuple(errors), pdfs=tuple(pdfs.values()))
+
+    def result(self) -> ConnectorResult:
+        keys = _language_groups(self.alternates_by_url, self.page_languages)
+        documents = tuple(replace(doc, work_key=keys.get(doc.url, work_key(doc.url, {}))) for doc in self.pending)
+        return ConnectorResult(documents=documents, unchanged_urls=tuple(self.unchanged),
+                               gone_urls=tuple(self.gone), errors=tuple(self.errors), pdfs=tuple(self.pdfs.values()))

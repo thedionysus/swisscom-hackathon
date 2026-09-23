@@ -125,3 +125,16 @@ def test_pdf_link_patterns_count_extensionless_links_as_pdfs():
     assert "https://www.ahv-iv.ch/p/2.01.d" in urls
     assert all(u.startswith("https://www.ahv-iv.ch/p/") for u in urls)
     assert dict(links)["https://www.ahv-iv.ch/p/2.01.d"].startswith("2.01 - Lohnbeiträge")
+
+
+def test_nuxt_self_referencing_wrappers_do_not_recurse_forever():
+    looping = ('<html><body><script id="__NUXT_DATA__">'
+               '[{"groupId":1,"lang":2,"translationPages":3},"g",["Reactive",2],["ShallowRef",4],'
+               '["Reactive",3]]</script></body></html>')
+    assert page_meta(looping, "https://x.ch/de/a").alternates == {}
+
+
+def test_switcher_text_counts_only_when_it_is_wholly_a_language():
+    html = _switcher('<a href="/fr/doc">Lire en ligne</a>', '<a href="/p/9">Italiano</a>')
+    meta = page_meta(html, "https://x.ch/de/", language_links_selector="nav#language a[href]")
+    assert meta.alternates == {"fr": "https://x.ch/fr/doc", "it": "https://x.ch/p/9"}
