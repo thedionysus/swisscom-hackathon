@@ -4881,3 +4881,47 @@ Push over HTTPS with the gh credential helper (the SSH key belongs to another ac
 - **Deliberately not here (serving track):** query-time search over `corpus.*`, corroboration, fusion, abstention, `outside_scope`/`source_unavailable`, live lookups, the MCP contract, the prebuilt-dump download, the README scope declaration.
 - **Known limits accepted for tomorrow:** HTML versions are grouped but not aligned by position (corroboration for HTML works at document level); the Batch resume path re-attaches only when the same command is re-run; `max_pages` caps are guesses sized to the budget and should be tuned after the free fetch; cantonal law (ADR 0008) is not in tier 1.
 - **Cost check before the paid run:** the free fetch in Task 21 Step 2 produces the real chunk counts; `corpus estimate` must be under the cap with room for re-runs.
+
+---
+
+## Amendments from plan review (2026-09-23) — these override the task text above
+
+Found while checking the plan against the codebase before implementation. None re-opens a settled decision; each fixes a bug in the planned code. Implementers apply the amendments listed for their task, with a test for each.
+
+**A1 — HTML pages of one language must never share a translation group (Tasks 9, 11).**
+`work_key` = smallest URL among a page and its hreflang alternates. Many sites point every page's `fr` alternate at the French homepage when no translation exists, so unrelated German pages get the same key. Persistence rule 3 then supersedes page A when page B is stored, and chunk descriptions for `(group, align_key, language)` cross between pages. Two fixes:
+- *Task 11:* rule 3 (a new URL retires the other `current` row of the group/language/source) applies only when `doc.valid_from is not None` — i.e. dated consolidations such as Fedlex. Undated documents (HTML, PDF) are versioned by URL only. Test: two undated documents with the same `work_key`, same language, different URLs → both stay `current`.
+- *Task 9:* `HtmlConnector.run` assigns `work_key` after the crawl, from **symmetric** alternates only: page P and Q are grouped when P lists Q as an alternate and Q lists P. Groups are the connected components of those mutual links; if a component holds two pages of the same language, every page in it falls back to its own key `html:<url>`. A page whose alternates were not crawled in this run keeps `html:<url>`. Keep `html_meta.work_key` for the key format (`html:` + smallest member URL). Test: two German pages whose `fr` alternate is the same French homepage (which lists only one of them back) → different `work_key`s; the symmetric pair from the existing test still shares one.
+
+**A2 — `build_chunk_tasks` must not `array_agg` text arrays (Task 17).**
+`(array_agg(c.topics))[1]` fails with "cannot accumulate empty arrays" for every chunk whose `topics` is `'{}'` (all HTML chunks), and a one-index subscript into the resulting 2-D array returns NULL anyway. Use `(array_agg(to_jsonb(c.topics)))[1] as prior` (psycopg returns a list).
+
+**A3 — Batch jobs are resumable and count against the cap while in flight (Tasks 14, 15, 19).**
+As written, a killed process loses its submitted batches (re-running submits and pays again), and spend is recorded only after results are ingested, so a second run can pass `ensure_within` while the first run's batches are still pending.
+- *Task 14:* `ensure_within` adds `sum(estimated_usd)` of `corpus.batch_job` rows with `ingested_at is null` and a status not in `('failed','expired','cancelled')` to the spent total (and per kind: batch_job.kind values are `ocr`, `describe-doc`, `describe-chunk`, `embed`; map `describe-*` to ledger kind `describe`). Test it.
+- *Task 15:* `BatchRunner.__init__` takes `record(batch_id, kind, endpoint, request_count, input_path, estimated_usd)` and `mark_done(batch_id, status)`; `run(tasks, kind, estimated_usd)` and `submit_lines(lines, kind, endpoint, estimated_usd)` split the estimate across files pro rata. `collect(batch_id)` calls `mark_done(batch_id, status)` after its last line has been yielded. Add `resume(batch_ids) -> Iterator[LlmOutcome]` that collects already-submitted chat batches and parses their lines. Test resume with the fake client.
+- *Task 19:* every paid command, before building tasks, looks up `corpus.batch_job` rows of its kind with `ingested_at is null` and status not terminal-failed, and ingests them first through the same `run_*` function (a small adapter runner whose `run()` yields `batch_runner.resume(ids)`); for `embed`, collect them through the same path `embed_openai_batch` uses. `mark_done` sets `status` and `ingested_at = now()`. Only then are new tasks built (so already-answered work is skipped) and submitted. Add a `corpus batches` command listing batch_job rows.
+
+**A4 — Batch input files are split by size as well as count (Task 15).**
+OpenAI caps a batch input file at 200 MB. 50,000 chunk-description lines (~10 KB each) or a few hundred OCR lines (base64 PNG) exceed it. `submit_lines` starts a new file when adding a line would pass `max_bytes` (default 150_000_000) or `max_per_file`. Test with a small `max_bytes`.
+
+**A5 — Scheduled consolidations are promoted when their date arrives (Tasks 11, 12).**
+The Fedlex connector reports a known URL as unchanged without re-emitting it, so a `scheduled` row never becomes `current` on a later fetch. Add `promote_due(conn, today) -> int` in `persist.py`: every `scheduled` document with `valid_from <= today` becomes `current` (chunks too, `boilerplate` kept) and supersedes the other `current` row of its group/language/source with `valid_to = valid_from`. `run_fetch` calls it once after all sources finish (`today = now().date()`). Test it.
+
+**A6 — Jurisdiction name in document prompts (Task 17).**
+`public.location.names` is flat (`{"de": "Bern", "en": "Bern", ...}`); there is no `labels` key. Use `l.names->>'en'`, else every document is described as applying to "Switzerland". Assert the place name appears in the doc task's prompt in the integration test (seed a municipal source).
+
+**A7 — Reuse vectors on the paid path, and index the lookup (Tasks 2, 18, 19).**
+- *Task 2:* add `create index if not exists emb_openai_3l_hash_idx on corpus.emb_openai_3l (text_hash, language)` and the same for `emb_bge_m3`.
+- *Task 18/19:* `reuse_embeddings` runs before `pending_for_index` in the OpenAI paths too (batch and sync), so an unchanged chunk of a new version is never paid for twice. Do it in one set-based `insert … select` rather than one query per pending chunk if convenient.
+
+**A8 — Integration tests always use fake corpus providers (Task 0).**
+Tomorrow's `.env` will set `CORPUS_LLM_PROVIDER=openai`. Add `"CORPUS_LLM_PROVIDER": "fake"` to `FAKE_BACKENDS` in `tests/integration/conftest.py`, and in Task 19 the CLI must never construct an OpenAI client when the provider is `fake`.
+
+**A9 — Estimates use the price actually paid (Tasks 16, 17, 18, 19).**
+- `estimate_ocr` / `estimate_describe` / `estimate_embeddings` take `batch: bool = True` and pass it to `cost_usd`; sync commands check the cap with `batch=False`.
+- `ocr --pilot N` checks the cap with the cost of N pages at sync price, not the estimate for all pending pages (as written it multiplies the full estimate by `pilot / len(tasks)` = 1, which can block the pilot itself).
+- Sync OpenAI embeddings (`embed_local` with `OpenAIEmbeddings`) record spend under kind `embed` using `last_usage` at sync price.
+
+**A10 — Akoma Ntoso text survives pretty-printed XML (Task 6).**
+Real Fedlex XML may put newlines between `<num>` and `<content>`; splitting `get_text` on `"\n"` would put `1` and its text on separate lines. In `_render`, collapse whitespace inside every text node first, insert an explicit marker (e.g. `" "`) before each list item, then split on the marker. Add a fixture variant with pretty-printed whitespace between `<num>1</num>` and `<content>` and assert the paragraph still starts `1 Nach Ablauf`.
