@@ -52,6 +52,7 @@ from swiss_grounding.corpus.embed import (
 from swiss_grounding.corpus.ocr import (
     OCR_OUTPUT_TOKENS,
     OCR_PROMPT_TOKENS,
+    PENDING_WHERE,
     build_ocr_tasks,
     estimate_ocr,
     run_ocr,
@@ -144,6 +145,31 @@ def _llm(settings: Settings):
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
     return _FakeCorpusLLM()
+
+
+# --- configured indexes -----------------------------------------------------------------------------
+
+def _configured_indexes(settings: Settings) -> list[IndexSpec]:
+    """CORPUS_INDEXES as specs, local indexes first (free work before paid work)."""
+    specs = [INDEXES[name] for name in settings.corpus_indexes]
+    return sorted(specs, key=lambda spec: spec.provider != "local")
+
+
+def _require_configured(settings: Settings, name: str) -> None:
+    """Which indexes get built is configuration: an explicit --index outside CORPUS_INDEXES is refused."""
+    if name not in settings.corpus_indexes:
+        typer.echo(f"{name} is not in CORPUS_INDEXES (currently: {','.join(settings.corpus_indexes)}); "
+                   "add it there to build it")
+        raise typer.Exit(REFUSED_EXIT_CODE)
+
+
+def _selected_indexes(settings: Settings, index: str | None) -> list[IndexSpec]:
+    if index is None:
+        return _configured_indexes(settings)
+    if index not in INDEXES:
+        raise typer.BadParameter(f"--index must be one of {sorted(INDEXES)}")
+    _require_configured(settings, index)
+    return [INDEXES[index]]
 
 
 # --- batch runners ----------------------------------------------------------------------------------
@@ -243,6 +269,37 @@ def _check_budget(conn, settings: Settings, estimate: float, num_tasks: int, kin
         raise BudgetExceeded(f"{exc} — no tasks fit in what is left") from exc
 
 
+def empty_report() -> dict[str, int]:
+    return {"done": 0, "failed": 0, "skipped": 0, "refused": 0}
+
+
+def add_reports(total: dict[str, int], report: dict[str, int]) -> dict[str, int]:
+    return {key: total.get(key, 0) + report.get(key, 0) for key in empty_report()}
+
+
+def _fit_to_budget(conn, settings: Settings, tasks: Sequence, estimate_fn: Callable[[Sequence], float],
+                   kind: str | None, kind_cap: float | None) -> tuple[list, float]:
+    """The longest prefix of `tasks` whose estimate fits what is left of the cap, and its estimate. Shrinks
+    until the prefix's own estimate fits, since the first tasks may cost more than the average."""
+    remaining = remaining_budget(conn, total_cap=settings.corpus_budget_usd, kind=kind, kind_cap=kind_cap)
+    count, estimate = len(tasks), estimate_fn(tasks)
+    while count and estimate > remaining:
+        count = tasks_that_fit(remaining, estimate, count)
+        estimate = estimate_fn(tasks[:count]) if count else 0.0
+    return list(tasks[:count]), estimate
+
+
+def _admit(conn, settings: Settings, tasks: Sequence, estimate_fn: Callable[[Sequence], float], fit_budget: bool,
+           kind: str | None = None, kind_cap: float | None = None) -> tuple[list, float]:
+    """The tasks to run and their estimate. Standalone commands refuse when the stage does not fit
+    (BudgetExceeded); `corpus run` (fit_budget) runs the part that fits instead."""
+    if fit_budget:
+        return _fit_to_budget(conn, settings, tasks, estimate_fn, kind, kind_cap)
+    estimate = estimate_fn(tasks)
+    _check_budget(conn, settings, estimate, len(tasks), kind=kind, kind_cap=kind_cap)
+    return list(tasks), estimate
+
+
 # --- estimate ---------------------------------------------------------------------------------------
 
 def _echo_describe_estimates(conn, settings: Settings, batch: bool) -> float:
@@ -261,17 +318,22 @@ def _echo_describe_estimates(conn, settings: Settings, batch: bool) -> float:
     return docs_usd + projected_usd
 
 
-def _echo_embed_estimates(conn, batch: bool) -> float:
-    """Prints the embed lines; returns the openai-3l estimate projected with descriptions."""
+def _echo_embed_estimates(conn, settings: Settings, batch: bool) -> float:
+    """Prints the embed lines, marking indexes outside CORPUS_INDEXES; returns the openai-3l estimate projected
+    with descriptions when it is configured, else 0."""
+    configured = settings.corpus_indexes
+    mark = {name: "" if name in configured else " (not configured, excluded)" for name in INDEXES}
     spec = INDEXES["openai-3l"]
     pending = pending_for_index(conn, spec, require_description=False, limit=None)
     before = estimate_embeddings(pending, spec.model, batch=batch)
     extra = cost_usd(spec.model, PROJECTED_DESCRIPTION_TOKENS * len(pending), 0, batch=batch)
-    typer.echo(f"embed openai-3l before descriptions: {len(pending)} chunks, estimate {usd(before)}")
-    typer.echo(f"embed openai-3l projected with descriptions: {len(pending)} chunks, estimate {usd(before + extra)}")
+    typer.echo(f"embed openai-3l before descriptions: {len(pending)} chunks, estimate {usd(before)}"
+               f"{mark['openai-3l']}")
+    typer.echo(f"embed openai-3l projected with descriptions: {len(pending)} chunks, estimate {usd(before + extra)}"
+               f"{mark['openai-3l']}")
     local = pending_for_index(conn, INDEXES["bge-m3"], require_description=False, limit=None)
-    typer.echo(f"embed bge-m3: {len(local)} chunks, local (free)")
-    return before + extra
+    typer.echo(f"embed bge-m3: {len(local)} chunks, local (free){mark['bge-m3']}")
+    return before + extra if "openai-3l" in configured else 0.0
 
 
 @corpus_app.command("estimate")
@@ -285,7 +347,7 @@ def estimate_cmd() -> None:
         ocr_usd = estimate_ocr(conn, ocr_model, batch=batch)
         typer.echo(f"ocr: estimate {usd(ocr_usd)}")
         describe_usd = _echo_describe_estimates(conn, settings, batch)
-        embed_usd = _echo_embed_estimates(conn, batch=True)
+        embed_usd = _echo_embed_estimates(conn, settings, batch=True)
         in_flight = conn.execute("select count(*) as n, coalesce(sum(estimated_usd), 0) as usd "
                                  "from corpus.batch_job where ingested_at is null and status <> all(%s)",
                                  (list(TERMINAL_NON_COUNTING_STATUSES),)).fetchone()
@@ -293,7 +355,7 @@ def estimate_cmd() -> None:
     typer.echo(f"estimates at {'batch' if batch else 'sync'} price; sync costs x{SYNC_MULTIPLIER:g}")
     typer.echo(f"batches in flight: {in_flight['n']} ({usd(float(in_flight['usd']))})")
     typer.echo(f"spent so far: {usd(total)} of {usd(settings.corpus_budget_usd)}")
-    # The go/no-go number: ocr + docs + projected chunk pass + openai-3l projected with descriptions.
+    # The go/no-go number: ocr + docs + projected chunk pass + configured paid indexes projected with descriptions.
     label = "batch price" if batch else "ocr/describe at sync price, embed at batch price"
     typer.echo(f"total estimate ({label}): {usd(ocr_usd + describe_usd + embed_usd)}")
 
@@ -330,31 +392,54 @@ def _ocr_pilot(settings: Settings, pages: int) -> None:
                f"{usd(per_page / SYNC_MULTIPLIER * remaining)}")
 
 
-def _ocr_slices(settings: Settings, sync: bool, limit: int | None) -> None:
+def _pending_ocr_pages(conn) -> int:
+    return conn.execute(f"select count(*) as n from corpus.chunk where {PENDING_WHERE}").fetchone()["n"]
+
+
+def _ocr_round(settings: Settings, priced: str, batch: bool, tasks: list, fit_budget: bool) -> tuple[list, float, int]:
+    """(pages admitted, their estimate, pages left pending because the budget ran out)."""
+    page_usd = _ocr_page_usd(priced, batch)
+    typer.echo(f"ocr round: {len(tasks)} page(s), estimate {usd(len(tasks) * page_usd)} "
+               f"({_price_label(priced, batch)})")
+    with connect(settings.database_url) as conn:
+        admitted, estimate = _admit(conn, settings, tasks, lambda ts: len(ts) * page_usd, fit_budget,
+                                    kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
+        refused = _pending_ocr_pages(conn) - len(admitted) if len(admitted) < len(tasks) else 0
+    if refused:
+        typer.echo(f"ocr: budget allows {len(admitted)} of {len(tasks)} page(s) in this round; "
+                   f"{refused} page(s) left pending")
+    return admitted, estimate, refused
+
+
+def _ocr_slices(settings: Settings, sync: bool, limit: int | None, fit_budget: bool = False) -> dict[str, int]:
     """OCR in rounds of at most OCR_SLICE pages (bounded memory for page images) until nothing is pending,
-    `limit` pages are done, or the cap refuses. Pages that failed in this run are not retried in it."""
+    `limit` pages are done, or the cap refuses (with fit_budget: until the cap is reached). Pages that failed
+    in this run are not retried in it. Returns the totals."""
     priced = _priced_model(settings, settings.corpus_ocr_model)
     batch = _uses_batch(settings, sync)
     attempted: set[str] = set()
-    failed = 0
+    totals = empty_report()
     left = limit
     while left is None or left > 0:
         size = OCR_SLICE if left is None else min(OCR_SLICE, left)
         with connect(settings.database_url) as conn:
-            built = build_ocr_tasks(conn, settings.corpus_ocr_model, size + failed)
-            tasks = [t for t in built if t.custom_id not in attempted][:size]
-            if not tasks:
-                typer.echo("no pages need OCR" if not attempted else "ocr: nothing left to do")
-                return
-            estimate = len(tasks) * _ocr_page_usd(priced, batch)
-            typer.echo(f"ocr round: {len(tasks)} page(s), estimate {usd(estimate)} ({_price_label(priced, batch)})")
-            _check_budget(conn, settings, estimate, len(tasks), kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
-        runner = _chat_runner(settings, sync, kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
-        report = run_ocr(settings.database_url, runner, tasks, model=priced, batch=batch, estimated_usd=estimate)
-        typer.echo(f"ocr: {report}")
+            built = build_ocr_tasks(conn, settings.corpus_ocr_model, size + totals["failed"])
+        tasks = [t for t in built if t.custom_id not in attempted][:size]
+        if not tasks:
+            typer.echo("no pages need OCR" if not attempted else "ocr: nothing left to do")
+            return totals
+        tasks, estimate, refused = _ocr_round(settings, priced, batch, tasks, fit_budget)
+        totals = add_reports(totals, {"refused": refused})
+        if tasks:
+            runner = _chat_runner(settings, sync, kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
+            report = run_ocr(settings.database_url, runner, tasks, model=priced, batch=batch, estimated_usd=estimate)
+            typer.echo(f"ocr: {report}")
+            totals = add_reports(totals, report)
+        if refused:
+            return totals
         attempted.update(t.custom_id for t in tasks)
-        failed += report["failed"]
         left = None if left is None else left - len(tasks)
+    return totals
 
 
 @corpus_app.command("ocr")
@@ -382,7 +467,10 @@ def ocr_cmd(pilot: int = typer.Option(0, "--pilot", help="Sync OCR of N pages, t
 
 # --- describe ---------------------------------------------------------------------------------------
 
-def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, dry_run: bool) -> None:
+def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, dry_run: bool,
+                  fit_budget: bool = False) -> dict[str, int]:
+    """One describe pass (`docs` or `chunks`). Returns done/failed/skipped/refused, refused being the tasks
+    left for lack of budget (only with fit_budget; otherwise a stage over the cap raises BudgetExceeded)."""
     task_model = settings.corpus_doc_model if what == "docs" else settings.corpus_chunk_model
     priced = _priced_model(settings, task_model)
     run_fn = run_doc_descriptions if what == "docs" else run_chunk_descriptions
@@ -394,14 +482,21 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
             typer.echo(f"marked {mark_repeated_furniture(conn)} repeated furniture chunk(s) as boilerplate")
             conn.commit()
         tasks = (build_doc_tasks if what == "docs" else build_chunk_tasks)(conn, task_model, limit)
-        estimate = estimate_describe(tasks, priced, batch=batch)
-        typer.echo(f"{what}: {len(tasks)} tasks, estimate {usd(estimate)} ({_price_label(priced, batch)})")
+        typer.echo(f"{what}: {len(tasks)} tasks, estimate {usd(estimate_describe(tasks, priced, batch=batch))} "
+                   f"({_price_label(priced, batch)})")
         if dry_run or not tasks:
-            return
-        _check_budget(conn, settings, estimate, len(tasks))
-    report = run_fn(settings.database_url, _chat_runner(settings, sync), tasks, model=priced, batch=batch,
+            return empty_report()
+        admitted, estimate = _admit(conn, settings, tasks, lambda ts: estimate_describe(ts, priced, batch=batch),
+                                    fit_budget)
+    refused = len(tasks) - len(admitted)
+    if refused:
+        typer.echo(f"{what}: budget allows {len(admitted)} of {len(tasks)} task(s); {refused} left for later")
+    if not admitted:
+        return add_reports(empty_report(), {"refused": refused})
+    report = run_fn(settings.database_url, _chat_runner(settings, sync), admitted, model=priced, batch=batch,
                     estimated_usd=estimate)
     typer.echo(f"{what}: {report}")
+    return add_reports(report, {"refused": refused})
 
 
 @corpus_app.command("describe")
@@ -424,20 +519,20 @@ def describe_cmd(what: str = typer.Option(..., "--what", help="docs, chunks, or 
 
 # --- embed and index --------------------------------------------------------------------------------
 
-def _embed_in_process(settings: Settings, spec: IndexSpec, require_description: bool) -> None:
+def _embed_in_process(settings: Settings, spec: IndexSpec, require_description: bool) -> int:
+    """Embeds in this process (local model, or sync OpenAI embeddings with the key CORPUS_INDEXES requires)."""
     max_tokens = None
     if spec.provider == "local":
         provider = FakeEmbeddings(spec.dim) if settings.embedding_backend == "fake" else LocalBgeM3(spec.model)
         batch_size = LOCAL_EMBED_BATCH
-    elif settings.corpus_llm_provider in ("openai", "fake"):
-        provider = (OpenAIEmbeddings(settings.openai_api_key, spec.model) if settings.corpus_llm_provider == "openai"
-                    else FakeEmbeddings(spec.dim))
-        batch_size, max_tokens = OPENAI_EMBED_MAX_ITEMS, OPENAI_EMBED_MAX_TOKENS
     else:
-        raise typer.BadParameter(f"{spec.name} needs CORPUS_LLM_PROVIDER=openai (or fake)")
+        provider = (FakeEmbeddings(spec.dim) if settings.corpus_llm_provider == "fake"
+                    else OpenAIEmbeddings(settings.openai_api_key, spec.model))
+        batch_size, max_tokens = OPENAI_EMBED_MAX_ITEMS, OPENAI_EMBED_MAX_TOKENS
     written = embed_local(settings.database_url, spec, provider, batch_size=batch_size,
                           require_description=require_description, max_tokens_per_request=max_tokens)
     typer.echo(f"{spec.name}: written {written}")
+    return written
 
 
 def _resume_embed(settings: Settings, spec: IndexSpec) -> None:
@@ -455,54 +550,66 @@ def _embeds_fake(settings: Settings, spec: IndexSpec) -> bool:
     return settings.corpus_llm_provider == "fake"
 
 
-@corpus_app.command("embed")
-@friendly_errors
-def embed_cmd(index: str = typer.Option(..., "--index", help="openai-3l or bge-m3"),
-              sync: bool = typer.Option(False, "--sync"),
-              limit: int | None = typer.Option(None, "--limit", help="Batch path only."),
-              dry_run: bool = typer.Option(False, "--dry-run"),
-              allow_undescribed: bool = typer.Option(False, "--allow-undescribed"),
-              allow_fake: bool = typer.Option(False, "--allow-fake", help=ALLOW_FAKE_HELP)) -> None:
-    """Embed described chunks: openai-3l through the Batch API (or sync), bge-m3 locally."""
-    if index not in INDEXES:
-        raise typer.BadParameter(f"--index must be one of {sorted(INDEXES)}")
-    settings = load_settings()
-    spec = INDEXES[index]
-    require = not allow_undescribed
+def _embed_one(settings: Settings, spec: IndexSpec, sync: bool, limit: int | None, dry_run: bool,
+               require: bool) -> int:
+    """Embeds one index's pending chunks; returns the vectors written. A paid index over the cap raises
+    BudgetExceeded before anything new is submitted."""
     paid = spec.provider == "openai"
     batch = paid and _uses_batch(settings, sync)
-    if not dry_run:
-        _guard_fake(settings, _embeds_fake(settings, spec), allow_fake, f"embed {index}")
     if paid and not dry_run:
         _resume_embed(settings, spec)
     with connect(settings.database_url) as conn:
         if paid and not dry_run:
-            typer.echo(f"{index}: reused {reuse_embeddings(conn, spec, require)} vector(s) from earlier versions")
+            typer.echo(f"{spec.name}: reused {reuse_embeddings(conn, spec, require)} vector(s) from earlier versions")
             conn.commit()
         pending = pending_for_index(conn, spec, require_description=require, limit=limit if batch else None)
         estimate = estimate_embeddings(pending, spec.model, batch=batch) if paid else 0.0
-        typer.echo(f"{index}: {len(pending)} chunks pending, estimate {usd(estimate)}"
+        typer.echo(f"{spec.name}: {len(pending)} chunks pending, estimate {usd(estimate)}"
                    + (f" ({_price_label(spec.model, batch)})" if paid else " (local)"))
         if dry_run or not pending:
-            return
+            return 0
         if paid:
             _check_budget(conn, settings, estimate, len(pending), kind="embed")
     if limit is not None and not batch:
         typer.echo("note: --limit applies to the Batch path only; embedding every pending chunk")
     if not batch:
-        _embed_in_process(settings, spec, require)
-        return
+        return _embed_in_process(settings, spec, require)
     runner = _batch_runner(settings, settings.corpus_embed_tokens_per_file, kind="embed")
-    typer.echo(f"{index}: {embed_openai_batch(settings.database_url, spec, runner, pending, estimated_usd=estimate)}")
+    report = embed_openai_batch(settings.database_url, spec, runner, pending, estimated_usd=estimate)
+    typer.echo(f"{spec.name}: {report}")
+    return report["written"]
+
+
+INDEX_HELP = "One index from CORPUS_INDEXES; default: every configured index, local first."
+
+
+@corpus_app.command("embed")
+@friendly_errors
+def embed_cmd(index: str | None = typer.Option(None, "--index", help=INDEX_HELP),
+              sync: bool = typer.Option(False, "--sync"),
+              limit: int | None = typer.Option(None, "--limit", help="Batch path only."),
+              dry_run: bool = typer.Option(False, "--dry-run"),
+              allow_undescribed: bool = typer.Option(False, "--allow-undescribed"),
+              allow_fake: bool = typer.Option(False, "--allow-fake", help=ALLOW_FAKE_HELP)) -> None:
+    """Embed described chunks for the indexes in CORPUS_INDEXES: bge-m3 locally, openai-3l via the Batch API."""
+    settings = load_settings()
+    specs = _selected_indexes(settings, index)
+    if not dry_run:
+        for spec in specs:
+            _guard_fake(settings, _embeds_fake(settings, spec), allow_fake, f"embed {spec.name}")
+    for spec in specs:
+        _embed_one(settings, spec, sync, limit, dry_run, require=not allow_undescribed)
+
+
+def build_indexes(settings: Settings, specs: Sequence[IndexSpec]) -> None:
+    for spec in specs:
+        build_vector_indexes(settings.database_url, spec, parallel_workers=settings.corpus_index_parallel_workers)
+        typer.echo(f"{spec.name}: HNSW indexes built")
 
 
 @corpus_app.command("index")
 @friendly_errors
-def index_cmd(index: str = typer.Option(..., "--index")) -> None:
-    """Build the HNSW indexes of one embedding table (after bulk loading)."""
-    if index not in INDEXES:
-        raise typer.BadParameter(f"--index must be one of {sorted(INDEXES)}")
+def index_cmd(index: str | None = typer.Option(None, "--index", help=INDEX_HELP)) -> None:
+    """Build the HNSW indexes of the configured embedding tables (after bulk loading)."""
     settings = load_settings()
-    build_vector_indexes(settings.database_url, INDEXES[index],
-                         parallel_workers=settings.corpus_index_parallel_workers)
-    typer.echo(f"{index}: HNSW indexes built")
+    build_indexes(settings, _selected_indexes(settings, index))

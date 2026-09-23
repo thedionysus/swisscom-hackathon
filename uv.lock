@@ -3092,7 +3092,7 @@ requires-dist = [
     { name = "protego", specifier = ">=0.3" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2" },
     { name = "pydantic", specifier = ">=2.8" },
-    { name = "pydantic-settings", specifier = ">=2.4" },
+    { name = "pydantic-settings", specifier = ">=2.7" },
     { name = "pypdf", specifier = ">=4.0" },
     { name = "pypdfium2", specifier = ">=4.30" },
     { name = "pyyaml", specifier = ">=6.0" },
