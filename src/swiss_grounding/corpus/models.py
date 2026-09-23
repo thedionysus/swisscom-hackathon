@@ -40,13 +40,15 @@ class ParsedSection:
     paragraphs: tuple[tuple[str, str], ...] = ()
     needs_ocr: bool = False
     ocr_image: str | None = None
+    ocr_digest: str | None = None
+    split_paragraphs: bool = False
 
 
 @dataclass(frozen=True)
 class ParsedDocument:
     source_id: str
     url: str
-    language: str
+    language: Language
     work_key: str
     title: str
     sections: tuple[ParsedSection, ...]
@@ -67,7 +69,7 @@ class ParsedDocument:
 @dataclass(frozen=True)
 class DiscoveredPdf:
     url: str
-    language: str
+    language: Language
     title_hint: str
     source_id: str
 
@@ -106,5 +108,6 @@ def content_hash(doc: ParsedDocument) -> str:
     not content, and persistence handles that as a status change rather than a new version.
     """
     payload = [doc.title, doc.valid_from.isoformat() if doc.valid_from else None,
-               [[s.align_key, list(s.breadcrumb), s.text, s.ocr_image is not None] for s in doc.sections]]
+               [[s.align_key, list(s.breadcrumb), s.anchor, s.text, [list(p) for p in s.paragraphs], s.ocr_digest]
+                for s in doc.sections]]
     return hashlib.sha256(json.dumps(payload, ensure_ascii=False).encode()).hexdigest()
