@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-b, section: UR (19 communes); i-web). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+# Category missing in the registry: courts
+id: ur-gerichte-rechtsgebiete
+name: UR Gerichte Rechtsgebiete
+base_url: https://www.ur.ch
+default_extent_id: CH-UR
+authority: official_info
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.ur.ch/rechtsgebiete/3909
+  - https://www.ur.ch/rechtsgebiete/3912
+  - https://www.ur.ch/rechtsgebiete/3914
+  - https://www.ur.ch/rechtsgebiete/3915
+  - https://www.ur.ch/rechtsgebiete/3917
+  - https://www.ur.ch/rechtsgebiete/3918
+  path_allowlist:
+  - /rechtsgebiete/
+  language: de

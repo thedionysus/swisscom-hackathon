@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+# Category missing in the registry: courts
+id: zh_verwaltungsgericht
+name: Verwaltungsgericht des Kantons Zürich – Verfahren
+base_url: https://www.zh.ch
+default_extent_id: CH-ZH
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /de/politik-staat/streitigkeiten-vor-verwaltungsgericht.html
+  - /de/gerichte-notariate/verwaltungsgericht.html
+  path_allowlist:
+  - /de/politik-staat/streitigkeiten-vor-verwaltungsgericht
+  - /de/gerichte-notariate/verwaltungsgericht
+  language: de
+allow_narrowing: false
+license: zh.ch terms of use

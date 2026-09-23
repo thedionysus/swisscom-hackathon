@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-a, section: SO (Solothurn)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+# Category missing in the registry: courts
+id: so_gerichte
+name: Gerichte Kanton Solothurn – Zuständigkeit, Friedensrichter, Mietschlichtung
+base_url: https://so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /gerichte/
+  - /verwaltung/departement-des-innern/departementssekretariat/oberaemter/schlichtung-und-vermittlung/
+  path_allowlist:
+  - /gerichte/
+  - /verwaltung/departement-des-innern/departementssekretariat/oberaemter/schlichtung-und-vermittlung/
+  language: de
+allow_narrowing: false

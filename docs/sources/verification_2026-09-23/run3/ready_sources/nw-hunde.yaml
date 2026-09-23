@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-b, section: NW (11 communes); i-web). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: nw-hunde
+name: NW Hunde
+base_url: https://www.nw.ch
+default_extent_id: CH-NW
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.nw.ch/amtjustizdienste/581
+  path_allowlist:
+  - /amtjustizdienste/581
+  language: de

@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-b, section: ZG (11 communes)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+# Orchestrator fix 2026-09-23: categories ['schools', 'dogs'] set from the agent report (the draft had none).
+id: zg-pdfs
+name: ZG Pdfs
+base_url: https://cdn.zg.ch
+default_extent_id: CH-ZG
+authority: official_info
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/Schulferien%20202627-203031.pdf
+  - https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/Infoblatt%20Hundereglemente%20Januar%202026.pdf
+categories:
+- schools
+- dogs

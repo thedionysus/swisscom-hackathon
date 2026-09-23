@@ -1,0 +1,353 @@
+{
+ "rubrics": {
+  "kabgr": [
+   "AA-GR"
+  ],
+  "shab": [
+   "AB",
+   "AW",
+   "AZ",
+   "BB",
+   "BH",
+   "EK",
+   "ES",
+   "FM",
+   "HR",
+   "KK",
+   "LS",
+   "NA",
+   "SB",
+   "SR",
+   "UP",
+   "UV"
+  ],
+  "kabar": [
+   "AI-AR",
+   "BP-AR",
+   "FZ-AR",
+   "GB-AR",
+   "KA-AR",
+   "KO-AR",
+   "OB-AR",
+   "RP-AR",
+   "RS-AR",
+   "SW-AR",
+   "TE-AR",
+   "VE-AR"
+  ],
+  "kabbs": [
+   "AI-BS",
+   "BE-BS",
+   "BP-BS",
+   "BV-BS",
+   "BW-BS",
+   "FZ-BS",
+   "GB-BS",
+   "GR-BS",
+   "KA-BS",
+   "KO-BS",
+   "KW-BS",
+   "OB-BS",
+   "PR-BS",
+   "RP-BS",
+   "RS-BS",
+   "SW-BS",
+   "TE-BS",
+   "VE-BS"
+  ],
+  "kabti": [
+   "AI-TI",
+   "BP-TI",
+   "BW-TI",
+   "GB-TI",
+   "KA-TI",
+   "KO-TI",
+   "OB-TI",
+   "PR-TI",
+   "RP-TI",
+   "SW-TI",
+   "TE-TI",
+   "VE-TI"
+  ],
+  "kabzh": [
+   "AI-ZH",
+   "BP-ZH",
+   "BV-ZH",
+   "FZ-ZH",
+   "GB-ZH",
+   "KA-ZH",
+   "KO-ZH",
+   "RP-ZH",
+   "RS-ZH",
+   "SW-ZH",
+   "TE-ZH",
+   "VE-ZH"
+  ],
+  "kabnw": [
+   "AL-NW",
+   "AR-NW",
+   "BA-NW",
+   "BU-NW",
+   "GE-NW",
+   "RE-NW",
+   "VA-NW"
+  ],
+  "kabow": [
+   "AL-OW",
+   "AR-OW",
+   "BA-OW",
+   "BU-OW",
+   "GE-OW",
+   "RE-OW"
+  ],
+  "kabsh": [
+   "AL-SH",
+   "AR-SH",
+   "BA-SH",
+   "BU-SH",
+   "GE-SH",
+   "RE-SH",
+   "VA-SH"
+  ],
+  "kabso": [
+   "AL-SO",
+   "AR-SO",
+   "BA-SO",
+   "BU-SO",
+   "GE-SO",
+   "RE-SO",
+   "VA-SO"
+  ],
+  "kabsz": [
+   "AL-SZ",
+   "AR-SZ",
+   "BA-SZ",
+   "BU-SZ",
+   "GE-SZ",
+   "RE-SZ",
+   "VA-SZ"
+  ],
+  "kabvs": [
+   "AL-VS",
+   "AR-VS",
+   "BA-VS",
+   "BU-VS",
+   "GE-VS",
+   "OB-VS",
+   "RE-VS",
+   "VA-VS"
+  ],
+  "kabda": [
+   "AM-DA",
+   "OR-DA",
+   "RK-DA",
+   "RS-DA"
+  ],
+  "kabzg": [
+   "BE-ZG",
+   "BP-ZG",
+   "BW-ZG",
+   "GB-ZG",
+   "KA-ZG",
+   "KO-ZG",
+   "OB-ZG",
+   "RP-ZG",
+   "RS-ZG",
+   "SW-ZG",
+   "TE-ZG",
+   "VE-ZG"
+  ],
+  "kabbe": [
+   "BP-BE",
+   "BV-BE",
+   "EG-BE",
+   "FZ-BE",
+   "GB-BE",
+   "KA-BE",
+   "KO-BE",
+   "RP-BE",
+   "RS-BE",
+   "SJ-BE",
+   "TE-BE",
+   "VE-BE"
+  ],
+  "kabbl": [
+   "BP-BL",
+   "GB-BL",
+   "GR-BL",
+   "KW-BL",
+   "OB-BL",
+   "PL-BL",
+   "RP-BL",
+   "RS-BL",
+   "SW-BL",
+   "TE-BL",
+   "WB-BL"
+  ]
+ },
+ "probe": {
+  "kabar": {
+   "rubrics": 12,
+   "total_last_14d": 32,
+   "sample": 32,
+   "title_langs": {
+    "de": 32,
+    "en": 32,
+    "it": 32,
+    "fr": 32
+   },
+   "no_office": 0
+  },
+  "kabbe": {
+   "rubrics": 12,
+   "total_last_14d": 337,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabbl": {
+   "rubrics": 11,
+   "total_last_14d": 302,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabbs": {
+   "rubrics": 18,
+   "total_last_14d": 226,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabgr": {
+   "rubrics": 1,
+   "total_last_14d": 0,
+   "sample": 0,
+   "title_langs": {},
+   "no_office": 0
+  },
+  "kabnw": {
+   "rubrics": 7,
+   "total_last_14d": 39,
+   "sample": 39,
+   "title_langs": {
+    "de": 39,
+    "en": 39,
+    "it": 39,
+    "fr": 39
+   },
+   "no_office": 0
+  },
+  "kabow": {
+   "rubrics": 6,
+   "total_last_14d": 36,
+   "sample": 36,
+   "title_langs": {
+    "de": 36,
+    "en": 36,
+    "it": 36,
+    "fr": 36
+   },
+   "no_office": 0
+  },
+  "kabsh": {
+   "rubrics": 7,
+   "total_last_14d": 40,
+   "sample": 40,
+   "title_langs": {
+    "de": 40,
+    "en": 40,
+    "it": 40,
+    "fr": 40
+   },
+   "no_office": 0
+  },
+  "kabso": {
+   "rubrics": 7,
+   "total_last_14d": 354,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabsz": {
+   "rubrics": 7,
+   "total_last_14d": 205,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabti": {
+   "rubrics": 12,
+   "total_last_14d": 319,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabvs": {
+   "rubrics": 8,
+   "total_last_14d": 490,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  },
+  "kabzg": {
+   "rubrics": 12,
+   "total_last_14d": 155,
+   "sample": 155,
+   "title_langs": {
+    "de": 155,
+    "en": 155,
+    "it": 155,
+    "fr": 155
+   },
+   "no_office": 0
+  },
+  "kabzh": {
+   "rubrics": 12,
+   "total_last_14d": 551,
+   "sample": 200,
+   "title_langs": {
+    "de": 200,
+    "en": 200,
+    "it": 200,
+    "fr": 200
+   },
+   "no_office": 0
+  }
+ }
+}

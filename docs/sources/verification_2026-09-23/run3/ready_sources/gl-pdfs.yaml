@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-b, section: GL (3 communes); govis, id-routed, rate-limited). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: gl-pdfs
+name: GL Pdfs
+base_url: https://www.gl.ch
+default_extent_id: CH-GL
+authority: official_info
+categories:
+- taxes
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.gl.ch/public/upload/assets/59619/01%20Wegleitung%202025.pdf?fp=1
+  - https://www.glarus-nord.ch/public/upload/assets/35598/Ferienpl%C3%A4ne_2025-2028.pdf?fp=5

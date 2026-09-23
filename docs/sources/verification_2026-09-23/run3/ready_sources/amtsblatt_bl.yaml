@@ -1,0 +1,22 @@
+# Gazette source generated 2026-09-23 from the Amtsblattportal rubric list (own rubrics of the canton only).
+# 14-day volume at generation: 302 notices (one page holds up to 2,000).
+# Limits: titles and metadata only (the list endpoint has no notice text); event_date is not set
+# (the api fetcher reads only top-level fields); the document URL is the API feed, not a public notice page.
+id: amtsblatt_bl
+name: Amtsblatt Basel-Landschaft (Amtsblattportal API)
+base_url: https://amtsblattportal.ch
+default_extent_id: CH-BL
+authority: official_info
+categories: []
+fetch_strategy: api
+fetch_config:
+  url: https://amtsblattportal.ch/api/v1/publications?publicationStates=PUBLISHED&tenant=kabbl&rubrics=BP-BL,GB-BL,GR-BL,KW-BL,OB-BL,PL-BL,RP-BL,RS-BL,SW-BL,TE-BL,WB-BL&publicationDate.start={start}&pageRequest.page=0&pageRequest.size=2000
+  start_offset_days: 14
+  records_path: content
+  id_template: '{meta[id]}'
+  title_template: '{meta[title][de]}'
+  text_template: '{meta[title][de]}. Amtsblatt Basel-Landschaft, rubric {meta[rubric]}, publication {meta[publicationNumber]}, {meta[publicationDate]}.'
+  language: de
+allow_narrowing: true
+llm_tagging: true
+license: 'Amtsblattportal (SECO) documented API; robots.txt Disallow: / (user decision 2026-09-23: use the API)'

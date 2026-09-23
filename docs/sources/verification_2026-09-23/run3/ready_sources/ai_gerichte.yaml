@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-c, section: AI: Appenzell Innerrhoden). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: ai_gerichte
+name: AI Gerichte
+base_url: https://www.ai.ch
+default_extent_id: CH-AI
+authority: official_info
+categories:
+- housing
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /gerichte/vermittler
+  - /gerichte/bezirksgericht/formulare
+  - /gerichte/rechtsprechung
+  - /themen/persoenliches/wohnen-und-umziehen/schlichtungsstelle-mietverhaeltnisse
+  path_allowlist:
+  - /gerichte/vermittler
+  - /gerichte/bezirksgericht/formulare
+  - /gerichte/rechtsprechung
+  - /themen/persoenliches/wohnen-und-umziehen/schlichtungsstelle-mietverhaeltnisse
+  language: de

@@ -1,0 +1,17 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: ag_hunde
+name: Hunde im Kanton Aargau
+base_url: https://www.ag.ch
+default_extent_id: CH-AG
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /de/themen/landwirtschaft-tiere/heim-und-nutztiere/hunde
+  path_allowlist:
+  - /de/themen/landwirtschaft-tiere/heim-und-nutztiere/hunde
+  language: de
+allow_narrowing: false

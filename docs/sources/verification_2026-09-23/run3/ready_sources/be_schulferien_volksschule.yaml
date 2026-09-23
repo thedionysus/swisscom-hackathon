@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: be_schulferien_volksschule
+name: Kantonale Ferienordnung Volksschule Bern (deutschsprachiger Teil) 2026/27–2031/32
+base_url: https://www.akvb-gemeinden.bkd.be.ch
+default_extent_id: CH-BE
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.akvb-gemeinden.bkd.be.ch/content/dam/akvb-gemeinden_bkd/dokumente/de/startseite/organisation-finanzierung/schulorganisation/schulferienplanung/schulferien-kanton-bern-d.pdf
+  language: de
+allow_narrowing: false

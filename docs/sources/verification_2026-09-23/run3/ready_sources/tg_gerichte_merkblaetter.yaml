@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+# Category missing in the registry: courts 
+id: tg_gerichte_merkblaetter
+name: TG Gerichte Merkblaetter
+base_url: https://bezirksgericht.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories: []
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2
+  - https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1
+  - https://bezirksgericht.tg.ch/public/upload/assets/99108/Merkblatt%20Rechts%C3%B6ffnung.pdf?fp=1
+  language: de

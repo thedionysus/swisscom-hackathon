@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-b, section: LU (79 communes)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: lu-hunde
+name: LU Hunde
+base_url: https://veterinaerdienst.lu.ch
+default_extent_id: CH-LU
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://veterinaerdienst.lu.ch/hunde
+  path_allowlist:
+  - /hunde
+  language: de

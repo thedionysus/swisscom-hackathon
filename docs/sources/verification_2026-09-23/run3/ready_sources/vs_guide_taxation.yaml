@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: vs_guide_taxation
+name: VS Guide Taxation
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories:
+- taxes
+fetch_strategy: html_crawl
+fetch_config:
+  language: fr
+  start_paths:
+  - /web/guide-de-taxation
+  path_allowlist:
+  - /web/guide-de-taxation

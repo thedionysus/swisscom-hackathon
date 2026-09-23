@@ -1,0 +1,21 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: lugano_legislazione
+name: Lugano Legislazione
+base_url: https://www.lugano.ch
+default_extent_id: CH-TI-5192
+authority: official_info
+categories:
+- dogs
+- waste
+- parking
+fetch_strategy: pdf
+fetch_config:
+  language: it
+  urls:
+  - https://www.lugano.ch/law/16176713/2-6-1-Ordinanza-sulla-custodia-dei-cani-e-sulle-aree-di-svago-del-13-gennaio-2010
+  - https://www.lugano.ch/law/16176717/4-1-Regolamento-sulla-raccolta-dei-rifiuti-del-13-maggio-2019
+  - https://www.lugano.ch/law/16371927/4-1-1-Ordinanza-municipale-sulla-gestione-dei-rifiuti-del-17-ottobre-2019
+  - https://www.lugano.ch/law/16597411/4-1-2-Ordinanza-municipale-sulla-tassa-sul-sacco-per-l-anno-2026-del-23-ottobre-2025
+  - https://www.lugano.ch/law/17057218/2-2-1-Ordinanza-municipale-concernente-le-agevolazioni-e-le-tariffe-di-parcheggio-del-25-agosto-2022
+  - https://www.lugano.ch/law/16595053/2-2-3-Ordinanza-municipale-sull-utilizzo-delle-aree-di-parcheggio-pubblico-di-Cornaredo-del-9-febbraio-2017

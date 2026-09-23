@@ -1,0 +1,18 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+# Orchestrator fix 2026-09-23: added start path(s) ['/web/scn'] to path_allowlist: the crawler rejected its own start page.
+id: vs_scn
+name: VS Scn
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  language: fr
+  start_paths:
+  - /web/scn
+  path_allowlist:
+  - /web/scn/
+  - /web/scn

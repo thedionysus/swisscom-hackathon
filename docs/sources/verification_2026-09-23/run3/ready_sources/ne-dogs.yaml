@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-d, section: NE: Neuchâtel (base https://www.ne.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ne-dogs
+name: NE Dogs
+base_url: https://www.ne.ch
+default_extent_id: CH-NE
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.ne.ch/themes/vie-quotidienne-et-famille/animaux/soccuper-danimaux
+  path_allowlist:
+  - /themes/vie-quotidienne-et-famille/animaux/
+  language: fr

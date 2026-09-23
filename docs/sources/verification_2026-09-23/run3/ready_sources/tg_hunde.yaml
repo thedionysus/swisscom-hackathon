@@ -1,0 +1,18 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: tg_hunde
+name: TG Hunde
+base_url: https://veterinaeramt.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /tierschutz/haustiere/hundewesen.html/11290
+  - /faq/hundewesen.html/14752
+  path_allowlist:
+  - /tierschutz/haustiere/hundewesen
+  - /faq/hundewesen
+  language: de

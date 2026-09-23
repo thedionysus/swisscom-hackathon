@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: sh_ferien
+name: SH Ferien
+base_url: https://sh.ch
+default_extent_id: CH-SH
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://sh.ch/CMS/get/file/c5d7c8e8-2819-4ae1-a1c6-9861471b0182
+  language: de

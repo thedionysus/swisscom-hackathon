@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-a, section: L1: city law (Zürich, Bern, Thun)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: stadt_zuerich_as_hunde_abfall_parkieren
+name: Stadt Zürich – Amtliche Sammlung (Hunde, Abfall, Parkieren)
+base_url: https://www.stadt-zuerich.ch
+default_extent_id: CH-ZH-261
+authority: official_info
+categories:
+- dogs
+- waste
+- parking
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/554/510/554.510%20Vollzugsvorschriften%20zum%20Hundegesetz_17_V4.pdf
+  - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/712/110/712.110%20Verordnung%20Abfallbewirtschaftung%20%28VAZ%29%202022_V8.pdf
+  - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/310/551.310-pkv-2011-inkl-anhang-pkv-2025-v3.pdf
+  - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/311/551.311_Geb%C3%BChrenordnung%20Parkkarten%20Blaue%20Zonen%20V1.pdf
+  - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/330/551.330_Parkierungs-%20und%20Parkuhrkontrollgeb%C3%BChren17_V3.pdf
+  - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/741/500/741.500_Parkplatzverordnung_16_V4.pdf
+  language: de
+allow_narrowing: false

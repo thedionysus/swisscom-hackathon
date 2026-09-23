@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-b, section: SZ (30 communes, 6 districts); govis, rate-limited). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: sz-schulferien
+name: SZ Schulferien
+base_url: https://data.sz.ch
+default_extent_id: CH-SZ
+authority: official_info
+categories:
+- schools
+fetch_strategy: api
+fetch_config:
+  url: https://data.sz.ch/api/explore/v2.1/catalog/datasets/ferienplan-kanton-schwyz/records?limit=100
+  records_path: results
+  id_template: '{schuljahr}-{name_schule}'
+  title_template: 'Schulferien {schuljahr}: {name_schule} (Bezirk {bezirk})'
+  text_template: 'Schuljahr {schuljahr}, {name_schule}, Bezirk {bezirk}: Schulbeginn {start_schuljahr}; Herbstferien {herbstferien_start} bis
+    {herbstferien_ende}; Weihnachtsferien {weihnachtsferien_start} bis {weihnachtsferien_ende}; Sportferien {sportferien_start} bis {sportferien_ende};
+    Frühlingsferien {fruehlingsferien_start} bis {fruehlingsferien_ende}; Schuljahresende {ende_schuljahr}.'
+  language: de

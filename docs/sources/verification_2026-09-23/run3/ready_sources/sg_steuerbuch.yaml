@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: sg_steuerbuch
+name: SG Steuerbuch
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories:
+- taxes
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/003_1.pdf.ocFile/003_1.pdf
+  language: de

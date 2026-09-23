@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-b, section: LU (79 communes)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: lu-strassenverkehrsamt
+name: LU Strassenverkehrsamt
+base_url: https://strassenverkehrsamt.lu.ch
+default_extent_id: CH-LU
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://strassenverkehrsamt.lu.ch/Strassenverkehr/steuern_gebuehren
+  path_allowlist:
+  - /Strassenverkehr/
+  language: de

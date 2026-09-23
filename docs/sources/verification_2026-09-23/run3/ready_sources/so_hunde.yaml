@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: so_hunde
+name: Hunde im Kanton Solothurn
+base_url: https://so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /verwaltung/volkswirtschaftsdepartement/amt-fuer-landwirtschaft/tiere-und-lebensmittel/tierschutz/hunde/
+  - /verwaltung/departement-des-innern/departementssekretariat/oberaemter/hundehaltung/
+  path_allowlist:
+  - /verwaltung/volkswirtschaftsdepartement/amt-fuer-landwirtschaft/tiere-und-lebensmittel/tierschutz/hunde/
+  - /verwaltung/departement-des-innern/departementssekretariat/oberaemter/hundehaltung/
+  - /verwaltung/volkswirtschaftsdepartement/amt-fuer-wald-jagd-und-fischerei/wildtiere/mit-hund-im-wald-leinenpflicht/
+  language: de
+allow_narrowing: false

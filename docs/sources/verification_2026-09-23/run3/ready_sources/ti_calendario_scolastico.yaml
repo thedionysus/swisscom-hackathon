@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, name.
+id: ti_calendario_scolastico
+name: TI Calendario Scolastico
+base_url: https://m4.ti.ch
+default_extent_id: CH-TI
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  language: it
+  urls:
+  - https://m4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2026_2027.pdf
+  - https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2027-2028.pdf

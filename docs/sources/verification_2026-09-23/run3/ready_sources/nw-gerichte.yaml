@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-b, section: NW (11 communes); i-web). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+# Category missing in the registry: courts
+id: nw-gerichte
+name: NW Gerichte
+base_url: https://www.nw.ch
+default_extent_id: CH-NW
+authority: official_info
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.nw.ch/kantonsgerichtrechtspflege
+  - https://www.nw.ch/kantonsgerichtrechtsauskunft
+  - https://www.nw.ch/kantonsgerichtzustaendigkeit
+  - https://www.nw.ch/schlichtungsbehoerde/326
+  path_allowlist:
+  - /kantonsgericht
+  - /schlichtungsbeh
+  language: de

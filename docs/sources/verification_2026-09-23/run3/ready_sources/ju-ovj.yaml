@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-d, section: JU: Jura (base https://www.jura.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ju-ovj
+name: JU Ovj
+base_url: https://www.jura.ch
+default_extent_id: CH-JU
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.jura.ch/fr/Autorites/Administration/DEC/OVJ/Office-des-vehicules-OVJ.html
+  path_allowlist:
+  - /fr/Autorites/Administration/DEC/OVJ/
+  language: fr

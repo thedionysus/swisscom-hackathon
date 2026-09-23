@@ -1,0 +1,18 @@
+# Draft from Run 3 (run3-d, section: FR: Fribourg (base https://www.fr.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+# Category missing in the registry: courts
+# Orchestrator fix 2026-09-23: added start path(s) ['/etat-et-droit/justice'] to path_allowlist: the crawler rejected its own start page.
+id: fr-justice
+name: FR Justice
+base_url: https://www.fr.ch
+default_extent_id: CH-FR
+authority: official_info
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.fr.ch/etat-et-droit/justice
+  path_allowlist:
+  - /etat-et-droit/justice/
+  - /etat-et-droit/poursuites-et-faillites/procedure-de-
+  - /etat-et-droit/justice
+  language: fr

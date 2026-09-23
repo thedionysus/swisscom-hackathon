@@ -1,0 +1,17 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: so_mfk
+name: Motorfahrzeugkontrolle Kanton Solothurn
+base_url: https://so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /verwaltung/bau-und-justizdepartement/motorfahrzeugkontrolle/
+  path_allowlist:
+  - /verwaltung/bau-und-justizdepartement/motorfahrzeugkontrolle/
+  language: de
+allow_narrowing: false

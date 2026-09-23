@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-a, section: BE (Bern)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+# Category missing in the registry: courts
+id: be_zsg_themen
+name: Zivil- und Strafgerichtsbarkeit Kanton Bern – Themen und Schlichtungsbehörden
+base_url: https://www.zsg.justice.be.ch
+default_extent_id: CH-BE
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /de/start/themen.html
+  - /de/start/ueber-uns/schlichtungsbehoerden.html
+  path_allowlist:
+  - /de/start/themen
+  - /de/start/ueber-uns/schlichtungsbehoerden
+  language: de
+allow_narrowing: false

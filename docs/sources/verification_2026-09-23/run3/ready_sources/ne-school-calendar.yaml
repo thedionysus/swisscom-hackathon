@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-d, section: NE: Neuchâtel (base https://www.ne.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ne-school-calendar
+name: NE School Calendar
+base_url: https://www.ne.ch
+default_extent_id: CH-NE
+authority: official_info
+categories:
+- schools
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.ne.ch/themes/scolarite-et-formation/calendrier-et-vacances-scolaires
+  path_allowlist:
+  - /themes/scolarite-et-formation/calendrier-et-vacances-scolaires
+  language: fr

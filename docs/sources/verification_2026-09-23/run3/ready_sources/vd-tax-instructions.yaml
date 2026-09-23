@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-d, section: VD: Vaud (base https://www.vd.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: vd-tax-instructions
+name: VD Tax Instructions
+base_url: https://www.vd.ch
+default_extent_id: CH-VD
+authority: official_info
+categories:
+- taxes
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf
+  language: fr

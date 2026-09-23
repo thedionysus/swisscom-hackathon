@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-d, section: FR: Fribourg (base https://www.fr.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: fr-tax-instructions
+name: FR Tax Instructions
+base_url: https://www.fr.ch
+default_extent_id: CH-FR
+authority: official_info
+categories:
+- taxes
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.fr.ch/document/57721
+  language: fr

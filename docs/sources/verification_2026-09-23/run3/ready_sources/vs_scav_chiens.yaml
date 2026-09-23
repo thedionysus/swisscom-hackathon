@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: vs_scav_chiens
+name: VS Scav Chiens
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  language: fr
+  start_paths:
+  - /web/scav/veterinaire/affaires-canines
+  - /web/scav/veterinaire/securit%C3%A9-publique
+  path_allowlist:
+  - /web/scav/veterinaire/affaires-canines
+  - /web/scav/veterinaire/securit
+  - /web/scav/veterinaire/vente-acquisition-chiens

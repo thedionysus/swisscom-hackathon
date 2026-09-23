@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: ai_guidance
+name: AI Guidance
+base_url: https://www.ai.ch
+default_extent_id: CH-AI
+authority: official_info
+categories:
+- dogs
+- transport
+- schools
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /themen/landwirtschaft-tierhaltung/tierhaltung
+  - /themen/mobilitaet-und-verkehr/strassenverkehr
+  - /themen/bildung/eltern-und-schule/ferienplan
+  path_allowlist:
+  - /themen/landwirtschaft-tierhaltung/tierhaltung
+  - /themen/mobilitaet-und-verkehr/strassenverkehr
+  - /themen/bildung/eltern-und-schule/ferienplan
+  language: de

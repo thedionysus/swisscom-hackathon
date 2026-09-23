@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-d, section: GE: Geneva (base https://www.ge.ch; courts on https://justice.ge.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ge-ocv
+name: GE Ocv
+base_url: https://www.ge.ch
+default_extent_id: CH-GE
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.ge.ch/immatriculer-vehicule-obtenir-carte-grise
+  - https://www.ge.ch/plaques
+  - https://www.ge.ch/passer-son-permis-conduire
+  - https://www.ge.ch/impot-vehicules
+  path_allowlist:
+  - /immatriculer-vehicule
+  - /plaques
+  - /passer-son-permis-conduire
+  - /impot-vehicules
+  language: fr

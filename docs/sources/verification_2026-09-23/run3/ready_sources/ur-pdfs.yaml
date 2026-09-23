@@ -1,0 +1,18 @@
+# Draft from Run 3 (run3-b, section: UR (19 communes); i-web). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ur-pdfs
+name: UR Pdfs
+base_url: https://www.ur.ch
+default_extent_id: CH-UR
+authority: official_info
+categories:
+- taxes
+- transport
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.ur.ch/_doc/437558
+  - https://www.ur.ch/_doc/449362
+  - https://www.ur.ch/_doc/408844
+  - https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf

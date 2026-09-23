@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-a, section: BL (Basel-Landschaft). Public host blocked; content read through the open Plone API). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: bl_schulferien
+name: Schulferien Basel-Landschaft (data.bl.ch 13350)
+base_url: https://data.bl.ch
+default_extent_id: CH-BL
+authority: official_info
+categories:
+- schools
+fetch_strategy: api
+fetch_config:
+  url: https://data.bl.ch/api/explore/v2.1/catalog/datasets/13350/records?limit=100&order_by=startdatum
+  records_path: results
+  id_template: '{schuljahr}-{name}-{startdatum}'
+  event_date_field: startdatum
+  title_template: 'Schulferien Basel-Landschaft: {name} ({startdatum} bis {enddatum})'
+  text_template: '{name} im Schuljahr {schuljahr}: vom {startdatum} bis {enddatum}.'
+  language: de
+allow_narrowing: false
+llm_tagging: false

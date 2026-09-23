@@ -1,0 +1,12 @@
+# Draft from Run 3 (run3-d, section: JU: Jura (base https://www.jura.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+id: ju-court-tariff
+name: JU Court Tariff
+base_url: https://www.jura.ch
+default_extent_id: CH-JU
+authority: official_info
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.jura.ch/Htdocs/Files/v/ff78dbf9136f8cab273ea6f4352309fbc0f1d77137ab65c0610a20db98ee89c8.pdf/avances_emoluments_debours_juin-2016.pdf?download=1
+  language: fr

@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: ar_ferienrichtdaten
+name: AR Ferienrichtdaten
+base_url: https://ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf
+  language: de

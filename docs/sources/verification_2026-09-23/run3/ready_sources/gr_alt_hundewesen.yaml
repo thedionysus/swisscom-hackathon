@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: gr_alt_hundewesen
+name: GR Alt Hundewesen
+base_url: https://www.gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  language: de
+  start_paths:
+  - /DE/institutionen/verwaltung/dvs/alt/tiere/hundewesen/Seiten/default.aspx
+  path_allowlist:
+  - /DE/institutionen/verwaltung/dvs/alt/tiere/hundewesen/

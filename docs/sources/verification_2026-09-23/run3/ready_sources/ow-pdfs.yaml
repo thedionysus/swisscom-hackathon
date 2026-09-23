@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-b, section: OW (7 communes); i-web). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ow-pdfs
+name: OW Pdfs
+base_url: https://www.ow.ch
+default_extent_id: CH-OW
+authority: official_info
+categories:
+- taxes
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.ow.ch/_doc/447067
+  - https://www.ow.ch/_doc/454867
+  - https://www.ow.ch/_doc/447907

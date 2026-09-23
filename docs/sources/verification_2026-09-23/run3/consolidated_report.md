@@ -426,3 +426,19 @@ Scripts are in `scratchpad/recheck/`: `e_claims.py`, `abp_check.py`, `ti_mix.py`
 - robots.txt rules for named AI bots on all other sources.
 - Exact counts for Genève (246) and La Chaux-de-Fonds (175).
 - The Onlinekommentar resumption-token expiry date (2026-09-17).
+
+---
+
+## 12. Registry readiness (added after the audit, 2026-09-23)
+The agents' 99 draft source entries were checked against the registry model. **Only 23 loaded as written**: the rest lacked `name`, `base_url`, `default_extent_id` or `authority`, or used a fetch strategy that does not exist yet.
+
+**What the orchestrator did:**
+- Filled the missing fields from each agent's own notes and validated every entry with `load_source_yaml`.
+- Fixed 15 crawl configs whose allowlist rejected their own start page, or whose start page answered 410.
+- Added 13 gazette sources that use the existing `api` fetcher.
+- Live-tested everything with the repo's real fetchers.
+
+**Result: 108 registry-format sources in `ready_sources/`, of which 99 fetched documents.**
+- The blockers are pipeline issues, not source issues: the LU HTML parser, JU PDFs answering HEAD with 404, a TLS chain at schulen-aargau.ch, and intermittent disconnects at gerichte-zh.ch.
+- `source_catalogue.csv` lists all 148 candidates with data type, endpoint, fetch strategy and readiness.
+- See `README.md`, section "Adding these sources to the registry".

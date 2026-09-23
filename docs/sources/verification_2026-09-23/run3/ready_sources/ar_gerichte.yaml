@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-c, section: AR: Appenzell Ausserrhoden). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: ar_gerichte
+name: AR Gerichte
+base_url: https://ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories:
+- housing
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /gerichte/kantonsgericht/rechtsgebiete/
+  - /gerichte/vermittler-und-schlichtungsstellen/
+  - /gerichte/kantonsgericht/unentgeltliche-rechtspflege/
+  - /gerichte/kantonsgericht/rechtsauskunft/
+  path_allowlist:
+  - /gerichte/kantonsgericht/rechtsgebiete/
+  - /gerichte/vermittler-und-schlichtungsstellen/
+  - /gerichte/kantonsgericht/unentgeltliche-rechtspflege/
+  - /gerichte/kantonsgericht/rechtsauskunft/
+  language: de

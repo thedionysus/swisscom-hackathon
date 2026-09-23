@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: ag_schulferien
+name: Kantonal einheitliche Feriendaten Volksschule Aargau
+base_url: https://www.schulen-aargau.ch
+default_extent_id: CH-AG
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan.pdf
+  language: de
+allow_narrowing: false

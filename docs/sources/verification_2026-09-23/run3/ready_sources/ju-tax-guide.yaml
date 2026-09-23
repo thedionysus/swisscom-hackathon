@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-d, section: JU: Jura (base https://www.jura.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ju-tax-guide
+name: JU Tax Guide
+base_url: https://www.jura.ch
+default_extent_id: CH-JU
+authority: official_info
+categories:
+- taxes
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf/Guide-general-2025.pdf?download=1
+  language: fr

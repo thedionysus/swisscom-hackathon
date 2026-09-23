@@ -1,0 +1,21 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: stadt_thun_abfall_parkieren
+name: Stadt Thun – Reglemente Abfall und Parkieren
+base_url: https://www.thun.ch
+default_extent_id: CH-BE-942
+authority: official_info
+categories:
+- waste
+- parking
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.thun.ch/_doc/4917697
+  - https://www.thun.ch/_doc/5450779
+  - https://www.thun.ch/_doc/4355560
+  - https://www.thun.ch/_doc/4355563
+  - https://www.thun.ch/_doc/4351168
+  - https://www.thun.ch/_doc/4355737
+  language: de
+allow_narrowing: false

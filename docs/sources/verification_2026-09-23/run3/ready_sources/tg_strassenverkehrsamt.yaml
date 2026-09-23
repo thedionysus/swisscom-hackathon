@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: tg_strassenverkehrsamt
+name: TG Strassenverkehrsamt
+base_url: https://strassenverkehrsamt.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /gebuehren-und-steuern.html/16501
+  - /fuehrerzulassung.html/3617
+  - /fahrzeugzulassung.html/3615
+  path_allowlist:
+  - /gebuehren-und-steuern
+  - /fuehrerzulassung
+  - /fahrzeugzulassung
+  language: de

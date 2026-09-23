@@ -1,0 +1,17 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+# Category missing in the registry: courts 
+id: be_vgb_themen
+name: Verwaltungsgericht des Kantons Bern – Verfahren und Kosten
+base_url: https://www.vgb.justice.be.ch
+default_extent_id: CH-BE
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /de/start/themen.html
+  path_allowlist:
+  - /de/start/themen
+  language: de
+allow_narrowing: false

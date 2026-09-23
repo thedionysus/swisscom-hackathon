@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: ar_hunde_strassenverkehr
+name: AR Hunde Strassenverkehr
+base_url: https://ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories:
+- dogs
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /verwaltung/departement-gesundheit-und-soziales/veterinaeramt/hunde/
+  - /verwaltung/departement-inneres-und-sicherheit/strassenverkehrsamt/
+  path_allowlist:
+  - /verwaltung/departement-gesundheit-und-soziales/veterinaeramt/hunde/
+  - /verwaltung/departement-inneres-und-sicherheit/strassenverkehrsamt/
+  language: de

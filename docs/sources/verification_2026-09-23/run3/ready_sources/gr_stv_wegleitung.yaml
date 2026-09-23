@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, name.
+id: gr_stv_wegleitung
+name: GR Stv Wegleitung
+base_url: https://www.gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories:
+- taxes
+fetch_strategy: pdf
+fetch_config:
+  language: de
+  urls:
+  - https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/steuererklaerung/einkommens_und_vermoegenssteuer/WegleitungenMerkbltter/Wegleitung%202025%20Prim%c3%a4rsteuerpflichtige.pdf
+  - https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/dokumentation/praxis/PraxisEinkommenVermgen/010-01.pdf

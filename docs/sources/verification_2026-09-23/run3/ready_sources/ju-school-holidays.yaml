@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-d, section: JU: Jura (base https://www.jura.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ju-school-holidays
+name: JU School Holidays
+base_url: https://www.jura.ch
+default_extent_id: CH-JU
+authority: official_info
+categories:
+- schools
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.jura.ch/fr/Autorites/Administration/DFNS/SEN/Vacances-scolaires/Vacances-scolaires.html
+  path_allowlist:
+  - /fr/Autorites/Administration/DFNS/SEN/Vacances-scolaires/
+  language: fr

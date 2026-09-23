@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-e, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: gr_stva
+name: GR Stva
+base_url: https://www.gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories:
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  language: de
+  start_paths:
+  - /DE/institutionen/verwaltung/djsg/stva/Seiten/Start.aspx
+  path_allowlist:
+  - /DE/institutionen/verwaltung/djsg/stva/

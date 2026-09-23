@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: sg_guidance
+name: Kanton St.Gallen – Hunde, Ferienplan, Strassenverkehr
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories:
+- dogs
+- schools
+- transport
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /umwelt-natur/veterinaerwesen/tiere-halten/hunde.html
+  - /bildung-sport/volksschule/aus-dem-amt/ferienplan.html
+  - /verkehr/strassenverkehr.html
+  path_allowlist:
+  - /umwelt-natur/veterinaerwesen/tiere-halten/hunde
+  - /bildung-sport/volksschule/aus-dem-amt/ferienplan
+  - /verkehr/strassenverkehr
+  language: de

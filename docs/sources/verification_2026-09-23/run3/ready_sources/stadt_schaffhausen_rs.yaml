@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-c, section: SH: Schaffhausen). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: stadt_schaffhausen_rs
+name: Stadt Schaffhausen Rs
+base_url: https://www.stadt-schaffhausen.ch
+default_extent_id: CH-SH-2939
+authority: official_info
+categories:
+- dogs
+- waste
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.stadt-schaffhausen.ch/_doc/3720785
+  - https://www.stadt-schaffhausen.ch/_doc/4688455
+  language: de

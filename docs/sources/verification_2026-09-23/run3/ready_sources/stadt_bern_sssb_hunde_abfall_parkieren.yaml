@@ -1,0 +1,21 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: stadt_bern_sssb_hunde_abfall_parkieren
+name: Stadt Bern – SSSB (Hunde, Abfall, Parkieren)
+base_url: https://stadtrecht.bern.ch
+default_extent_id: CH-BE-351
+authority: official_info
+categories:
+- dogs
+- waste
+- parking
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://stadtrecht.bern.ch/lex-559_61.pdf
+  - https://stadtrecht.bern.ch/lex-822_1.pdf
+  - https://stadtrecht.bern.ch/lex-822_111.pdf
+  - https://stadtrecht.bern.ch/lex-761_232.pdf
+  - https://stadtrecht.bern.ch/lex-761_212.pdf
+  language: de
+allow_narrowing: false

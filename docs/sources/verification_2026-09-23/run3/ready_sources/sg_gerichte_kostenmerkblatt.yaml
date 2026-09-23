@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+# Category missing in the registry: courts 
+id: sg_gerichte_kostenmerkblatt
+name: SG Gerichte Kostenmerkblatt
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories: []
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Merkblatt%20zu%20den%20Kosten%20und%20dem%20Verfahren%20vor%20Handelsgericht.pdf
+  language: de

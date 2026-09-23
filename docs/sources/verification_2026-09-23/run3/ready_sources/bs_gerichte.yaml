@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-a, section: BS (Basel-Stadt)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+# Category missing in the registry: courts
+id: bs_gerichte
+name: Gerichte Basel-Stadt – Verfahren, Kosten, Schlichtung
+base_url: https://www.bs.ch
+default_extent_id: CH-BS
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /willkommen-bei-den-gerichten
+  - /regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten/schlichtungsverfahren
+  path_allowlist:
+  - /willkommen-bei-den-gerichten
+  - /gerichte-judikative/
+  - /regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten
+  language: de
+allow_narrowing: false

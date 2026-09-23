@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-d, section: VD: Vaud (base https://www.vd.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: vd-school-holidays
+name: VD School Holidays
+base_url: https://www.vd.ch
+default_extent_id: CH-VD
+authority: official_info
+categories:
+- schools
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.vd.ch/formation/jours-feries-et-vacances-scolaires
+  path_allowlist:
+  - /formation/jours-feries-et-vacances-scolaires
+  language: fr

@@ -1,0 +1,250 @@
+{
+ "amtsblatt_ar": {
+  "docs": 32,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Beschluss des Regierungsrates: Verteilung der Kantonsratssitze auf die Gemeinden für die A",
+  "sample_sections": 1,
+  "seconds": 0.2
+ },
+ "amtsblatt_be": {
+  "docs": 337,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Baugesuch: Rue Franche 29, Biel/Bienne",
+  "sample_sections": 1,
+  "seconds": 0.4
+ },
+ "amtsblatt_bl": {
+  "docs": 302,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Bewilligungsgesuch Gastgewerbe – [name], Laufen",
+  "sample_sections": 1,
+  "seconds": 0.3
+ },
+ "amtsblatt_bs": {
+  "docs": 226,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Planfestsetzungsbeschluss des Regierungsrats betreffend Linien- und Erschliessungspläne Ly",
+  "sample_sections": 1,
+  "seconds": 0.2
+ },
+ "amtsblatt_nw": {
+  "docs": 39,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Totalrevision des Erlasses – Festlegung der Höhe der Pflegetaxen 2027 für Pflegeleistungen",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "amtsblatt_ow": {
+  "docs": 36,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Einladung Bekanntmachung – Kantonale Gemeinschaftsfeier zum Eidgenössischen Bettag",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "amtsblatt_sh": {
+  "docs": 40,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Baugesuch – Neubau Kachelofen mit Abgasanlage, Oberhallau",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "amtsblatt_so": {
+  "docs": 354,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Handänderung, Trimbach",
+  "sample_sections": 1,
+  "seconds": 0.3
+ },
+ "amtsblatt_sz": {
+  "docs": 205,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Beschluss des Regierungsrates – Zonengrenzkorrektur auf KTN 30 und KTN 31, Einsiedeln",
+  "sample_sections": 1,
+  "seconds": 0.2
+ },
+ "amtsblatt_ti": {
+  "docs": 319,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Avviso di notifica di comminatorie di fallimento a persone con domicilio o sede ma irreper",
+  "sample_sections": 1,
+  "seconds": 0.3
+ },
+ "amtsblatt_vs": {
+  "docs": 490,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Avis – Politique cantonale en matière de protection des troupeaux contre les grands prédat",
+  "sample_sections": 1,
+  "seconds": 0.9
+ },
+ "amtsblatt_zg": {
+  "docs": 155,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Einberufung des Kantonsrats auf Donnerstag, 24. September 2026, 08.00 – ca. 15.30 Uhr (im ",
+  "sample_sections": 1,
+  "seconds": 0.3
+ },
+ "amtsblatt_zh": {
+  "docs": 551,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Bauprojekt: Aathalstrasse 90, Assek. Nr. 3551, Uster",
+  "sample_sections": 1,
+  "seconds": 0.6
+ },
+ "fr-justice": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Justice",
+  "sample_sections": 1,
+  "seconds": 3.2
+ },
+ "fr-ocn": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Conduire",
+  "sample_sections": 1,
+  "seconds": 4.5
+ },
+ "ge-justice-themes": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Thèmes",
+  "sample_sections": 1,
+  "seconds": 3.5
+ },
+ "gerichte_zh_themen": {
+  "docs": 0,
+  "errors": 1,
+  "first_error": "Server disconnected without sending a response.",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.0
+ },
+ "gl-pdfs": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "01%20Wegleitung%202025.pdf?fp=1",
+  "sample_sections": 36,
+  "seconds": 0.7
+ },
+ "gl-schlichtung": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Kantonale Schlichtungsbehörde",
+  "sample_sections": 7,
+  "seconds": 3.8
+ },
+ "lu-gerichte-guidance": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 3.4
+ },
+ "ne-justice": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Droits et justice",
+  "sample_sections": 1,
+  "seconds": 6.4
+ },
+ "ne-scan": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Service cantonal des automobiles et de la navigation",
+  "sample_sections": 21,
+  "seconds": 3.5
+ },
+ "so_steuerbuch": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Steuerpflicht - Steuern - Kanton Solothurn",
+  "sample_sections": 1,
+  "seconds": 3.2
+ },
+ "sz-justiz": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Justiz",
+  "sample_sections": 7,
+  "seconds": 3.5
+ },
+ "tg_steuerpraxis": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Thurgauer Steuerpraxis",
+  "sample_sections": 1,
+  "seconds": 4.2
+ },
+ "ti_sezione_circolazione": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Come possiamo aiutarti?",
+  "sample_sections": 30,
+  "seconds": 3.9
+ },
+ "vd-justice": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Justice",
+  "sample_sections": 3,
+  "seconds": 3.7
+ },
+ "vd-san": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Automobile et navigation",
+  "sample_sections": 9,
+  "seconds": 3.4
+ },
+ "vs_scn": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Service de la circulation routière et de la navigation",
+  "sample_sections": 10,
+  "seconds": 4.2
+ },
+ "vsz-ownw": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "WIR BEWEGEN",
+  "sample_sections": 3,
+  "seconds": 4.6
+ },
+ "zg-recht-justiz": {
+  "docs": 3,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Recht & Justiz",
+  "sample_sections": 2,
+  "seconds": 3.9
+ }
+}

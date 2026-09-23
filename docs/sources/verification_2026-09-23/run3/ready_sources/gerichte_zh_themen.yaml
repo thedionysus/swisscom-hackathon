@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-a, section: ZH (Zürich)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: categories.
+# Category missing in the registry: courts
+id: gerichte_zh_themen
+name: Gerichte Kanton Zürich – Rechtliche Themen
+base_url: https://www.gerichte-zh.ch
+default_extent_id: CH-ZH
+authority: official_info
+categories:
+- housing
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /de/themen
+  path_allowlist:
+  - /de/themen
+  language: de
+allow_narrowing: false
+license: gerichte-zh.ch terms of use

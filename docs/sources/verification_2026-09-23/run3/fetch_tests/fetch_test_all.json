@@ -1,0 +1,775 @@
+{
+ "ag_gerichte": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Gerichte Kanton Aargau",
+  "sample_sections": 2,
+  "seconds": 2.3
+ },
+ "ag_hunde": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Hunde im Kanton Aargau",
+  "sample_sections": 7,
+  "seconds": 2.3
+ },
+ "ag_schulferien": {
+  "docs": 0,
+  "errors": 1,
+  "first_error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.6
+ },
+ "ag_steuern_wegleitung": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Wegleitung zur Steuererklärung",
+  "sample_sections": 15,
+  "seconds": 2.3
+ },
+ "ag_strassenverkehr": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Steuern und Gebühren",
+  "sample_sections": 3,
+  "seconds": 2.3
+ },
+ "ai_ferienplan": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "download",
+  "sample_sections": 1,
+  "seconds": 0.2
+ },
+ "ai_gerichte": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Vermittler",
+  "sample_sections": 6,
+  "seconds": 3.2
+ },
+ "ai_guidance": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Tierhaltung",
+  "sample_sections": 1,
+  "seconds": 2.6
+ },
+ "ar_amtsblatt": {
+  "docs": 100,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Beschluss des Regierungsrates: Verteilung der Kantonsratssitze auf die Gemeinden für die A",
+  "sample_sections": 1,
+  "seconds": 0.3
+ },
+ "ar_ferienrichtdaten": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "ar_gerichte": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Inhalt",
+  "sample_sections": 3,
+  "seconds": 2.2
+ },
+ "ar_hunde_strassenverkehr": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Inhalt",
+  "sample_sections": 6,
+  "seconds": 3.1
+ },
+ "be_schulferien_volksschule": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "schulferien-kanton-bern-d.pdf",
+  "sample_sections": 2,
+  "seconds": 0.1
+ },
+ "be_vgb_themen": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Themen",
+  "sample_sections": 1,
+  "seconds": 2.2
+ },
+ "be_zsg_themen": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Themen",
+  "sample_sections": 1,
+  "seconds": 2.2
+ },
+ "bl_schulferien": {
+  "docs": 58,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Schulferien Basel-Landschaft: Herbstferien (2026-09-26 bis 2026-10-11)",
+  "sample_sections": 1,
+  "seconds": 0.2
+ },
+ "bs_gerichte": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Willkommen bei den Gerichten",
+  "sample_sections": 10,
+  "seconds": 2.2
+ },
+ "fr-dogs": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Chiens",
+  "sample_sections": 1,
+  "seconds": 4.8
+ },
+ "fr-justice": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "fr-ocn": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.0
+ },
+ "fr-school-holidays": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Vacances scolaires",
+  "sample_sections": 1,
+  "seconds": 3.4
+ },
+ "fr-tax-instructions": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "57721",
+  "sample_sections": 50,
+  "seconds": 0.6
+ },
+ "ge-justice-themes": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "ge-ocv-fees": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "telecharger",
+  "sample_sections": 2,
+  "seconds": 0.2
+ },
+ "ge-ocv": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Immatriculer un véhicule (obtenir une carte grise)",
+  "sample_sections": 7,
+  "seconds": 4.5
+ },
+ "gerichte_zh_themen": {
+  "docs": 0,
+  "errors": 1,
+  "first_error": "Server disconnected without sending a response.",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "gl-pdfs": {
+  "docs": 0,
+  "errors": 1,
+  "first_error": "[Errno 8] nodename nor servname provided, or not known",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.5
+ },
+ "gl-schlichtung": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.5
+ },
+ "gr_alt_hundewesen": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Inhaltsbereich",
+  "sample_sections": 7,
+  "seconds": 4.8
+ },
+ "gr_justiz_guidance": {
+  "docs": 1,
+  "errors": 1,
+  "first_error": "HTTP 500",
+  "sample_title": "Verfahren",
+  "sample_sections": 8,
+  "seconds": 2.3
+ },
+ "gr_schulferien": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "SB_Ferienplaene_2026_2027_de.pdf",
+  "sample_sections": 8,
+  "seconds": 0.2
+ },
+ "gr_stv_wegleitung": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Wegleitung%202025%20Prim%c3%a4rsteuerpflichtige.pdf",
+  "sample_sections": 69,
+  "seconds": 1.8
+ },
+ "gr_stva": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Inhaltsbereich",
+  "sample_sections": 5,
+  "seconds": 3.5
+ },
+ "ju-court-tariff": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "ju-dogs": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Chiens - République et Canton du Jura",
+  "sample_sections": 12,
+  "seconds": 3.8
+ },
+ "ju-justice": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Canton du Jura - Instances judiciaires - République et Canton du Jura",
+  "sample_sections": 4,
+  "seconds": 4.8
+ },
+ "ju-ovj": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Office des véhicules - Jura - OVJ - Autos - Motos - Plaques d'immatriculation - Expertise ",
+  "sample_sections": 7,
+  "seconds": 5.0
+ },
+ "ju-school-holidays": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Vacances scolaires - République et Canton du Jura",
+  "sample_sections": 4,
+  "seconds": 1.3
+ },
+ "ju-tax-guide": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "lu-gerichte-guidance": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "lu-hunde": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 2.3
+ },
+ "lu-schulferien": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "ferienplan_gemeinden_sj26_27.pdf",
+  "sample_sections": 6,
+  "seconds": 0.3
+ },
+ "lu-steuerbuch": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 2.3
+ },
+ "lu-strassenverkehrsamt": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 2.3
+ },
+ "lugano_legislazione": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "2-6-1-Ordinanza-sulla-custodia-dei-cani-e-sulle-aree-di-svago-del-13-gennaio-2010",
+  "sample_sections": 6,
+  "seconds": 0.2
+ },
+ "ne-dogs": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "S'occuper d'animaux",
+  "sample_sections": 55,
+  "seconds": 12.5
+ },
+ "ne-justice": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Autorités judiciaires",
+  "sample_sections": 11,
+  "seconds": 2.3
+ },
+ "ne-scan": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.0
+ },
+ "ne-school-calendar": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Calendrier et vacances scolaires",
+  "sample_sections": 6,
+  "seconds": 1.2
+ },
+ "ne-tax-instructions": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "SCCO_I754_InstructionsGenerales_PP.pdf",
+  "sample_sections": 57,
+  "seconds": 1.7
+ },
+ "nw-gerichte": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Hauptinhalt",
+  "sample_sections": 3,
+  "seconds": 4.6
+ },
+ "nw-hunde": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Hauptinhalt",
+  "sample_sections": 7,
+  "seconds": 3.8
+ },
+ "nw-pdfs": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "456520",
+  "sample_sections": 1,
+  "seconds": 1.9
+ },
+ "ow-pdfs": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "447067",
+  "sample_sections": 47,
+  "seconds": 1.9
+ },
+ "sg_gerichte_info": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Informationen & Formulare",
+  "sample_sections": 6,
+  "seconds": 2.9
+ },
+ "sg_gerichte_kostenmerkblatt": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Merkblatt%20zu%20den%20Kosten%20und%20dem%20Verfahren%20vor%20Handelsgericht.pdf",
+  "sample_sections": 2,
+  "seconds": 0.2
+ },
+ "sg_guidance": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Hunde",
+  "sample_sections": 11,
+  "seconds": 2.2
+ },
+ "sg_steuerbuch": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "003_1.pdf",
+  "sample_sections": 4,
+  "seconds": 0.2
+ },
+ "sh_amtsblatt_regierung": {
+  "docs": 100,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Bekanntmachung – Aus den Verhandlungen des Regierungsrates, 15. September 2026",
+  "sample_sections": 1,
+  "seconds": 0.6
+ },
+ "sh_ferien": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "c5d7c8e8-2819-4ae1-a1c6-9861471b0182",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "so_gerichte": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Gerichte",
+  "sample_sections": 9,
+  "seconds": 2.2
+ },
+ "so_hunde": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Hunde",
+  "sample_sections": 5,
+  "seconds": 2.9
+ },
+ "so_mfk": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Motorfahrzeugkontrolle",
+  "sample_sections": 12,
+  "seconds": 2.3
+ },
+ "so_schulferien": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Schulferienplan_2025-2026.pdf",
+  "sample_sections": 8,
+  "seconds": 0.2
+ },
+ "so_steuerbuch": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 2.4
+ },
+ "stadt_bern_sssb_hunde_abfall_parkieren": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "lex-559_61.pdf",
+  "sample_sections": 7,
+  "seconds": 0.2
+ },
+ "stadt_schaffhausen_rs": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "3720785",
+  "sample_sections": 2,
+  "seconds": 1.2
+ },
+ "stadt_thun_abfall_parkieren": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "4917697",
+  "sample_sections": 7,
+  "seconds": 1.5
+ },
+ "stadt_zuerich_as_hunde_abfall_parkieren": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "554.510%20Vollzugsvorschriften%20zum%20Hundegesetz_17_V4.pdf",
+  "sample_sections": 2,
+  "seconds": 0.1
+ },
+ "sz-justiz": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "sz-schulferien": {
+  "docs": 90,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Schulferien 2025/2026: Schulen Bezirk Einsiedeln (Bezirk Einsiedeln)",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "tg_ferienplan": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Ferienplan_SJ_2026_2027.pdf?fp=1",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "tg_gerichte_merkblaetter": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Eheprobleme%20-%20wie%20weiter.pdf?fp=2",
+  "sample_sections": 6,
+  "seconds": 0.2
+ },
+ "tg_hunde": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "potentiell gefährliche Hunde",
+  "sample_sections": 1,
+  "seconds": 3.1
+ },
+ "tg_steuerpraxis": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.2
+ },
+ "tg_strassenverkehrsamt": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Gebühren / Rechnungen",
+  "sample_sections": 2,
+  "seconds": 3.3
+ },
+ "ti_calendario_scolastico": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Calendario_scolastico_2026_2027.pdf",
+  "sample_sections": 1,
+  "seconds": 0.2
+ },
+ "ti_dc_istruzioni_pf": {
+  "docs": null,
+  "errors": 0,
+  "note": "skipped: first PDF is 43 MB"
+ },
+ "ti_giudiziario_guidance": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Temi",
+  "sample_sections": 3,
+  "seconds": 2.6
+ },
+ "ti_sezione_circolazione": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "ti_uvc_cani": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Razze soggette a restrizioni",
+  "sample_sections": 18,
+  "seconds": 4.0
+ },
+ "ur-gerichte-rechtsgebiete": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Familienrecht",
+  "sample_sections": 4,
+  "seconds": 3.6
+ },
+ "ur-pdfs": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "437558",
+  "sample_sections": 24,
+  "seconds": 1.2
+ },
+ "vd-dogs": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Police des chiens",
+  "sample_sections": 10,
+  "seconds": 2.3
+ },
+ "vd-justice": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Justices de paix",
+  "sample_sections": 13,
+  "seconds": 2.6
+ },
+ "vd-san": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.2
+ },
+ "vd-school-holidays": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Jours fériés et vacances scolaires",
+  "sample_sections": 2,
+  "seconds": 2.5
+ },
+ "vd-tax-instructions": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "21001_2025.pdf",
+  "sample_sections": 68,
+  "seconds": 1.3
+ },
+ "vs_guide_taxation": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Guide de taxation",
+  "sample_sections": 1,
+  "seconds": 3.9
+ },
+ "vs_scav_chiens": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Affaires canines",
+  "sample_sections": 4,
+  "seconds": 2.9
+ },
+ "vs_scn": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "vs_tribunaux": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "sitemap - Tribunaux - vs.ch",
+  "sample_sections": 9,
+  "seconds": 2.6
+ },
+ "vsz-ownw": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.1
+ },
+ "zg-hunde-ferien": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Hunde",
+  "sample_sections": 6,
+  "seconds": 2.8
+ },
+ "zg-pdfs": {
+  "docs": 1,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Schulferien%20202627-203031.pdf",
+  "sample_sections": 1,
+  "seconds": 0.1
+ },
+ "zg-recht-justiz": {
+  "docs": 0,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "",
+  "sample_sections": null,
+  "seconds": 0.0
+ },
+ "zh_verwaltungsgericht": {
+  "docs": 2,
+  "errors": 0,
+  "first_error": "",
+  "sample_title": "Streitigkeiten vor Verwaltungs­gericht",
+  "sample_sections": 21,
+  "seconds": 2.2
+ }
+}

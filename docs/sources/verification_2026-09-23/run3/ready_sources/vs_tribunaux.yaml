@@ -1,0 +1,17 @@
+# Draft from Run 3 (run3-e, section: VS (Valais)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+# Category missing in the registry: courts
+id: vs_tribunaux
+name: VS Tribunaux
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  language: fr
+  start_paths:
+  - /web/tribunaux/sitemap
+  path_allowlist:
+  - /web/tribunaux/
+allow_narrowing: false

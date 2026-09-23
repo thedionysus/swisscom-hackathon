@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-b, section: LU (79 communes)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: lu-schulferien
+name: LU Schulferien
+base_url: https://volksschulbildung.lu.ch
+default_extent_id: CH-LU
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/ferienplan_gemeinden_sj26_27.pdf
+  - https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/feriendaten_volksschulen_kt_luzern.pdf

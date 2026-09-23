@@ -1,0 +1,16 @@
+# Draft from Run 3 (run3-d, section: FR: Fribourg (base https://www.fr.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: fr-dogs
+name: FR Dogs
+base_url: https://www.fr.ch
+default_extent_id: CH-FR
+authority: official_info
+categories:
+- dogs
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://www.fr.ch/vie-quotidienne/animaux-de-compagnie/chiens
+  path_allowlist:
+  - /vie-quotidienne/animaux-de-compagnie/chiens
+  language: fr

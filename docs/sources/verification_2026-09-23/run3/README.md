@@ -10,6 +10,38 @@ The orchestrator re-checked the claims that decisions rest on, then audited the 
 
 **Result:** 286 canton cells: 240 verified, 44 verified with a gap, 2 blocked. No cell is empty. All 10 cities are verified.
 
+## Adding these sources to the registry (for ingestion and MCP)
+| File | What it is |
+|---|---|
+| `ready_sources/*.yaml` | **108 source definitions in registry format**, one per file, the same format as `src/swiss_grounding/registry/sources/`. Each one loads through the pipeline's own `load_source_yaml`. To add a source, copy the file into the registry folder. |
+| `source_catalogue.csv` | **One row per candidate source (148).** Columns: id, canton, extent, authority, categories, missing category, **data type**, fetch strategy, **entry points / endpoint**, fetch config, **readiness**, the live fetch-test result, and the report that holds the evidence |
+| `fetch_tests/` | Raw results of the live fetch test. Sources were run with the repo's real fetchers (`build_fetcher`): HTML crawls limited to 2–3 pages, only the first PDF of each PDF source |
+
+**Readiness at commit time** (live-tested 2026-09-23):
+- **99 sources work:** they validate and fetched documents, including 13 gazettes through the documented Amtsblattportal API.
+  - 15 draft configs needed a fix by the orchestrator. Most rejected their own start page because of a trailing slash; one start page answered 410.
+  - Each fix is noted as a comment at the top of the file.
+- **7 are blocked by pipeline issues** in the fetch code, not in the sources:
+  - 4 LU sources: `html_sections.html_to_page` finds 0 sections on LU pages.
+  - 2 JU PDFs: the server answers HEAD with 404 but serves the file on GET, and `PdfFetcher` skips on a HEAD 404.
+  - 1 AG PDF: www.schulen-aargau.ch fails TLS verification in httpx.
+- **1 is intermittent:** gerichte-zh.ch drops httpx connections.
+- **1 was not tested:** a 43 MB PDF.
+- **24 need a new fetcher:** plone-rest, sh-cms-json, lexican, pdf-index, iweb-table, stzh-as, idparc-export, post-json-index, ics. Most have a small fixed-URL sample that is ready now.
+- **10 are resolver inputs** (commune directories), not document sources.
+- **1 waits on a decision:** the FR Feuille officielle (fo.fr.ch).
+
+**What a successful test does not prove**
+- **Nothing was written to the database, and nothing was exposed through the MCP.** That needs a normal ingest run.
+- **Two title-quality issues showed up in the test:**
+  - pages on the i-web CMS get the title "Hauptinhalt";
+  - PDF documents get the file name as their title.
+- **Gazette documents are limited:**
+  - they hold the notice title and metadata only, because the list endpoint carries no notice text;
+  - their URL is the API feed, not a public notice page;
+  - they have no event date, because the api fetcher reads only top-level fields (`api.py:72–80`).
+- **36 of the 108 ready sources have no category.** 23 are court sources and 13 are gazettes; `categories.py` has no category for either. Add `courts` and `official_notices` to make them filterable in the MCP.
+
 ## Start here
 | File | What it is |
 |---|---|

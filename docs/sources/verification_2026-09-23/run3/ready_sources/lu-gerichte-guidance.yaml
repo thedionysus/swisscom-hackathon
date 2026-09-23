@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-b, section: LU (79 communes)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+# Category missing in the registry: courts
+# Orchestrator fix 2026-09-23: added start path(s) ['/rechtsgebiete', '/organisation/schlichtungsbehoerden'] to path_allowlist: the crawler rejected its own start page.
+id: lu-gerichte-guidance
+name: LU Gerichte Guidance
+base_url: https://gerichte.lu.ch
+default_extent_id: CH-LU
+authority: official_info
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://gerichte.lu.ch/rechtsgebiete
+  - https://gerichte.lu.ch/organisation/schlichtungsbehoerden
+  path_allowlist:
+  - /rechtsgebiete/
+  - /organisation/schlichtungsbehoerden/
+  - /rechtsgebiete
+  - /organisation/schlichtungsbehoerden
+  language: de

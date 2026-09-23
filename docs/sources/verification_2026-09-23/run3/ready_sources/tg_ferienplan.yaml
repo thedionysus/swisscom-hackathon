@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-c, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+id: tg_ferienplan
+name: TG Ferienplan
+base_url: https://av.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories:
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://av.tg.ch/public/upload/assets/179040/Ferienplan_SJ_2026_2027.pdf?fp=1
+  - https://av.tg.ch/public/upload/assets/8713/10_Jahresplan_Schulferien_Volksschule_2023_-_2033.pdf?fp=4
+  language: de

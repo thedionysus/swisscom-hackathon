@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-b, section: LU (79 communes)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: lu-steuerbuch
+name: LU Steuerbuch
+base_url: https://steuerbuch.lu.ch
+default_extent_id: CH-LU
+authority: official_info
+categories:
+- taxes
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://steuerbuch.lu.ch/band1
+  - https://steuerbuch.lu.ch/band2
+  - https://steuerbuch.lu.ch/band2a
+  - https://steuerbuch.lu.ch/band3
+  - https://steuerbuch.lu.ch/band4
+  path_allowlist:
+  - /band
+  language: de

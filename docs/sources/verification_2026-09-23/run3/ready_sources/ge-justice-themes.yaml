@@ -1,0 +1,20 @@
+# Draft from Run 3 (run3-d, section: GE: Geneva (base https://www.ge.ch; courts on https://justice.ge.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, name.
+# Category missing in the registry: courts
+# Orchestrator fix 2026-09-23: added start path(s) ['/fr/themes'] to path_allowlist: the crawler rejected its own start page.
+id: ge-justice-themes
+name: GE Justice Themes
+base_url: https://justice.ge.ch
+default_extent_id: CH-GE
+authority: official_info
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - https://justice.ge.ch/fr/themes
+  path_allowlist:
+  - /fr/theme/
+  - /fr/contenu/frais-dune-procedure-civile
+  - /fr/contenu/commission-de-conciliation-en-matiere-de-baux-et-loyers
+  - /fr/contenu/tribunal-des-
+  - /fr/themes
+  language: fr

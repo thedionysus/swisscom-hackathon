@@ -1,0 +1,17 @@
+# Draft from Run 3 (run3-a, section: ). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: so_steuerbuch
+name: Solothurner Steuerbuch
+base_url: https://steuerbuch.so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories:
+- taxes
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /steuern/
+  path_allowlist:
+  - /steuern/
+  language: de
+allow_narrowing: false

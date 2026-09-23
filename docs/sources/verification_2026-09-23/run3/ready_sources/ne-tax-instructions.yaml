@@ -1,0 +1,14 @@
+# Draft from Run 3 (run3-d, section: NE: Neuchâtel (base https://www.ne.ch)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: ne-tax-instructions
+name: NE Tax Instructions
+base_url: https://www.ne.ch
+default_extent_id: CH-NE
+authority: official_info
+categories:
+- taxes
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf
+  language: fr

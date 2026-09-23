@@ -1,0 +1,22 @@
+# Draft from Run 3 (run3-e, section: GR (Graubünden)). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: name.
+# Category missing in the registry: courts
+id: gr_justiz_guidance
+name: GR Justiz Guidance
+base_url: https://www.justiz-gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories: []
+fetch_strategy: html_crawl
+fetch_config:
+  language: de
+  start_paths:
+  - /gerichte/obergericht/dienstleistungenthemen/
+  - /schlichtungsbehoerden-und-mediation/dienstleistungenthemen/
+  - /schlichtungsbehoerden-und-mediation/ueber-uns/
+  - /schuldbetreibung-und-konkurs/dienstleistungenthemen/
+  path_allowlist:
+  - /gerichte/obergericht/dienstleistungenthemen/
+  - /schlichtungsbehoerden-und-mediation/
+  - /schuldbetreibung-und-konkurs/dienstleistungenthemen/
+allow_narrowing: false

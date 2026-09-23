@@ -19,7 +19,22 @@ Decision (2026-09-23): use this API (see `consolidated_report.md` §2).
 | Filter `cantons=XX` | – | Includes federal SHAB notices: TI 356 of 500 are `shab` | orchestrator |
 | Filter `tenants=` | – | **Ignored**: returns the same total as no filter | orchestrator |
 
-`meta` fields: `id`, `publicationNumber`, `primaryTenantCode`, `cantons`, `publicationDate`, `rubric`, `subRubric`, `title{de,fr,it}` and `registrationOffice{displayName, municipalityId}` (a BFS number when present) [agent B].
+`meta` fields: `id`, `publicationNumber`, `primaryTenantCode`, `cantons`, `publicationDate`, `rubric`, `subRubric`, `title{de,fr,it,en}` and `registrationOffice{displayName, municipalityId}` (a BFS number when present) [agent B].
+
+**Checked by the orchestrator on 2026-09-23:**
+- In every notice sampled, the title is filled in all four languages.
+- The 14-day volume per canton is at most 551 (ZH), so one request with `pageRequest.size=2000` holds a whole window.
+
+**This works with the existing `api` fetcher. No new fetcher is needed.**
+- `ready_sources/amtsblatt_<xx>.yaml` holds 13 cantons: AR, BE, BL, BS, NW, OW, SH, SO, SZ, TI, VS, ZG, ZH.
+- Each uses `publicationDate.start={start}` with `start_offset_days: 14`, `records_path: content`, `id_template: "{meta[id]}"` and `title_template: "{meta[title][de|fr|it]}"`.
+- Live test: all 13 returned documents (ZH 551, VS 490, SO 354, BE 337, TI 319, BL 302, BS 226, SZ 205, ZG 155, SH 40, NW 39, OW 36, AR 32), with 0 errors.
+- GR is left out: its one own rubric had no notices in the last 14 days.
+
+**Limits:**
+- There is no notice text; that needs a per-notice `/xml` request.
+- `event_date` stays empty, because the fetcher reads only top-level fields.
+- Each document's URL is the API feed.
 
 Robots and personal data:
 - robots.txt is `Disallow: /` on amtsblattportal.ch and every checked tenant front end [orchestrator].

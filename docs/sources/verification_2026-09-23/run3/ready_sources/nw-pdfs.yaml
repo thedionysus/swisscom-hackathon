@@ -1,0 +1,15 @@
+# Draft from Run 3 (run3-b, section: NW (11 communes); i-web). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: base_url, authority, default_extent_id, categories, name.
+id: nw-pdfs
+name: NW Pdfs
+base_url: https://www.nw.ch
+default_extent_id: CH-NW
+authority: official_info
+categories:
+- taxes
+- schools
+fetch_strategy: pdf
+fetch_config:
+  urls:
+  - https://www.nw.ch/_doc/456520
+  - https://www.steuern-nw.ch/app/uploads/2024/01/Wegleitung_2025_natuerliche-Personen.pdf

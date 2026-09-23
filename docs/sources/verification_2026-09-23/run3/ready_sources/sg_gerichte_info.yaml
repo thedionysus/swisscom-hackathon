@@ -1,0 +1,19 @@
+# Draft from Run 3 (run3-c, section: SG: St. Gallen). Not yet in the registry.
+# Fields filled by the orchestrator from the agent's notes: none.
+id: sg_gerichte_info
+name: Gerichte St.Gallen – Informationen & Schlichtungsstellen
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories:
+- housing
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths:
+  - /recht/gerichte/informationen---formulare.html
+  - /recht/gerichte/organisation---standorte/schlichtungsstellen-und-vermittlungsaemter.html
+  path_allowlist:
+  - /recht/gerichte/informationen---formulare
+  - /recht/gerichte/organisation---standorte/schlichtungsstellen-und-vermittlungsaemter
+  language: de
+allow_narrowing: false
