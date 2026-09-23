@@ -99,6 +99,7 @@ class ChunkDraft:
     text: str
     needs_ocr: bool = False
     ocr_image: str | None = None
+    ocr_digest: str | None = None
 
 
 def content_hash(doc: ParsedDocument) -> str:
