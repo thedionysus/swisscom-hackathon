@@ -83,7 +83,8 @@ def chunk_document(doc: ParsedDocument) -> tuple[ChunkDraft, ...]:
     for section in doc.sections:
         if section.needs_ocr:
             drafts.append(ChunkDraft(align_key=section.align_key, ordinal=len(drafts), breadcrumb=section.breadcrumb,
-                                     anchor=section.anchor, text="", needs_ocr=True, ocr_image=section.ocr_image))
+                                     anchor=section.anchor, text="", needs_ocr=True, ocr_image=section.ocr_image,
+                                     ocr_digest=section.ocr_digest))
             continue
         for key, text in _units(section):
             if text:

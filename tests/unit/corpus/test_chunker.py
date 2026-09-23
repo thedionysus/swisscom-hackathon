@@ -51,6 +51,13 @@ def test_ocr_page_is_one_empty_chunk():
     assert chunk.needs_ocr and chunk.text == "" and chunk.ocr_image == "/tmp/p2.png"
 
 
+def test_ocr_page_carries_its_image_digest():
+    s = ParsedSection("de:p2", ("Merkblatt", "p. 2"), "page=2", "", needs_ocr=True, ocr_image="/tmp/p2.png",
+                      ocr_digest="abc123")
+    [chunk] = chunk_document(_doc(s))
+    assert chunk.ocr_digest == "abc123"
+
+
 def test_empty_sections_are_dropped():
     assert chunk_document(_doc(ParsedSection("de:0", ("T",), None, "   "))) == ()
 
