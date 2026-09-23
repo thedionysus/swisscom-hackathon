@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from swiss_grounding.db.connection import connect
-from swiss_grounding.serving.candidates import ArmQuery, gather_candidates
+from swiss_grounding.serving.candidates import EMB_TABLE, ArmQuery, gather_candidates
 from tests.integration.serving.corpus_fixture import EMB, add_doc
 
 pytestmark = pytest.mark.integration
@@ -11,7 +11,7 @@ PATH_ZH = ("CH", "CH-ZH", "CH-ZH-261")
 
 
 def _query(text, **kw):
-    return ArmQuery(question=text, question_lang=kw.get("lang"), question_vec=EMB.embed([text])[0], question_sparse=None,
+    return ArmQuery(question=text, question_lang=kw.get("lang"), question_vec=EMB.embed([text])[0], question_sparse=kw.get("sparse"),
                     translations={}, translation_vecs={}, extent_path=kw.get("path", PATH_ZH),
                     local_extents=kw.get("local", ("CH-ZH", "CH-ZH-261")), as_of=kw.get("as_of"),
                     per_arm=10, top_n=kw.get("top_n", 30), local_quota=kw.get("quota", 10))
@@ -90,3 +90,24 @@ def test_translation_is_searched_in_its_own_store(corpus_db):
         found = gather_candidates(conn, q, index="bge-m3", ef_search=100)
     assert {"dense_fr", "kw_fr"} <= found[0].arms
     assert "fr" in found[0].query_langs
+
+
+def test_sparse_arm_finds_chunks_by_lexical_weights(corpus_db):
+    with connect(corpus_db) as conn:
+        add_doc(conn, group="rent", lang="de", text="Mietzins Anpassung", sparse={7: 0.9})
+        found = gather_candidates(conn, _query("Mietzins", sparse={7: 1.0}), index="bge-m3", ef_search=100)
+    assert "sparse" in found[0].arms
+
+
+def test_local_scope_gives_no_extra_rrf_score(corpus_db):
+    with connect(corpus_db) as conn:
+        add_doc(conn, group="city", lang="de", text="Karton Sammlung Stadt", extent="CH-ZH-261", source="zh")
+        with_local = gather_candidates(conn, _query("Karton"), index="bge-m3", ef_search=100)
+        without = gather_candidates(conn, _query("Karton", local=()), index="bge-m3", ef_search=100)
+    assert with_local[0].rrf == without[0].rrf
+    assert with_local[0].arms == without[0].arms
+
+
+def test_unknown_index_names_the_allowed_ones(corpus_db):
+    with connect(corpus_db) as conn, pytest.raises(ValueError, match=", ".join(sorted(EMB_TABLE))):
+        gather_candidates(conn, _query("Frist"), index="nope", ef_search=100)

@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime
 
 from pgvector import SparseVector
 
-from swiss_grounding.corpus.providers import FakeEmbeddings
+from swiss_grounding.corpus.providers import BGE_M3_VOCAB, FakeEmbeddings
 
 EMB = FakeEmbeddings(1024)
 NOW = datetime(2026, 9, 20, tzinfo=UTC)
@@ -39,7 +39,7 @@ def add_doc(conn, *, group, lang, text, extent="CH", source="src", authority="fe
     vec = EMB.embed([text])[0]
     conn.execute(
         "insert into corpus.emb_bge_m3 (chunk_id, language, text_hash, embedding, sparse) values (%s,%s,'t',%s,%s)",
-        (chunk_id, lang, vec, SparseVector(sparse, 250002) if sparse else None))
+        (chunk_id, lang, vec, SparseVector(sparse, BGE_M3_VOCAB) if sparse else None))
     return doc_id, chunk_id
 
 
