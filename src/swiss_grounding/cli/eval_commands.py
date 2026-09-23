@@ -31,6 +31,9 @@ LABEL_BUDGET_USD = 2.0
 LOW_RANK_SAMPLE = 5
 LABEL_SEED = 20260924
 REVIEW_PATH = Path("evals/golden/label_review.csv")
+GENERATE_BUDGET_USD = 2.0
+GENERATE_SEED = 20260924
+GENERATED_PATH = Path("evals/generated/questions.jsonl")
 EXIT_STATUS_MISMATCH = 3
 RUN_ID_LENGTH = 12
 SWISS_TZ = ZoneInfo("Europe/Zurich")
@@ -279,6 +282,65 @@ def label_check_cmd() -> None:
     typer.echo(f"agreement on {len(human)} checked pairs: {score:.2f} (need {MIN_AGREEMENT})")
     if score < MIN_AGREEMENT:
         raise typer.Exit(code=1)
+
+
+@eval_app.command("generate")
+def generate_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend",
+                                                     help="required: calls gpt-5-mini"),
+                 per_stratum: int = typer.Option(35, "--per-stratum")) -> None:
+    """gpt-5-mini writes one question per sampled chunk; used for recall@5 only (ADR 0016)."""
+    import json
+
+    from swiss_grounding.corpus.budget import ensure_within, record_spend
+    from swiss_grounding.corpus.providers import OpenAILLM
+    from swiss_grounding.evals.generate import GENERATE_KIND, SAMPLE_SQL, generate_questions
+
+    if not confirm_spend:
+        typer.echo("This calls gpt-5-mini. Re-run with --confirm-spend.", err=True)
+        raise typer.Exit(code=1)
+    settings = load_settings()
+    with connect(settings.database_url) as conn:
+        chunks = conn.execute(SAMPLE_SQL, {"seed": GENERATE_SEED, "per_stratum": per_stratum}).fetchall()
+        ensure_within(conn, estimate=0.0005 * len(chunks), total_cap=settings.corpus_budget_usd,
+                      kind=GENERATE_KIND, kind_cap=GENERATE_BUDGET_USD)
+
+    def spend(usd: float) -> None:        # its own short transaction: a later failure cannot roll it back
+        with connect(settings.database_url) as c:
+            record_spend(c, kind=GENERATE_KIND, model=settings.corpus_doc_model, usd=usd, input_tokens=0,
+                         output_tokens=0, estimated=False)
+
+    GENERATED_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with GENERATED_PATH.open("w", encoding="utf-8") as f:
+        rows = generate_questions(chunks, OpenAILLM(settings.openai_api_key), model=settings.corpus_doc_model,
+                                  on_usage=spend)
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+            f.flush()
+    typer.echo(f"{len(rows)} questions written to {GENERATED_PATH}")
+
+
+@eval_app.command("recall")
+def recall_cmd(path: Annotated[Path, typer.Option("--path")] = GENERATED_PATH) -> None:
+    """Recall@5 of generated questions: is the chunk that inspired the question in the top 5?"""
+    import json
+    from collections import defaultdict
+
+    from swiss_grounding.app import build_search_service
+    from swiss_grounding.evals.golden_runner import citation_key
+    from swiss_grounding.serving.models import SearchRequest
+
+    service = build_search_service(load_settings(), today=_today)
+    hits: dict[str, list[float]] = defaultdict(list)
+    for line in path.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        place = () if row["extent_id"] == "CH" else (service.tree.get(row["extent_id"]).label("de"),)
+        resp = service.search(SearchRequest(row["question"], place, {}, None, 5))
+        keys = [citation_key(c) for p in resp.places for c in p.citations][:5]
+        hits[row["language"]].append(1.0 if row["key"] in keys else 0.0)
+    total = [v for vs in hits.values() for v in vs]
+    for lang, vs in sorted(hits.items()):
+        typer.echo(f"{lang}: recall@5 {sum(vs) / len(vs):.3f} over {len(vs)}")
+    typer.echo(f"all: recall@5 {sum(total) / len(total):.3f} over {len(total)}")
 
 
 @eval_app.command("fit")
