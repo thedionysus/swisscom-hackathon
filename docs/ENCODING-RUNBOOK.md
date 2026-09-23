@@ -11,6 +11,11 @@ from the shipped CLI in a few places — see the notes at the bottom.
 (`corpus fetch --manifest manifests/declared-scope.yaml --tier 1`) started 2026-09-23 evening and may still be
 running or finished. `fetch` is incremental and free — re-running it just resumes, so Step 1 is safe either way.
 
+**Where to run:** every command below runs from the repo root — page-image paths stored for OCR are relative to
+`DATA_DIR`, which is resolved from the working directory. Run the paid commands (§5–§8) inside `tmux` (or
+`nohup … &`, logging to a file): Batch API commands poll for hours, and a closed terminal kills the poll. If one
+dies anyway, re-running the same command is the resume path (see "Resuming" below).
+
 **Safety:** `ocr`/`describe`/`embed` without `--dry-run` refuse to write against a non-test database while
 `CORPUS_LLM_PROVIDER` (or `EMBEDDING_BACKEND` for `bge-m3`) is `fake`, unless `--allow-fake` is passed. Never
 pass `--allow-fake` against the dev database. `--dry-run` is always safe (no writes, no spend).
@@ -18,6 +23,15 @@ pass `--allow-fake` against the dev database. `--dry-run` is always safe (no wri
 ---
 
 ## 1. Check crawl status, resume if needed
+
+First wait for any running fetch to exit — this must print nothing:
+
+```bash
+pgrep -f "corpus fetch"
+```
+
+Never run two fetches at once. A source's documents are written only when that source finishes, so a fetch that
+is still running can look incomplete in `status`. Once nothing is running:
 
 ```bash
 uv run swiss-grounding corpus status
@@ -73,9 +87,16 @@ PRICES = {
 uv run swiss-grounding corpus estimate
 ```
 
-Prints per-stage estimates (OCR, describe docs, describe chunks, embed openai-3l), batches in flight, and total
-spent so far. **Stop and re-scope (lower `max_pages` on the largest HTML sources, re-fetch) if the total is
-above roughly $90** — the $100 cap (`CORPUS_BUDGET_USD`) refuses the run outright above $100, but leave headroom
+Prints per-stage estimates (OCR, describe docs, describe chunks, embed openai-3l), batches in flight, total
+spent so far, and last a single go/no-go line:
+
+```
+total estimate (batch price): $X
+```
+
+`$X` = OCR + describe docs + the projected chunk pass (every group, once documents are described) + openai-3l
+projected with descriptions. **Stop and re-scope (lower `max_pages` on the largest HTML sources, re-fetch) if that
+total is above roughly $90** — the $100 cap (`CORPUS_BUDGET_USD`) refuses the run outright above $100, but leave headroom
 for re-runs and the bge-m3 pass. Fedlex alone is ≈$2.70 at batch price (chunk descriptions ≈$1.68, embeddings
 ≈$0.95, doc descriptions ≈$0.03); HTML/PDF/OCR adds the rest.
 
@@ -87,8 +108,13 @@ uv run swiss-grounding corpus ocr --pilot 10
 
 Runs 10 pages synchronously, prints the measured per-page cost and a batch-price projection for the remaining
 pages. Check that the projection fits under the $10 OCR sub-cap (`CORPUS_OCR_BUDGET_USD`). If it doesn't, either
-accept a partial OCR pass with `corpus ocr --limit N` sized to stay under the sub-cap, or reduce the PDF scope
-(`max_pdfs` in the manifest) and re-fetch.
+accept a partial OCR pass with `corpus ocr --limit N`, or reduce the PDF scope (`max_pdfs` in the manifest) and
+re-fetch. If the projection is near the $10 sub-cap, size `N` from the pilot's own numbers: `N` ≈ (sub-cap − spent
+on OCR so far) ÷ the projected batch cost per page, rounded down with some margin.
+
+A page whose image file is missing (e.g. the command was run outside the repo root) is quarantined — stage `ocr`,
+reason `page image missing: <path>` — and skipped; it stays pending and is picked up by the next run from the
+right directory.
 
 ```bash
 uv run swiss-grounding corpus ocr
@@ -106,8 +132,14 @@ uv run swiss-grounding corpus describe --what docs --limit 5 --sync
 ```
 
 Runs 5 document-description tasks synchronously so you can inspect them immediately. Check the descriptions in
-`corpus.translation_group` (`select id, description from corpus.translation_group where description <> '' order by id desc limit 5;`):
-are the languages right, is the act named correctly, is the jurisdiction right?
+`corpus.translation_group`:
+
+```sql
+select id, description_by_lang, topics from corpus.translation_group where description_by_lang <> '{}'::jsonb order by id desc limit 5;
+```
+
+Are the languages right, is the act named correctly, is the jurisdiction right? Like `describe --what chunks`,
+this first marks repeated site furniture as `boilerplate`, so document excerpts leave it out.
 
 ```bash
 uv run swiss-grounding corpus describe --what docs
@@ -121,8 +153,13 @@ Runs the rest via the Batch API.
 uv run swiss-grounding corpus describe --what chunks --limit 20 --sync
 ```
 
-Spot-check 20 chunk descriptions synchronously
-(`select id, description, topics, boilerplate from corpus.chunk where description <> '' order by id desc limit 20;`).
+Spot-check 20 chunk descriptions synchronously:
+
+```sql
+select id, language, description, topics from corpus.chunk where description <> '' order by id desc limit 20;
+select count(*) from corpus.chunk where status = 'boilerplate';
+```
+
 Note: `describe --what chunks` first marks repeated site furniture as `boilerplate` (RAG review E2) — boilerplate
 chunks are neither described nor embedded, so a lower task count than `corpus estimate` projected is expected.
 
@@ -130,7 +167,9 @@ chunks are neither described nor embedded, so a lower task count than `corpus es
 uv run swiss-grounding corpus describe --what chunks
 ```
 
-Runs the rest via the Batch API. (`--what all` also exists — docs then chunks in one command — but running the
+Runs the rest via the Batch API. **Then re-run the same command until it reports 0 tasks**: chunks whose
+align_key repeats within a group are left for a second pass, so the first full run does not describe everything.
+Only then move on to embedding. (`--what all` also exists — docs then chunks in one command — but running the
 two phases separately, as above, is what lets you inspect docs before spending on chunks.)
 
 ## 8. Embed (openai-3l)
@@ -159,9 +198,13 @@ docker info --format '{{.MemTotal}}'
 ~9 GB free was available on 2026-09-23; free more if needed before building — HNSW builds need several GB
 headroom. Budget per language partition: OpenAI `halfvec(3072)` ≈ 6 KB/vector plus an HNSW index of similar
 size again; `bge-m3` (1024-dim) ≈ 4 KB/vector. The DB container's `shm_size` is `2gb`
-(`docker-compose.yml`); index builds run serially by default (`CORPUS_INDEX_PARALLEL_WORKERS=0` in config.py) —
-raising it needs more `/dev/shm` than the container default. Build the smallest language partition first (`rm`
-or `it`) to get a per-partition time before starting `de`/`fr`.
+(`docker-compose.yml`); index builds run serially by default (`CORPUS_INDEX_PARALLEL_WORKERS=0` in config.py).
+`corpus index` builds one HNSW index per language partition, one after another: de, fr, it, en, rm. Before
+raising `CORPUS_INDEX_PARALLEL_WORKERS`, check that the container really has the 2 GB of shared memory:
+
+```bash
+docker exec swisscom-hackathon-db-1 df -h /dev/shm     # Size must read 2.0G, not 64M
+```
 
 ## 10. Build the openai-3l index
 
