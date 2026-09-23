@@ -100,11 +100,12 @@ def build_server(settings: Settings) -> FastMCP:
             out = await anyio.to_thread.run_sync(fn, limiter=models if uses_models else None)
         except Exception as exc:
             log.exception("tool %s failed", tool)
-            record_call(settings.database_url, CallRecord(tool, int((perf_counter() - started) * 1000), "error",
-                                                          error=type(exc).__name__))
+            await anyio.to_thread.run_sync(
+                record_call, settings.database_url,
+                CallRecord(tool, int((perf_counter() - started) * 1000), "error", error=type(exc).__name__))
             return _json({"status": "error", "message": INTERNAL_ERROR})
         places = out.get("places", [])
-        record_call(settings.database_url, CallRecord(
+        await anyio.to_thread.run_sync(record_call, settings.database_url, CallRecord(
             tool, int((perf_counter() - started) * 1000), out.get("status", "results"), places=len(places),
             citations=sum(len(p.get("citations", [])) for p in places)))
         return _json(out)
