@@ -55,4 +55,4 @@ Reviewed 2026-09-23. Subject: the encoding-track plan (`docs/superpowers/plans/2
 - **HyDE, LLM query expansion and rewriting at query time:** each needs a model call per question and breaks keyless serving (ADR 0006); the calling client may do them itself.
 - **Late chunking:** needs token-level access to a long-context model; not possible with the OpenAI API and marginal for article-sized legal chunks.
 - **Semantic / proposition chunking:** our sources have explicit structure (articles, headings), which beats similarity-based boundaries and keeps language versions aligned.
-- **Cohere rerank / Pinecone / Qdrant:** external services or a database change; ADR 0004-postgres stands.
+- **Cohere rerank / Pinecone / Qdrant:** external services or a database change; ADR 0018 stands.

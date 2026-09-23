@@ -231,9 +231,9 @@ The user recorded on 2026-09-23 that this whole approach is being replaced (plan
 
 - **Model:** `BAAI/bge-m3` via sentence-transformers, 1,024-d, `normalize_embeddings=True`, CPU in-process (`retrieval/embedder.py:37-46`); `fake` hashed-bag-of-tokens embedder for tests (`:17-34`). Selected by `EMBEDDING_BACKEND`/`EMBEDDING_MODEL`/`EMBEDDING_DIM` (`config.py:13-15`). **No provider abstraction beyond these two backends**: no OpenAI, no Voyage, no Cohere; `Embedder` is a two-method protocol (`embedder.py:11-14`).
 - **LLM:** `LLM_BACKEND ∈ {fake, anthropic}` (`config.py:19-21`); one `AnthropicLLM` class (`ingest/llm.py`). No OpenAI path.
-- **Store:** PostgreSQL 16 + pgvector 0.8.6 (ADR 0004-postgres records the SurrealDB evaluation). `chunk.embedding vector({{EMBEDDING_DIM}})` fixed at `db init` (`schema.sql:92`; README: changing it means `docker compose down -v`). **The index records no model name, version or dimension** beyond the column width; switching models silently invalidates every vector.
+- **Store:** PostgreSQL 16 + pgvector 0.8.6 (ADR 0018 records the SurrealDB evaluation). `chunk.embedding vector({{EMBEDDING_DIM}})` fixed at `db init` (`schema.sql:92`; README: changing it means `docker compose down -v`). **The index records no model name, version or dimension** beyond the column width; switching models silently invalidates every vector.
 - **Index layout:** `hnsw (embedding vector_cosine_ops)` with defaults m=16, ef_construction=64 (`schema.sql:130`; *measured* reloptions NULL); `gin (tsv)`; `btree (extent_id, document_status)`. `hnsw.ef_search` is never set (`db/connection.py` has no `SET`; default 40) and iterative scans are off — a latent recall cap once the planner uses the index (issue #33, *measured* at 10× scale).
-- **Sizes (live):** 719 vectors, HNSW index 5.9 MB, DB 24 MB. `DENSE_SQL` 11.6 ms mean, lexical 0.4 ms (issue #33/ADR 0004-postgres).
+- **Sizes (live):** 719 vectors, HNSW index 5.9 MB, DB 24 MB. `DENSE_SQL` 11.6 ms mean, lexical 0.4 ms (issue #33/ADR 0018).
 - **Latency:** the MCP server loads bge-m3 once at start; the CLI reloads it per call — *measured* 14.3–15.2 s per `query`, of which ~14 s is model load.
 
 ## 7. Retrieval and scoring (query core)
