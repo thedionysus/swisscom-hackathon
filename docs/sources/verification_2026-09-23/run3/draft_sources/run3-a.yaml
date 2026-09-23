@@ -1,0 +1,318 @@
+# Draft source configs proposed by agent run3-a on 2026-09-23. NOT registered sources.
+# Copied verbatim from agent_reports/run3-a.md; each block notes whether it parses as YAML.
+
+---
+# ---- block 1 · section: ZH (Zürich) · parses: yes · entries: 2
+# yaml-now:html_crawl — 248 theme pages > crawl_max_pages 200 (config.py:22): split by theme or raise the cap
+id: gerichte_zh_themen
+name: Gerichte Kanton Zürich – Rechtliche Themen
+base_url: https://www.gerichte-zh.ch
+default_extent_id: CH-ZH
+authority: official_info
+categories: []            # category missing: courts (Miete pages would also fit housing)
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/themen"]
+  path_allowlist: ["/de/themen"]
+  language: de
+allow_narrowing: false
+license: "gerichte-zh.ch terms of use"   # placeholder, not checked
+---
+# yaml-now:html_crawl
+id: zh_verwaltungsgericht
+name: Verwaltungsgericht des Kantons Zürich – Verfahren
+base_url: https://www.zh.ch
+default_extent_id: CH-ZH
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/politik-staat/streitigkeiten-vor-verwaltungsgericht.html", "/de/gerichte-notariate/verwaltungsgericht.html"]
+  path_allowlist: ["/de/politik-staat/streitigkeiten-vor-verwaltungsgericht", "/de/gerichte-notariate/verwaltungsgericht"]
+  language: de
+allow_narrowing: false
+license: "zh.ch terms of use"
+
+---
+# ---- block 2 · section: BE (Bern) · parses: yes · entries: 3
+# yaml-now:html_crawl (Crawl-delay 10 not honoured by the crawler; needs a per-source delay)
+id: be_zsg_themen
+name: Zivil- und Strafgerichtsbarkeit Kanton Bern – Themen und Schlichtungsbehörden
+base_url: https://www.zsg.justice.be.ch
+default_extent_id: CH-BE
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/start/themen.html", "/de/start/ueber-uns/schlichtungsbehoerden.html"]
+  path_allowlist: ["/de/start/themen", "/de/start/ueber-uns/schlichtungsbehoerden"]
+  language: de
+allow_narrowing: false
+---
+id: be_vgb_themen
+name: Verwaltungsgericht des Kantons Bern – Verfahren und Kosten
+base_url: https://www.vgb.justice.be.ch
+default_extent_id: CH-BE
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/start/themen.html"]
+  path_allowlist: ["/de/start/themen"]
+  language: de
+allow_narrowing: false
+---
+# yaml-now:pdf
+id: be_schulferien_volksschule
+name: Kantonale Ferienordnung Volksschule Bern (deutschsprachiger Teil) 2026/27–2031/32
+base_url: https://www.akvb-gemeinden.bkd.be.ch
+default_extent_id: CH-BE
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.akvb-gemeinden.bkd.be.ch/content/dam/akvb-gemeinden_bkd/dokumente/de/startseite/organisation-finanzierung/schulorganisation/schulferienplanung/schulferien-kanton-bern-d.pdf"]
+  language: de
+allow_narrowing: false
+
+---
+# ---- block 3 · section: BS (Basel-Stadt) · parses: yes · entries: 1
+# yaml-now:html_crawl (136 court URLs < 200 cap; Crawl-delay 10 not honoured).
+# Whether the landing links reach all of /gerichte-judikative/ is not tested; seeding from the sitemap is safer.
+id: bs_gerichte
+name: Gerichte Basel-Stadt – Verfahren, Kosten, Schlichtung
+base_url: https://www.bs.ch
+default_extent_id: CH-BS
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/willkommen-bei-den-gerichten", "/regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten/schlichtungsverfahren"]
+  path_allowlist: ["/willkommen-bei-den-gerichten", "/gerichte-judikative/", "/regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten"]
+  language: de
+allow_narrowing: false
+
+---
+# ---- block 4 · section: BL (Basel-Landschaft). Public host blocked; content read through the open Plone API · parses: yes · entries: 2
+# yaml-now:api — cited g5, re-checked today (200, total_count 58)
+id: bl_schulferien
+name: Schulferien Basel-Landschaft (data.bl.ch 13350)
+base_url: https://data.bl.ch
+default_extent_id: CH-BL
+authority: official_info
+categories: [schools]
+fetch_strategy: api
+fetch_config:
+  url: https://data.bl.ch/api/explore/v2.1/catalog/datasets/13350/records?limit=100&order_by=startdatum
+  records_path: results
+  id_template: "{schuljahr}-{name}-{startdatum}"
+  event_date_field: startdatum
+  title_template: "Schulferien Basel-Landschaft: {name} ({startdatum} bis {enddatum})"
+  text_template: "{name} im Schuljahr {schuljahr}: vom {startdatum} bis {enddatum}."
+  language: de
+allow_narrowing: false
+llm_tagging: false
+---
+# fetcher:plone-rest (NEW). Draft config; not supported by today's strategies
+id: bl_gerichte
+name: Gerichte Basel-Landschaft
+base_url: https://bl-api.webcloud7.ch          # public URL: https://www.baselland.ch (Cloudflare 403)
+default_extent_id: CH-BL
+authority: official_info
+categories: []                                 # category missing: courts
+fetch_strategy: plone_rest                     # NEW
+fetch_config:
+  public_base_url: https://www.baselland.ch    # rewrite document URLs to the public host
+  roots: ["/politik-und-behorden/gerichte",
+          "/politik-und-behorden/direktionen/volkswirtschafts-und-gesundheitsdirektion/generalsekretariat/aufgaben/schlichtungsstellen/mietangelegenheiten"]
+  include_types: [ContentPage, amt, File]
+  language: de
+# Same fetcher with other roots: bl_hunde (…/veterinaerwesen/hunde, [dogs]),
+# bl_mfk (…/sicherheitsdirektion/motorfahrzeugkontrolle, [transport, parking]),
+# bl_schulferien_seiten (…/bildungs-kultur-und-sportdirektion/schulferien, [schools])
+
+---
+# ---- block 5 · section: SO (Solothurn) · parses: yes · entries: 5
+id: so_gerichte
+name: Gerichte Kanton Solothurn – Zuständigkeit, Friedensrichter, Mietschlichtung
+base_url: https://so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/gerichte/", "/verwaltung/departement-des-innern/departementssekretariat/oberaemter/schlichtung-und-vermittlung/"]
+  path_allowlist: ["/gerichte/", "/verwaltung/departement-des-innern/departementssekretariat/oberaemter/schlichtung-und-vermittlung/"]
+  language: de
+allow_narrowing: false
+---
+id: so_hunde
+name: Hunde im Kanton Solothurn
+base_url: https://so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories: [dogs]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/verwaltung/volkswirtschaftsdepartement/amt-fuer-landwirtschaft/tiere-und-lebensmittel/tierschutz/hunde/",
+                "/verwaltung/departement-des-innern/departementssekretariat/oberaemter/hundehaltung/"]
+  path_allowlist: ["/verwaltung/volkswirtschaftsdepartement/amt-fuer-landwirtschaft/tiere-und-lebensmittel/tierschutz/hunde/",
+                   "/verwaltung/departement-des-innern/departementssekretariat/oberaemter/hundehaltung/",
+                   "/verwaltung/volkswirtschaftsdepartement/amt-fuer-wald-jagd-und-fischerei/wildtiere/mit-hund-im-wald-leinenpflicht/"]
+  language: de
+allow_narrowing: false
+---
+# 175 sitemap locs < 200 cap; the entry HTML holds the full text
+id: so_steuerbuch
+name: Solothurner Steuerbuch
+base_url: https://steuerbuch.so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories: [taxes]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/steuern/"]
+  path_allowlist: ["/steuern/"]
+  language: de
+allow_narrowing: false
+---
+id: so_schulferien
+name: Schulferienpläne der Volksschulen im Kanton Solothurn
+base_url: https://so.ch
+default_extent_id: CH-SO   # the PDF lists school bodies; commune-level answers need a school-body→BFS map
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2025-2026.pdf",
+         "https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2026_2027.pdf",
+         "https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2027_2028.pdf"]
+  language: de
+allow_narrowing: false
+---
+id: so_mfk
+name: Motorfahrzeugkontrolle Kanton Solothurn
+base_url: https://so.ch
+default_extent_id: CH-SO
+authority: official_info
+categories: [transport]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/verwaltung/bau-und-justizdepartement/motorfahrzeugkontrolle/"]
+  path_allowlist: ["/verwaltung/bau-und-justizdepartement/motorfahrzeugkontrolle/"]
+  language: de
+allow_narrowing: false
+
+---
+# ---- block 6 · section: AG (Aargau) · parses: yes · entries: 5
+id: ag_gerichte
+name: Gerichte Kanton Aargau – Organisation, Schlichtung, Merkblätter
+base_url: https://www.ag.ch
+default_extent_id: CH-AG
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/ueber-uns/gerichte-kanton-aargau"]
+  path_allowlist: ["/de/ueber-uns/gerichte-kanton-aargau"]   # 125 URLs < 200 cap
+  language: de
+allow_narrowing: false
+---
+id: ag_hunde
+name: Hunde im Kanton Aargau
+base_url: https://www.ag.ch
+default_extent_id: CH-AG
+authority: official_info
+categories: [dogs]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/themen/landwirtschaft-tiere/heim-und-nutztiere/hunde"]
+  path_allowlist: ["/de/themen/landwirtschaft-tiere/heim-und-nutztiere/hunde"]
+  language: de
+allow_narrowing: false
+---
+id: ag_steuern_wegleitung
+name: Wegleitung zur Steuererklärung (natürliche Personen) Kanton Aargau
+base_url: https://www.ag.ch
+default_extent_id: CH-AG
+authority: official_info
+categories: [taxes]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/themen/steuern-finanzen/steuern-startseite/steuererklaerung-einreichen/wegleitung-zur-steuererklaerung"]
+  path_allowlist: ["/de/themen/steuern-finanzen/steuern-startseite/steuererklaerung-einreichen/wegleitung-zur-steuererklaerung",
+                   "/de/themen/steuern-finanzen/steuern/steuererklaerung-einreichen/wegleitung"]   # 97 URLs
+  language: de
+allow_narrowing: false
+---
+# the whole road section has 202 URLs > cap, so restrict to three sub-sections
+id: ag_strassenverkehr
+name: Strassenverkehrsamt Aargau – Gebühren, Fahrzeuge, Führerausweise
+base_url: https://www.ag.ch
+default_extent_id: CH-AG
+authority: official_info
+categories: [transport]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/de/themen/mobilitaet-verkehr/strassenverkehr/steuern-gebuehren", "/de/themen/mobilitaet-verkehr/strassenverkehr/fahrzeuge", "/de/themen/mobilitaet-verkehr/strassenverkehr/fuehrerausweise"]
+  path_allowlist: ["/de/themen/mobilitaet-verkehr/strassenverkehr/steuern-gebuehren", "/de/themen/mobilitaet-verkehr/strassenverkehr/fahrzeuge", "/de/themen/mobilitaet-verkehr/strassenverkehr/fuehrerausweise"]
+  language: de
+allow_narrowing: false
+---
+id: ag_schulferien
+name: Kantonal einheitliche Feriendaten Volksschule Aargau
+base_url: https://www.schulen-aargau.ch
+default_extent_id: CH-AG   # covers 9 canton-wide weeks; the other 4 weeks are set by each commune
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan.pdf"]
+  language: de
+allow_narrowing: false
+
+---
+# ---- block 7 · section: L1: city law (Zürich, Bern, Thun) · parses: yes · entries: 3
+id: stadt_zuerich_as_hunde_abfall_parkieren
+name: Stadt Zürich – Amtliche Sammlung (Hunde, Abfall, Parkieren)
+base_url: https://www.stadt-zuerich.ch
+default_extent_id: CH-ZH-261
+authority: official_info        # municipal_law once the AS is registered as a law platform
+categories: [dogs, waste, parking]
+fetch_strategy: pdf
+fetch_config:
+  urls:
+    - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/554/510/554.510%20Vollzugsvorschriften%20zum%20Hundegesetz_17_V4.pdf
+    - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/712/110/712.110%20Verordnung%20Abfallbewirtschaftung%20%28VAZ%29%202022_V8.pdf
+    - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/310/551.310-pkv-2011-inkl-anhang-pkv-2025-v3.pdf
+    - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/311/551.311_Geb%C3%BChrenordnung%20Parkkarten%20Blaue%20Zonen%20V1.pdf
+    - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/330/551.330_Parkierungs-%20und%20Parkuhrkontrollgeb%C3%BChren17_V3.pdf
+    - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/741/500/741.500_Parkplatzverordnung_16_V4.pdf
+  language: de
+allow_narrowing: false
+---
+id: stadt_bern_sssb_hunde_abfall_parkieren
+name: Stadt Bern – SSSB (Hunde, Abfall, Parkieren)
+base_url: https://stadtrecht.bern.ch
+default_extent_id: CH-BE-351
+authority: official_info
+categories: [dogs, waste, parking]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://stadtrecht.bern.ch/lex-559_61.pdf", "https://stadtrecht.bern.ch/lex-822_1.pdf", "https://stadtrecht.bern.ch/lex-822_111.pdf",
+         "https://stadtrecht.bern.ch/lex-761_232.pdf", "https://stadtrecht.bern.ch/lex-761_212.pdf"]
+  language: de
+allow_narrowing: false
+---
+id: stadt_thun_abfall_parkieren
+name: Stadt Thun – Reglemente Abfall und Parkieren
+base_url: https://www.thun.ch
+default_extent_id: CH-BE-942
+authority: official_info
+categories: [waste, parking]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.thun.ch/_doc/4917697", "https://www.thun.ch/_doc/5450779", "https://www.thun.ch/_doc/4355560",
+         "https://www.thun.ch/_doc/4355563", "https://www.thun.ch/_doc/4351168", "https://www.thun.ch/_doc/4355737"]
+  language: de
+allow_narrowing: false

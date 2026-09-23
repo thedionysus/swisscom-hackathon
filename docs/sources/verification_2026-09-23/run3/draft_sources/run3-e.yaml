@@ -1,0 +1,157 @@
+# Draft source configs proposed by agent run3-e on 2026-09-23. NOT registered sources.
+# Copied verbatim from agent_reports/run3-e.md; each block notes whether it parses as YAML.
+
+---
+# ---- block 1 · section: TI (Ticino), city: Lugano · parses: yes · entries: 6
+id: ti_giudiziario_guidance
+base_url: https://www4.ti.ch
+default_extent_id: CH-TI
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  language: it
+  start_paths: ["/poteri/giudiziario/sportello/temi", "/poteri/giudiziario/io-e-il-diritto/io-e-il-divorzio",
+                "/poteri/giudiziario/locazione/la-locazione", "/poteri/giudiziario/giustizia-civile/giudici-di-pace",
+                "/di/dg/cosa-facciamo/assistenza-giudiziaria"]
+  path_allowlist: ["/poteri/giudiziario/io-e-il-diritto/", "/poteri/giudiziario/sportello/", "/poteri/giudiziario/locazione/",
+                   "/poteri/giudiziario/giustizia-civile/giudici-di-pace", "/di/dg/cosa-facciamo/assistenza-giudiziaria"]
+allow_narrowing: false
+---
+id: ti_uvc_cani
+base_url: https://www4.ti.ch
+default_extent_id: CH-TI
+authority: official_info
+categories: [dogs]
+fetch_strategy: html_crawl
+fetch_config: {language: it, start_paths: ["/dss/dsp/uvc/temi/tenuta-di-animali/cani/razze-soggette-a-restrizioni"],
+               path_allowlist: ["/dss/dsp/uvc/temi/tenuta-di-animali/cani/"]}
+---
+id: ti_calendario_scolastico      # canton-wide, so CH-TI is correct
+default_extent_id: CH-TI
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  language: it
+  urls:
+    - https://m4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2026_2027.pdf   # fetched, text layer
+    - https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2027-2028.pdf # from the page link, not fetched
+---
+id: ti_sezione_circolazione
+base_url: https://www4.ti.ch
+default_extent_id: CH-TI
+authority: official_info
+categories: [transport]
+fetch_strategy: html_crawl
+fetch_config: {language: it, start_paths: ["/di/sc/home/"], path_allowlist: ["/di/sc/veicoli/", "/di/sc/conducenti/"]}
+---
+id: ti_dc_istruzioni_pf
+default_extent_id: CH-TI
+authority: official_info
+categories: [taxes]
+fetch_strategy: pdf
+fetch_config: {language: it, urls: ["https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf"]}  # 43.7 MB
+---
+id: lugano_legislazione
+base_url: https://www.lugano.ch
+default_extent_id: CH-TI-5192
+authority: official_info          # until lugano.ch is registered as a law platform
+categories: [dogs, waste, parking]
+fetch_strategy: pdf
+fetch_config:
+  language: it
+  urls:
+    - https://www.lugano.ch/law/16176713/2-6-1-Ordinanza-sulla-custodia-dei-cani-e-sulle-aree-di-svago-del-13-gennaio-2010
+    - https://www.lugano.ch/law/16176717/4-1-Regolamento-sulla-raccolta-dei-rifiuti-del-13-maggio-2019
+    - https://www.lugano.ch/law/16371927/4-1-1-Ordinanza-municipale-sulla-gestione-dei-rifiuti-del-17-ottobre-2019
+    - https://www.lugano.ch/law/16597411/4-1-2-Ordinanza-municipale-sulla-tassa-sul-sacco-per-l-anno-2026-del-23-ottobre-2025
+    - https://www.lugano.ch/law/17057218/2-2-1-Ordinanza-municipale-concernente-le-agevolazioni-e-le-tariffe-di-parcheggio-del-25-agosto-2022
+    - https://www.lugano.ch/law/16595053/2-2-3-Ordinanza-municipale-sull-utilizzo-delle-aree-di-parcheggio-pubblico-di-Cornaredo-del-9-febbraio-2017
+# all 122 texts: fetcher:pdf-index over legislazione.html (the "1.1.2 …" link text gives the identifier and title; the date is in the title)
+
+---
+# ---- block 2 · section: GR (Graubünden) · parses: yes · entries: 5
+id: gr_justiz_guidance
+base_url: https://www.justiz-gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories: []          # category missing: courts
+fetch_strategy: html_crawl
+fetch_config:
+  language: de
+  start_paths: ["/gerichte/obergericht/dienstleistungenthemen/", "/schlichtungsbehoerden-und-mediation/dienstleistungenthemen/",
+                "/schlichtungsbehoerden-und-mediation/ueber-uns/", "/schuldbetreibung-und-konkurs/dienstleistungenthemen/"]
+  path_allowlist: ["/gerichte/obergericht/dienstleistungenthemen/", "/schlichtungsbehoerden-und-mediation/", "/schuldbetreibung-und-konkurs/dienstleistungenthemen/"]
+allow_narrowing: false   # regional pages name regions, not communes
+---
+id: gr_alt_hundewesen    # design: the page mixes GR and GL rules; strip the GL sections or GL facts land on CH-GR
+base_url: https://www.gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories: [dogs]
+fetch_strategy: html_crawl
+fetch_config: {language: de, start_paths: ["/DE/institutionen/verwaltung/dvs/alt/tiere/hundewesen/Seiten/default.aspx"],
+               path_allowlist: ["/DE/institutionen/verwaltung/dvs/alt/tiere/hundewesen/"]}
+---
+id: gr_stv_wegleitung    # all 88 practice PDFs: fetcher:pdf-index over the 6 practice pages
+default_extent_id: CH-GR
+authority: official_info
+categories: [taxes]
+fetch_strategy: pdf
+fetch_config:
+  language: de
+  urls:
+    - https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/steuererklaerung/einkommens_und_vermoegenssteuer/WegleitungenMerkbltter/Wegleitung%202025%20Prim%c3%a4rsteuerpflichtige.pdf
+    - https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/dokumentation/praxis/PraxisEinkommenVermgen/010-01.pdf
+---
+id: gr_schulferien       # lands on CH-GR only; rows need fetcher:pdf-table to reach communes
+default_extent_id: CH-GR
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config: {language: de, urls: ["https://www.gr.ch/DE/institutionen/verwaltung/ekud/avs/Volksschule/SB_Ferienplaene_2026_2027_de.pdf"]}
+---
+id: gr_stva
+base_url: https://www.gr.ch
+default_extent_id: CH-GR
+authority: official_info
+categories: [transport]
+fetch_strategy: html_crawl
+fetch_config: {language: de, start_paths: ["/DE/institutionen/verwaltung/djsg/stva/Seiten/Start.aspx"], path_allowlist: ["/DE/institutionen/verwaltung/djsg/stva/"]}
+
+---
+# ---- block 3 · section: VS (Valais) · parses: yes · entries: 4
+id: vs_tribunaux
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories: []            # category missing: courts
+fetch_strategy: html_crawl
+fetch_config: {language: fr, start_paths: ["/web/tribunaux/sitemap"], path_allowlist: ["/web/tribunaux/"]}
+allow_narrowing: false
+---
+id: vs_scav_chiens
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories: [dogs]
+fetch_strategy: html_crawl
+fetch_config: {language: fr, start_paths: ["/web/scav/veterinaire/affaires-canines", "/web/scav/veterinaire/securit%C3%A9-publique"],
+               path_allowlist: ["/web/scav/veterinaire/affaires-canines", "/web/scav/veterinaire/securit", "/web/scav/veterinaire/vente-acquisition-chiens"]}
+---
+id: vs_guide_taxation    # detail ids are in the query string; whether html_crawl keeps query strings is NOT verified
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories: [taxes]
+fetch_strategy: html_crawl
+fetch_config: {language: fr, start_paths: ["/web/guide-de-taxation"], path_allowlist: ["/web/guide-de-taxation"]}
+---
+id: vs_scn
+base_url: https://www.vs.ch
+default_extent_id: CH-VS
+authority: official_info
+categories: [transport]
+fetch_strategy: html_crawl
+fetch_config: {language: fr, start_paths: ["/web/scn"], path_allowlist: ["/web/scn/"]}

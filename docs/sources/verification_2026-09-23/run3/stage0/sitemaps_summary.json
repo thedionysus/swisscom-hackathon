@@ -1,0 +1,646 @@
+{
+ "hosts": {
+  "ZH": [
+   "www.zh.ch",
+   "www.gerichte-zh.ch",
+   "www.stadt-zuerich.ch"
+  ],
+  "BE": [
+   "www.zsg.justice.be.ch",
+   "www.rsta.dij.be.ch",
+   "www.svsa.sid.be.ch",
+   "www.sv.fin.be.ch",
+   "www.weu.be.ch",
+   "www.bkd.be.ch",
+   "www.sta.be.ch",
+   "www.akvb-gemeinden.bkd.be.ch",
+   "www.be.ch",
+   "www.bern.ch",
+   "www.thun.ch"
+  ],
+  "LU": [
+   "www.lu.ch",
+   "gerichte.lu.ch",
+   "veterinaerdienst.lu.ch",
+   "steuerbuch.lu.ch",
+   "strassenverkehrsamt.lu.ch",
+   "volksschulbildung.lu.ch"
+  ],
+  "UR": [
+   "www.ur.ch"
+  ],
+  "SZ": [
+   "www.sz.ch"
+  ],
+  "OW": [
+   "www.ow.ch"
+  ],
+  "NW": [
+   "www.nw.ch"
+  ],
+  "GL": [
+   "www.gl.ch"
+  ],
+  "ZG": [
+   "zg.ch"
+  ],
+  "FR": [
+   "www.fr.ch",
+   "www.ocn.ch"
+  ],
+  "SO": [
+   "so.ch"
+  ],
+  "BS": [
+   "www.bs.ch"
+  ],
+  "BL": [
+   "www.baselland.ch"
+  ],
+  "SH": [
+   "sh.ch",
+   "www.stadt-schaffhausen.ch"
+  ],
+  "AR": [
+   "ar.ch"
+  ],
+  "AI": [
+   "www.ai.ch"
+  ],
+  "SG": [
+   "www.sg.ch"
+  ],
+  "GR": [
+   "www.gr.ch"
+  ],
+  "AG": [
+   "www.ag.ch"
+  ],
+  "TG": [
+   "www.tg.ch",
+   "strassenverkehrsamt.tg.ch",
+   "staatskanzlei.tg.ch"
+  ],
+  "TI": [
+   "www4.ti.ch",
+   "www.lugano.ch"
+  ],
+  "VD": [
+   "www.vd.ch",
+   "www.lausanne.ch"
+  ],
+  "VS": [
+   "www.vs.ch"
+  ],
+  "NE": [
+   "www.ne.ch",
+   "www.scan-ne.ch",
+   "www.chaux-de-fonds.ch",
+   "www.neuchatelville.ch"
+  ],
+  "GE": [
+   "www.ge.ch",
+   "justice.ge.ch",
+   "www.geneve.ch",
+   "www.vernier.ch"
+  ],
+  "JU": [
+   "www.jura.ch"
+  ]
+ },
+ "result": {
+  "www.zh.ch": {
+   "urls": 80504,
+   "sitemaps_fetched": 45,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.zh.ch/bin/zhweb/publish/sitemap.xml 200 44",
+    "https://www.zh.ch/de-ls.zhweb-sitemap.xml 200 1"
+   ]
+  },
+  "www.gerichte-zh.ch": {
+   "urls": 454,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.gerichte-zh.ch/sitemap.xml 200 454",
+    "https://www.gerichte-zh.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.stadt-zuerich.ch": {
+   "urls": 0,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.stadt-zuerich.ch/sitemap.xml 404 0",
+    "https://www.stadt-zuerich.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.zsg.justice.be.ch": {
+   "urls": 256,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.zsg.justice.be.ch/sitemap.xml 200 6",
+    "https://www.zsg.justice.be.ch/de/sitemap.xml 200 127"
+   ]
+  },
+  "www.rsta.dij.be.ch": {
+   "urls": 130,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.rsta.dij.be.ch/sitemap.xml 200 6",
+    "https://www.rsta.dij.be.ch/de/sitemap.xml 200 66"
+   ]
+  },
+  "www.svsa.sid.be.ch": {
+   "urls": 462,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.svsa.sid.be.ch/sitemap.xml 200 6",
+    "https://www.svsa.sid.be.ch/de/sitemap.xml 200 229"
+   ]
+  },
+  "www.sv.fin.be.ch": {
+   "urls": 344,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.sv.fin.be.ch/sitemap.xml 200 6",
+    "https://www.sv.fin.be.ch/de/sitemap.xml 200 172"
+   ]
+  },
+  "www.weu.be.ch": {
+   "urls": 955,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.weu.be.ch/sitemap.xml 200 6",
+    "https://www.weu.be.ch/de/sitemap.xml 200 489"
+   ]
+  },
+  "www.bkd.be.ch": {
+   "urls": 1133,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.bkd.be.ch/sitemap.xml 200 6",
+    "https://www.bkd.be.ch/de/sitemap.xml 200 697"
+   ]
+  },
+  "www.sta.be.ch": {
+   "urls": 545,
+   "sitemaps_fetched": 10,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.sta.be.ch/sitemap.xml 200 9",
+    "https://www.sta.be.ch/de/sitemap.xml 200 273"
+   ]
+  },
+  "www.akvb-gemeinden.bkd.be.ch": {
+   "urls": 167,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.akvb-gemeinden.bkd.be.ch/sitemap.xml 200 6",
+    "https://www.akvb-gemeinden.bkd.be.ch/de/sitemap.xml 200 65"
+   ]
+  },
+  "www.be.ch": {
+   "urls": 153,
+   "sitemaps_fetched": 7,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.be.ch/sitemap.xml 200 6",
+    "https://www.be.ch/de/sitemap.xml 200 39"
+   ]
+  },
+  "www.bern.ch": {
+   "urls": 64206,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.bern.ch/sitemap.xml.gz 200 64206"
+   ]
+  },
+  "www.thun.ch": {
+   "urls": 189,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.thun.ch/sitemap.xml 200 189",
+    "https://www.thun.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.lu.ch": {
+   "urls": 129,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.lu.ch/xmlsitemap 200 129"
+   ]
+  },
+  "gerichte.lu.ch": {
+   "urls": 201,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://gerichte.lu.ch/xmlsitemap 200 201"
+   ]
+  },
+  "veterinaerdienst.lu.ch": {
+   "urls": 1,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://veterinaerdienst.lu.ch/xmlsitemap 200 1"
+   ]
+  },
+  "steuerbuch.lu.ch": {
+   "urls": 391,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://steuerbuch.lu.ch/xmlsitemap 200 391"
+   ]
+  },
+  "strassenverkehrsamt.lu.ch": {
+   "urls": 282,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://strassenverkehrsamt.lu.ch/xmlsitemap 200 282"
+   ]
+  },
+  "volksschulbildung.lu.ch": {
+   "urls": 497,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://volksschulbildung.lu.ch/xmlsitemap 200 497"
+   ]
+  },
+  "www.ur.ch": {
+   "urls": 287,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ur.ch/sitemap.xml 200 287",
+    "https://www.ur.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.sz.ch": {
+   "urls": 1086,
+   "sitemaps_fetched": 1,
+   "delay": 3,
+   "log": [
+    "robots 200",
+    "https://www.sz.ch/sitemap.xml 200 1086"
+   ]
+  },
+  "www.ow.ch": {
+   "urls": 295,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ow.ch/sitemap.xml 200 295",
+    "https://www.ow.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.nw.ch": {
+   "urls": 668,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.nw.ch/sitemap.xml 200 668",
+    "https://www.nw.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.gl.ch": {
+   "urls": 1377,
+   "sitemaps_fetched": 1,
+   "delay": 3,
+   "log": [
+    "robots 200",
+    "https://www.gl.ch/sitemap.xml 200 1377"
+   ]
+  },
+  "zg.ch": {
+   "urls": 9109,
+   "sitemaps_fetched": 8,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://zg.ch/de/sitemap/default.xml 200 3528",
+    "https://zg.ch/fr/sitemap/default.xml 200 1761"
+   ]
+  },
+  "www.fr.ch": {
+   "urls": 67964,
+   "sitemaps_fetched": 32,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.fr.ch/sitemap.xml 200 2",
+    "https://www.fr.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.ocn.ch": {
+   "urls": 856,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ocn.ch/sitemap.xml 200 856",
+    "https://www.ocn.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "so.ch": {
+   "urls": 8909,
+   "sitemaps_fetched": 12,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://so.ch/sitemap.xml 200 10",
+    "https://so.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.bs.ch": {
+   "urls": 27210,
+   "sitemaps_fetched": 15,
+   "delay": 10.0,
+   "log": [
+    "robots 200",
+    "https://www.bs.ch/sitemap.xml 200 14",
+    "https://www.bs.ch/sitemap.xml?page=1 200 2000"
+   ]
+  },
+  "www.baselland.ch": {
+   "urls": 0,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 404",
+    "https://www.baselland.ch/sitemap.xml 403 0",
+    "https://www.baselland.ch/sitemap_index.xml 403 0"
+   ]
+  },
+  "sh.ch": {
+   "urls": 600,
+   "sitemaps_fetched": 8,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://sh.ch/Sitemap/SitemapXml 200 7",
+    "https://sh.ch/Sitemap/SitemapXml/sitemapxml?contentType=HOME&language=DE&domainId=1753&priority=1.0&changefreq=daily 200 1"
+   ]
+  },
+  "www.stadt-schaffhausen.ch": {
+   "urls": 219,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.stadt-schaffhausen.ch/sitemap.xml 200 220",
+    "https://www.stadt-schaffhausen.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "ar.ch": {
+   "urls": 1720,
+   "sitemaps_fetched": 4,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://ar.ch/sitemap.xml 200 2",
+    "https://ar.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.ai.ch": {
+   "urls": 20492,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ai.ch/sitemap.xml.gz 200 20492"
+   ]
+  },
+  "www.sg.ch": {
+   "urls": 4723,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.sg.ch/tools/sitemap.googleSitemap.xml 200 4792"
+   ]
+  },
+  "www.gr.ch": {
+   "urls": 0,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.gr.ch/sitemap.xml 404 0",
+    "https://www.gr.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.ag.ch": {
+   "urls": 39511,
+   "sitemaps_fetched": 9,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ag.ch/sitemap.xml 200 8",
+    "https://www.ag.ch/content/export/api/v1/xml/video 200 172"
+   ]
+  },
+  "www.tg.ch": {
+   "urls": 406,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.tg.ch/sitemap.xml 200 406"
+   ]
+  },
+  "strassenverkehrsamt.tg.ch": {
+   "urls": 141,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://strassenverkehrsamt.tg.ch/sitemap.xml 200 141"
+   ]
+  },
+  "staatskanzlei.tg.ch": {
+   "urls": 6,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://staatskanzlei.tg.ch/sitemap.xml 200 6"
+   ]
+  },
+  "www4.ti.ch": {
+   "urls": 618,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www4.ti.ch/user_librerie/php/DECS/agendaCulturale/sitemapAgendaCulturale.xml 200 618"
+   ]
+  },
+  "www.lugano.ch": {
+   "urls": 5684,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.lugano.ch/sitemap.xml 200 5684"
+   ]
+  },
+  "www.vd.ch": {
+   "urls": 27472,
+   "sitemaps_fetched": 52,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.vd.ch/sitemap?type=1533906435 200 51",
+    "https://www.vd.ch/sitemap/sitemap.xml?sitemap=pages&cHash=d42db98fb3b10972c3c0210f38ad09e4 200 1000"
+   ]
+  },
+  "www.lausanne.ch": {
+   "urls": 8201,
+   "sitemaps_fetched": 3,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.lausanne.ch/sitemap.xml 200 2",
+    "https://www.lausanne.ch/sitemaps/lausanne.xml 200 8002"
+   ]
+  },
+  "www.vs.ch": {
+   "urls": 99,
+   "sitemaps_fetched": 61,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.vs.ch/sitemap.xml 200 60",
+    "https://www.vs.ch/sitemap.xml?p_l_id=6652985&layoutUuid=30252b91-e44f-e2fa-0d87-046e716b74b4&groupId=10181&privateLayout=false 200 0"
+   ]
+  },
+  "www.ne.ch": {
+   "urls": 0,
+   "sitemaps_fetched": 3,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ne.ch/sitemap.xml 200 2",
+    "http://ne-prod-admin.ne.ch/sitemap.xml?page=1 000 0"
+   ]
+  },
+  "www.scan-ne.ch": {
+   "urls": 0,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.scan-ne.ch/sitemap.xml 404 0",
+    "https://www.scan-ne.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.chaux-de-fonds.ch": {
+   "urls": 0,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 404",
+    "https://www.chaux-de-fonds.ch/sitemap.xml 500 0",
+    "https://www.chaux-de-fonds.ch/sitemap_index.xml 500 0"
+   ]
+  },
+  "www.neuchatelville.ch": {
+   "urls": 867,
+   "sitemaps_fetched": 4,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.neuchatelville.ch/sitemap.xml 200 2",
+    "https://www.neuchatelville.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.ge.ch": {
+   "urls": 27977,
+   "sitemaps_fetched": 15,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.ge.ch/sitemap.xml 200 14",
+    "https://www.ge.ch/sitemap.xml?page=1 200 2000"
+   ]
+  },
+  "justice.ge.ch": {
+   "urls": 953,
+   "sitemaps_fetched": 2,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://justice.ge.ch/sitemap.xml 200 953",
+    "https://justice.ge.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.geneve.ch": {
+   "urls": 31218,
+   "sitemaps_fetched": 18,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.geneve.ch/sitemap.xml 200 16",
+    "https://www.geneve.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.vernier.ch": {
+   "urls": 2263,
+   "sitemaps_fetched": 4,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.vernier.ch/sitemap.xml 200 2",
+    "https://www.vernier.ch/sitemap_index.xml 404 0"
+   ]
+  },
+  "www.jura.ch": {
+   "urls": 7805,
+   "sitemaps_fetched": 1,
+   "delay": 0.3,
+   "log": [
+    "robots 200",
+    "https://www.jura.ch/sitemap/Francais_fr_fr_z1_sitemap.xml 200 7805"
+   ]
+  }
+ }
+}

@@ -1,0 +1,93 @@
+# Draft source configs proposed by agent run3-d on 2026-09-23. NOT registered sources.
+# Copied verbatim from agent_reports/run3-d.md; each block notes whether it parses as YAML.
+
+---
+# ---- block 1 · section: FR: Fribourg (base https://www.fr.ch) · parses: yes · entries: 5
+- id: fr-justice            # C1/C3/C5 — category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.fr.ch/etat-et-droit/justice], path_allowlist: [/etat-et-droit/justice/, /etat-et-droit/poursuites-et-faillites/procedure-de-], language: fr}
+  # needs a denylist (or sitemap seeding) to skip 40 /etat-et-droit/justice/arrets-de-la-section-* archive pages
+- id: fr-dogs               # category dogs
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.fr.ch/vie-quotidienne/animaux-de-compagnie/chiens], path_allowlist: [/vie-quotidienne/animaux-de-compagnie/chiens], language: fr}
+- id: fr-tax-instructions   # category taxes
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.fr.ch/document/57721], language: fr}
+- id: fr-school-holidays    # category schools; ICS part -> fetcher:ics (/document/508696, 508646, 513541, …)
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.fr.ch/dfac/vacances-scolaires], path_allowlist: [/dfac/vacances-scolaires], language: fr}
+- id: fr-ocn                # category transport
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.ocn.ch/fr/conduire], path_allowlist: [/fr/conduire/, /fr/changements-de/], language: fr}
+
+---
+# ---- block 2 · section: VD: Vaud (base https://www.vd.ch) · parses: yes · entries: 5
+- id: vd-justice   # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.vd.ch/justice, https://www.vd.ch/ojv/justices-de-paix], path_allowlist: [/justice/, /ojv/justices-de-paix, /ojv/tribunal-des-baux], language: fr}
+- id: vd-dogs      # dogs
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.vd.ch/population/veterinaires-et-animaux/police-des-chiens], path_allowlist: [/population/veterinaires-et-animaux/police-des-chiens], language: fr}
+- id: vd-tax-instructions   # taxes
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf], language: fr}
+- id: vd-school-holidays    # schools
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.vd.ch/formation/jours-feries-et-vacances-scolaires], path_allowlist: [/formation/jours-feries-et-vacances-scolaires], language: fr}
+- id: vd-san                # transport
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.vd.ch/mobilite/automobile-et-navigation], path_allowlist: [/mobilite/automobile-et-navigation/], language: fr}
+
+---
+# ---- block 3 · section: NE: Neuchâtel (base https://www.ne.ch) · parses: yes · entries: 5
+- id: ne-justice      # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.ne.ch/themes/etat-droit-et-finances/droits-et-justice, https://www.ne.ch/autorites/autorites-judiciaires], path_allowlist: [/themes/etat-droit-et-finances/droits-et-justice/, /autorites/autorites-judiciaires], language: fr}
+  # skip …/legislation-et-jurisprudence/*-annee-20xx lists; extract <main>
+- id: ne-dogs         # dogs
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.ne.ch/themes/vie-quotidienne-et-famille/animaux/soccuper-danimaux], path_allowlist: [/themes/vie-quotidienne-et-famille/animaux/], language: fr}
+- id: ne-tax-instructions   # taxes
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf], language: fr}
+- id: ne-school-calendar    # schools
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.ne.ch/themes/scolarite-et-formation/calendrier-et-vacances-scolaires], path_allowlist: [/themes/scolarite-et-formation/calendrier-et-vacances-scolaires], language: fr}
+- id: ne-scan         # transport
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.scan-ne.ch/], path_allowlist: [/conducteur/, /vehicule/], language: fr}
+
+---
+# ---- block 4 · section: GE: Geneva (base https://www.ge.ch; courts on https://justice.ge.ch) · parses: yes · entries: 3
+- id: ge-justice-themes   # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://justice.ge.ch/fr/themes], path_allowlist: [/fr/theme/, /fr/contenu/frais-dune-procedure-civile, /fr/contenu/commission-de-conciliation-en-matiere-de-baux-et-loyers, /fr/contenu/tribunal-des-], language: fr}
+- id: ge-ocv              # transport
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.ge.ch/immatriculer-vehicule-obtenir-carte-grise, https://www.ge.ch/plaques, https://www.ge.ch/passer-son-permis-conduire, https://www.ge.ch/impot-vehicules], path_allowlist: [/immatriculer-vehicule, /plaques, /passer-son-permis-conduire, /impot-vehicules], language: fr}
+- id: ge-ocv-fees
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.ge.ch/document/24460/telecharger], language: fr}
+# ge-dogs / ge-getax / ge-holidays(ICS): as in g5 (D17, U10, D19)
+
+---
+# ---- block 5 · section: JU: Jura (base https://www.jura.ch) · parses: yes · entries: 6
+- id: ju-justice         # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.jura.ch/fr/Autorites/JUST/La-justice-jurassienne.html], path_allowlist: [/fr/Autorites/JUST/], language: fr}
+  # skip /Revue-jurassienne-de-jurisprudence/20xx archive pages
+- id: ju-court-tariff
+  fetch_strategy: pdf
+  fetch_config: {urls: ["https://www.jura.ch/Htdocs/Files/v/ff78dbf9136f8cab273ea6f4352309fbc0f1d77137ab65c0610a20db98ee89c8.pdf/avances_emoluments_debours_juin-2016.pdf?download=1"], language: fr}
+- id: ju-dogs            # dogs
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.jura.ch/fr/Autorites/Administration/DES/SCAV/Section-affaires-veterinaires/Chiens/Chiens.html], path_allowlist: [/fr/Autorites/Administration/DES/SCAV/Section-affaires-veterinaires/Chiens/], language: fr}
+- id: ju-tax-guide       # taxes
+  fetch_strategy: pdf
+  fetch_config: {urls: ["https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf/Guide-general-2025.pdf?download=1"], language: fr}
+- id: ju-school-holidays # schools
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.jura.ch/fr/Autorites/Administration/DFNS/SEN/Vacances-scolaires/Vacances-scolaires.html], path_allowlist: [/fr/Autorites/Administration/DFNS/SEN/Vacances-scolaires/], language: fr}
+- id: ju-ovj             # transport
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.jura.ch/fr/Autorites/Administration/DEC/OVJ/Office-des-vehicules-OVJ.html], path_allowlist: [/fr/Autorites/Administration/DEC/OVJ/], language: fr}

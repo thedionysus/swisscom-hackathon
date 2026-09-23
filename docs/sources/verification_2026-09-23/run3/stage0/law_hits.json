@@ -1,0 +1,2195 @@
+{
+ "AG": {
+  "dogs": [
+   {
+    "nr": "393.400",
+    "title": "Hundegesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/393.400"
+   },
+   {
+    "nr": "393.411",
+    "title": "Verordnung zum Hundegesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/393.411"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "651.100",
+    "title": "Steuergesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.100"
+   },
+   {
+    "nr": "651.111",
+    "title": "Verordnung zum Steuergesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.111"
+   },
+   {
+    "nr": "651.131",
+    "title": "Verordnung über die Anpassung des Steuergesetzes an die Teuerung",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.131"
+   },
+   {
+    "nr": "651.132",
+    "title": "Verordnung über die Anpassung des Steuergesetzes an die Teuerung",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.132"
+   },
+   {
+    "nr": "651.133",
+    "title": "Verordnung über die Anpassung des Steuergesetzes an die Teuerung",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.133"
+   },
+   {
+    "nr": "651.134",
+    "title": "Verordnung über die Anpassung des Steuergesetzes an die Teuerung",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.134"
+   },
+   {
+    "nr": "651.135",
+    "title": "Verordnung über die Anpassung des Steuergesetzes an die Teuerung",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/651.135"
+   },
+   {
+    "nr": "755.100",
+    "title": "Verkehrssteuergesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/755.100"
+   },
+   {
+    "nr": "755.112",
+    "title": "Verordnung zum Verkehrssteuergesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/755.112"
+   }
+  ],
+  "road": [
+   {
+    "nr": "755.100",
+    "title": "Verkehrssteuergesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/755.100"
+   },
+   {
+    "nr": "755.112",
+    "title": "Verordnung zum Verkehrssteuergesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/755.112"
+   },
+   {
+    "nr": "991.100",
+    "title": "Gesetz über den Vollzug des Strassenverkehrsrechtes",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/991.100"
+   },
+   {
+    "nr": "991.111",
+    "title": "Verordnung über den Vollzug des Strassenverkehrsrechtes",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/991.111"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "155.200",
+    "title": "Gerichtsorganisationsgesetz",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/155.200"
+   },
+   {
+    "nr": "221.200",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/221.200"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "155.612",
+    "title": "Reglement der Justizleitung über die Anzahl der übrigen Richterinnen und Richter (nebenamtliche Richterinnen und Richter an den Bezirksgerichten; Fach",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/155.612"
+   },
+   {
+    "nr": "155.614",
+    "title": "Reglement für die Schlichtungsbehörden für Miete und Pacht",
+    "api": "https://gesetzessammlungen.ag.ch/api/de/texts_of_law/155.614"
+   }
+  ]
+ },
+ "AI": {
+  "road": [
+   {
+    "nr": "700.014",
+    "title": "Standeskommissionsbeschluss über die Festlegung der Anzahl Abstellplätze für Motorfahrzeuge bei Bauten mit besonderem Publikumsandrang (StKB Abstellpl",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/700.014"
+   },
+   {
+    "nr": "741.000",
+    "title": "Einführungsgesetz zum Strassenverkehrsgesetz (EG SVG)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/741.000"
+   },
+   {
+    "nr": "741.010",
+    "title": "Verordnung zum Einführungsgesetz zum Strassenverkehrsgesetz (VEG SVG)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/741.010"
+   },
+   {
+    "nr": "741.011",
+    "title": "Standeskommissionsbeschluss über die Höhe der Strassenverkehrsabgaben",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/741.011"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "173.000",
+    "title": "Gerichtsorganisationsgesetz (GOG)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/173.000"
+   },
+   {
+    "nr": "173.400",
+    "title": "Verwaltungsgerichtsgesetz (VerwGG)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/173.400"
+   },
+   {
+    "nr": "270.000",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung (EG ZPO)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/270.000"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "173.810",
+    "title": "Verordnung über die Gebühren der Gerichte (GGV)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/173.810"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "560.100",
+    "title": "Hundegesetz (HuG)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/560.100"
+   },
+   {
+    "nr": "560.110",
+    "title": "Verordnung zum Hundegesetz (HuV)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/560.110"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "640.000",
+    "title": "Steuergesetz (StG)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/640.000"
+   },
+   {
+    "nr": "640.011",
+    "title": "Standeskommissionsbeschluss zum Steuergesetz und zur Steuerverordnung (StKB Steuern)",
+    "api": "https://ai.clex.ch/api/de/texts_of_law/640.011"
+   }
+  ]
+ },
+ "AR": {
+  "court_fees": [
+   {
+    "nr": "234.1",
+    "title": "Konkordat betreffend Befreiung von der Verpflichtung zur Sicherheitsleistung für die Prozesskosten",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/234.1"
+   },
+   {
+    "nr": "233.3",
+    "title": "Verordnung über die Rechtskosten und Entschädigungen in der Zivil- und Strafrechtspflege",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/233.3"
+   },
+   {
+    "nr": "212.43",
+    "title": "Verordnung über die Verfahrenskosten, Entschädigungen und Spesen im Kindes- und Erwachsenenschutzrecht",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/212.43"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "525.1",
+    "title": "Hundegesetz",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/525.1"
+   },
+   {
+    "nr": "525.11",
+    "title": "Hundeverordnung",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/525.11"
+   }
+  ],
+  "road": [
+   {
+    "nr": "761.11",
+    "title": "Einführungsgesetz zum Bundesgesetz vom 19. Dezember 1958 über den Strassenverkehr",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/761.11"
+   },
+   {
+    "nr": "761.111",
+    "title": "Verordnung zum Einführungsgesetz vom 24. April 1983 zum Bundesgesetz vom 19. Dezember 1958 über den Strassenverkehr (EG SVG)",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/761.111"
+   },
+   {
+    "nr": "761.114",
+    "title": "Verordnung über die Organisation des Strassenverkehrsamtes",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/761.114"
+   },
+   {
+    "nr": "612.2",
+    "title": "Gesetz über die Staatsstrassenrechnung und die leistungsabhängige Schwerverkehrsabgabe",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/612.2"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "621.11",
+    "title": "Steuergesetz",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/621.11"
+   },
+   {
+    "nr": "621.111",
+    "title": "Verordnung zum Steuergesetz",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/621.111"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "145.31",
+    "title": "Justizgesetz",
+    "api": "https://ar.clex.ch/api/de/texts_of_law/145.31"
+   }
+  ]
+ },
+ "BE": {
+  "road": [
+   {
+    "nr": "324.1",
+    "title": "Gesetz betreffend die Einführung des Bundesgesetzes vom 24. Juni 1970 über Ordnungsbussen im Strassenverkehr und die Erhebung von anderen Ordnungsbuss",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/324.1"
+   },
+   {
+    "nr": "832.521",
+    "title": "Verordnung über den Vollzug der Eidgenössischen Verordnung über die Arbeits- und Ruhezeit der berufsmässigen Motorfahrzeugführer (Chauffeurverordnung)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/832.521"
+   },
+   {
+    "nr": "761.611.1",
+    "title": "Verordnung über die Besteuerung der Strassenfahrzeuge und den Bezug von Forderungen durch das Strassenverkehrs- und Schifffahrtsamt (BSFV)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/761.611.1"
+   },
+   {
+    "nr": "761.11",
+    "title": "Kantonales Strassenverkehrsgesetz (KSVG)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/761.11"
+   },
+   {
+    "nr": "761.111",
+    "title": "Strassenverkehrsverordnung (StrVV)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/761.111"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "916.812",
+    "title": "Verordnung über den Tierschutz und die Hunde (THV)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/916.812"
+   },
+   {
+    "nr": "916.31",
+    "title": "Hundegesetz",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/916.31"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "271.1",
+    "title": "Einführungsgesetz zur Zivilprozessordnung, zur Strafprozessordnung und zur Jugendstrafprozessordnung (EG ZSJ)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/271.1"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "161.12",
+    "title": "Dekret betreffend die Verfahrenskosten und die Verwaltungsgebühren der Gerichtsbehörden und der Staatsanwaltschaft (Verfahrenskostendekret, VKD)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/161.12"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "164.211",
+    "title": "Geschäftsreglement der regionalen Schlichtungsbehörde Berner Jura-Seeland (GeschR SB BJS)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/164.211"
+   },
+   {
+    "nr": "164.212",
+    "title": "Geschäftsreglement der regionalen Schlichtungsbehörde Emmental-Oberaargau (GeschR SB EO)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/164.212"
+   },
+   {
+    "nr": "164.213",
+    "title": "Geschäftsreglement der regionalen Schlichtungsbehörde Bern-Mittelland (GeschR SB BM)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/164.213"
+   },
+   {
+    "nr": "164.214",
+    "title": "Geschäftsreglement der regionalen Schlichtungsbehörde Oberland (GeschR SB OL)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/164.214"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "415.0",
+    "title": "Kirchensteuergesetz (KStG)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/415.0"
+   },
+   {
+    "nr": "661.11",
+    "title": "Steuergesetz (StG)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/661.11"
+   },
+   {
+    "nr": "215.326.2",
+    "title": "Handänderungssteuergesetz (HStG)",
+    "api": "https://www.belex.sites.be.ch/api/de/texts_of_law/215.326.2"
+   }
+  ]
+ },
+ "BL": {
+  "road": [
+   {
+    "nr": "341",
+    "title": "Gesetz über die Motorfahrzeugsteuer",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/341"
+   },
+   {
+    "nr": "341.11",
+    "title": "Verordnung zum Gesetz über die Motorfahrzeugsteuer",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/341.11"
+   },
+   {
+    "nr": "481",
+    "title": "Strassenverkehrsgesetz Basel-Landschaft (SVG BL)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/481"
+   },
+   {
+    "nr": "481.11",
+    "title": "Verordnung zum Strassenverkehrsgesetz Basel-Landschaft",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/481.11"
+   },
+   {
+    "nr": "481.13",
+    "title": "Verordnung über den Online-Zugriff auf die Fahrzeugzulassungsdaten der Motorfahrzeugkontrolle",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/481.13"
+   },
+   {
+    "nr": "481.5",
+    "title": "Vereinbarung betreffend die Motorfahrzeugprüfstation beider Basel",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/481.5"
+   },
+   {
+    "nr": "481.51",
+    "title": "Vereinbarung über die Gebühren der Motorfahrzeugprüfstation beider Basel",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/481.51"
+   },
+   {
+    "nr": "145.36",
+    "title": "Verordnung über die Gebühren und besonderen Abgaben der Motorfahrzeugkontrolle",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/145.36"
+   },
+   {
+    "nr": "823.11",
+    "title": "Verordnung zu den Bundesverordnungen über die Arbeits- und Ruhezeit der berufsmässigen Motorfahrzeugführer und -führerinnen sowie der Führer von leich",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/823.11"
+   },
+   {
+    "nr": "421.15",
+    "title": "Verordnung über den Zuständigkeitsbereich der Hafenpolizei im Ordnungsbussenverfahren im Strassenverkehr",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/421.15"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "342",
+    "title": "Gesetz über das Halten von Hunden (Hundegesetz)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/342"
+   },
+   {
+    "nr": "342.12",
+    "title": "Verordnung über das Halten potenziell gefährlicher Hunde",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/342.12"
+   },
+   {
+    "nr": "790.466",
+    "title": "Verordnung über das Naturschutzgebiet «Chienberg», Böckten, Gelterkinden, Rickenbach, Sissach und Wintersingen",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/790.466"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "250.13",
+    "title": "Verordnung über die Verfahrenskosten der Staatsanwaltschaft",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/250.13"
+   },
+   {
+    "nr": "170.31",
+    "title": "Verordnung über die Gebühren der Gerichte (Gebührentarif, GebT)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/170.31"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "221",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung (EG ZPO)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/221"
+   },
+   {
+    "nr": "170",
+    "title": "Gesetz über die Organisation der Gerichte (Gerichtsorganisationsgesetz, GOG)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/170"
+   },
+   {
+    "nr": "170.1",
+    "title": "Dekret zum Gesetz über die Organisation der Gerichte (Gerichtsorganisationsdekret, GOD)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/170.1"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "331",
+    "title": "Gesetz über die Staats- und Gemeindesteuern (Steuergesetz)",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/331"
+   },
+   {
+    "nr": "331.1",
+    "title": "Dekret zum Steuergesetz",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/331.1"
+   },
+   {
+    "nr": "331.11",
+    "title": "Verordnung zum Steuergesetz",
+    "api": "https://bl.clex.ch/api/de/texts_of_law/331.11"
+   }
+  ]
+ },
+ "BS": {
+  "holidays": [
+   {
+    "nr": "411.600",
+    "title": "Verordnung betreffend Ferien und Urlaub, die ausserordentliche Entlastung und die Stellvertretung von Lehrpersonen an den vom Kanton geführten Schulen",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/411.600"
+   },
+   {
+    "nr": "162.410",
+    "title": "Verordnung betreffend Ferien und Urlaub der Mitarbeiterinnen und Mitarbeiter des Kantons Basel-Stadt",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/162.410"
+   },
+   {
+    "nr": "412.600",
+    "title": "Verordnung über die Tagesstrukturen und die Ferienangebote",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/412.600"
+   }
+  ],
+  "road": [
+   {
+    "nr": "650.500",
+    "title": "Gesetz über die Besteuerung der Motorfahrzeuge",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/650.500"
+   },
+   {
+    "nr": "650.510",
+    "title": "Verordnung zum Gesetz über die Besteuerung der Motorfahrzeuge",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/650.510"
+   },
+   {
+    "nr": "952.200",
+    "title": "Verordnung über den Strassenverkehr",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/952.200"
+   },
+   {
+    "nr": "952.800",
+    "title": "Vereinbarung betreffend die Motorfahrzeugprüfstation beider Basel",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/952.800"
+   },
+   {
+    "nr": "952.860",
+    "title": "Vereinbarung über die Gebühren der Motorfahrzeugprüfstation beider Basel",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/952.860"
+   },
+   {
+    "nr": "163.900",
+    "title": "Reglement betreffend Parkieren von Motorfahrzeugen der Mitarbeiterinnen und Mitarbeiter auf Staatsarealen",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/163.900"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "154.130",
+    "title": "Verordnung betreffend das Arbeitsgericht",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/154.130"
+   },
+   {
+    "nr": "215.400",
+    "title": "Gesetz über die Staatliche Schlichtungsstelle für Mietstreitigkeiten",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/215.400"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "154.800",
+    "title": "Gesetz über die Gerichtsgebühren",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/154.800"
+   },
+   {
+    "nr": "154.810",
+    "title": "Reglement über die Gerichtsgebühren",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/154.810"
+   },
+   {
+    "nr": "154.980",
+    "title": "Verordnung betreffend die Verfahrenskosten für die Strafverfolgungsbehörden",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/154.980"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "365.100",
+    "title": "Gesetz betreffend das Halten von Hunden",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/365.100"
+   },
+   {
+    "nr": "365.101",
+    "title": "Regierungsratsbeschluss betreffend Liste der als potentiell gefährlich eingestuften Hunderassen und deren Kreuzungen gemäss § 14 Abs. 2 des Gesetzes b",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/365.101"
+   },
+   {
+    "nr": "365.110",
+    "title": "Verordnung betreffend das Halten von Hunden",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/365.110"
+   },
+   {
+    "nr": "BeE 365.100",
+    "title": "Beschluss der Einwohnergemeindeversammlung betreffend Festsetzung der Hundesteuer",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/BeE 365.100"
+   },
+   {
+    "nr": "RiE 365.100",
+    "title": "Beschluss des Einwohnerrates betreffend Festsetzung der Hundesteuer",
+    "api": "https://gesetzessammlung.bs.ch/api/de/texts_of_law/RiE 365.100"
+   }
+  ]
+ },
+ "FR": {
+  "conciliation": [
+   {
+    "nr": "862.2",
+    "title": "Loi instituant un Office de conciliation en matière de conflits collectifs de travail",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/862.2"
+   },
+   {
+    "nr": "862.21",
+    "title": "Règlement d'exécution de la loi instituant un Office de conciliation en matière de conflits collectifs de travail",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/862.21"
+   },
+   {
+    "nr": "122.70.19",
+    "title": "Ordonnance sur l'organe de conciliation et d'arbitrage en matière de conflits collectifs de travail impliquant le personnel de l'Etat",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/122.70.19"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "551.34",
+    "title": "Ordonnance concernant les indemnités pour l'achat et l'entretien de chiens de police",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/551.34"
+   },
+   {
+    "nr": "725.3",
+    "title": "Loi sur la détention des chiens",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/725.3"
+   },
+   {
+    "nr": "725.31",
+    "title": "Règlement sur la détention des chiens",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/725.31"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "76.16",
+    "title": "Tarif des frais de procédure en matière d'expropriation",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/76.16"
+   },
+   {
+    "nr": "710.16",
+    "title": "Ordonnance fixant le tarif des émoluments et des frais de procédure dans le domaine de l'aménagement du territoire et des constructions",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/710.16"
+   },
+   {
+    "nr": "150.12",
+    "title": "Tarif des frais de procédure et des indemnités en matière de juridiction administrative",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/150.12"
+   }
+  ],
+  "holidays": [
+   {
+    "nr": "750.21",
+    "title": "Arrêté concernant l'utilisation du domaine public ou privé de l'Etat en vue de la construction de maisons de vacances",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/750.21"
+   },
+   {
+    "nr": "753.31",
+    "title": "Arrêté instaurant des mesures concernant les maisons de vacances sur le domaine public et privé de l'Etat au bord du lac de Neuchâtel",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/753.31"
+   }
+  ],
+  "road": [
+   {
+    "nr": "781.1",
+    "title": "Loi d'application de la législation fédérale sur la circulation routière",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/781.1"
+   },
+   {
+    "nr": "781.11",
+    "title": "Arrêté d'exécution de la loi d'application de la législation fédérale sur la circulation routière",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/781.11"
+   },
+   {
+    "nr": "781.16",
+    "title": "Arrêté fixant les émoluments en matière de circulation routière",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/781.16"
+   },
+   {
+    "nr": "781.31",
+    "title": "Arrêté concernant l'emploi de véhicules à moteur hors des routes",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/781.31"
+   },
+   {
+    "nr": "635.4.1",
+    "title": "Loi sur l'imposition des véhicules automobiles et des remorques",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/635.4.1"
+   },
+   {
+    "nr": "635.4.13",
+    "title": "Ordonnance fixant les conditions d'exonération de l'impôt sur les véhicules automobiles et les remorques",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/635.4.13"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "631.1",
+    "title": "Loi sur les impôts cantonaux directs",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/631.1"
+   },
+   {
+    "nr": "632.1",
+    "title": "Loi sur les impôts communaux",
+    "api": "https://bdlf.fr.ch/api/fr/texts_of_law/632.1"
+   }
+  ]
+ },
+ "GE": {
+  "court_org": [
+   {
+    "nr": "E 2 05",
+    "title": "Loi sur l’organisation judiciaire",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31050"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "E 2 05.44",
+    "title": "Règlement du Tribunal des prud’hommes",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31970"
+   },
+   {
+    "nr": "E 3 10",
+    "title": "Loi sur le Tribunal des prud’hommes",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31369"
+   },
+   {
+    "nr": "E 3 10.03",
+    "title": "Règlement sur la formation des juges et présidents du Tribunal des prud'hommes",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31645"
+   },
+   {
+    "nr": "E 3 15",
+    "title": "Loi organisant la commission de conciliation en matière de baux et loyers",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31181"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "E 5 10.03",
+    "title": "Règlement sur les frais, émoluments et indemnités en procédure administrative",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31523"
+   },
+   {
+    "nr": "E 6 15.06",
+    "title": "Règlement fixant le tarif des émoluments des huissiers judiciaires",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31393"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "F 1 05.18",
+    "title": "Règlement concernant les chiens de police",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31658"
+   },
+   {
+    "nr": "M 3 45",
+    "title": "Loi sur les chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31214"
+   },
+   {
+    "nr": "M 3 45.01",
+    "title": "Règlement d'application de la loi sur les chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/30879"
+   }
+  ],
+  "road": [
+   {
+    "nr": "H 1 05",
+    "title": "Loi d’application de la législation fédérale sur la circulation routière",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31285"
+   },
+   {
+    "nr": "H 1 05.01",
+    "title": "Règlement d’exécution de la loi d’application de la législation fédérale sur la circulation routière",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/30991"
+   },
+   {
+    "nr": "H 1 05.08",
+    "title": "Règlement sur les émoluments de l’office cantonal des véhicules",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31534"
+   },
+   {
+    "nr": "H 1 05.12",
+    "title": "Règlement sur le service cantonal de la fourrière des véhicules",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/30878"
+   },
+   {
+    "nr": "H 1 10.03",
+    "title": "Règlement concernant la circulation et le stationnement des véhicules sur les terrains privés",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31150"
+   },
+   {
+    "nr": "M 5 10.08",
+    "title": "Règlement concernant la circulation des véhicules automobiles et des cyclomoteurs dans les forêts, sites protégés, secteurs mis à ban et les cultures",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/31155"
+   }
+  ]
+ },
+ "GL": {
+  "court_org": [
+   {
+    "nr": "III A/2",
+    "title": "Gerichtsorganisationsgesetz (GOG)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/III A/2"
+   },
+   {
+    "nr": "III B/2/4",
+    "title": "Verordnung zum Einführungsgesetz zum Obligationenrecht und zum Einführungsgesetz zur Schweizerischen Zivilprozessordnung",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/III B/2/4"
+   },
+   {
+    "nr": "III C/1",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung (EG ZPO)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/III C/1"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "III A/5",
+    "title": "Verordnung zu den Kosten im Zivil- und Strafprozess (Zivil- und Strafprozesskostenverordnung)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/III A/5"
+   },
+   {
+    "nr": "III G/2",
+    "title": "Verordnung über amtliche Kosten im Verwaltungsverfahren und in der Verwaltungsrechtspflege (Kostenverordnung)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/III G/2"
+   }
+  ],
+  "road": [
+   {
+    "nr": "VII D/11/1",
+    "title": "Einführungsgesetz zum Bundesgesetz über den Strassenverkehr (EG SVG)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VII D/11/1"
+   },
+   {
+    "nr": "VII D/11/2",
+    "title": "Verordnung über den Strassenverkehr",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VII D/11/2"
+   },
+   {
+    "nr": "VII D/11/3",
+    "title": "Gesetz über die Verwendung von Motorfahrzeugen ausserhalb der öffentlichen Strassen und Wege",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VII D/11/3"
+   },
+   {
+    "nr": "VII D/11/4",
+    "title": "Verordnung zum Strassenverkehrsrecht und zu den Strassenverkehrsabgaben",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VII D/11/4"
+   },
+   {
+    "nr": "VII D/12/3",
+    "title": "Verordnung über die Gebühren im Strassenverkehr und in der Schifffahrt (Strassen- und Schifffahrtsgebührenverordnung, StrGebV)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VII D/12/3"
+   },
+   {
+    "nr": "VII D/12/4",
+    "title": "Verordnung über das ökologische Rabattsystem der Verkehrssteuern (Verkehrssteuernrabattverordnung, VStRV)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VII D/12/4"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "VI C/1/1",
+    "title": "Steuergesetz (StG)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VI C/1/1"
+   },
+   {
+    "nr": "VI C/1/2",
+    "title": "Verordnung zum Steuergesetz (Steuerverordnung; StV)",
+    "api": "https://gesetze.gl.ch/api/de/texts_of_law/VI C/1/2"
+   }
+  ]
+ },
+ "GR": {
+  "court_org": [
+   {
+    "nr": "173.000",
+    "title": "Gerichtsorganisationsgesetz (GOG)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/173.000"
+   },
+   {
+    "nr": "320.100",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung (EGzZPO)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/320.100"
+   },
+   {
+    "nr": "320.110",
+    "title": "Verordnung zum Einführungsgesetz zur Schweizerischen Zivilprozessordnung (RVzEGzZPO)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/320.110"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "173.190",
+    "title": "Verordnung über die Organisation und Geschäftsführung der Schlichtungsbehörden (Schlichtungsbehördenverordnung, SBV)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/173.190"
+   },
+   {
+    "nr": "370.300",
+    "title": "Einführungsgesetz zum Schlichtungs- und Schiedsgerichtsverfahren nach eidgenössischem Sozialversicherungsrecht (EGzSSV)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/370.300"
+   },
+   {
+    "nr": "370.310",
+    "title": "Verordnung über die Entlöhnung von Schlichtungsbehörde und Schiedsgericht nach EGzSSV (VESV)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/370.310"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "370.110",
+    "title": "Verordnung über die Gebühren und Barauslagen in öffentlich-rechtlichen Verfahren vor dem Obergericht (VGÖ)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/370.110"
+   },
+   {
+    "nr": "370.120",
+    "title": "Verordnung über die Kosten in Verwaltungsverfahren (VKV)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/370.120"
+   },
+   {
+    "nr": "370.140",
+    "title": "Verordnung über die Gebühren und Barauslagen in Verfahren vor dem Justizgericht",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/370.140"
+   },
+   {
+    "nr": "350.210",
+    "title": "Verordnung über die Gerichtsgebühren in Strafverfahren (VGS)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/350.210"
+   },
+   {
+    "nr": "320.210",
+    "title": "Verordnung über die Gerichtsgebühren in Zivilverfahren (VGZ)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/320.210"
+   }
+  ],
+  "road": [
+   {
+    "nr": "870.100",
+    "title": "Einführungsgesetz zum Bundesgesetz über den Strassenverkehr (EGzSVG)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/870.100"
+   },
+   {
+    "nr": "870.110",
+    "title": "Verordnung zum Einführungsgesetz zum Bundesgesetz über den Strassenverkehr (RVzEGzSVG)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/870.110"
+   },
+   {
+    "nr": "870.120",
+    "title": "Verordnung über die Verkehrssteuern für Motorfahrzeuge und Anhänger",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/870.120"
+   },
+   {
+    "nr": "870.130",
+    "title": "Verordnung über die Gebühren im Strassenverkehr (Strassenverkehrsgebührenverordnung, StrGebV)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/870.130"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "720.000",
+    "title": "Steuergesetz für den Kanton Graubünden",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/720.000"
+   },
+   {
+    "nr": "720.015",
+    "title": "Ausführungsbestimmungen zur Steuergesetzgebung (ABzStG)",
+    "api": "https://www.gr-lex.gr.ch/api/de/texts_of_law/720.015"
+   }
+  ]
+ },
+ "JU": {
+  "road": [
+   {
+    "nr": "102.741.1",
+    "title": "Accord d’exécution entre le canton de Berne et la République et Canton du Jura relatif au transfert de la commune municipale de Moutier dans le canton",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/35343"
+   },
+   {
+    "nr": "170.413",
+    "title": "Arrêté autorisant l’Office des véhicules à récolter de manière automatisée certaines données du Service de la population",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/34448"
+   },
+   {
+    "nr": "283.11",
+    "title": "Arrêté autorisant les Offices des poursuites et faillites à accéder en ligne aux données de l’Office des véhicules",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9687"
+   },
+   {
+    "nr": "741.11",
+    "title": "Loi sur la circulation routière et la taxation des véhicules routiers et des bateaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9277"
+   },
+   {
+    "nr": "741.171",
+    "title": "Ordonnance sur l’utilisation de véhicules automobiles hors de la voie publique",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9348"
+   },
+   {
+    "nr": "741.191",
+    "title": "Ordonnance portant délégation des compétences du Département des Finances et de la Police au chef de l’Office des véhicules pour autoriser les manifes",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9108"
+   },
+   {
+    "nr": "741.611",
+    "title": "Décret sur la taxation des véhicules routiers et des bateaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8593"
+   },
+   {
+    "nr": "741.611.01",
+    "title": "Arrêté portant indexation de la taxe sur les véhicules",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8879"
+   },
+   {
+    "nr": "741.611.02",
+    "title": "Arrêté portant indexation de la taxe sur les véhicules",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9372"
+   },
+   {
+    "nr": "741.611.1",
+    "title": "Ordonnance concernant la réduction de la taxe sur les véhicules en faveur des handicapés",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9501"
+   },
+   {
+    "nr": "822.22",
+    "title": "Ordonnance sur la durée du travail et du repos des conducteurs professionnels de véhicules automobiles",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8960"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "176.511",
+    "title": "Décret fixant les émoluments judiciaires",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9346"
+   },
+   {
+    "nr": "271.11",
+    "title": "Ordonnance concernant la prise en charge des frais de médiation dans le cadre d'une procédure civile",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9706"
+   },
+   {
+    "nr": "701.111",
+    "title": "Arrêté fixant le tarif de la redevance pour la mise à disposition de l'application pour la gestion de la procédure de permis de construire",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/33224"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "181.1",
+    "title": "Loi d'organisation judiciaire",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8719"
+   },
+   {
+    "nr": "271.1",
+    "title": "Loi d'introduction du Code de procédure civile suisse",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8536"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "182.34",
+    "title": "Loi instituant le Conseil de prud’hommes",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9003"
+   },
+   {
+    "nr": "182.35",
+    "title": "Loi instituant le Tribunal des baux à loyer et à ferme",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9092"
+   },
+   {
+    "nr": "182.351",
+    "title": "Ordonnance concernant les commissions de conciliation en matière de bail et la consignation du loyer",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9219"
+   },
+   {
+    "nr": "824.21",
+    "title": "Loi concernant la Chambre cantonale de conciliation",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8807"
+   },
+   {
+    "nr": "832.113",
+    "title": "Ordonnance concernant la procédure de conciliation en matière de soins ambulatoires dans l’assurance-maladie obligatoire",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9729"
+   }
+  ],
+  "holidays": [
+   {
+    "nr": "215.126.10",
+    "title": "Arrêté dressant la liste des lieux dans lesquels l'acquisition de logements de vacances ou d'appartements dans un apparthôtel peut être autorisée",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9289"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "645.1",
+    "title": "Loi concernant la taxe des chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/8706"
+   },
+   {
+    "nr": "645.11",
+    "title": "Ordonnance concernant la taxe des chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/9090"
+   }
+  ]
+ },
+ "LU": {
+  "tax": [
+   {
+    "nr": "620",
+    "title": "Steuergesetz (StG)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/620"
+   },
+   {
+    "nr": "652",
+    "title": "Gesetz betreffend die teilweise Abänderung des Steuergesetzes vom 30. November 1892",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/652"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "260",
+    "title": "Gesetz über die Organisation der Gerichte und Behörden in Zivil-, Straf- und verwaltungsgerichtlichen Verfahren (Justizgesetz, JusG)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/260"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "261",
+    "title": "Kantonsratsbeschluss über die Sitze der Gerichte und Schlichtungsbehörden und die Einteilung des Kantons in Gerichtsbezirke",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/261"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "265",
+    "title": "Verordnung über die Kosten in Zivil-, Straf- und verwaltungsgerichtlichen Verfahren (Justiz-Kostenverordnung, JusKV)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/265"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "848",
+    "title": "Gesetz über das Halten von Hunden (HuG)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/848"
+   },
+   {
+    "nr": "849",
+    "title": "Verordnung über das Halten von Hunden (HuV)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/849"
+   }
+  ],
+  "road": [
+   {
+    "nr": "776",
+    "title": "Gesetz über die Verkehrsabgaben und den Vollzug des eidgenössischen Strassenverkehrsrechtes",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/776"
+   },
+   {
+    "nr": "777",
+    "title": "Verordnung zum Gesetz über die Verkehrsabgaben und den Vollzug des eidgenössischen Strassenverkehrsrechtes (Strassenverkehrsverordnung)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/777"
+   },
+   {
+    "nr": "778",
+    "title": "Verordnung über den Gebührenbezug des Strassenverkehrsamtes",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/778"
+   },
+   {
+    "nr": "783",
+    "title": "Gesetz über die Verwendung von Motorfahrzeugen ausserhalb der öffentlichen Strassen und Wege (GVM)",
+    "api": "https://srl.lu.ch/api/de/texts_of_law/783"
+   }
+  ]
+ },
+ "NE": {
+  "court_fees": [
+   {
+    "nr": "710.2",
+    "title": "Arrêté concernant les frais de procédure devant la commission cantonale d'estimation en matière d'expropriation pour cause d'utilité publique",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10439"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "161.1",
+    "title": "Loi d'organisation judiciaire neuchâteloise",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/11353"
+   },
+   {
+    "nr": "251.1",
+    "title": "Loi d'introduction du code de procédure civile",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/11383"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "636.20",
+    "title": "Loi sur les chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/11404"
+   },
+   {
+    "nr": "636.201",
+    "title": "Règlement d'exécution de la loi sur les chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10974"
+   },
+   {
+    "nr": "636.201.0",
+    "title": "Arrêté fixant le nombre de box pour chiens devant être mis à disposition de l'Etat et des communes de façon permanente par les institutions au bénéfic",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10013"
+   },
+   {
+    "nr": "636.21",
+    "title": "Règlement relatif aux cours pour propriétaires de chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/33299"
+   }
+  ],
+  "road": [
+   {
+    "nr": "761.10",
+    "title": "Loi d'introduction des prescriptions fédérales sur la circulation routière",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/11329"
+   },
+   {
+    "nr": "761.100",
+    "title": "Arrêté d'exécution de la loi d'introduction des prescriptions fédérales sur la circulation routière",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/11599"
+   },
+   {
+    "nr": "761.102",
+    "title": "Arrêté sur l'emploi des véhicules automobiles à chenilles",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10267"
+   },
+   {
+    "nr": "761.110",
+    "title": "Arrêté concernant l’octroi des facilités de stationnement pour les véhicules des personnes à mobilité réduite",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10457"
+   },
+   {
+    "nr": "761.20",
+    "title": "Loi sur la taxe des véhicules automobiles, des remorques et des bateaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10562"
+   },
+   {
+    "nr": "761.201",
+    "title": "Arrêté concernant le rabais sur la taxe des véhicules automobiles accordé à certains genres de véhicules qui sont dans des classes d'émission EURO réc",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10806"
+   },
+   {
+    "nr": "761.203",
+    "title": "Arrêté concernant le rabais sur la taxe des véhicules automobiles accordé aux détentrices et détenteurs de grands parcs de véhicules",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/12445"
+   },
+   {
+    "nr": "761.204",
+    "title": "Arrêté concernant la taxation des véhicules automobiles électriques",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/12466"
+   },
+   {
+    "nr": "761.205",
+    "title": "Arrêté concernant la taxation des véhicules automobiles au gaz naturel compressé (GNC) et gaz naturel liquéfié (GNL)",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/33404"
+   },
+   {
+    "nr": "761.206",
+    "title": "Arrêté concernant la taxation des véhicules automobiles fonctionnant à l’hydrogène",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/33817"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "810.40",
+    "title": "Règlement concernant l'office cantonal de conciliation en matière de conflits collectifs du travail",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/10799"
+   }
+  ]
+ },
+ "NW": {
+  "court_org": [
+   {
+    "nr": "261.1",
+    "title": "Gesetz über die Gerichte und die Justizbehörden (Gerichtsgesetz, GerG)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/261.1"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "261.2",
+    "title": "Gesetz über die Kosten im Verfahren vor den Gerichten und den Justizbehörden (Prozesskostengesetz, PKoG)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/261.2"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "826.3",
+    "title": "Gesetz über das Halten von Hunden (Hundegesetz, HuG)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/826.3"
+   },
+   {
+    "nr": "826.31",
+    "title": "Vollzugsverordnung zum Gesetz über das Halten von Hunden (Hundeverordnung, HuV)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/826.31"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "521.1",
+    "title": "Gesetz über die Steuern des Kantons und der Gemeinden (Steuergesetz, StG)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/521.1"
+   },
+   {
+    "nr": "521.11",
+    "title": "Verordnung zum Gesetz über die Steuern des Kantons und der Gemeinden (Steuerverordnung, StV)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/521.11"
+   }
+  ],
+  "road": [
+   {
+    "nr": "651.1",
+    "title": "Einführungsgesetz zur Bundesgesetzgebung über den Strassenverkehr (Kantonales Strassenverkehrsgesetz, kSVG)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/651.1"
+   },
+   {
+    "nr": "651.112",
+    "title": "Reglement betreffend das Parkieren von Motorfahrzeugen auf kantonseigenen oder vom Kanton gemieteten Liegenschaften (Parkplatzreglement)",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/651.112"
+   },
+   {
+    "nr": "651.3",
+    "title": "Gesetz über die Strassenverkehrssteuern",
+    "api": "https://gesetze.nw.ch/api/de/texts_of_law/651.3"
+   }
+  ]
+ },
+ "OW": {
+  "dogs": [
+   {
+    "nr": "818.3",
+    "title": "Gesetz über das Halten von Hunden und die Hundesteuer",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/818.3"
+   }
+  ],
+  "road": [
+   {
+    "nr": "771.1",
+    "title": "Einführungsgesetz zum Bundesgesetz über den Strassenverkehr (kantonales Strassenverkehrsgesetz, EG SVG)",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/771.1"
+   },
+   {
+    "nr": "771.2",
+    "title": "Gesetz über die Strassenverkehrssteuern",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/771.2"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "641.4",
+    "title": "Steuergesetz (StG)",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/641.4"
+   },
+   {
+    "nr": "641.41",
+    "title": "Vollziehungsverordnung zum Steuergesetz (StV)",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/641.41"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "134.1",
+    "title": "Gesetz über die Gerichtsorganisation (GOG)",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/134.1"
+   },
+   {
+    "nr": "134.111",
+    "title": "Ausführungsbestimmungen über die Inkraftsetzung der Gerichtsorganisationsgesetzgebung",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/134.111"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "134.118",
+    "title": "Ausführungsbestimmungen über die Schlichtungsbehörde",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/134.118"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "134.15",
+    "title": "Gebührenordnung für die Rechtspflege (GebOR)",
+    "api": "https://gdb.ow.ch/api/de/texts_of_law/134.15"
+   }
+  ]
+ },
+ "SG": {
+  "court_fees": [
+   {
+    "nr": "821.1",
+    "title": "Verordnung über Kosten und Entschädigungen im Verwaltungsverfahren (Verwaltungsgebührenverordnung) (VGV)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/821.1"
+   },
+   {
+    "nr": "941.12",
+    "title": "Gerichtskostenverordnung",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/941.12"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "961.2",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung (EG-ZPO)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/961.2"
+   },
+   {
+    "nr": "941.1",
+    "title": "Gerichtsgesetz (GerG)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/941.1"
+   }
+  ],
+  "road": [
+   {
+    "nr": "711.1",
+    "title": "Einführungsverordnung zum eidgenössischen Strassenverkehrsgesetz",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/711.1"
+   },
+   {
+    "nr": "711.70",
+    "title": "Gesetz über die Strassenverkehrsabgaben (SVAG)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/711.70"
+   },
+   {
+    "nr": "711.73",
+    "title": "Verordnung über die Strassenverkehrsabgaben (SVAV)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/711.73"
+   },
+   {
+    "nr": "711.74",
+    "title": "Regierungsratsbeschluss über den Vollzug der eidgenössischen Vorschriften über die Schwerverkehrsabgabe und die Nationalstrassenabgabe",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/711.74"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "811.1",
+    "title": "Steuergesetz (StG)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/811.1"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "671.513",
+    "title": "Regierungsratsbeschluss über das Pflanzenschutzgebiet Hoher Kasten-Kamor-Schwämme-Chienberg",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/671.513"
+   },
+   {
+    "nr": "456.1",
+    "title": "Hundegesetz (HuG)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/456.1"
+   },
+   {
+    "nr": "456.11",
+    "title": "Hundeverordnung (HuV)",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/456.11"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "941.112",
+    "title": "Verordnung über die Schlichtungsbehörden",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/941.112"
+   },
+   {
+    "nr": "941.13",
+    "title": "Verordnung über die Entschädigung der Richterinnen und Richter ohne feste Anstellung sowie der Mitglieder der Schlichtungsbehörden (Entschädigungsvero",
+    "api": "https://www.gesetzessammlung.sg.ch/api/de/texts_of_law/941.13"
+   }
+  ]
+ },
+ "SH": {
+  "dogs": [
+   {
+    "nr": "455.200",
+    "title": "Gesetz über das Halten von Hunden",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/455.200"
+   },
+   {
+    "nr": "455.201",
+    "title": "Verordnung zum Gesetz über das Halten von Hunden (Hundeverordnung)",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/455.201"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "173.200",
+    "title": "Justizgesetz (JG)",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/173.200"
+   }
+  ],
+  "road": [
+   {
+    "nr": "741.011",
+    "title": "Verordnung zum Bundesgesetz über den Strassenverkehr (Kantonale Strassenverkehrsverordnung)",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/741.011"
+   },
+   {
+    "nr": "741.012",
+    "title": "Verordnung über die Gebühren im Strassenverkehr",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/741.012"
+   },
+   {
+    "nr": "741.100",
+    "title": "Einführungsgesetz zum Bundesgesetz über den Strassenverkehr",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/741.100"
+   },
+   {
+    "nr": "645.100",
+    "title": "Gesetz über die Strassenverkehrssteuern",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/645.100"
+   },
+   {
+    "nr": "645.101",
+    "title": "Verordnung über die Strassenverkehrssteuern",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/645.101"
+   }
+  ],
+  "holidays": [
+   {
+    "nr": "410.114",
+    "title": "Verfügung über die Festlegung der Schulferien",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/410.114"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "172.201",
+    "title": "Verordnung über die Gebühren im kantonalen Verwaltungsverfahren (Verwaltungsgebührenverordnung)",
+    "api": "https://sh.clex.ch/api/de/texts_of_law/172.201"
+   }
+  ]
+ },
+ "SO": {
+  "court_org": [
+   {
+    "nr": "125.12",
+    "title": "Gesetz über die Gerichtsorganisation",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/125.12"
+   },
+   {
+    "nr": "221.2",
+    "title": "Einführungsgesetz zur Schweizerischen Zivilprozessordnung",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/221.2"
+   }
+  ],
+  "road": [
+   {
+    "nr": "725.126",
+    "title": "Verordnung über den Unterhalt und den Ausbau von Strassen im Berggebiet sowie von einfachen Parkplätzen im Erholungsgebiet aus den zweckgebundenen Mit",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/725.126"
+   },
+   {
+    "nr": "512.351.1",
+    "title": "Vereinbarung zwischen dem Polizei-Departement des Kantons Solothurn und der Sektion Solothurn des Touring-Clubs der Schweiz über die Durchführung tech",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/512.351.1"
+   },
+   {
+    "nr": "512.354",
+    "title": "Abteilung Administrativmassnahmen im Strassenverkehr",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/512.354"
+   },
+   {
+    "nr": "733.11",
+    "title": "Verordnung über den Strassenverkehr",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/733.11"
+   },
+   {
+    "nr": "614.61",
+    "title": "Gesetz über die Steuern und Gebühren für Motorfahrzeuge und Fahrräder",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/614.61"
+   },
+   {
+    "nr": "614.62",
+    "title": "Verordnung über Steuern und Gebühren für Motorfahrzeuge, Fahrräder und Schiffe",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/614.62"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "125.751.3",
+    "title": "Haager Übereinkunft betreffend das Zivilprozessrecht - Zuständige kantonale Behörden für die Rechtskrafterklärung solothurnischer Kostenurteile",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/125.751.3"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "614.61",
+    "title": "Gesetz über die Steuern und Gebühren für Motorfahrzeuge und Fahrräder",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/614.61"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "614.71",
+    "title": "Gesetz über das Halten von Hunden",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/614.71"
+   },
+   {
+    "nr": "614.72",
+    "title": "Verordnung zum Gesetz über das Halten von Hunden",
+    "api": "https://bgs.so.ch/api/de/texts_of_law/614.72"
+   }
+  ]
+ },
+ "TG": {
+  "road": [
+   {
+    "nr": "741.1",
+    "title": "Gesetz über die Strassenverkehrsabgaben (SVAG)",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/741.1"
+   },
+   {
+    "nr": "741.11",
+    "title": "Strassenverkehrsabgabenverordnung (SVAV)",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/741.11"
+   },
+   {
+    "nr": "741.2",
+    "title": "Verordnung des Regierungsrates zum Strassenverkehrsgesetz und den Nebenerlassen",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/741.2"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "638.1",
+    "title": "Verordnung des Grossen Rates über die Gebühren der Strafverfolgungs- und Gerichtsbehörden (VGG)",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/638.1"
+   },
+   {
+    "nr": "176.61",
+    "title": "Verordnung des Verwaltungsgerichtes über den Anwaltstarif für Streitigkeiten vor dem Verwaltungsgericht, dem Versicherungsgericht, der Enteignungskomm",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/176.61"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "640.1",
+    "title": "Steuergesetz (StG)",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/640.1"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "641.2",
+    "title": "Hundegesetz (HundeG)",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/641.2"
+   },
+   {
+    "nr": "641.21",
+    "title": "Hundeverordnung (HundeV)",
+    "api": "https://www.rechtsbuch.tg.ch/api/de/texts_of_law/641.21"
+   }
+  ]
+ },
+ "TI": {
+  "road": [
+   {
+    "nr": "760.100",
+    "title": "Legge di applicazione alla legislazione federale sulla circolazione stradale e la tassa sul traffico pesante",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21053"
+   },
+   {
+    "nr": "760.110",
+    "title": "Regolamento della legge cantonale di applicazione della legislazione federale sulla circolazione stradale e la tassa sul traffico pesante",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21314"
+   },
+   {
+    "nr": "760.120",
+    "title": "Regolamento sulle slitte a motore, sui veicoli per la preparazione delle piste e sulla circolazione fuori strada",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19862"
+   },
+   {
+    "nr": "760.500",
+    "title": "Legge sulle imposte e tasse di circolazione dei veicoli a motore",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19614"
+   },
+   {
+    "nr": "760.510",
+    "title": "Regolamento di applicazione della legge sulle imposte e tasse di circolazione dei veicoli a motore",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21900"
+   },
+   {
+    "nr": "561.350",
+    "title": "Regolamento sulle registrazioni audio e video per l’identificazione dei veicoli",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23173"
+   },
+   {
+    "nr": "741.280",
+    "title": "Decreto esecutivo concernente gli incentivi per l'acquisto di veicoli, motoveicoli, quadricicli e tricicli elettrici, lo sviluppo di infrastrutture di",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23515"
+   },
+   {
+    "nr": "832.200",
+    "title": "Legge concernente l’eliminazione degli autoveicoli inservibili",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21004"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "177.100",
+    "title": "Legge sull’organizzazione giudiziaria",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/32191"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "177.110",
+    "title": "Regolamento delle Giudicature di pace",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/20829"
+   },
+   {
+    "nr": "842.100",
+    "title": "Legge sull’Ufficio cantonale di conciliazione e sul conferimento del carattere obbligatorio generale al contratto collettivo di lavoro",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21414"
+   },
+   {
+    "nr": "842.110",
+    "title": "Regolamento sull’Ufficio cantonale di conciliazione",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23162"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "178.200",
+    "title": "Legge sulla tariffa giudiziaria",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22429"
+   },
+   {
+    "nr": "178.310",
+    "title": "Regolamento sulla tariffa per i casi di patrocinio d’ufficio e di assistenza giudiziaria e per la fissazione delle ripetibili",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22722"
+   },
+   {
+    "nr": "178.320",
+    "title": "Regolamento di applicazione della legge sulla tariffa giudiziaria e della legge sull’assistenza giudiziaria e sul patrocinio d’ufficio",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23259"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "482.300",
+    "title": "Legge sui cani",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22912"
+   },
+   {
+    "nr": "482.310",
+    "title": "Regolamento sui cani",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22885"
+   },
+   {
+    "nr": "482.315",
+    "title": "Direttive concernenti il corso d’istruzione per la detenzione dei cani delle razze soggette ad autorizzazione",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23088"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "640.100",
+    "title": "Legge tributaria",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19443"
+   },
+   {
+    "nr": "640.110",
+    "title": "Regolamento della legge tributaria",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21598"
+   },
+   {
+    "nr": "640.120",
+    "title": "Regolamento sull’imposta alla fonte nel quadro della legge tributaria",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/33175"
+   }
+  ]
+ },
+ "UR": {
+  "road": [
+   {
+    "nr": "50.1311",
+    "title": "Verordnung über den Strassenverkehr",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/50.1311"
+   },
+   {
+    "nr": "50.1411",
+    "title": "Gesetz über die Strassenverkehrssteuern",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/50.1411"
+   },
+   {
+    "nr": "50.1413",
+    "title": "Verordnung über die Strassenverkehrssteuern",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/50.1413"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "2.3221",
+    "title": "Gesetz über die Organisation der richterlichen Behörden (Gerichtsorganisationsgesetz, GOG)",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/2.3221"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "2.3231",
+    "title": "Verordnung über die Gebühren und Entschädigungen vor Gerichtsbehörden (Gerichtsgebührenverordnung, GGebV)",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/2.3231"
+   },
+   {
+    "nr": "2.3232",
+    "title": "Reglement über die Gebühren und Entschädigungen vor Gerichtsbehörden (Gerichtsgebührenreglement, GGebR)",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/2.3232"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "3.2211",
+    "title": "Gesetz über die direkten Steuern im Kanton Uri (Steuergesetz, StG)",
+    "api": "https://rechtsbuch.ur.ch/api/de/texts_of_law/3.2211"
+   }
+  ]
+ },
+ "VD": {
+  "dogs": [
+   {
+    "nr": "133.75",
+    "title": "LOI sur la police des chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/24158"
+   },
+   {
+    "nr": "133.75.1",
+    "title": "RÈGLEMENT d'application de la loi du 31 octobre 2006 sur la police des chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/24169"
+   },
+   {
+    "nr": "652.31.1",
+    "title": "RÈGLEMENT concernant la perception de l'impôt cantonal sur les chiens",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19058"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "172.31.5",
+    "title": "RÈGLEMENT sur l'organe de conciliation et d'arbitrage",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21637"
+   },
+   {
+    "nr": "172.31.6",
+    "title": "RÈGLEMENT sur le Tribunal de prud'hommes de l'Administration cantonale",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/18628"
+   },
+   {
+    "nr": "173.655.310821.1",
+    "title": "DÉCRET instaurant temporairement la gratuité des procédures devant le Tribunal des baux pour les litiges impliquant des baux commerciaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/33660"
+   }
+  ],
+  "road": [
+   {
+    "nr": "172.751",
+    "title": "DÉCRET créant un fonds de roulement \"Véhicules à moteur de l'administration cantonale\"",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19028"
+   },
+   {
+    "nr": "172.752",
+    "title": "DÉCRET créant le compte spécial intitulé \"Véhicules lourds et spéciaux de l'Administration cantonale et matériel du Département des travaux publics\"",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21150"
+   },
+   {
+    "nr": "741.01",
+    "title": "LOI sur la circulation routière",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/20467"
+   },
+   {
+    "nr": "741.01.1",
+    "title": "RÈGLEMENT d'application de la loi vaudoise sur la circulation routière",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19388"
+   },
+   {
+    "nr": "741.11",
+    "title": "LOI sur la taxe des véhicules automobiles et des bateaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21710"
+   },
+   {
+    "nr": "741.11.1",
+    "title": "RÈGLEMENT d'application de la loi du 21 mars 2023 sur la taxe des véhicules automobiles et des bateaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19420"
+   },
+   {
+    "nr": "743.05",
+    "title": "LOI sur l'usage des véhicules à chenilles pendant l'hiver",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21068"
+   }
+  ],
+  "court_org": [
+   {
+    "nr": "173.01",
+    "title": "LOI d'organisation judiciaire",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19064"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "173.07.2",
+    "title": "RÈGLEMENT sur les émoluments, les frais et les dépens pour les procédures disciplinaires devant le Conseil de la magistrature",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/34806"
+   },
+   {
+    "nr": "173.21.5",
+    "title": "RÈGLEMENT sur les frais de procédure pour le Ministère public en matière administrative",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/24247"
+   },
+   {
+    "nr": "173.32.5",
+    "title": "TARIF des frais judiciaires perçus par la Cour constitutionnelle",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/20698"
+   },
+   {
+    "nr": "173.36.5.1",
+    "title": "TARIF des frais judiciaires et des dépens en matière administrative",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/24197"
+   },
+   {
+    "nr": "173.38.1.1",
+    "title": "TARIF des frais judiciaires perçus par le Tribunal neutre",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/24183"
+   },
+   {
+    "nr": "270.11.5",
+    "title": "TARIF des frais judiciaires civils",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/20131"
+   },
+   {
+    "nr": "280.31.1",
+    "title": "TARIF des frais judiciaires en matière de poursuite et faillite",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/19836"
+   },
+   {
+    "nr": "312.03.1",
+    "title": "TARIF des frais de procédure et indemnités en matière pénale",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/18631"
+   },
+   {
+    "nr": "312.03.3",
+    "title": "TARIF des frais de procédure pour le Ministère public et les autorités administratives compétentes en matière de contraventions",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/24256"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "642.11",
+    "title": "LOI sur les impôts directs cantonaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/20913"
+   },
+   {
+    "nr": "642.11.1",
+    "title": "RÈGLEMENT relatif à l'imposition d'après la dépense prévue par l'article 15 de la loi du 4 juillet 2000 sur les impôts directs cantonaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21183"
+   },
+   {
+    "nr": "642.11.9.4",
+    "title": "ARRÊTÉ relatif à la consultation du résultat de la taxation des contribuables assujettis aux impôts directs cantonaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21146"
+   },
+   {
+    "nr": "650.11",
+    "title": "LOI sur les impôts communaux",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/20541"
+   }
+  ]
+ },
+ "VS": {
+  "road": [
+   {
+    "nr": "741.1",
+    "title": "Loi d'application de la législation fédérale sur la circulation routière (LALCR)",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/741.1"
+   },
+   {
+    "nr": "741.102",
+    "title": "Arrêté concernant le dépôt des plaques de contrôle des véhicules à moteur",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/741.102"
+   },
+   {
+    "nr": "741.104",
+    "title": "Règlement fixant le tarif des émoluments et des frais en matière d'admission des personnes et des véhicules à la circulation routière (RTarOAC)",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/741.104"
+   },
+   {
+    "nr": "741.108",
+    "title": "Arrêté concernant les restrictions à la circulation des véhicules à moteur sur certaines routes et chemins du canton",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/741.108"
+   },
+   {
+    "nr": "741.109",
+    "title": "Arrêté concernant les restrictions de circulation pour les véhicules à moteur sur la route cantonale NG13 Täsch - Zermatt",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/741.109"
+   },
+   {
+    "nr": "741.111",
+    "title": "Règlement sur l'utilisation des véhicules à chenilles",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/741.111"
+   },
+   {
+    "nr": "641.5",
+    "title": "Loi sur l'imposition des véhicules automobiles",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/641.5"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "652.100",
+    "title": "Règlement concernant la perception de l'impôt sur les chiens",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/652.100"
+   },
+   {
+    "nr": "455.100",
+    "title": "Ordonnance concernant la formation des nouveaux détenteurs de chiens",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/455.100"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "221.214",
+    "title": "Arrêté fixant les indemnités dues aux membres de la Commission de conciliation en matière de bail à loyer",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/221.214"
+   },
+   {
+    "nr": "822.103",
+    "title": "Arrêté fixant les indemnités dues aux membres du Tribunal du travail et de la Commission cantonale de conciliation pour les litiges relevant de la loi",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/822.103"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "642.1",
+    "title": "Loi fiscale (LF)",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/642.1"
+   },
+   {
+    "nr": "642.100",
+    "title": "Règlement d'application de la loi fiscale (RALF)",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/642.100"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "642.107",
+    "title": "Arrêté fixant la part des frais administratifs mis à la charge du débiteur dans le cadre de la procédure d'encaissement",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/642.107"
+   },
+   {
+    "nr": "173.8",
+    "title": "Loi fixant le tarif des frais et dépens devant les autorités judiciaires ou administratives (LTar)",
+    "api": "https://lex.vs.ch/api/fr/texts_of_law/173.8"
+   }
+  ]
+ },
+ "ZG": {
+  "conciliation": [
+   {
+    "nr": "161.4",
+    "title": "Verordnung über die Schlichtungsbehörden",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/161.4"
+   }
+  ],
+  "court_fees": [
+   {
+    "nr": "161.7",
+    "title": "Verordnung über die Kosten in der Zivil- und Strafrechtspflege",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/161.7"
+   },
+   {
+    "nr": "162.12",
+    "title": "Verordnung über die Kosten im Verfahren vor dem Verwaltungsgericht",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/162.12"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "632.1",
+    "title": "Steuergesetz",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/632.1"
+   },
+   {
+    "nr": "632.11",
+    "title": "Verordnung zum Steuergesetz",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/632.11"
+   },
+   {
+    "nr": "632.2",
+    "title": "Kantonsratsbeschluss über den Solidaritätsbeitrag des Kantons an die Einwohnergemeinden im Rahmen der Änderung des Steuergesetzes, achtes Revisionspak",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/632.2"
+   },
+   {
+    "nr": "751.22",
+    "title": "Gesetz über die Steuern im Strassenverkehr",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/751.22"
+   }
+  ],
+  "road": [
+   {
+    "nr": "751.21",
+    "title": "Verordnung über den Strassenverkehr und die Strassensignalisation",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/751.21"
+   },
+   {
+    "nr": "751.21-A1",
+    "title": "Verordnung über den Strassenverkehr und die Strassensignalisation (Anhang 1)",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/751.21-A1"
+   },
+   {
+    "nr": "751.22",
+    "title": "Gesetz über die Steuern im Strassenverkehr",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/751.22"
+   },
+   {
+    "nr": "751.221",
+    "title": "Verordnung über die Gebühren im Strassenverkehr",
+    "api": "https://bgs.zg.ch/api/de/texts_of_law/751.221"
+   }
+  ]
+ },
+ "ZH": {
+  "court_fees": [
+   {
+    "nr": "175.252",
+    "title": "Gebührenverordnung des Verwaltungsgerichts",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22304"
+   },
+   {
+    "nr": "211.11",
+    "title": "Gebührenverordnung des Obergerichts",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21701"
+   },
+   {
+    "nr": "212.812",
+    "title": "Verordnung über die Gebühren, Kosten und Entschädigungen vor dem Sozialversicherungsgericht",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22327"
+   },
+   {
+    "nr": "215.12",
+    "title": "Verordnung des Obergerichts über die Gebühren, Kosten und Entschädigungen gemäss Anwaltsgesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23375"
+   }
+  ],
+  "conciliation": [
+   {
+    "nr": "177.12",
+    "title": "Gesetz über das Schlichtungsverfahren für Streitigkeiten nach Gleichstellungsgesetz in öffentlich-rechtlichen Arbeitsverhältnissen",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23785"
+   },
+   {
+    "nr": "212.126",
+    "title": "Beschluss des Regierungsrates über die Neuaufteilung der Friedensrichterkreise 3, 4, 5, 6, 9, 10, 11 und 12 (der Stadt Zürich)",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22245"
+   },
+   {
+    "nr": "212.127",
+    "title": "Beschluss des Regierungsrates über die Vereinigung der Friedensrichterkreise 1 und 2 (der Stadt Zürich)",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22947"
+   },
+   {
+    "nr": "212.23",
+    "title": "Beschluss des Kantonsrates über die Zahl der Beisitzenden der Arbeitsgerichte für die Amtsdauer 2026–2032",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23814"
+   },
+   {
+    "nr": "212.24",
+    "title": "Beschluss des Kantonsrates über die Zahl der Beisitzenden der Mietgerichte für die Amtsdauer 2026–2032",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23975"
+   }
+  ],
+  "dogs": [
+   {
+    "nr": "554.5",
+    "title": "Hundegesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22871"
+   },
+   {
+    "nr": "554.51",
+    "title": "Hundeverordnung",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22888"
+   }
+  ],
+  "tax": [
+   {
+    "nr": "631.1",
+    "title": "Steuergesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/23108"
+   },
+   {
+    "nr": "631.11",
+    "title": "Verordnung zum Steuergesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22362"
+   },
+   {
+    "nr": "632.1",
+    "title": "Erbschafts- und Schenkungssteuergesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21785"
+   },
+   {
+    "nr": "632.11",
+    "title": "Verordnung zum Erbschafts- und Schenkungssteuergesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22612"
+   }
+  ],
+  "road": [
+   {
+    "nr": "741.1",
+    "title": "Verkehrsabgabengesetz",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/21979"
+   },
+   {
+    "nr": "741.11",
+    "title": "Verkehrsabgabenverordnung",
+    "api": "https://www.lexfind.ch/api/fe/de/texts-of-law/22843"
+   }
+  ]
+ }
+}

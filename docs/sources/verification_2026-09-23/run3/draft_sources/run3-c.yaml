@@ -1,0 +1,240 @@
+# Draft source configs proposed by agent run3-c on 2026-09-23. NOT registered sources.
+# Copied verbatim from agent_reports/run3-c.md; each block notes whether it parses as YAML.
+
+---
+# ---- block 1 · section: SG: St. Gallen · parses: yes · entries: 4
+id: sg_gerichte_info
+name: Gerichte St.Gallen – Informationen & Schlichtungsstellen
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories: [housing]            # plus "category missing: courts"
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/recht/gerichte/informationen---formulare.html", "/recht/gerichte/organisation---standorte/schlichtungsstellen-und-vermittlungsaemter.html"]
+  path_allowlist: ["/recht/gerichte/informationen---formulare", "/recht/gerichte/organisation---standorte/schlichtungsstellen-und-vermittlungsaemter"]
+  language: de
+allow_narrowing: false
+---
+id: sg_guidance
+name: Kanton St.Gallen – Hunde, Ferienplan, Strassenverkehr
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories: [dogs, schools, transport]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/umwelt-natur/veterinaerwesen/tiere-halten/hunde.html", "/bildung-sport/volksschule/aus-dem-amt/ferienplan.html", "/verkehr/strassenverkehr.html"]
+  path_allowlist: ["/umwelt-natur/veterinaerwesen/tiere-halten/hunde", "/bildung-sport/volksschule/aus-dem-amt/ferienplan", "/verkehr/strassenverkehr"]
+  language: de
+---
+id: sg_steuerbuch            # yaml-now:pdf for a sample; full set needs fetcher:pdf-index (250 PDFs)
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories: [taxes]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/003_1.pdf.ocFile/003_1.pdf"]
+  language: de
+---
+id: sg_gerichte_kostenmerkblatt
+base_url: https://www.sg.ch
+default_extent_id: CH-SG
+authority: official_info
+categories: []                   # category missing: courts
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Merkblatt%20zu%20den%20Kosten%20und%20dem%20Verfahren%20vor%20Handelsgericht.pdf"]
+  language: de
+
+---
+# ---- block 2 · section: TG: Thurgau · parses: yes · entries: 5
+id: tg_steuerpraxis
+name: Thurgauer Steuerpraxis
+base_url: https://steuerpraxis.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories: [taxes]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/steuerpraxis/2026-09"]
+  path_allowlist: ["/steuerpraxis/2026-09/"]   # version prefix changes per release → fetcher:sitemap-crawl picks newest
+  language: de
+---
+id: tg_hunde
+base_url: https://veterinaeramt.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories: [dogs]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/tierschutz/haustiere/hundewesen.html/11290", "/faq/hundewesen.html/14752"]
+  path_allowlist: ["/tierschutz/haustiere/hundewesen", "/faq/hundewesen"]
+  language: de
+---
+id: tg_strassenverkehrsamt
+base_url: https://strassenverkehrsamt.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories: [transport]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/gebuehren-und-steuern.html/16501", "/fuehrerzulassung.html/3617", "/fahrzeugzulassung.html/3615"]
+  path_allowlist: ["/gebuehren-und-steuern", "/fuehrerzulassung", "/fahrzeugzulassung"]
+  language: de
+---
+id: tg_ferienplan
+base_url: https://av.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://av.tg.ch/public/upload/assets/179040/Ferienplan_SJ_2026_2027.pdf?fp=1", "https://av.tg.ch/public/upload/assets/8713/10_Jahresplan_Schulferien_Volksschule_2023_-_2033.pdf?fp=4"]
+  language: de
+---
+id: tg_gerichte_merkblaetter
+base_url: https://bezirksgericht.tg.ch
+default_extent_id: CH-TG
+authority: official_info
+categories: []                   # category missing: courts
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2", "https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1", "https://bezirksgericht.tg.ch/public/upload/assets/99108/Merkblatt%20Rechts%C3%B6ffnung.pdf?fp=1"]
+  language: de
+
+---
+# ---- block 3 · section: AR: Appenzell Ausserrhoden · parses: yes · entries: 4
+id: ar_gerichte
+base_url: https://ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories: [housing]            # plus "category missing: courts"
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/gerichte/kantonsgericht/rechtsgebiete/", "/gerichte/vermittler-und-schlichtungsstellen/", "/gerichte/kantonsgericht/unentgeltliche-rechtspflege/", "/gerichte/kantonsgericht/rechtsauskunft/"]
+  path_allowlist: ["/gerichte/kantonsgericht/rechtsgebiete/", "/gerichte/vermittler-und-schlichtungsstellen/", "/gerichte/kantonsgericht/unentgeltliche-rechtspflege/", "/gerichte/kantonsgericht/rechtsauskunft/"]
+  language: de
+---
+id: ar_hunde_strassenverkehr
+base_url: https://ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories: [dogs, transport]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/verwaltung/departement-gesundheit-und-soziales/veterinaeramt/hunde/", "/verwaltung/departement-inneres-und-sicherheit/strassenverkehrsamt/"]
+  path_allowlist: ["/verwaltung/departement-gesundheit-und-soziales/veterinaeramt/hunde/", "/verwaltung/departement-inneres-und-sicherheit/strassenverkehrsamt/"]
+  language: de
+---
+id: ar_ferienrichtdaten
+base_url: https://ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf"]
+  language: de
+---
+id: ar_amtsblatt                 # needs a decision first: robots Disallow / vs documented API
+base_url: https://amtsblatt.ar.ch
+default_extent_id: CH-AR
+authority: official_info
+categories: []                   # category missing: gazette
+fetch_strategy: api
+fetch_config:
+  url: https://amtsblatt.ar.ch/api/v1/publications?publicationStates=PUBLISHED&tenant=kabar&rubrics=RS-AR&pageRequest.page=0&pageRequest.size=100
+  records_path: content
+  id_template: "{meta[publicationNumber]}"
+  title_template: "{meta[title][de]}"
+  text_template: "{meta[title][de]} (Amtsblatt AR, Rubrik {meta[rubric]}, publiziert {meta[publicationDate]})"
+  language: de
+allow_narrowing: true            # titles often name the commune; whether event_date_field accepts a nested field is not verified
+
+---
+# ---- block 4 · section: AI: Appenzell Innerrhoden · parses: yes · entries: 3
+id: ai_gerichte
+base_url: https://www.ai.ch
+default_extent_id: CH-AI
+authority: official_info
+categories: [housing]            # plus "category missing: courts"
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/gerichte/vermittler", "/gerichte/bezirksgericht/formulare", "/gerichte/rechtsprechung", "/themen/persoenliches/wohnen-und-umziehen/schlichtungsstelle-mietverhaeltnisse"]
+  path_allowlist: ["/gerichte/vermittler", "/gerichte/bezirksgericht/formulare", "/gerichte/rechtsprechung", "/themen/persoenliches/wohnen-und-umziehen/schlichtungsstelle-mietverhaeltnisse"]
+  language: de                   # risk: html_crawl has no denylist for ftw-simplelayout block URLs
+---
+id: ai_guidance
+base_url: https://www.ai.ch
+default_extent_id: CH-AI
+authority: official_info
+categories: [dogs, transport, schools]
+fetch_strategy: html_crawl
+fetch_config:
+  start_paths: ["/themen/landwirtschaft-tierhaltung/tierhaltung", "/themen/mobilitaet-und-verkehr/strassenverkehr", "/themen/bildung/eltern-und-schule/ferienplan"]
+  path_allowlist: ["/themen/landwirtschaft-tierhaltung/tierhaltung", "/themen/mobilitaet-und-verkehr/strassenverkehr", "/themen/bildung/eltern-und-schule/ferienplan"]
+  language: de
+---
+id: ai_ferienplan
+base_url: https://www.ai.ch
+default_extent_id: CH-AI
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan/ftw-simplelayout-filelistingblock/ferienplan-ai_2026-2029.pdf/download"]
+  language: de
+
+---
+# ---- block 5 · section: SH: Schaffhausen · parses: yes · entries: 3
+id: sh_ch_guidance               # NEW fetcher needed: api strategy cannot read a single-object response
+base_url: https://sh.ch
+default_extent_id: CH-SH
+authority: official_info
+categories: [dogs, housing]      # plus "category missing: courts"
+fetch_strategy: sh_cms_json      # fetcher:sh-cms-json
+fetch_config:
+  content_url: "https://sh.ch/CMS/content?contentid={id}&language=DE"
+  ids: [1575596, 1235775, 1236819, 1962811, 310661, 311162, 1236259]   # or all ids parsed from https://sh.ch/Sitemap/SitemapXml (-<id>-DE.html)
+  text_field: data_post_content
+  date_field: data_publication_date
+  url_template: "https://sh.ch/CMS{data_permalink}"
+  language: de
+---
+id: sh_amtsblatt_regierung
+base_url: https://amtsblatt.sh.ch
+default_extent_id: CH-SH
+authority: official_info
+categories: []                   # category missing: gazette
+fetch_strategy: api
+fetch_config:
+  url: https://amtsblatt.sh.ch/api/v1/publications?publicationStates=PUBLISHED&tenant=kabsh&rubrics=RE-SH&pageRequest.page=0&pageRequest.size=100
+  records_path: content
+  id_template: "{meta[publicationNumber]}"
+  title_template: "{meta[title][de]}"
+  text_template: "{meta[title][de]} (Amtsblatt SH, {meta[publicationDate]})"
+  language: de
+---
+id: sh_ferien
+base_url: https://sh.ch
+default_extent_id: CH-SH
+authority: official_info
+categories: [schools]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://sh.ch/CMS/get/file/c5d7c8e8-2819-4ae1-a1c6-9861471b0182"]
+  language: de
+
+---
+# ---- block 6 · section: SH: Schaffhausen · parses: yes · entries: 1
+id: stadt_schaffhausen_rs        # yaml-now:pdf sample; full collection needs fetcher:iweb-table (215 rows)
+base_url: https://www.stadt-schaffhausen.ch
+default_extent_id: CH-SH-2939
+authority: official_info
+categories: [dogs, waste]
+fetch_strategy: pdf
+fetch_config:
+  urls: ["https://www.stadt-schaffhausen.ch/_doc/3720785", "https://www.stadt-schaffhausen.ch/_doc/4688455"]
+  language: de

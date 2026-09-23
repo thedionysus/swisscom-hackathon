@@ -1,0 +1,86 @@
+# Draft source configs proposed by agent run3-b on 2026-09-23. NOT registered sources.
+# Copied verbatim from agent_reports/run3-b.md; each block notes whether it parses as YAML.
+
+---
+# ---- block 1 · section: LU (79 communes) · parses: yes · entries: 5
+- id: lu-gerichte-guidance          # official_info, CH-LU, category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://gerichte.lu.ch/rechtsgebiete, https://gerichte.lu.ch/organisation/schlichtungsbehoerden], path_allowlist: [/rechtsgebiete/, /organisation/schlichtungsbehoerden/], language: de}
+- id: lu-steuerbuch                  # official_info, CH-LU, taxes
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://steuerbuch.lu.ch/band1, https://steuerbuch.lu.ch/band2, https://steuerbuch.lu.ch/band2a, https://steuerbuch.lu.ch/band3, https://steuerbuch.lu.ch/band4], path_allowlist: [/band], language: de}
+- id: lu-hunde                       # dogs
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://veterinaerdienst.lu.ch/hunde], path_allowlist: [/hunde], language: de}
+- id: lu-schulferien                 # schools; per-commune rows need narrowing or one source per commune
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/ferienplan_gemeinden_sj26_27.pdf, https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/feriendaten_volksschulen_kt_luzern.pdf]}
+- id: lu-strassenverkehrsamt         # transport
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://strassenverkehrsamt.lu.ch/Strassenverkehr/steuern_gebuehren], path_allowlist: [/Strassenverkehr/], language: de}
+
+---
+# ---- block 2 · section: UR (19 communes); i-web · parses: yes · entries: 2
+- id: ur-gerichte-rechtsgebiete   # official_info, CH-UR, category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.ur.ch/rechtsgebiete/3909, https://www.ur.ch/rechtsgebiete/3912, https://www.ur.ch/rechtsgebiete/3914, https://www.ur.ch/rechtsgebiete/3915, https://www.ur.ch/rechtsgebiete/3917, https://www.ur.ch/rechtsgebiete/3918], path_allowlist: [/rechtsgebiete/], language: de}
+- id: ur-pdfs   # taxes / schools / transport
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.ur.ch/_doc/437558, https://www.ur.ch/_doc/449362, https://www.ur.ch/_doc/408844, https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf]}
+
+---
+# ---- block 3 · section: SZ (30 communes, 6 districts); govis, rate-limited · parses: yes · entries: 2
+- id: sz-schulferien        # official_info, schools, default_extent CH-SZ (records per district/school, no per-record jurisdiction)
+  fetch_strategy: api
+  fetch_config:
+    url: https://data.sz.ch/api/explore/v2.1/catalog/datasets/ferienplan-kanton-schwyz/records?limit=100
+    records_path: results
+    id_template: "{schuljahr}-{name_schule}"
+    title_template: "Schulferien {schuljahr}: {name_schule} (Bezirk {bezirk})"
+    text_template: "Schuljahr {schuljahr}, {name_schule}, Bezirk {bezirk}: Schulbeginn {start_schuljahr}; Herbstferien {herbstferien_start} bis {herbstferien_ende}; Weihnachtsferien {weihnachtsferien_start} bis {weihnachtsferien_ende}; Sportferien {sportferien_start} bis {sportferien_ende}; Frühlingsferien {fruehlingsferien_start} bis {fruehlingsferien_ende}; Schuljahresende {ende_schuljahr}."
+    language: de
+- id: sz-justiz             # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.sz.ch/behoerden/justiz.html/8756-8758-8801], path_allowlist: [/behoerden/justiz/], language: de}   # needs crawl delay ≥5 s (new config)
+
+---
+# ---- block 4 · section: OW (7 communes); i-web · parses: yes · entries: 2
+- id: ow-pdfs   # taxes, schools
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.ow.ch/_doc/447067, https://www.ow.ch/_doc/454867, https://www.ow.ch/_doc/447907]}
+- id: vsz-ownw  # transport; jurisdiction OW+NW → one source per canton or design:multi-canton
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.vsz.ch/strassenverkehr], path_allowlist: [/strassenverkehr/], language: de}
+
+---
+# ---- block 5 · section: NW (11 communes); i-web · parses: yes · entries: 3
+- id: nw-gerichte   # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.nw.ch/kantonsgerichtrechtspflege, https://www.nw.ch/kantonsgerichtrechtsauskunft, https://www.nw.ch/kantonsgerichtzustaendigkeit, https://www.nw.ch/schlichtungsbehoerde/326], path_allowlist: [/kantonsgericht, /schlichtungsbeh], language: de}
+- id: nw-hunde      # dogs
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.nw.ch/amtjustizdienste/581], path_allowlist: [/amtjustizdienste/581], language: de}
+- id: nw-pdfs       # schools, taxes
+  fetch_strategy: pdf
+  fetch_config: {urls: [https://www.nw.ch/_doc/456520, https://www.steuern-nw.ch/app/uploads/2024/01/Wegleitung_2025_natuerliche-Personen.pdf]}
+
+---
+# ---- block 6 · section: GL (3 communes); govis, id-routed, rate-limited · parses: yes · entries: 2
+- id: gl-schlichtung   # category missing: courts; crawl delay ≥5 s
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://www.gl.ch/rechtspflege/kantonale-schlichtungsbehoerde.html/316], path_allowlist: [/rechtspflege/kantonale-schlichtungsbehoerde/], language: de}
+- id: gl-pdfs          # taxes, schools (jurisdiction CH-GL although hosted on glarus-nord.ch)
+  fetch_strategy: pdf
+  fetch_config: {urls: ["https://www.gl.ch/public/upload/assets/59619/01%20Wegleitung%202025.pdf?fp=1", "https://www.glarus-nord.ch/public/upload/assets/35598/Ferienpl%C3%A4ne_2025-2028.pdf?fp=5"]}
+
+---
+# ---- block 7 · section: ZG (11 communes) · parses: yes · entries: 3
+- id: zg-recht-justiz   # category missing: courts
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://zg.ch/de/recht-justiz], path_allowlist: [/de/recht-justiz/], language: de}
+- id: zg-hunde-ferien
+  fetch_strategy: html_crawl
+  fetch_config: {start_paths: [https://zg.ch/de/natur-umwelt-tiere/veterinaerwesen/hunde, https://zg.ch/de/bildung/bildungssystem/schulferien], path_allowlist: [/de/natur-umwelt-tiere/veterinaerwesen/hunde, /de/bildung/bildungssystem/schulferien], language: de}
+- id: zg-pdfs
+  fetch_strategy: pdf
+  fetch_config: {urls: ["https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/Schulferien%20202627-203031.pdf", "https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/Infoblatt%20Hundereglemente%20Januar%202026.pdf"]}
