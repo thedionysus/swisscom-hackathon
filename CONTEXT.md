@@ -122,11 +122,15 @@ A language version that has legal force. German, French and Italian federal law 
 _Avoid_: Official translation, original
 
 **Corroboration**:
-The evidence that a chunk is relevant because its aligned chunks in other language versions were also retrieved for the same question. Measured only over the versions that exist, so a document published in one language is never marked down for lacking others.
+The evidence that a chunk is relevant because its aligned chunks in other language versions were also retrieved for the same question. It is the share of the group's other existing authentic versions found among the candidates. A group with no other authentic version is "not applicable", not zero, so a page published in one language is never marked down. English federal law is shown but never counts. Aligned versions that carry different validity dates are divergent and do not corroborate each other.
 _Avoid_: Cross-check, consensus, agreement score
 
+**Divergent versions**:
+Aligned chunks of one translation group whose language versions disagree on validity date or were fetched from different consolidations. Flagged on the citation; never counted as corroboration.
+_Avoid_: Conflict, mismatch
+
 **Corroboration basis**:
-How the aligned chunks were found: `independent` when each language store was queried in its own language, `cross_lingual` when one multilingual query found them all. The two carry different weight.
+How the aligned chunks were found: `independent` when each language store was queried in its own language, `cross_lingual` when one multilingual query found them all. Each is a separate feature of the relevance probability, so the weight comes from the evals.
 _Avoid_: Corroboration type, mode
 
 ### Descriptions
