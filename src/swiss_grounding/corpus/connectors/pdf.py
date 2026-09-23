@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import time
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import contextmanager
@@ -12,7 +13,12 @@ import pypdfium2 as pdfium
 from pypdf import PdfReader
 
 from swiss_grounding.corpus.artifacts import save_artifact
-from swiss_grounding.corpus.connectors.politeness import SHARED_THROTTLE, HostThrottle
+from swiss_grounding.corpus.connectors.politeness import (
+    SHARED_THROTTLE,
+    FetchResult,
+    HostThrottle,
+    request_with_backoff,
+)
 from swiss_grounding.corpus.models import (
     ConnectorResult,
     DiscoveredPdf,
@@ -21,6 +27,10 @@ from swiss_grounding.corpus.models import (
     ParsedSection,
     SourceSpec,
 )
+
+# pypdf logs a "fontTools is required for..." warning on every page of many real-world PDFs;
+# it is noise for us (we never need the missing metrics), so it is downgraded below WARNING.
+logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 MIN_TEXT_CHARS = 80
 RENDER_SCALE = 150 / 72
@@ -58,7 +68,9 @@ def parse_pdf(content: bytes, *, url: str, language: str, title_hint: str, sourc
     document: pdfium.PdfDocument | None = None
     try:
         for number, page in enumerate(reader.pages, start=1):
-            text = (page.extract_text() or "").strip()
+            # PostgreSQL text columns reject NUL bytes; some scanned/OCR'd PDFs embed them in
+            # their text layer, so strip them at extraction, the earliest point we see them.
+            text = (page.extract_text() or "").replace("\x00", "").strip()
             crumbs = (title, f"p. {number}")
             if len(text) < MIN_TEXT_CHARS:
                 if document is None:
@@ -100,15 +112,19 @@ class PdfConnector:
         self._delay = delay_seconds
         self._throttle = throttle or SHARED_THROTTLE
 
-    def _download(self, url: str, headers: dict[str, str]):
+    def _before(self, url: str) -> None:
+        self._throttle.wait(url, self._delay, self._sleep)
+
+    def _download(self, url: str, headers: dict[str, str]) -> FetchResult:
         """Stream the response, aborting as soon as MAX_PDF_BYTES is exceeded.
 
-        Returns (status_code, headers, content) with content empty for non-2xx/304 responses.
+        The body is empty for a non-2xx/304 response, so a 429/503 can be inspected by
+        request_with_backoff without reading (and discarding) a body.
         """
         with self._http.stream("GET", url, headers=headers, follow_redirects=True, timeout=60) as response:
             if response.status_code >= 300:
                 response.close()
-                return response.status_code, response.headers, b""
+                return FetchResult(response.status_code, response.headers)
             # Links matched by pdf_link_patterns carry no .pdf suffix, so the response type is the
             # only proof of a PDF; an HTML login page or error shell must not reach the parser.
             media_type = _media_type(response.headers)
@@ -127,7 +143,7 @@ class PdfConnector:
                     raise _TooLarge
             if "pdf" not in media_type and b"%PDF" not in body[:PDF_MAGIC_WINDOW]:
                 raise _NotPdf(media_type)
-            return response.status_code, response.headers, bytes(body)
+            return FetchResult(response.status_code, response.headers, bytes(body))
 
     def run_pdfs(self, spec: SourceSpec, pdfs: Sequence[DiscoveredPdf],
                  known: Mapping[str, KnownState]) -> ConnectorResult:
@@ -139,9 +155,9 @@ class PdfConnector:
                 headers["if-none-match"] = prior.etag
             if prior and prior.last_modified:
                 headers["if-modified-since"] = prior.last_modified
-            self._throttle.wait(pdf.url, self._delay, self._sleep)
             try:
-                status, response_headers, content = self._download(pdf.url, headers)
+                fetched = request_with_backoff(pdf.url, self._throttle, self._before,
+                                               lambda u=pdf.url, h=headers: self._download(u, h), self._sleep)
             except _TooLarge:
                 errors.append((pdf.url, f"PDF larger than {MAX_PDF_BYTES} bytes"))
                 continue
@@ -151,6 +167,7 @@ class PdfConnector:
             except httpx.HTTPError as exc:
                 errors.append((pdf.url, f"fetch failed: {exc}"))
                 continue
+            status, response_headers, content = fetched.status_code, fetched.headers, fetched.body
             if status == 304:
                 unchanged.append(pdf.url)
                 continue

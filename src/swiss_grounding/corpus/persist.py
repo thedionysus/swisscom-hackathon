@@ -11,6 +11,7 @@ Rules:
 4. `fetched_at` is when this content was fetched; `last_seen_at` when it was last confirmed.
 5. Chunks carry document status, extent, authority and, for Fedlex, the SR prior topics.
 """
+import dataclasses
 import hashlib
 import json
 import re
@@ -23,12 +24,40 @@ from swiss_grounding.corpus.models import (
     ChunkDraft,
     KnownState,
     ParsedDocument,
+    ParsedSection,
     SourceSpec,
     content_hash,
 )
 from swiss_grounding.corpus.topics import sr_prior
 
 ARTICLE_NUMBER = re.compile(r"^art_(\d+)")
+
+
+def _strip_nul(text: str | None) -> str | None:
+    """PostgreSQL text columns reject NUL (0x00) bytes; a handful of scanned PDFs embed one in
+    their text layer. Persist is the one place every connector's text passes through before the
+    DB, so it is stripped here regardless of which connector produced it."""
+    return text.replace("\x00", "") if text else text
+
+
+def _sanitize_section(section: ParsedSection) -> ParsedSection:
+    return dataclasses.replace(
+        section,
+        breadcrumb=tuple(_strip_nul(b) for b in section.breadcrumb),
+        text=_strip_nul(section.text),
+        paragraphs=tuple((key, _strip_nul(value)) for key, value in section.paragraphs),
+    )
+
+
+def _sanitize_document(doc: ParsedDocument) -> ParsedDocument:
+    """Strip NUL bytes from every text field before anything (hashing, chunking, insert) sees it,
+    so the stored content, and what its content hash was computed over, always agree."""
+    return dataclasses.replace(
+        doc,
+        title=_strip_nul(doc.title),
+        identifier=_strip_nul(doc.identifier),
+        sections=tuple(_sanitize_section(s) for s in doc.sections),
+    )
 
 
 def group_id(work_key: str) -> str:
@@ -163,6 +192,7 @@ def persist_document(conn: psycopg.Connection, doc: ParsedDocument, spec: Source
 
     'duplicate' means another source already owns the URL; first owner wins and nothing is touched.
     """
+    doc = _sanitize_document(doc)
     live = conn.execute("select id, content_hash, status, source_id, valid_from from corpus.document "
                         "where url = %s and status in ('current','scheduled')", (doc.url,)).fetchone()
     if live and live["source_id"] != doc.source_id:

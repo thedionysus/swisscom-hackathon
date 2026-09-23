@@ -52,8 +52,17 @@ def _string_list(source_id: str, config: dict[str, Any], key: str) -> list[str]:
     return value
 
 
+def _check_delay_seconds(source_id: str, config: dict[str, Any]) -> None:
+    if "delay_seconds" not in config:
+        return
+    value = config["delay_seconds"]
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+        raise ValueError(f"source {source_id}: config.delay_seconds must be a number >= 0")
+
+
 def _check_site_adaptations(source_id: str, config: dict[str, Any]) -> None:
     """Optional per-site keys of the html connector (A11): fail at load time, not mid-crawl."""
+    _check_delay_seconds(source_id, config)
     for key in ("pdf_link_patterns", "sitemap_include"):
         for pattern in _string_list(source_id, config, key):
             try:

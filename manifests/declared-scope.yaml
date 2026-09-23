@@ -380,3 +380,4 @@ sources:
       allow_prefixes: ["https://www.scuol.net/"]
       max_pages: 300
       max_pdfs: 40
+      delay_seconds: 3

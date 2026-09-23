@@ -90,6 +90,39 @@ def test_text_page_with_real_text_is_not_flagged_for_ocr(tmp_path):
     assert "real extractable text" in section.text
 
 
+def test_429_with_retry_after_is_retried_and_the_pdf_is_stored(tmp_path):
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(429, headers={"retry-after": "2"})
+        return httpx.Response(200, content=SAMPLE, headers={"content-type": "application/pdf"})
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    sleeps: list[float] = []
+    result = PdfConnector(client, data_dir=tmp_path, sleep=sleeps.append).run_pdfs(
+        SPEC, [DiscoveredPdf("https://x.ch/a.pdf", "de", "Merkblatt", "x")], known={})
+    assert len(result.documents) == 1
+    assert calls["n"] == 2
+    assert 2.0 in sleeps
+
+
+def test_three_429s_are_recorded_as_an_error(tmp_path):
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(429, headers={"retry-after": "1"})
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    result = PdfConnector(client, data_dir=tmp_path, sleep=lambda s: None).run_pdfs(
+        SPEC, [DiscoveredPdf("https://x.ch/a.pdf", "de", "Merkblatt", "x")], known={})
+    assert result.documents == ()
+    assert calls["n"] == 3
+    assert result.errors == (("https://x.ch/a.pdf", "HTTP 429"),)
+
+
 def test_connector_downloads_and_parses(tmp_path):
     client = httpx.Client(transport=httpx.MockTransport(
         lambda r: httpx.Response(200, content=SAMPLE, headers={"content-type": "application/pdf"})))
@@ -155,6 +188,20 @@ def test_octet_stream_is_accepted_only_with_pdf_magic_bytes(tmp_path):
                DiscoveredPdf("https://x.ch/p/zip", "de", "Zip", "x")], known={})
     assert [d.url for d in result.documents] == ["https://x.ch/p/real"]
     assert result.errors == (("https://x.ch/p/zip", "not a PDF (content-type application/octet-stream)"),)
+
+
+def test_nul_bytes_are_stripped_from_extracted_page_text(tmp_path, monkeypatch):
+    """Some scanned/OCR'd PDFs embed a NUL byte in their text layer, which PostgreSQL text
+    columns reject; it must be stripped at extraction, not just downstream at persist."""
+    from pypdf._page import PageObject
+
+    dirty = ("Text with an embedded \x00 NUL byte, padded well past eighty characters so it "
+             "is not mistaken for a scanned page needing OCR.")
+    monkeypatch.setattr(PageObject, "extract_text", lambda self, *a, **k: dirty)
+    doc = parse_pdf(SAMPLE, url="https://x.ch/a.pdf", language="de", title_hint="A", source_id="x",
+                    artifact_path="a", ocr_dir=tmp_path)
+    assert "\x00" not in doc.sections[0].text
+    assert doc.sections[0].needs_ocr is False
 
 
 def test_metadata_title_whitespace_is_collapsed(tmp_path):
