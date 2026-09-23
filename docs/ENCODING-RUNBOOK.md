@@ -6,10 +6,13 @@ CLI as implemented (`uv run swiss-grounding corpus --help`, `corpus_commands.py`
 `docs/superpowers/plans/2026-09-23-encoding-track.md` (Task 21 Step 3), which predates those fixes and drifted
 from the shipped CLI in a few places — see the notes at the bottom.
 
-**Pre-state (2026-09-23):** Fedlex is already fetched into the dev DB — 128 documents, 42,436 live chunks
-(de/fr/it: 28 current + 10 scheduled each; en: 14 current). The HTML/PDF crawl
-(`corpus fetch --manifest manifests/declared-scope.yaml --tier 1`) started 2026-09-23 evening and may still be
-running or finished. `fetch` is incremental and free — re-running it just resumes, so Step 1 is safe either way.
+**What the run uses:** the API key (OpenAI or Anthropic) pays for OCR of scanned PDF pages and for the document
+and chunk descriptions. Embeddings are computed locally with bge-m3 (§11). The OpenAI index (§8, §10) is optional
+and skipped unless explicitly requested.
+
+**Starting point:** on a fresh machine the database is empty; §1 crawls every source in the manifest (free, several
+hours; some sites ask for 10 s between requests). `fetch` is incremental — re-running it resumes and only adds what
+is missing, so §1 is safe to repeat. If a teammate handed over a dump, restore it first (§0).
 
 **Why the local index waits for the key:** bge-m3 runs locally, but it embeds breadcrumb + description + text
 (ADR 0005), and the descriptions come from the paid `describe` stage. Run `embed --index bge-m3` after `describe`,
@@ -140,7 +143,8 @@ total estimate (batch price): $X
 ```
 
 `$X` = OCR + describe docs + the projected chunk pass (every group, once documents are described) + openai-3l
-projected with descriptions. **Stop and re-scope (lower `max_pages` on the largest HTML sources, re-fetch) if that
+projected with descriptions. **Subtract the `embed openai-3l` line** when §8 is skipped (the default): the paid run
+is then OCR + descriptions only. **Stop and re-scope (lower `max_pages` on the largest HTML sources, re-fetch) if that
 total is above roughly $90** — the $100 cap (`CORPUS_BUDGET_USD`) refuses the run outright above $100, but leave headroom
 for re-runs and the bge-m3 pass. Fedlex alone is ≈$2.70 at batch price (chunk descriptions ≈$1.68, embeddings
 ≈$0.95, doc descriptions ≈$0.03); HTML/PDF/OCR adds the rest.
@@ -217,7 +221,10 @@ align_key repeats within a group are left for a second pass, so the first full r
 Only then move on to embedding. (`--what all` also exists — docs then chunks in one command — but running the
 two phases separately, as above, is what lets you inspect docs before spending on chunks.)
 
-## 8. Embed (openai-3l)
+## 8. Embed (openai-3l) — OPTIONAL, skip by default
+
+**Skip this step and §10 unless the OpenAI index was explicitly requested.** The API key is for OCR and
+descriptions only; embeddings are computed locally in §11, and the server answers from that local index.
 
 ```bash
 uv run swiss-grounding corpus embed --index openai-3l --dry-run
@@ -251,7 +258,7 @@ raising `CORPUS_INDEX_PARALLEL_WORKERS`, check that the container really has the
 docker exec swisscom-hackathon-db-1 df -h /dev/shm     # Size must read 2.0G, not 64M
 ```
 
-## 10. Build the openai-3l index
+## 10. Build the openai-3l index — OPTIONAL, only if §8 was run
 
 ```bash
 uv run swiss-grounding corpus index --index openai-3l
