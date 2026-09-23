@@ -17,18 +17,19 @@ VERDICT_KEYS = (
     "jurisdiction_confusion", "authority_hierarchy", "temporal_misapplication",
     "entity_substitution", "silent_under_coverage", "url_grounded", "coverage_signal_repeated",
 )
+FAITHFULNESS_KEYS = ("faithful", "cited_urls_in_evidence")
 ANSWER_SYSTEM = (
-    "Answer the user's question using only the swiss-grounding tools. Cite the URLs the tools "
-    "return. If the tools say a location has no local data, say so."
+    "Answer the user's question using only the swiss-grounding tools. Cite the URLs the tools return. "
+    "If a tool says the question is outside scope or that the rules of a place are not covered, say so."
 )
 STDERR_PREVIEW = 500
 CLAUDE_TIMEOUT_SECONDS = 600
 
 
-def _claude(prompt: str, model: str, *, mcp: bool, stream: bool) -> str:
+def _claude(prompt: str, model: str, *, mcp: bool, stream: bool, mcp_config: Path = MCP_CONFIG) -> str:
     cmd = ["claude", "-p", prompt, "--model", model]
     if mcp:
-        cmd += ["--mcp-config", str(MCP_CONFIG), "--allowedTools", "mcp__swiss-grounding__*",
+        cmd += ["--mcp-config", str(mcp_config), "--allowedTools", "mcp__swiss-grounding__*",
                 "--append-system-prompt", ANSWER_SYSTEM]
     else:
         cmd += ["--disallowedTools", "*"]
@@ -85,8 +86,8 @@ def build_judge_prompt(rubric: str, question: str, evidence: Sequence[str], answ
                   .replace("{answer}", answer))
 
 
-def _last_json_object(text: str) -> dict | None:
-    """Scan every '{' for a decodable JSON object; prefer the last one carrying a verdict key,
+def _last_json_object(text: str, keys: Sequence[str] = VERDICT_KEYS) -> dict | None:
+    """Scan every '{' for a decodable JSON object; prefer the last one carrying one of `keys`,
     falling back to the last dict decoded at all when none does."""
     decoder = json.JSONDecoder()
     found: dict | None = None
@@ -97,7 +98,7 @@ def _last_json_object(text: str) -> dict | None:
             obj, _ = decoder.raw_decode(text, pos)
         except json.JSONDecodeError:
             continue
-        if isinstance(obj, dict) and (found is None or any(k in obj for k in VERDICT_KEYS)):
+        if isinstance(obj, dict) and (found is None or any(k in obj for k in keys)):
             found = obj
     return found
 
@@ -110,12 +111,12 @@ def _is_true(value: object) -> bool:
     return False
 
 
-def parse_verdict(text: str) -> tuple[dict[str, bool], bool]:
+def parse_verdict(text: str, keys: Sequence[str] = VERDICT_KEYS) -> tuple[dict[str, bool], bool]:
     """Verdict keyed True/False, and whether a JSON object was found at all (last-object-wins)."""
-    raw = _last_json_object(text)
+    raw = _last_json_object(text, keys)
     parsed = raw is not None
     raw = raw or {}
-    return {k: _is_true(raw.get(k)) for k in VERDICT_KEYS}, parsed
+    return {k: _is_true(raw.get(k)) for k in keys}, parsed
 
 
 # NOTE: as_of and categories are not passed to the answering model (only the question and
@@ -139,6 +140,22 @@ def run_case(probe: Probe, model: str, rubric: str) -> dict:
         return {"probe_id": probe.id, "model": model, "answer": "", "evidence": [],
                 "verdict": dict.fromkeys(VERDICT_KEYS, False), "verdict_parsed": False,
                 "error": str(exc)}
+
+
+def run_question(question: str, case_id: str, model: str, rubric: str,
+                 keys: Sequence[str] = FAITHFULNESS_KEYS, mcp_config: Path = MCP_CONFIG) -> dict:
+    """Answer `question` with `model` through the MCP server; grade it with the fixed JUDGE_MODEL."""
+    try:
+        stream = _claude(question, model, mcp=True, stream=True, mcp_config=mcp_config)
+        evidence, answer = extract_tool_results(stream)
+        verdict_text = _claude(build_judge_prompt(rubric, question, evidence, answer), JUDGE_MODEL,
+                               mcp=False, stream=False)
+        verdict, parsed = parse_verdict(verdict_text, keys)
+        return {"id": case_id, "model": model, "answer": answer, "evidence": evidence, "verdict": verdict,
+                "verdict_parsed": parsed, "error": None}
+    except Exception as exc:  # noqa: BLE001 - one bad case must not end a run
+        return {"id": case_id, "model": model, "answer": "", "evidence": [],
+                "verdict": dict.fromkeys(keys, False), "verdict_parsed": False, "error": str(exc)}
 
 
 def summary_table(records: Sequence[Mapping]) -> str:

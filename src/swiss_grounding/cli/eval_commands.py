@@ -34,6 +34,9 @@ REVIEW_PATH = Path("evals/golden/label_review.csv")
 GENERATE_BUDGET_USD = 2.0
 GENERATE_SEED = 20260924
 GENERATED_PATH = Path("evals/generated/questions.jsonl")
+FAITHFULNESS_OUT = Path("evals/judge/faithfulness.jsonl")
+FAITHFULNESS_RUBRIC = Path("evals/judge/faithfulness.md")
+FAITHFULNESS_MCP_CONFIG = Path("evals/judge/mcp-http.json")
 EXIT_STATUS_MISMATCH = 3
 RUN_ID_LENGTH = 12
 SWISS_TZ = ZoneInfo("Europe/Zurich")
@@ -341,6 +344,42 @@ def recall_cmd(path: Annotated[Path, typer.Option("--path")] = GENERATED_PATH) -
     for lang, vs in sorted(hits.items()):
         typer.echo(f"{lang}: recall@5 {sum(vs) / len(vs):.3f} over {len(vs)}")
     typer.echo(f"all: recall@5 {sum(total) / len(total):.3f} over {len(total)}")
+
+
+@eval_app.command("faithfulness")
+def faithfulness_cmd(model: str = typer.Option("claude-sonnet-5", "--model"),
+                     split: str = typer.Option("holdout", "--split"),
+                     parallel: int = typer.Option(4, "--parallel"),
+                     out: Annotated[Path, typer.Option("--out")] = FAITHFULNESS_OUT) -> None:
+    """Answer golden probes through the MCP with `claude -p` and grade faithfulness (target 0.9).
+
+    Start the server once first: `uv run swiss-grounding serve --transport http` (one model load for the
+    whole run); evals/judge/mcp-http.json points claude at it. Resumable: finished ids in --out are skipped.
+    Errors and unparsed verdicts count as failures."""
+    import json
+    from concurrent.futures import ThreadPoolExecutor
+
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.evals.judge_harness import run_question
+
+    rubric = FAITHFULNESS_RUBRIC.read_text(encoding="utf-8")
+    done = {json.loads(x)["id"] for x in out.read_text(encoding="utf-8").splitlines()} if out.exists() else set()
+    probes = [p for p in load_golden().probes if split in ("all", p.split) and p.id not in done]
+
+    def one(p) -> dict:
+        question = p.question if not p.locations else f"{p.question} ({', '.join(p.locations)})"
+        return run_question(question, p.id, model, rubric, mcp_config=FAITHFULNESS_MCP_CONFIG)
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with ThreadPoolExecutor(max_workers=parallel) as pool, out.open("a", encoding="utf-8") as f:
+        for record in pool.map(one, probes):
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            f.flush()
+    records = [json.loads(x) for x in out.read_text(encoding="utf-8").splitlines()]
+    passed = sum(1 for r in records if r["verdict_parsed"] and r["verdict"].get("faithful"))
+    failed_to_run = sum(1 for r in records if r["error"] or not r["verdict_parsed"])
+    typer.echo(f"faithfulness {passed / len(records):.3f} over {len(records)} answers "
+               f"({failed_to_run} errors or unparsed, counted as failures)")
 
 
 @eval_app.command("fit")

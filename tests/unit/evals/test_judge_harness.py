@@ -78,6 +78,13 @@ def test_parse_verdict_ignores_trailing_nested_object():
     assert all(verdict[k] is True for k in VERDICT_KEYS)
 
 
+def test_parse_verdict_with_faithfulness_keys():
+    from swiss_grounding.evals.judge_harness import FAITHFULNESS_KEYS, parse_verdict
+    verdict, parsed = parse_verdict('{"faithful": true, "unsupported_claims": [], "cited_urls_in_evidence": true}',
+                                    FAITHFULNESS_KEYS)
+    assert parsed and verdict == {"faithful": True, "cited_urls_in_evidence": True}
+
+
 def test_build_judge_prompt_includes_question_evidence_and_answer():
     prompt = build_judge_prompt("rubric {question} {evidence} {answer}", "Q?", ["E1", "E2"], "A.")
     assert "Q?" in prompt and "E1" in prompt and "E2" in prompt and "A." in prompt
