@@ -25,8 +25,8 @@ OCR_PROMPT = (
     "translate, summarise or complete anything. Write [illegible] where text cannot be read. "
     'Reply as {"text": "<the transcription>"}.'
 )
-OCR_OUTPUT_TOKENS = 700
-OCR_MAX_OUTPUT_TOKENS = 2500
+OCR_OUTPUT_TOKENS = 700          # estimate per page; the cap below leaves room for dense pages and tables
+OCR_MAX_OUTPUT_TOKENS = 4000
 OCR_PROMPT_TOKENS = 200
 PENDING_WHERE = "needs_ocr and text = '' and status in ('current','scheduled')"
 
@@ -50,6 +50,8 @@ def build_ocr_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> 
 
 def estimate_ocr(conn: psycopg.Connection, model: str, image_tokens: int = OCR_IMAGE_TOKENS,
                  batch: bool = True) -> float:
+    """Price of every pending page. OCR_IMAGE_TOKENS is a placeholder: after the pilot, pass the measured
+    input tokens per page as `image_tokens`."""
     pages = conn.execute(f"select count(*) as n from corpus.chunk where {PENDING_WHERE}").fetchone()["n"]
     return pages * cost_usd(model, image_tokens + OCR_PROMPT_TOKENS, OCR_OUTPUT_TOKENS, batch=batch)
 
@@ -64,6 +66,13 @@ def _record(conn: psycopg.Connection, model: str, outcome: LlmOutcome, batch: bo
 def _transcription(outcome: LlmOutcome) -> str | None:
     text = outcome.data.get("text") if isinstance(outcome.data, dict) else None
     return text.strip() if isinstance(text, str) and text.strip() else None
+
+
+def _already_done(conn: psycopg.Connection, chunk_id: int, language: str) -> bool:
+    """A resumed batch can replay an outcome that was already ingested."""
+    row = conn.execute("select needs_ocr from corpus.chunk where id = %s and language = %s",
+                       (chunk_id, language)).fetchone()
+    return row is not None and not row["needs_ocr"]
 
 
 def _write_text(conn: psycopg.Connection, chunk_id: int, language: str, text: str) -> bool:
@@ -82,10 +91,13 @@ def run_ocr(database_url: str, runner, tasks: Sequence[LlmTask], model: str, bat
             estimated_usd: float = 0.0) -> dict[str, int]:
     """Run the tasks and write each transcription. Commits after every outcome, since the batch
     runner marks a batch ingested only once its last outcome has been consumed."""
-    report = {"done": 0, "failed": 0}
+    report = {"done": 0, "failed": 0, "skipped": 0}
     with connect(database_url) as conn:
         for outcome in runner.run(tasks, kind="ocr", estimated_usd=estimated_usd):
             _, language, chunk_id = outcome.custom_id.split("|")
+            if _already_done(conn, int(chunk_id), language):
+                report["skipped"] += 1
+                continue
             _record(conn, model, outcome, batch)
             text = _transcription(outcome)
             if text is None:

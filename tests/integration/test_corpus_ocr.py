@@ -44,6 +44,7 @@ def test_ocr_fills_text_and_marks_document(corpus_db, tmp_path):
         hash_before = conn.execute("select chunk_hash from corpus.chunk").fetchone()["chunk_hash"]
         tasks = build_ocr_tasks(conn, model="gpt-5-mini", limit=None)
         assert len(tasks) == 1 and tasks[0].image_png_b64 and tasks[0].user == OCR_PROMPT
+        assert tasks[0].max_output_tokens == 4000
         assert estimate_ocr(conn, model="gpt-5-mini") > 0
     runner = SyncRunner(FakeLLM(lambda t: {"text": "1 Die AHV-Rente wird berechnet."}), workers=1)
     report = run_ocr(corpus_db, runner, tasks, model="gpt-5-mini", batch=False)
@@ -55,7 +56,7 @@ def test_ocr_fills_text_and_marks_document(corpus_db, tmp_path):
     assert chunk["text"].startswith("1 Die AHV-Rente") and chunk["needs_ocr"] is False
     assert chunk["chunk_hash"] == hash_before           # identity stays the image digest
     assert doc["extraction"] == "ocr" and spend["kind"] == "ocr"
-    assert report == {"done": 1, "failed": 0}
+    assert report == {"done": 1, "failed": 0, "skipped": 0}
 
 
 def test_empty_transcription_is_quarantined(corpus_db, tmp_path):
@@ -67,7 +68,7 @@ def test_empty_transcription_is_quarantined(corpus_db, tmp_path):
     with connect(corpus_db) as conn:
         assert conn.execute("select count(*) as n from corpus.quarantine where stage = 'ocr'").fetchone()["n"] == 1
         assert conn.execute("select needs_ocr from corpus.chunk").fetchone()["needs_ocr"] is True
-    assert report == {"done": 0, "failed": 1}
+    assert report == {"done": 0, "failed": 1, "skipped": 0}
 
 
 def test_error_outcome_with_tokens_records_spend_and_quarantines(corpus_db, tmp_path):
@@ -81,7 +82,7 @@ def test_error_outcome_with_tokens_records_spend_and_quarantines(corpus_db, tmp_
         reason = conn.execute("select reason from corpus.quarantine where stage = 'ocr'").fetchone()["reason"]
     assert runner.calls == [(1, "ocr", 0.5)]
     assert [(r["kind"], r["input_tokens"]) for r in spend] == [("ocr", 1200)]
-    assert reason == "unparseable reply: x" and report == {"done": 0, "failed": 1}
+    assert reason == "unparseable reply: x" and report == {"done": 0, "failed": 1, "skipped": 0}
 
 
 def test_missing_batch_result_is_quarantined_without_spend(corpus_db, tmp_path):
@@ -89,7 +90,7 @@ def test_missing_batch_result_is_quarantined_without_spend(corpus_db, tmp_path):
         _seed(conn, tmp_path)
         tasks = build_ocr_tasks(conn, model="gpt-5-mini", limit=None)
     runner = _ScriptedRunner([LlmOutcome(tasks[0].custom_id, None, 0, 0, error="no result: batch b1 expired")])
-    assert run_ocr(corpus_db, runner, tasks, model="gpt-5-mini", batch=True) == {"done": 0, "failed": 1}
+    assert run_ocr(corpus_db, runner, tasks, model="gpt-5-mini", batch=True) == {"done": 0, "failed": 1, "skipped": 0}
     with connect(corpus_db) as conn:
         assert conn.execute("select count(*) as n from corpus.llm_spend").fetchone()["n"] == 0
 
@@ -100,3 +101,19 @@ def test_estimate_uses_batch_price_by_default(corpus_db, tmp_path):
         batch_price = estimate_ocr(conn, model="gpt-5-mini")
         sync_price = estimate_ocr(conn, model="gpt-5-mini", batch=False)
     assert sync_price == pytest.approx(2 * batch_price)
+
+
+def test_replayed_outcome_is_skipped_without_spend_or_quarantine(corpus_db, tmp_path):
+    """A resumed batch can replay an outcome already ingested."""
+    with connect(corpus_db) as conn:
+        _seed(conn, tmp_path)
+        tasks = build_ocr_tasks(conn, model="gpt-5-mini", limit=None)
+    outcome = LlmOutcome(tasks[0].custom_id, {"text": "Seite eins"}, 1200, 300)
+    assert run_ocr(corpus_db, _ScriptedRunner([outcome]), tasks, model="gpt-5-mini", batch=True)["done"] == 1
+    replay = LlmOutcome(tasks[0].custom_id, {"text": "anders"}, 1200, 300)
+    assert run_ocr(corpus_db, _ScriptedRunner([replay]), tasks, model="gpt-5-mini", batch=True) == {
+        "done": 0, "failed": 0, "skipped": 1}
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.llm_spend").fetchone()["n"] == 1
+        assert conn.execute("select count(*) as n from corpus.quarantine").fetchone()["n"] == 0
+        assert conn.execute("select text from corpus.chunk").fetchone()["text"] == "Seite eins"

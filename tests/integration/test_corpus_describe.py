@@ -26,6 +26,9 @@ CITY = SourceSpec(id="city", name="City", publisher="Stadtverwaltung", authority
 TEXT = {"de": "1 Nach Ablauf der Probezeit darf der Arbeitgeber nicht kündigen.",
         "fr": "1 Après le temps d'essai, l'employeur ne peut pas résilier le contrat."}
 FOOTER = ParsedSection("de:9", ("Seite",), None, "Kontakt: Stadtverwaltung, Bundesgasse 1, 3011 Bern")
+DONE_1 = {"done": 1, "failed": 0, "skipped": 0}
+FAILED_1 = {"done": 0, "failed": 1, "skipped": 0}
+SKIPPED_1 = {"done": 0, "failed": 0, "skipped": 1}
 
 
 def _seed(conn):
@@ -37,12 +40,17 @@ def _seed(conn):
                                                          TEXT[lang]),)), SPEC, NOW)
 
 
-def _seed_city_pages(conn, pages: int):
+def _seed_city_pages(conn, pages: int, work_key=lambda i: f"html:{i}"):
     upsert_source(conn, CITY)
     for i in range(pages):
         persist_document(conn, ParsedDocument(
-            source_id="city", url=f"https://city/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+            source_id="city", url=f"https://city/{i}", language="de", work_key=work_key(i), title=f"Seite {i}",
             sections=(ParsedSection("de:0", ("Seite",), None, f"Eigener Inhalt {i}."), FOOTER)), CITY, NOW)
+
+
+def _describe_groups(conn):
+    """Stand-in for the document pass: chunks wait for their group's description."""
+    conn.execute("""update corpus.translation_group set description_by_lang = '{"de": "Seite"}'""")
 
 
 def _responder(task):
@@ -52,6 +60,13 @@ def _responder(task):
                 "topics": ["work", "business"]}
     return {"descriptions": {"de": "Kündigungsschutz bei Krankheit", "fr": "Protection contre le licenciement"},
             "topics": ["work"], "boilerplate": False}
+
+
+def _describe_documents(corpus_db):
+    with connect(corpus_db) as conn:
+        doc_tasks = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    run_doc_descriptions(corpus_db, SyncRunner(FakeLLM(_responder), workers=1), doc_tasks, model="gpt-5-mini",
+                         batch=False)
 
 
 class _ScriptedRunner:
@@ -68,10 +83,11 @@ def test_documents_then_chunks_are_described_in_each_language(corpus_db):
     with connect(corpus_db) as conn:
         _seed(conn)
         doc_tasks = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+        assert build_chunk_tasks(conn, model="gpt-5-nano", limit=None) == []   # waits for the document pass
         assert len(doc_tasks) == 1 and '"de"' in doc_tasks[0].user and '"fr"' in doc_tasks[0].user
-        assert estimate_describe(doc_tasks, model="gpt-5-mini", languages_per_task=2) > 0
+        assert estimate_describe(doc_tasks, model="gpt-5-mini") > 0
     runner = SyncRunner(FakeLLM(_responder), workers=1)
-    assert run_doc_descriptions(corpus_db, runner, doc_tasks, model="gpt-5-mini", batch=False) == {"done": 1, "failed": 0}
+    assert run_doc_descriptions(corpus_db, runner, doc_tasks, model="gpt-5-mini", batch=False) == DONE_1
     with connect(corpus_db) as conn:
         chunk_tasks = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
         assert len(chunk_tasks) == 1                       # one task for the aligned DE+FR pair
@@ -91,10 +107,25 @@ def test_documents_then_chunks_are_described_in_each_language(corpus_db):
     assert found == 1 and kinds == {"describe"}
 
 
+def test_prompts_name_the_exact_language_keys_and_caps_leave_room(corpus_db):
+    with connect(corpus_db) as conn:
+        _seed(conn)
+        [doc_task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    _describe_documents(corpus_db)
+    with connect(corpus_db) as conn:
+        [chunk_task] = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
+    for task in (doc_task, chunk_task):
+        assert "Use exactly these keys: de, fr." in task.user
+        assert '{"descriptions": {"de": "...", "fr": "..."}' in task.user
+    assert doc_task.max_output_tokens == 200 * 2 + 150
+    assert chunk_task.max_output_tokens == 180 * 2 + 150
+
+
 def test_html_chunks_with_empty_topics_build_tasks(corpus_db):
     """A2: array_agg over empty text[] must not fail."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 1)
+        _describe_groups(conn)
         tasks = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
     assert len(tasks) == 2 and all("starting guess is []" in t.user for t in tasks)
 
@@ -107,10 +138,38 @@ def test_document_prompt_names_the_municipality(corpus_db):
     assert "applies to (Bern)" in task.user
 
 
+def test_document_excerpt_leaves_out_boilerplate(corpus_db):
+    with connect(corpus_db) as conn:
+        _seed_city_pages(conn, 3)
+        mark_repeated_furniture(conn, min_documents=3)
+        tasks = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    assert len(tasks) == 3 and not any("Bundesgasse" in t.user for t in tasks)
+    assert all("Eigener Inhalt" in t.user for t in tasks)
+
+
+def test_duplicate_same_language_chunks_are_described_one_per_task(corpus_db):
+    """Two current German documents in one group (undated, versioned by URL): one chunk per language per task,
+    written back by id; the left-out duplicate is picked up on the next build."""
+    with connect(corpus_db) as conn:
+        _seed_city_pages(conn, 2, work_key=lambda i: "html:shared")
+        _describe_groups(conn)
+        tasks = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
+        newest = conn.execute("select max(document_id) as d from corpus.chunk").fetchone()["d"]
+        assert len(tasks) == 2 and all(t.user.count('"de": {') == 1 for t in tasks)
+    runner = SyncRunner(FakeLLM(lambda t: {"descriptions": {"de": "Erste Runde"}, "topics": []}), workers=1)
+    assert run_chunk_descriptions(corpus_db, runner, tasks, model="gpt-5-nano", batch=False)["done"] == 2
+    with connect(corpus_db) as conn:
+        described = {r["document_id"] for r in conn.execute(
+            "select document_id from corpus.chunk where description <> ''")}
+        again = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
+    assert described == {newest} and len(again) == 2
+
+
 def test_repeated_site_furniture_is_marked_before_describing(corpus_db):
     """RAG review E2: the same chunk on three pages of one site is furniture, found without a model call."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 3)
+        _describe_groups(conn)
         assert mark_repeated_furniture(conn, min_documents=3) == 3
         statuses = {r["text"][:7]: r["status"] for r in conn.execute("select text, status from corpus.chunk")}
         assert len(build_chunk_tasks(conn, model="gpt-5-nano", limit=None)) == 3   # only the own-content chunks
@@ -132,6 +191,7 @@ def test_law_is_exempt_from_furniture_marking(corpus_db):
 def test_furniture_marked_after_build_is_not_overwritten(corpus_db):
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 3)
+        _describe_groups(conn)
         tasks = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
         mark_repeated_furniture(conn, min_documents=3)
         conn.commit()
@@ -148,6 +208,8 @@ def test_furniture_marked_after_build_is_not_overwritten(corpus_db):
 def test_boilerplate_chunks_leave_the_live_set(corpus_db):
     with connect(corpus_db) as conn:
         _seed(conn)
+    _describe_documents(corpus_db)
+    with connect(corpus_db) as conn:
         tasks = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
     runner = SyncRunner(FakeLLM(lambda t: {"descriptions": {"de": "Menü", "fr": "Menu"}, "topics": [],
                                            "boilerplate": True}), workers=1)
@@ -160,22 +222,49 @@ def test_failed_outcomes_record_spend_quarantine_and_stay_pending(corpus_db):
     with connect(corpus_db) as conn:
         _seed(conn)
         [doc_task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+        _describe_groups(conn)
         [chunk_task] = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
+        conn.execute("update corpus.translation_group set description_by_lang = '{}'::jsonb")
     doc_runner = _ScriptedRunner([LlmOutcome(doc_task.custom_id, None, 900, 100, error="unparseable reply")])
     chunk_runner = _ScriptedRunner([
         LlmOutcome(chunk_task.custom_id, {"descriptions": {"de": "nur deutsch"}, "topics": []}, 500, 60)])
     assert run_doc_descriptions(corpus_db, doc_runner, [doc_task], model="gpt-5-mini", batch=True,
-                                estimated_usd=0.2) == {"done": 0, "failed": 1}
+                                estimated_usd=0.2) == FAILED_1
     assert run_chunk_descriptions(corpus_db, chunk_runner, [chunk_task], model="gpt-5-nano", batch=True,
-                                  estimated_usd=0.1) == {"done": 0, "failed": 1}
+                                  estimated_usd=0.1) == FAILED_1
     with connect(corpus_db) as conn:
         spend = conn.execute("select kind, input_tokens from corpus.llm_spend order by id").fetchall()
         stages = {r["stage"] for r in conn.execute("select stage from corpus.quarantine")}
         assert len(build_doc_tasks(conn, model="gpt-5-mini", limit=None)) == 1
+        _describe_groups(conn)
         assert len(build_chunk_tasks(conn, model="gpt-5-nano", limit=None)) == 1
     assert doc_runner.calls == [(1, "describe-doc", 0.2)] and chunk_runner.calls == [(1, "describe-chunk", 0.1)]
     assert [(r["kind"], r["input_tokens"]) for r in spend] == [("describe", 900), ("describe", 500)]
     assert stages == {"describe-doc", "describe-chunk"}
+
+
+def test_replayed_outcomes_are_skipped_without_spend(corpus_db):
+    """A resumed batch can replay outcomes already ingested: no second spend row, nothing overwritten."""
+    with connect(corpus_db) as conn:
+        _seed(conn)
+        [doc_task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    doc_outcome = LlmOutcome(doc_task.custom_id, _responder(doc_task), 900, 100)
+    assert run_doc_descriptions(corpus_db, _ScriptedRunner([doc_outcome]), [doc_task], model="gpt-5-mini",
+                                batch=True) == DONE_1
+    assert run_doc_descriptions(corpus_db, _ScriptedRunner([doc_outcome]), [doc_task], model="gpt-5-mini",
+                                batch=True) == SKIPPED_1
+    with connect(corpus_db) as conn:
+        [chunk_task] = build_chunk_tasks(conn, model="gpt-5-nano", limit=None)
+    chunk_outcome = LlmOutcome(chunk_task.custom_id, _responder(chunk_task), 500, 60)
+    replay = LlmOutcome(chunk_task.custom_id, {"descriptions": {"de": "anders", "fr": "autre"}}, 500, 60)
+    assert run_chunk_descriptions(corpus_db, _ScriptedRunner([chunk_outcome]), [chunk_task], model="gpt-5-nano",
+                                  batch=True) == DONE_1
+    assert run_chunk_descriptions(corpus_db, _ScriptedRunner([replay]), [chunk_task], model="gpt-5-nano",
+                                  batch=True) == SKIPPED_1
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.llm_spend").fetchone()["n"] == 2
+        descriptions = {r["description"] for r in conn.execute("select description from corpus.chunk")}
+    assert descriptions == {"Kündigungsschutz bei Krankheit", "Protection contre le licenciement"}
 
 
 def test_estimate_uses_batch_price_by_default(corpus_db):
