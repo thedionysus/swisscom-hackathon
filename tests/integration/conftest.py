@@ -16,7 +16,12 @@ import pytest
 
 TEST_DB_PREFIX = "swiss_grounding_test_"
 # Environment variables override .env, so the suite never uses a developer's real backends.
-FAKE_BACKENDS = {"LLM_BACKEND": "fake", "EMBEDDING_BACKEND": "fake", "EMBEDDING_DIM": "8"}
+FAKE_BACKENDS = {
+    "LLM_BACKEND": "fake",
+    "EMBEDDING_BACKEND": "fake",
+    "EMBEDDING_DIM": "8",
+    "CORPUS_LLM_PROVIDER": "fake",
+}
 
 
 def pytest_collection_modifyitems(config, items):

@@ -39,3 +39,28 @@ def test_anthropic_backend_requires_key(monkeypatch):
 
     with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
         Settings(_env_file=None)
+
+
+def test_corpus_settings_defaults(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    for key in ("OPENAI_API_KEY", "CORPUS_LLM_PROVIDER", "RESPECT_ROBOTS", "CORPUS_BUDGET_USD"):
+        monkeypatch.delenv(key, raising=False)
+    from swiss_grounding.config import Settings
+    s = Settings(_env_file=None)
+    assert s.corpus_llm_provider == "fake"
+    assert s.corpus_doc_model == "gpt-5-mini"
+    assert s.corpus_chunk_model == "gpt-5-nano"
+    assert s.corpus_ocr_model == "gpt-5-mini"
+    assert s.corpus_budget_usd == 100.0
+    assert s.corpus_ocr_budget_usd == 10.0
+    assert s.respect_robots is True
+    assert s.data_dir == "data"
+
+
+def test_openai_provider_needs_a_key(monkeypatch):
+    import pytest
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+        Settings(_env_file=None, corpus_llm_provider="openai")
