@@ -15,7 +15,8 @@ begin
       ('sg_english', 'english', 'english_stem'),
       ('sg_simple', 'simple', 'simple')) as t(name, copy_of, stem)
   loop
-    if not exists (select 1 from pg_ts_config where cfgname = cfg.name) then
+    if not exists (select 1 from pg_ts_config where cfgname = cfg.name
+                    and cfgnamespace = 'public'::regnamespace) then
       execute format('create text search configuration public.%I (copy = pg_catalog.%I)', cfg.name, cfg.copy_of);
       execute format('alter text search configuration public.%I alter mapping for hword, hword_part, word with unaccent, %I',
                      cfg.name, cfg.stem);
@@ -25,8 +26,8 @@ end $$;
 
 create or replace function corpus.ts_config(lang text) returns regconfig
 language sql immutable as $$
-  select (case lang when 'de' then 'sg_german' when 'fr' then 'sg_french' when 'it' then 'sg_italian'
-                    when 'en' then 'sg_english' else 'sg_simple' end)::regconfig
+  select (case lang when 'de' then 'public.sg_german' when 'fr' then 'public.sg_french' when 'it' then 'public.sg_italian'
+                    when 'en' then 'public.sg_english' else 'public.sg_simple' end)::regconfig
 $$;
 
 -- Breadcrumb weighs most, then the description, then the text (weights A, B, C).
