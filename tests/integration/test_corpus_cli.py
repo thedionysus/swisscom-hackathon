@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 from swiss_grounding.cli import corpus_commands
 from swiss_grounding.cli.main import app
 from swiss_grounding.corpus.budget import spent
-from swiss_grounding.corpus.describe import build_doc_tasks
+from swiss_grounding.corpus.describe import build_doc_tasks, estimate_describe
 from swiss_grounding.corpus.embed import pending_for_index
 from swiss_grounding.corpus.models import ParsedDocument, ParsedSection, SourceSpec
 from swiss_grounding.corpus.persist import persist_document, upsert_source
@@ -202,6 +202,33 @@ def test_budget_cap_blocks_a_paid_run(corpus_db, monkeypatch):
     with connect(corpus_db) as conn:
         assert conn.execute("select description_by_lang from corpus.translation_group").fetchone()[
             "description_by_lang"] == {}
+
+
+def test_budget_refusal_says_how_many_tasks_fit(corpus_db, monkeypatch):
+    """A9 follow-up: a refused stage tells the operator how many of its tasks fit in what is left,
+    computed from the price it would actually pay, instead of leaving them to guess --limit."""
+    with connect(corpus_db) as conn:
+        upsert_source(conn, AHV)
+        for i in range(3):
+            persist_document(conn, ParsedDocument(
+                source_id="ahv", url=f"https://ahv/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+                sections=(ParsedSection("de:0", ("Seite",), None, "Eigener, gleich langer Inhalt hier."),)),
+                AHV, NOW)
+        tasks = build_doc_tasks(conn, "gpt-5-mini", None)
+        per_task = estimate_describe(tasks, "gpt-5-mini", batch=False) / len(tasks)
+    assert len(tasks) == 3
+    monkeypatch.setenv("CORPUS_BUDGET_USD", str(per_task * 2.5))
+    result = _invoke("describe", "--what", "docs", "--sync", "--allow-fake")
+    assert result.exit_code == 2, result.output
+    assert "about 2 of 3 tasks fit" in result.output
+    assert "--limit 2" in result.output
+
+
+def test_budget_refusal_says_when_nothing_fits(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    monkeypatch.setenv("CORPUS_BUDGET_USD", "0")
+    result = _invoke("describe", "--what", "docs", "--sync", "--allow-fake")
+    assert result.exit_code == 2 and "no tasks fit" in result.output.lower()
 
 
 def test_batches_lists_batch_jobs(corpus_db):
