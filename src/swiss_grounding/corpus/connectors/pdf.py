@@ -1,6 +1,7 @@
 import hashlib
 import time
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import replace
 from io import BytesIO
 from pathlib import Path
@@ -25,10 +26,19 @@ RENDER_SCALE = 150 / 72
 MAX_PDF_BYTES = 30_000_000
 
 
-def _render(content: bytes, index: int, path: Path) -> tuple[str, str]:
+@contextmanager
+def _closing(obj):
+    try:
+        yield obj
+    finally:
+        obj.close()
+
+
+def _render(document: pdfium.PdfDocument, index: int, path: Path) -> tuple[str, str]:
     path.parent.mkdir(parents=True, exist_ok=True)
-    document = pdfium.PdfDocument(content)
-    document[index].render(scale=RENDER_SCALE).to_pil().save(path)
+    with (_closing(document[index]) as page, _closing(page.render(scale=RENDER_SCALE)) as bitmap,
+          _closing(bitmap.to_pil()) as pil_image):
+        pil_image.save(path)
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return str(path), digest
 
@@ -40,19 +50,31 @@ def parse_pdf(content: bytes, *, url: str, language: str, title_hint: str, sourc
     title = meta_title or title_hint.strip() or Path(urlparse(url).path).name
     stem = Path(artifact_path).stem if artifact_path else Path(urlparse(url).path).stem
     sections = []
-    for number, page in enumerate(reader.pages, start=1):
-        text = (page.extract_text() or "").strip()
-        crumbs = (title, f"p. {number}")
-        if len(text) < MIN_TEXT_CHARS:
-            image, digest = _render(content, number - 1, Path(ocr_dir) / source_id / f"{stem}-p{number}.png")
-            sections.append(ParsedSection(align_key=f"{language}:p{number}", breadcrumb=crumbs,
-                                          anchor=f"page={number}", text="", needs_ocr=True, ocr_image=image,
-                                          ocr_digest=digest))
-        else:
-            sections.append(ParsedSection(align_key=f"{language}:p{number}", breadcrumb=crumbs,
-                                          anchor=f"page={number}", text=text))
+    document: pdfium.PdfDocument | None = None
+    try:
+        for number, page in enumerate(reader.pages, start=1):
+            text = (page.extract_text() or "").strip()
+            crumbs = (title, f"p. {number}")
+            if len(text) < MIN_TEXT_CHARS:
+                if document is None:
+                    document = pdfium.PdfDocument(content)
+                image, digest = _render(document, number - 1,
+                                        Path(ocr_dir) / source_id / f"{stem}-p{number}.png")
+                sections.append(ParsedSection(align_key=f"{language}:p{number}", breadcrumb=crumbs,
+                                              anchor=f"page={number}", text="", needs_ocr=True, ocr_image=image,
+                                              ocr_digest=digest))
+            else:
+                sections.append(ParsedSection(align_key=f"{language}:p{number}", breadcrumb=crumbs,
+                                              anchor=f"page={number}", text=text))
+    finally:
+        if document is not None:
+            document.close()
     return ParsedDocument(source_id=source_id, url=url, language=language, work_key=f"pdf:{url}", title=title,
                           sections=tuple(sections), extraction="pdf_text", artifact_path=artifact_path)
+
+
+class _TooLarge(Exception):
+    pass
 
 
 class PdfConnector:
@@ -63,36 +85,68 @@ class PdfConnector:
         self._sleep = sleep
         self._delay = delay_seconds
 
+    def _download(self, url: str, headers: dict[str, str]):
+        """Stream the response, aborting as soon as MAX_PDF_BYTES is exceeded.
+
+        Returns (status_code, headers, content) with content empty for non-2xx/304 responses.
+        """
+        with self._http.stream("GET", url, headers=headers, follow_redirects=True, timeout=60) as response:
+            if response.status_code >= 300:
+                response.close()
+                return response.status_code, response.headers, b""
+            content_length = response.headers.get("content-length")
+            if content_length and int(content_length) > MAX_PDF_BYTES:
+                response.close()
+                raise _TooLarge
+            body = bytearray()
+            for chunk in response.iter_bytes():
+                body += chunk
+                if len(body) > MAX_PDF_BYTES:
+                    response.close()
+                    raise _TooLarge
+            return response.status_code, response.headers, bytes(body)
+
     def run_pdfs(self, spec: SourceSpec, pdfs: Sequence[DiscoveredPdf],
                  known: Mapping[str, KnownState]) -> ConnectorResult:
-        documents, unchanged, errors = [], [], []
+        documents, unchanged, gone, errors = [], [], [], []
         for pdf in pdfs:
             prior = known.get(pdf.url)
-            headers = {"if-none-match": prior.etag} if prior and prior.etag else {}
+            headers = {}
+            if prior and prior.etag:
+                headers["if-none-match"] = prior.etag
+            if prior and prior.last_modified:
+                headers["if-modified-since"] = prior.last_modified
             try:
-                response = self._http.get(pdf.url, headers=headers, follow_redirects=True, timeout=60)
+                status, response_headers, content = self._download(pdf.url, headers)
+            except _TooLarge:
+                errors.append((pdf.url, f"PDF larger than {MAX_PDF_BYTES} bytes"))
+                continue
             except httpx.HTTPError as exc:
                 errors.append((pdf.url, f"fetch failed: {exc}"))
                 continue
             finally:
                 self._sleep(self._delay)
-            if response.status_code == 304:
+            if status == 304:
                 unchanged.append(pdf.url)
                 continue
-            if response.status_code >= 400:
-                errors.append((pdf.url, f"HTTP {response.status_code}"))
+            if status in (404, 410):
+                if pdf.url in known:
+                    gone.append(pdf.url)
+                else:
+                    errors.append((pdf.url, f"HTTP {status}"))
                 continue
-            if len(response.content) > MAX_PDF_BYTES:
-                errors.append((pdf.url, f"PDF larger than {MAX_PDF_BYTES} bytes"))
+            if status >= 400:
+                errors.append((pdf.url, f"HTTP {status}"))
                 continue
-            path = save_artifact(self._data_dir, spec.id, pdf.url, response.content, ".pdf")
+            path = save_artifact(self._data_dir, spec.id, pdf.url, content, ".pdf")
             try:
-                doc = parse_pdf(response.content, url=pdf.url, language=pdf.language, title_hint=pdf.title_hint,
+                doc = parse_pdf(content, url=pdf.url, language=pdf.language, title_hint=pdf.title_hint,
                                 source_id=spec.id, artifact_path=path, ocr_dir=self._data_dir / "ocr")
             except Exception as exc:  # noqa: BLE001 - a malformed PDF fails one document, never the run
                 errors.append((pdf.url, f"PDF parse failed: {exc}"))
                 continue
-            documents.append(replace(doc, etag=response.headers.get("etag"),
-                                     last_modified=response.headers.get("last-modified"),
+            documents.append(replace(doc, etag=response_headers.get("etag"),
+                                     last_modified=response_headers.get("last-modified"),
                                      retrieved_via=spec.retrieved_via))
-        return ConnectorResult(documents=tuple(documents), unchanged_urls=tuple(unchanged), errors=tuple(errors))
+        return ConnectorResult(documents=tuple(documents), unchanged_urls=tuple(unchanged), gone_urls=tuple(gone),
+                               errors=tuple(errors))

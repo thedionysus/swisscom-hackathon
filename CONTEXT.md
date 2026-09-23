@@ -88,8 +88,12 @@ The topics and places the server states it answers for: federal information for 
 _Avoid_: Coverage, supported area
 
 **Outside-scope question**:
-A question about a place outside Switzerland, or about a topic or place outside the declared scope. It is answered by saying so, never by asking the user for a location and never by answering from nearby evidence.
+A question about a place outside Switzerland, or about a topic or place outside the declared scope. It is answered by saying so, never by asking the user for a location and never by answering from nearby evidence. For a place outside Switzerland, the answer also tells the calling model to look elsewhere. For a Swiss place outside the declared scope, federal evidence is still given and only the local part is declared not covered.
 _Avoid_: Unsupported query, out-of-coverage, fallback
+
+**Unresolved place**:
+A place named in a question that the Swiss commune register cannot match. It is treated as outside Switzerland, with a hint to retry if it was a misspelled Swiss place. Distinct from a question that names no place at all.
+_Avoid_: Unknown location, missing location
 
 **Live lookup**:
 An answer read at question time from an official data service rather than retrieved from the index, such as a premium, a connection, or a collection date. It carries the service's own reference date.
