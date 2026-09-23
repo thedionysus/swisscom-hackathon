@@ -39,6 +39,14 @@ def test_ambiguous_place_asks_which_one():
     assert r.status == "needs_location"
 
 
+def test_ambiguous_place_message_names_level_and_canton_not_ids():
+    loc = TREE.get("CH-ZH-261")
+    r = pre_search(PlaceOutcome("ambiguous", "Zürich", candidates=(TREE.get("CH-ZH"), loc)))
+    assert "Zürich (Kanton)" in r.message
+    assert "Zürich (Gemeinde, ZH)" in r.message
+    assert "CH-" not in r.message
+
+
 def test_resolved_place_goes_on_to_search():
     assert pre_search(PlaceOutcome("resolved", "Bern")) is None
 

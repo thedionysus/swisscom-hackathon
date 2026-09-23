@@ -1,6 +1,7 @@
 """Which status a place gets, in the fixed order of ADR 0013."""
 from collections.abc import Sequence
 
+from swiss_grounding.locations.models import Level, Location
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.serving.models import PlaceResult, ScoredGroup
 from swiss_grounding.serving.places import PlaceOutcome
@@ -17,6 +18,19 @@ NO_EVIDENCE = "No passage in the indexed sources answers this question{where}."
 OUT_OF_SCOPE_PLACE = ("{place!r} is in Switzerland, but its {levels} rules are outside this server's declared "
                       "scope, and no covered passage answers the question.")
 UNCOVERED_NOTE = "The {levels} rules of {place!r} are not covered by this server; only the evidence below applies."
+
+
+def describe_place(loc: Location) -> str:
+    """A German label a user understands, never an internal id: "Zürich (Kanton)",
+    "Zürich (Gemeinde, ZH)", "Kreis 3 (Quartier, ZH)". The canton code is the id's second segment."""
+    label = loc.label("de")
+    if loc.level == Level.COUNTRY:
+        return label
+    if loc.level == Level.CANTON:
+        return f"{label} (Kanton)"
+    canton_code = loc.id.split("-")[1]
+    kind = "Gemeinde" if loc.level == Level.MUNICIPALITY else "Quartier"
+    return f"{label} ({kind}, {canton_code})"
 
 
 def uncovered_levels(outcome: PlaceOutcome) -> tuple[str, ...]:
@@ -36,7 +50,7 @@ def pre_search(outcome: PlaceOutcome) -> PlaceResult | None:
     if outcome.kind == "unresolved":
         return PlaceResult(outcome.text, "outside_scope", message=UNRESOLVED.format(place=outcome.text))
     if outcome.kind == "ambiguous":
-        options = ", ".join(f"{c.label('de')} ({c.id})" for c in outcome.candidates)
+        options = ", ".join(describe_place(c) for c in outcome.candidates)
         return PlaceResult(outcome.text, "needs_location",
                            message=AMBIGUOUS.format(place=outcome.text, options=options))
     return None
