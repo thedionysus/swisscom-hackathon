@@ -96,7 +96,7 @@ A place named in a question that the Swiss commune register cannot match. It is 
 _Avoid_: Unknown location, missing location
 
 **Live lookup**:
-An answer read at question time from an official data service rather than retrieved from the index, such as a premium, a connection, or a collection date. It carries the service's own reference date.
+An answer read at question time from an official data service, or from an official table shipped with the server, rather than retrieved from the index. There are three: health insurance premiums, public transport connections, and the reference interest rate. Each carries the service's own reference date. School holidays and waste collection dates are not live lookups; they are retrieved from indexed official pages.
 _Avoid_: Real-time search, API tool
 
 **Source unavailable**:

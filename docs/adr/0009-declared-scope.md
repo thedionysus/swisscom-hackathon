@@ -16,4 +16,4 @@ The evaluators grade answer quality inside the scope each team declares and weig
 
 - The scope is published in the README and quoted by the server itself, so an outside-scope answer can say exactly what is covered.
 - Cantonal law for the other twenty cantons (ADR 0008) moves to a lower priority tier; it widens breadth once the declared scope is answered well.
-- Questions that are tables or live data (premiums, connections, rates, holiday and collection dates) are answered by lookup tools, not by retrieval over embedded text.
+- Questions that are tables or live data (premiums, connections, rates) are answered by lookup tools, not by retrieval over embedded text. Holiday and collection dates are answered from indexed official pages (amended by ADR 0014).
