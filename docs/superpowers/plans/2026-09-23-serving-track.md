@@ -1761,7 +1761,7 @@ git commit -m "feat: relevance features, provisional threshold and fitted logist
 
 ### Task 10: Status decision per place (ADR 0013)
 
-One refinement of ADR 0013 step 2, found in review: with no place given, the server asks back whenever **no federal passage** answers, even if only one place's documents matched. Otherwise the placeless "Karton" question would be answered from the only city with a calendar. Record this as an amendment note in ADR 0013 in the same commit.
+One refinement of ADR 0013 step 2, found in review: with no place given, the server asks back whenever **no federal passage** answers, even if only one place's documents matched. Otherwise the placeless "Karton" question would be answered from the only city with a calendar. ADR 0013 already records this amendment.
 
 **Files:**
 - Create: `src/swiss_grounding/serving/status.py`
@@ -1937,7 +1937,7 @@ Expected: 10 PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/swiss_grounding/serving/status.py tests/unit/serving/test_status.py docs/adr/0013-response-status-order-and-foreign-places.md
+git add src/swiss_grounding/serving/status.py tests/unit/serving/test_status.py
 git commit -m "feat: per-place status in the order of ADR 0013"
 ```
 
