@@ -57,6 +57,14 @@ class HostThrottle:
                     sleep(remaining)
             self._last[host] = self._clock()
 
+    def require(self, url: str, delay: float) -> None:
+        """Make `delay` a floor for every later request to `url`'s host, whichever connector sends
+        it: a robots.txt Crawl-delay read while crawling pages also binds that host's PDF downloads.
+        Never lowers a floor `backoff` has already raised."""
+        host = urlparse(url).netloc.lower()
+        with self._guard:
+            self._min_delay[host] = max(self._min_delay.get(host, 0.0), delay)
+
     def backoff(self, url: str, retry_after: float, sleep: Callable[[float], None] = time.sleep) -> None:
         """After a 429/503: sleep `retry_after` seconds via this host's own slot (so every other
         thread waiting on the same host queues up behind it too), then raise the host's minimum

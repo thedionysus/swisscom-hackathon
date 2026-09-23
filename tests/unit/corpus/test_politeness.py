@@ -143,3 +143,25 @@ def test_three_429s_return_the_last_failing_response_without_a_fourth_attempt():
     result = request_with_backoff("https://a.ch/x", throttle, lambda u: None, send, clock.sleep)
     assert result.status_code == 429
     assert calls["n"] == 3
+
+
+def test_required_delay_is_a_floor_for_every_caller_of_the_host():
+    """A robots.txt Crawl-delay learned by one connector binds the others (e.g. PDFs after pages)."""
+    clock = FakeClock()
+    throttle = HostThrottle(clock=clock)
+    throttle.require("https://a.ch", 5.0)
+    throttle.wait("https://a.ch/page", 0.5, clock.sleep)
+    throttle.wait("https://a.ch/file.pdf", 0.5, clock.sleep)
+    throttle.wait("https://b.ch/other", 0.5, clock.sleep)
+    assert clock.sleeps == [5.0]
+
+
+def test_required_delay_never_lowers_a_backoff_floor():
+    clock = FakeClock()
+    throttle = HostThrottle(clock=clock)
+    throttle.wait("https://a.ch/1", 10.0, clock.sleep)
+    throttle.backoff("https://a.ch/1", 0.0, clock.sleep)     # raises the floor to 20s
+    throttle.require("https://a.ch", 5.0)
+    clock.sleeps.clear()
+    throttle.wait("https://a.ch/2", 0.5, clock.sleep)
+    assert clock.sleeps == [20.0]

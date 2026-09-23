@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import httpx
 
 from swiss_grounding.corpus.connectors.html import CrawlPolicy, HtmlConnector
@@ -445,6 +447,9 @@ def test_connector_uses_the_hosts_crawl_delay_for_its_own_throttling():
         def wait(self, url, delay, sleep):
             waits.append(delay)
 
+        def require(self, url, delay):
+            pass
+
     pages = {"https://www.be.ch/de/": PAGES["https://www.x.ch/de/"]}
     spec = SourceSpec(id="be", name="BE", publisher="BE", authority="official_info", level="cantonal",
                       extent_id="CH-BE", connector="html", tier=1, languages=("de",),
@@ -463,6 +468,9 @@ def test_config_delay_seconds_raises_the_hosts_minimum_delay():
         def wait(self, url, delay, sleep):
             waits.append(delay)
 
+        def require(self, url, delay):
+            pass
+
     pages = {"https://www.scuol.net/de/": PAGES["https://www.x.ch/de/"].replace("x.ch", "scuol.net")}
     spec = SourceSpec(id="scuol", name="Scuol", publisher="Scuol", authority="official_info", level="municipal",
                       extent_id="CH-GR-3762", connector="html", tier=1, languages=("de",),
@@ -471,3 +479,62 @@ def test_config_delay_seconds_raises_the_hosts_minimum_delay():
     client = _client(pages=pages)
     HtmlConnector(client, CrawlPolicy(True, 0.5), throttle=RecordingThrottle()).run(spec, known={})
     assert 3.0 in waits
+
+
+# --- robots.txt: our own group, PDFs, Crawl-delay carried to PDF downloads ------------------------
+
+def test_robots_group_for_our_own_name_wins_over_the_star_group():
+    """RFC 9309: a crawler obeys the group naming it and only falls back to `*`. Here the site lets
+    swiss-grounding in while shutting out everyone else, so the pages are ours to fetch."""
+    robots = "User-agent: swiss-grounding\nAllow: /\n\nUser-agent: *\nDisallow: /\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert {d.url for d in result.documents} == set(PAGES)
+
+
+def test_robots_group_for_our_own_name_can_disallow_what_star_allows():
+    robots = "User-agent: swiss-grounding\nDisallow: /de/hund\n\nUser-agent: *\nAllow: /\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert "https://www.x.ch/de/hund" not in {d.url for d in result.documents}
+
+
+def test_pdf_link_disallowed_by_robots_is_reported_and_not_queued():
+    robots = "User-agent: *\nDisallow: /de/merkblatt.pdf\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert result.pdfs == ()
+    assert ("https://www.x.ch/de/merkblatt.pdf", "PDF disallowed by robots.txt") in result.errors
+
+
+def test_pdf_link_is_queued_when_robots_is_switched_off():
+    robots = "User-agent: *\nDisallow: /de/merkblatt.pdf\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(False, 0)).run(_spec(), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.x.ch/de/merkblatt.pdf"]
+
+
+def test_disallowed_pdfs_do_not_use_up_max_pdfs():
+    """A PDF we may not fetch must not take the place of one we may."""
+    pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+      <a href="/de/intern.pdf">Intern</a><a href="/de/merkblatt.pdf">Merkblatt</a></main></body></html>"""}
+    robots = "User-agent: *\nDisallow: /de/intern.pdf\n"
+    result = HtmlConnector(_client(robots, pages=pages), CrawlPolicy(True, 0)).run(_spec(max_pdfs=1), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.x.ch/de/merkblatt.pdf"]
+
+
+def test_robots_crawl_delay_also_spaces_the_pdf_downloads(tmp_path):
+    """The Crawl-delay the HTML connector reads is a promise to the host, so the PDF connector
+    (sharing the throttle) keeps it too instead of its own 0.5 s."""
+    from swiss_grounding.corpus.connectors.pdf import PdfConnector
+
+    sample = (Path(__file__).parents[2] / "fixtures" / "sample.pdf").read_bytes()
+    pages = dict(PAGES)
+    client = _client("User-agent: *\nCrawl-delay: 5\n", pages=pages)
+    clock = {"now": 0.0}
+    throttle = HostThrottle(clock=lambda: clock["now"])
+    result = HtmlConnector(client, CrawlPolicy(True, 0), sleep=lambda s: None, throttle=throttle).run(
+        _spec(), known={})
+
+    pdf_client = httpx.Client(transport=httpx.MockTransport(
+        lambda r: httpx.Response(200, content=sample, headers={"content-type": "application/pdf"})))
+    pdf_sleeps: list[float] = []
+    PdfConnector(pdf_client, data_dir=tmp_path, sleep=pdf_sleeps.append, delay_seconds=0.5,
+                 throttle=throttle).run_pdfs(_spec(), result.pdfs, known={})
+    assert pdf_sleeps and min(pdf_sleeps) >= 5.0

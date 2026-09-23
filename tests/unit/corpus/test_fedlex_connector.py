@@ -194,3 +194,65 @@ def test_probe_counts_in_force_consolidations(tmp_path):
                                 data_dir=tmp_path, sleep=lambda s: None)
     assert connector.probe("220", "de") == 2
     assert connector.probe("220", "en") == 0
+
+
+# --- robots.txt: fetch the act files where Fedlex allows it ------------------------------------------
+
+DATA_FILE = ("https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/27/317_321_377/20250701/de/xml/"
+             "fedlex-data-admin-ch-eli-cc-27-317_321_377-20250701-de-xml.xml")
+WWW_FILE = DATA_FILE.replace("https://fedlex.data.admin.ch/filestore/", "https://www.fedlex.admin.ch/filestore/")
+
+
+def _recording_transport(bindings_by_lang, robots_by_host, seen):
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if request.method == "POST":
+            lang = "en" if "ENG" in request.content.decode() else "de"
+            return httpx.Response(200, json={"results": {"bindings": bindings_by_lang.get(lang, [])}})
+        seen.append(url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text=robots_by_host.get(request.url.host, "User-agent: *\nAllow: /\n"))
+        return httpx.Response(200, text=XML)
+    return httpx.MockTransport(handler)
+
+
+def test_act_files_are_downloaded_from_the_www_host_that_robots_allows(tmp_path):
+    """fedlex.data.admin.ch/robots.txt disallows /filestore/* for every crawler; the same files
+    (byte-identical, checked 2026-09-24) are served under www.fedlex.admin.ch, whose robots.txt
+    allows them. The document's identity (its page URL) does not change."""
+    seen: list[str] = []
+    robots = {"fedlex.data.admin.ch": "User-agent: *\nDisallow: /filestore/*\n",
+              "www.fedlex.admin.ch": "User-agent: *\nAllow: /\nDisallow: /*?print=*\n"}
+    connector = FedlexConnector(httpx.Client(transport=_recording_transport({"de": [_binding("2025-07-01", DATA_FILE)]},
+                                                                            robots, seen)),
+                                today=lambda: date(2026, 9, 24), data_dir=tmp_path, sleep=lambda s: None)
+    result = connector.run(SPEC, known={})
+    assert result.errors == ()
+    assert WWW_FILE in seen and DATA_FILE not in seen
+    [doc] = result.documents
+    assert doc.url == "https://www.fedlex.admin.ch/eli/cc/27/317_321_377/20250701/de"
+
+
+def test_act_file_disallowed_by_robots_is_an_error_not_a_download(tmp_path):
+    seen: list[str] = []
+    robots = {"www.fedlex.admin.ch": "User-agent: *\nDisallow: /filestore/\n"}
+    connector = FedlexConnector(httpx.Client(transport=_recording_transport({"de": [_binding("2025-07-01", DATA_FILE)]},
+                                                                            robots, seen)),
+                                today=lambda: date(2026, 9, 24), data_dir=tmp_path, sleep=lambda s: None)
+    result = connector.run(SPEC, known={})
+    assert result.documents == ()
+    assert WWW_FILE not in seen
+    [(_, message)] = result.errors
+    assert message == f"RobotsDisallowed: {WWW_FILE} disallowed by robots.txt"
+
+
+def test_robots_is_not_read_when_switched_off(tmp_path):
+    seen: list[str] = []
+    robots = {"www.fedlex.admin.ch": "User-agent: *\nDisallow: /\n"}
+    connector = FedlexConnector(httpx.Client(transport=_recording_transport({"de": [_binding("2025-07-01", DATA_FILE)]},
+                                                                            robots, seen)),
+                                today=lambda: date(2026, 9, 24), data_dir=tmp_path, sleep=lambda s: None,
+                                respect_robots=False)
+    result = connector.run(SPEC, known={})
+    assert len(result.documents) == 1
+    assert not any(u.endswith("/robots.txt") for u in seen)

@@ -35,7 +35,10 @@ _DENY_ALL_ROBOTS = "User-agent: *\nDisallow: /\n"
 # RFC 9309 leaves an unbounded Crawl-delay unpoliced; we cap it so one host cannot stall a whole
 # run. A host that genuinely needs longer belongs on a lower max_pages/schedule, not a longer wait.
 MAX_CRAWL_DELAY_SECONDS = 30.0
-ROBOTS_USER_AGENT = "*"  # matches robots_verdict's/HtmlConnector's own can_fetch calls
+# The product token of `corpus_user_agent` (config.py). RFC 9309: a crawler obeys the group naming it
+# and falls back to `*` only when no group does. The full browser-style UA string would also match a
+# `User-agent: Mozilla` group, so the token is passed, not the header value.
+ROBOTS_USER_AGENT = "swiss-grounding"
 
 
 def _robots_root(url: str) -> str:
@@ -181,6 +184,9 @@ class HtmlConnector:
             self._robots[root] = parser
             self._delays[root] = host_delay(max(self._policy.delay_seconds, min_delay),
                                             parser.crawl_delay(ROBOTS_USER_AGENT), root)
+            if parser.crawl_delay(ROBOTS_USER_AGENT) is not None:
+                # The PDF connector shares the throttle but not this cache: pass the promise on.
+                self._throttle.require(root, self._delays[root])
         return self._robots[root].can_fetch(url, ROBOTS_USER_AGENT)
 
     @staticmethod
@@ -239,7 +245,8 @@ class HtmlConnector:
         queue = CrawlQueue(cfg["start_urls"], known)
         errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay)
         crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)),
-                              tuple(cfg.get("pdf_allow_prefixes", prefixes)))
+                              tuple(cfg.get("pdf_allow_prefixes", prefixes)),
+                              pdf_allowed=lambda u: self._robots_allow(u, min_delay))
         crawl.errors.extend(errors)
         pages = 0
         while pages < max_pages and (item := queue.pop()) is not None:
@@ -302,10 +309,13 @@ class HtmlConnector:
 class _CrawlResults:
     """What one run collects: emitted documents, their alternates for A1 grouping, PDFs, errors."""
 
-    def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...]):
+    def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...],
+                 pdf_allowed: Callable[[str], bool] = lambda url: True):
         self._spec = spec
         self._max_pdfs = max_pdfs
         self._pdf_prefixes = pdf_prefixes
+        self._pdf_allowed = pdf_allowed
+        self._pdfs_refused: set[str] = set()
         self.pending: list[ParsedDocument] = []
         self.alternates_by_url: dict[str, dict[str, str]] = {}
         self.page_languages: dict[str, str] = {}
@@ -320,8 +330,13 @@ class _CrawlResults:
         self.alternates_by_url[final] = dict(page.alternates)
         self.page_languages[final] = page.language
         for pdf_url, text in page.pdf_links:
-            if (len(self.pdfs) < self._max_pdfs and pdf_url not in self.pdfs
+            if (len(self.pdfs) < self._max_pdfs and pdf_url not in self.pdfs and pdf_url not in self._pdfs_refused
                     and any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
+                # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
+                if not self._pdf_allowed(pdf_url):
+                    self._pdfs_refused.add(pdf_url)
+                    self.errors.append((pdf_url, "PDF disallowed by robots.txt"))
+                    continue
                 self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=page.language,
                                                    title_hint=text or page.title_hint, source_id=self._spec.id)
         if page.sections:

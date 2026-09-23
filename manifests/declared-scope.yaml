@@ -21,7 +21,12 @@ sources:
                    # waste ordinance, epidemics, animal health, forests, hunting
                    "514.54", "520.1", "700", "814.610", "818.101", "916.40", "921.0", "922.0",
                    # commercial register ordinance (topic 14: companies, commercial register, VAT)
-                   "221.411"]
+                   "221.411",
+                   # held back on 2026-09-22 until #26 (each has a consolidation scheduled in the
+                   # future, which the legacy fetcher took for the one in force); this connector keeps
+                   # current and scheduled apart: chemical risk reduction, animal welfare, road
+                   # signals, tax harmonisation, higher-education funding
+                   "814.81", "455.1", "741.21", "642.14", "414.20"]
 
   # ---------------- Federal: citizen portal and offices ----------------
   - id: ch_ch

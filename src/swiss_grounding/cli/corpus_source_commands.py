@@ -124,7 +124,7 @@ def check_manifest_cmd(path: Path) -> None:
         extents = {r["id"] for r in conn.execute("select id from location").fetchall()}
     problems = 0
     with corpus_http(settings) as http:
-        fedlex = FedlexConnector(http, swiss_today, settings.data_dir)
+        fedlex = FedlexConnector(http, swiss_today, settings.data_dir, respect_robots=settings.respect_robots)
         for entry in manifest.sources:
             if entry.extent_id not in extents:
                 typer.echo(f"{entry.id}: unknown extent {entry.extent_id}")
@@ -156,7 +156,8 @@ def fetch_cmd(manifest: Annotated[Path, typer.Option("--manifest")],
         raise typer.BadParameter(str(exc)) from exc
     with corpus_http(settings) as http:
         policy = CrawlPolicy(respect_robots=settings.respect_robots, delay_seconds=settings.crawl_delay_seconds)
-        connectors = {"fedlex": FedlexConnector(http, swiss_today, settings.data_dir),
+        connectors = {"fedlex": FedlexConnector(http, swiss_today, settings.data_dir,
+                                                respect_robots=settings.respect_robots),
                       "html": HtmlConnector(http, policy)}
         pdf = PdfConnector(http, settings.data_dir, delay_seconds=settings.crawl_delay_seconds)
         report = run_fetch(settings.database_url, specs, connectors, pdf, now=lambda: datetime.now(tz=UTC),
