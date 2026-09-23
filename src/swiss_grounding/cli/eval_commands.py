@@ -29,6 +29,7 @@ GOLDEN_RUNS = Path("evals/golden/runs")
 LABELS_PATH = Path("evals/golden/labels.jsonl")
 LABEL_BUDGET_USD = 2.0
 LOW_RANK_SAMPLE = 5
+LABEL_SEED = 20260924
 REVIEW_PATH = Path("evals/golden/label_review.csv")
 EXIT_STATUS_MISMATCH = 3
 RUN_ID_LENGTH = 12
@@ -224,7 +225,7 @@ def label_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend", help=
     # Threshold 0 so pairs below the provisional threshold are judged too: the fitted model must learn
     # where abstention is decided. Top `top` per place, plus a random sample of the ranks below.
     service = replace(build_search_service(settings, today=_today), relevance=ProvisionalRelevance(0.0))
-    rng = random.Random(20260924)
+    rng = random.Random(LABEL_SEED)
     pairs = []
     for probe in load_golden().probes:
         if probe.expect.status != "results" or probe.tool != "swiss_search":
@@ -252,7 +253,7 @@ def label_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend", help=
             f.flush()
         rows = judge_pairs(todo, OpenAILLM(settings.openai_api_key), model=settings.corpus_doc_model,
                            on_usage=spend, on_row=append)
-    review = sample_for_review(rows, 100, seed=20260924)
+    review = sample_for_review(rows, 100, seed=LABEL_SEED)
     with REVIEW_PATH.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, delimiter=";")
         writer.writerow(["probe_id", "key", "question", "passage", "model_says", "human_says"])
@@ -288,6 +289,7 @@ def fit_cmd() -> None:
     from swiss_grounding.app import build_search_service, relevance_path
     from swiss_grounding.evals.fit import (
         TARGET_PRECISION,
+        check_training_labels,
         choose_threshold,
         fit_model,
         out_of_fold_probabilities,
@@ -308,8 +310,14 @@ def fit_cmd() -> None:
         for features, key in service.scored_for_eval(SearchRequest(probe.question, probe.locations, {}, None, 10)):
             if (probe.id, key) in labels:
                 rows[probe.split].append((features, labels[(probe.id, key)]))
+    y_dev_list = [r[1] for r in rows["dev"]]
+    try:
+        check_training_labels(y_dev_list)
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
     x_dev = np.array([r[0] for r in rows["dev"]])
-    y_dev = np.array([r[1] for r in rows["dev"]])
+    y_dev = np.array(y_dev_list)
     weights, bias = fit_model(x_dev, y_dev)
     threshold = choose_threshold(list(out_of_fold_probabilities(x_dev, y_dev)), list(y_dev), TARGET_PRECISION)
     z = np.array([bias + float(np.dot(weights, r[0])) for r in rows["holdout"]])
