@@ -85,6 +85,17 @@ def test_parse_verdict_with_faithfulness_keys():
     assert parsed and verdict == {"faithful": True, "cited_urls_in_evidence": True}
 
 
+def test_faithfulness_rubric_fills_its_placeholders():
+    rubric = (judge_harness.JUDGE_DIR / "faithfulness.md").read_text()
+    prompt = build_judge_prompt(rubric, "Q?", ["E1"], "A.")
+    assert "Q?" in prompt
+    assert "E1" in prompt
+    assert "A." in prompt
+    assert "{question}" not in prompt
+    assert "{evidence}" not in prompt
+    assert "{answer}" not in prompt
+
+
 def test_build_judge_prompt_includes_question_evidence_and_answer():
     prompt = build_judge_prompt("rubric {question} {evidence} {answer}", "Q?", ["E1", "E2"], "A.")
     assert "Q?" in prompt and "E1" in prompt and "E2" in prompt and "A." in prompt
