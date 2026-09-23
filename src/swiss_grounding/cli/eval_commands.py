@@ -3,6 +3,7 @@ import subprocess
 import uuid
 from collections import defaultdict
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
@@ -26,6 +27,9 @@ DEFAULT_MODELS = "claude-fable-5-1,claude-opus-5,claude-sonnet-5,claude-haiku-4-
 DEFAULT_JUDGE_OUT = Path("evals/judge/results.json")
 GOLDEN_RUNS = Path("evals/golden/runs")
 LABELS_PATH = Path("evals/golden/labels.jsonl")
+LABEL_BUDGET_USD = 2.0
+LOW_RANK_SAMPLE = 5
+REVIEW_PATH = Path("evals/golden/label_review.csv")
 EXIT_STATUS_MISMATCH = 3
 RUN_ID_LENGTH = 12
 SWISS_TZ = ZoneInfo("Europe/Zurich")
@@ -194,3 +198,83 @@ def golden_cmd(
         path.write_text(json.dumps({"config": config, **asdict(report)}, ensure_ascii=False, indent=2,
                                    default=str), encoding="utf-8")
         typer.echo(f"report written to {path}")
+
+
+@eval_app.command("label")
+def label_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend", help="required: calls gpt-5-mini"),
+              top: int = typer.Option(10, "--top")) -> None:
+    """Judge the top citations of every results probe with gpt-5-mini; write evals/golden/labels.jsonl."""
+    import csv
+    import json
+    import random
+
+    from swiss_grounding.app import build_search_service
+    from swiss_grounding.corpus.budget import ensure_within, record_spend
+    from swiss_grounding.corpus.providers import OpenAILLM
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.evals.golden_runner import citation_key
+    from swiss_grounding.evals.labels import LABEL_KIND, judge_pairs, sample_for_review
+    from swiss_grounding.serving.models import MAX_LIMIT, SearchRequest
+    from swiss_grounding.serving.relevance import ProvisionalRelevance
+
+    if not confirm_spend:
+        typer.echo("This calls gpt-5-mini (about $0.30 for 1,500 pairs). Re-run with --confirm-spend.", err=True)
+        raise typer.Exit(code=1)
+    settings = load_settings()
+    # Threshold 0 so pairs below the provisional threshold are judged too: the fitted model must learn
+    # where abstention is decided. Top `top` per place, plus a random sample of the ranks below.
+    service = replace(build_search_service(settings, today=_today), relevance=ProvisionalRelevance(0.0))
+    rng = random.Random(20260924)
+    pairs = []
+    for probe in load_golden().probes:
+        if probe.expect.status != "results" or probe.tool != "swiss_search":
+            continue
+        resp = service.search(SearchRequest(probe.question, probe.locations, {}, None, MAX_LIMIT))
+        for place in resp.places:
+            ranked = list(place.citations)
+            chosen = ranked[:top] + rng.sample(ranked[top:], min(LOW_RANK_SAMPLE, len(ranked[top:])))
+            pairs.extend({"probe_id": probe.id, "key": citation_key(c), "question": probe.question,
+                          "passage": f"{' › '.join(c.breadcrumb)}\n{c.passage}"} for c in chosen)
+    done = _load_labels(LABELS_PATH)
+    todo = [p for p in pairs if (p["probe_id"], p["key"]) not in done]
+    with connect(settings.database_url) as conn:
+        ensure_within(conn, estimate=0.0005 * len(todo), total_cap=settings.corpus_budget_usd,
+                      kind=LABEL_KIND, kind_cap=LABEL_BUDGET_USD)
+
+    def spend(usd: float) -> None:        # its own short transaction: a later failure cannot roll it back
+        with connect(settings.database_url) as c:
+            record_spend(c, kind=LABEL_KIND, model=settings.corpus_doc_model, usd=usd, input_tokens=0,
+                         output_tokens=0, estimated=False)
+
+    with LABELS_PATH.open("a", encoding="utf-8") as f:
+        def append(row: dict) -> None:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+            f.flush()
+        rows = judge_pairs(todo, OpenAILLM(settings.openai_api_key), model=settings.corpus_doc_model,
+                           on_usage=spend, on_row=append)
+    review = sample_for_review(rows, 100, seed=20260924)
+    with REVIEW_PATH.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f, delimiter=";")
+        writer.writerow(["probe_id", "key", "question", "passage", "model_says", "human_says"])
+        writer.writerows([r["probe_id"], r["key"], r["question"], r["passage"][:300], r["relevant"], ""]
+                         for r in review)
+    typer.echo(f"{len(rows)} pairs judged; fill the human_says column of {REVIEW_PATH} (true/false), "
+               "then run `eval label-check`.")
+
+
+@eval_app.command("label-check")
+def label_check_cmd() -> None:
+    """Agreement between the model judge and the human-checked sample; must be ≥ 0.85 (ADR 0016)."""
+    import csv
+    import json
+
+    from swiss_grounding.evals.labels import MIN_AGREEMENT, agreement
+
+    rows = [json.loads(x) for x in LABELS_PATH.read_text(encoding="utf-8").splitlines() if x.strip()]
+    with REVIEW_PATH.open(encoding="utf-8") as f:
+        human = {(r["probe_id"], r["key"]): r["human_says"].strip().lower() == "true"
+                 for r in csv.DictReader(f, delimiter=";") if r["human_says"].strip()}
+    score = agreement(rows, human)
+    typer.echo(f"agreement on {len(human)} checked pairs: {score:.2f} (need {MIN_AGREEMENT})")
+    if score < MIN_AGREEMENT:
+        raise typer.Exit(code=1)
