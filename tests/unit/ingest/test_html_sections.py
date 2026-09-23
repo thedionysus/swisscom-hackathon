@@ -178,3 +178,59 @@ def test_content_selector_that_matches_nothing_falls_back_to_the_default_root():
     html = "<html><body><main><h1>Hi</h1><p>Text.</p></main></body></html>"
     page = html_to_page(html, url="https://x/", default_language="de", content_selector="#missing")
     assert page.title == "Hi" and page.sections
+
+
+# --- visually-hidden headings inside the content root itself -----------------------------------
+# chur.ch's #maincontent opens with a visually-hidden <h1>Inhalt</h1> before the real title; other
+# sites use "Navigation" or "Kopfzeire" the same way. Unlike the nav/footer h1s (already dropped
+# because their whole tag is removed), this hidden h1 lives INSIDE the content root, so it must be
+# recognised and skipped by class, not by ancestry.
+
+def test_hidden_h1_inside_content_root_does_not_win_the_title():
+    html = """<html><body><div id="maincontent">
+    <h1 class="sr-only">Inhalt</h1>
+    <h1>Steuererklärung</h1>
+    <p>Informationen zur Steuererklärung.</p>
+    </div></body></html>"""
+    page = html_to_page(html, url="https://x/", default_language="de", content_selector="#maincontent")
+    assert page.title == "Steuererklärung"
+
+
+def test_hidden_h1_with_no_visible_h1_falls_back_to_title_tag():
+    html = """<html><head><title>Neu in Chur | Stadt Chur</title></head><body>
+    <div id="maincontent">
+    <h1 class="sr-only">Inhalt</h1>
+    <p>Willkommen in Chur.</p>
+    </div></body></html>"""
+    page = html_to_page(html, url="https://x/", default_language="de", content_selector="#maincontent")
+    assert page.title == "Neu in Chur"
+
+
+def test_hidden_heading_is_not_a_section_break_and_its_text_is_dropped():
+    html = """<main>
+    <h1 class="visually-hidden">Navigation</h1>
+    <h2>Kopfzeile</h2>
+    <p>Real content here.</p>
+    </main>"""
+    page = html_to_page(html, url="https://x/", default_language="de")
+    joined = " ".join(s.heading_path for s in page.sections)
+    assert "Navigation" not in joined
+    texts = " ".join(s.text for s in page.sections)
+    assert "Navigation" not in texts
+
+
+def test_various_hidden_markers_are_all_recognised():
+    variants = [
+        '<h1 hidden>Hidden Attr</h1>',
+        '<h1 aria-hidden="true">Aria Hidden</h1>',
+        '<h1 style="display:none">Style Display None</h1>',
+        '<h1 style="visibility: hidden;">Style Visibility Hidden</h1>',
+        '<h1 class="visuallyhidden">Visually Hidden</h1>',
+        '<h1 class="screen-reader-text">Screen Reader Text</h1>',
+        '<h1 class="offscreen">Offscreen</h1>',
+    ]
+    for hidden_h1 in variants:
+        html = f"<main>{hidden_h1}<h2>Real</h2><p>Body.</p></main>"
+        page = html_to_page(html, url="https://x/", default_language="de")
+        for banned in ("Hidden", "Aria", "Style", "Visually", "Screen", "Offscreen"):
+            assert banned not in page.title, hidden_h1

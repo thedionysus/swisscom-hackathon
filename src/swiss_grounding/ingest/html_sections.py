@@ -1,13 +1,22 @@
+import re
 from dataclasses import dataclass
 from urllib.parse import urldefrag, urljoin
 
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 from bs4.element import PageElement
 from markdownify import markdownify
 
 from swiss_grounding.ingest.models import Section
 
 DROP_TAGS = ("nav", "footer", "header", "script", "style", "noscript", "aside", "form")
+# Class tokens CMSes use to visually hide a heading from sighted users while keeping it in the
+# DOM for screen readers (chur.ch's "Inhalt", others' "Navigation"/"Kopfzeile"). Such a heading
+# is never the page title and never a real section break -- its text is dropped entirely.
+_HIDDEN_CLASSES = frozenset({
+    "sr-only", "visually-hidden", "visuallyhidden", "hidden", "invisible", "screen-reader-text",
+    "element-invisible", "u-visually-hidden", "show-for-sr", "access", "offscreen",
+})
+_HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.IGNORECASE)
 # _clean runs in two stages (see html_to_page): everything except <header> first, then
 # <header> on its own, with the title looked up in between. That way an h1 wrapped in a
 # <header> inside the content root (a page-header block inside <main>) still counts as the
@@ -46,18 +55,42 @@ def _clean(root: Tag, tags: tuple[str, ...] = DROP_TAGS) -> Tag:
     return root
 
 
+def _is_hidden(tag: Tag) -> bool:
+    """True for a heading that is in the DOM but never shown to a sighted visitor: a `hidden`
+    attribute, `aria-hidden="true"`, an inline `display:none`/`visibility:hidden` style, or a
+    class token from a known screen-reader-only convention (sr-only, visually-hidden, ...)."""
+    if tag.has_attr("hidden"):
+        return True
+    if (tag.get("aria-hidden") or "").strip().lower() == "true":
+        return True
+    if _HIDDEN_STYLE.search(tag.get("style") or ""):
+        return True
+    classes = tag.get("class") or []
+    return any(c in _HIDDEN_CLASSES for c in classes)
+
+
+def _visible_heading(node: Tag) -> Tag | None:
+    """The first heading inside `node` that is not visually hidden, else None."""
+    for heading in node.find_all(HEADING_TAGS):
+        if not _is_hidden(heading):
+            return heading
+    return None
+
+
 def _title(soup: BeautifulSoup, root: Tag | None) -> str:
-    """The page's title: the first h1 inside the content root, falling back to <title>.
+    """The page's title: the first VISIBLE h1 inside the content root, falling back to <title>.
 
     Pages commonly carry a visually-hidden ``<h1>Navigation</h1>`` inside their nav (or, when
     the content root falls back to ``<body>``, a nav that's a direct sibling of it there too)
     and another hidden h1 inside their footer; the caller has already dropped both by the time
     this runs, so neither is ever seen. A ``<header>`` wrapping the real content h1 (e.g. a
     page-header block inside ``<main>``) is still in place at this point, so that h1 is found.
+    Some sites (chur.ch's #maincontent) instead open the content root itself with a hidden h1
+    ("Inhalt"); that one is never dropped by ancestry, so it is skipped by `_is_hidden` here.
     """
     if root is not None:
-        h1 = root.find("h1")
-        if h1 and h1.get_text(strip=True):
+        h1 = next((h for h in root.find_all("h1") if not _is_hidden(h) and h.get_text(strip=True)), None)
+        if h1:
             return h1.get_text(" ", strip=True)
     if soup.title and soup.title.string:
         return soup.title.string.rsplit("|", 1)[0].strip()
@@ -76,7 +109,7 @@ def _to_text(nodes: list[PageElement]) -> str:
 
 
 def _holds_heading(node: Tag) -> bool:
-    return node.find(HEADING_TAGS) is not None
+    return _visible_heading(node) is not None
 
 
 def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
@@ -105,11 +138,15 @@ def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
     def walk(node: Tag) -> None:
         nonlocal anchor
         for child in node.children:
+            if isinstance(child, Comment):
+                continue  # a leaked <!-- --> (e.g. TYPO3SEARCH markers) is never content
             if isinstance(child, NavigableString):
                 buffer.append(child)
             elif not isinstance(child, Tag):
                 continue
             elif child.name in HEADING_TAGS:
+                if _is_hidden(child):
+                    continue  # visually-hidden heading: not a heading, its text is dropped
                 flush()
                 level = int(child.name[1])
                 name = child.get_text(" ", strip=True)
@@ -141,6 +178,13 @@ def html_to_page(html: str, url: str, default_language: str, content_selector: s
     _clean(root, _NON_HEADER_DROP_TAGS)  # drop nav/footer/etc. first so their h1s can't win
     title = _title(soup, root)  # ... then look for the title, while a <header> is still there
     _clean(root, _HEADER_DROP_TAGS)  # now drop <header> too, before splitting into sections
+    # A hidden heading nested inside a non-descended container (e.g. a breadcrumb nav's sr-only
+    # <h2>) would otherwise still be serialised to markdown as part of that container's buffered
+    # text (walk() only special-cases a heading it meets directly). Remove every hidden heading
+    # outright so none of them can leak in, however deep.
+    for heading in root.find_all(HEADING_TAGS):
+        if _is_hidden(heading):
+            heading.decompose()
     sections = _split_by_headings(root, title)
     return Page(title=title, language=language, sections=sections)
 
