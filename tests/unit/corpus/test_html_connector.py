@@ -1,6 +1,7 @@
 import httpx
 
 from swiss_grounding.corpus.connectors.html import CrawlPolicy, HtmlConnector
+from swiss_grounding.corpus.connectors.politeness import HostThrottle
 from swiss_grounding.corpus.models import KnownState, SourceSpec
 
 PAGES = {
@@ -385,6 +386,56 @@ def test_crawl_delay_is_capped_at_thirty_seconds():
     assert host_delay(base_delay=0.5, crawl_delay=90.0) == 30.0
 
 
+# --- 429/503 backoff ----------------------------------------------------------------------------
+
+def test_429_with_retry_after_is_retried_and_the_page_is_stored():
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
+        if url == "https://www.p.ch/de/":
+            calls["n"] += 1
+            if calls["n"] == 1:
+                return httpx.Response(429, headers={"retry-after": "2"})
+            return httpx.Response(200, text=PAGES["https://www.x.ch/de/"].replace("x.ch", "p.ch"),
+                                  headers={"content-type": "text/html"})
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    spec = SourceSpec(id="p", name="P", publisher="P", authority="official_info", level="municipal",
+                      extent_id="CH-BE-351", connector="html", tier=1, languages=("de", "fr"),
+                      config={"start_urls": ["https://www.p.ch/de/"], "allow_prefixes": ["https://www.p.ch/de/"]})
+    sleeps: list[float] = []
+    result = HtmlConnector(client, CrawlPolicy(True, 0), sleep=sleeps.append,
+                           throttle=HostThrottle()).run(spec, known={})
+    assert "https://www.p.ch/de/" in {d.url for d in result.documents}
+    assert calls["n"] == 2
+    assert 2.0 in sleeps
+
+
+def test_three_429s_are_recorded_as_an_error_after_three_tries():
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
+        calls["n"] += 1
+        return httpx.Response(429, headers={"retry-after": "1"})
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    spec = SourceSpec(id="q", name="Q", publisher="Q", authority="official_info", level="municipal",
+                      extent_id="CH-BE-351", connector="html", tier=1, languages=("de",),
+                      config={"start_urls": ["https://www.q.ch/de/"], "allow_prefixes": ["https://www.q.ch/de/"]})
+    result = HtmlConnector(client, CrawlPolicy(True, 0), sleep=lambda s: None,
+                           throttle=HostThrottle()).run(spec, known={})
+    assert result.documents == ()
+    assert calls["n"] == 3
+    assert any("HTTP 429" in reason for _, reason in result.errors)
+
+
 def test_connector_uses_the_hosts_crawl_delay_for_its_own_throttling():
     """be.ch's Crawl-delay: 10 must reach HostThrottle.wait as the effective per-host delay,
     even though the policy's own default delay is much smaller."""
@@ -401,3 +452,22 @@ def test_connector_uses_the_hosts_crawl_delay_for_its_own_throttling():
     client = _client(BE_CH_STYLE_ROBOTS, pages=pages)
     HtmlConnector(client, CrawlPolicy(True, 0.5), throttle=RecordingThrottle()).run(spec, known={})
     assert 10.0 in waits
+
+
+def test_config_delay_seconds_raises_the_hosts_minimum_delay():
+    """A per-source `delay_seconds` (A11 site adaptation) must reach HostThrottle.wait, even
+    without a robots.txt Crawl-delay and above the policy's own smaller default."""
+    waits: list[float] = []
+
+    class RecordingThrottle:
+        def wait(self, url, delay, sleep):
+            waits.append(delay)
+
+    pages = {"https://www.scuol.net/de/": PAGES["https://www.x.ch/de/"].replace("x.ch", "scuol.net")}
+    spec = SourceSpec(id="scuol", name="Scuol", publisher="Scuol", authority="official_info", level="municipal",
+                      extent_id="CH-GR-3762", connector="html", tier=1, languages=("de",),
+                      config={"start_urls": ["https://www.scuol.net/de/"],
+                              "allow_prefixes": ["https://www.scuol.net/de/"], "delay_seconds": 3})
+    client = _client(pages=pages)
+    HtmlConnector(client, CrawlPolicy(True, 0.5), throttle=RecordingThrottle()).run(spec, known={})
+    assert 3.0 in waits

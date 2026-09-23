@@ -130,6 +130,22 @@ def test_accepts_site_adaptation_keys(tmp_path):
     assert spec.config["sitemap_include"] == ["/themen/"]
 
 
+def test_accepts_delay_seconds(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, BERN_CONFIG.replace("}", ", delay_seconds: 3}")))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["delay_seconds"] == 3
+
+
+@pytest.mark.parametrize("bad_value", ["-1", "true", '"3"'])
+def test_rejects_invalid_delay_seconds(tmp_path, bad_value):
+    path = tmp_path / "m.yaml"
+    config = BERN_CONFIG.replace("}", f", delay_seconds: {bad_value}}}")
+    path.write_text(MANIFEST.replace(BERN_CONFIG, config))
+    with pytest.raises(ValueError, match="delay_seconds"):
+        load_manifest(path)
+
+
 @pytest.mark.parametrize(("old", "new", "message"), [
     ('"^https://www\\\\.bern\\\\.ch/p/"', '"(unclosed"', "pdf_link_patterns"),
     ('["/themen/"]', '["[a-"]', "sitemap_include"),

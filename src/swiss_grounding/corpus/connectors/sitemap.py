@@ -6,6 +6,7 @@ filter, stopping as soon as `limit` URLs are found so large indexes are never wa
 """
 import gzip
 import re
+import time
 import zlib
 from collections import deque
 from collections.abc import Callable, Sequence
@@ -14,6 +15,12 @@ from io import BytesIO
 
 import httpx
 from bs4 import BeautifulSoup
+
+from swiss_grounding.corpus.connectors.politeness import (
+    FetchResult,
+    HostThrottle,
+    request_with_backoff,
+)
 
 MAX_SITEMAP_BYTES = 50_000_000
 MAX_SITEMAP_FILES = 200
@@ -29,11 +36,12 @@ class _Unreadable(Exception):
     pass
 
 
-def _download(http: httpx.Client, url: str) -> tuple[int, bytes]:
-    """(status, body), streamed and aborted past MAX_SITEMAP_BYTES; body is empty for errors."""
+def _download(http: httpx.Client, url: str) -> FetchResult:
+    """Streamed and aborted past MAX_SITEMAP_BYTES; body is empty for a non-2xx response, so a
+    429/503 can be inspected by request_with_backoff without reading (and discarding) a body."""
     with http.stream("GET", url, follow_redirects=True, timeout=60) as response:
         if response.status_code >= 400:
-            return response.status_code, b""
+            return FetchResult(response.status_code, response.headers)
         declared = response.headers.get("content-length")
         if declared and declared.isdigit() and int(declared) > MAX_SITEMAP_BYTES:
             raise _Unreadable(f"sitemap larger than {MAX_SITEMAP_BYTES} bytes")
@@ -42,7 +50,7 @@ def _download(http: httpx.Client, url: str) -> tuple[int, bytes]:
             body += chunk
             if len(body) > MAX_SITEMAP_BYTES:
                 raise _Unreadable(f"sitemap larger than {MAX_SITEMAP_BYTES} bytes")
-        return response.status_code, bytes(body)
+        return FetchResult(response.status_code, response.headers, bytes(body))
 
 
 def _decompress(body: bytes) -> bytes:
@@ -77,11 +85,13 @@ def _entries(body: bytes) -> tuple[list[str], list[str]]:
 
 def collect_sitemap_urls(http: httpx.Client, sitemap_urls: Sequence[str], include: Sequence[str], limit: int,
                          accept: Callable[[str], bool], fetchable: Callable[[str], bool],
-                         before: Callable[[str], None]) -> SitemapSeeds:
+                         before: Callable[[str], None], throttle: HostThrottle,
+                         sleep: Callable[[float], None] = time.sleep) -> SitemapSeeds:
     """Page URLs from `sitemap_urls` matching any `include` regex (all when empty) and `accept`.
 
-    `fetchable` gates each sitemap request (robots.txt); `before(url)` runs before each request
-    (per-host politeness).
+    `fetchable` gates each sitemap request (robots.txt); `before(url)` is the per-host politeness
+    wait, run before every attempt (`request_with_backoff` backs off and retries a sitemap request
+    that answers 429/503, up to RETRY_ATTEMPTS, via the shared `throttle`).
     Unreadable sitemaps become errors; the crawl continues without them.
     """
     patterns = [re.compile(p) for p in include]
@@ -97,15 +107,15 @@ def collect_sitemap_urls(http: httpx.Client, sitemap_urls: Sequence[str], includ
         if not fetchable(sitemap):
             errors.append((sitemap, "sitemap disallowed by robots.txt"))
             continue
-        before(sitemap)
         try:
-            status, body = _download(http, sitemap)
+            fetched = request_with_backoff(sitemap, throttle, before, lambda u=sitemap: _download(http, u), sleep)
         except httpx.HTTPError as exc:
             errors.append((sitemap, f"sitemap fetch failed: {exc}"))
             continue
         except _Unreadable as exc:
             errors.append((sitemap, str(exc)))
             continue
+        status, body = fetched.status_code, fetched.body
         if status >= 400:
             errors.append((sitemap, f"sitemap HTTP {status}"))
             continue

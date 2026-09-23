@@ -98,6 +98,24 @@ def test_same_content_is_unchanged(corpus_db):
         assert len(_rows(conn)) == 1
 
 
+def test_nul_bytes_are_stripped_before_they_reach_postgres(corpus_db):
+    """Live crawl: three PDFs (vd.ch, scuol.net, bern.ch) failed to persist with
+    psycopg.DataError because their extracted text carried a NUL byte."""
+    section = ParsedSection("de:p1", ("Merkblatt\x00", "p. 1\x00"), "page=1", "Text mit einem \x00 Byte darin.")
+    doc = ParsedDocument(source_id="bern", url="https://x/nul.pdf", language="de", work_key="html:https://x/nul.pdf",
+                         title="Titel\x00 mit NUL", identifier="SR\x00 1", sections=(section,))
+    with connect(corpus_db) as conn:
+        upsert_source(conn, HTML_SPEC)
+        assert persist_document(conn, doc, HTML_SPEC, NOW) == "added"
+        stored_doc = conn.execute("select title, identifier from corpus.document").fetchone()
+        stored_chunk = conn.execute("select breadcrumb, text from corpus.chunk").fetchone()
+    assert "\x00" not in stored_doc["title"]
+    assert stored_doc["title"] == "Titel mit NUL"
+    assert "\x00" not in stored_doc["identifier"]
+    assert all("\x00" not in b for b in stored_chunk["breadcrumb"])
+    assert "\x00" not in stored_chunk["text"]
+
+
 def test_changed_content_at_same_url_supersedes(corpus_db):
     with connect(corpus_db) as conn:
         upsert_source(conn, SPEC)

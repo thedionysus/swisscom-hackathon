@@ -11,7 +11,11 @@ from protego import Protego
 from swiss_grounding.corpus.connectors.crawl_queue import CrawlQueue
 from swiss_grounding.corpus.connectors.html_meta import work_key
 from swiss_grounding.corpus.connectors.html_page import CrawledPage, parse_crawled_page
-from swiss_grounding.corpus.connectors.politeness import SHARED_THROTTLE, HostThrottle
+from swiss_grounding.corpus.connectors.politeness import (
+    SHARED_THROTTLE,
+    HostThrottle,
+    request_with_backoff,
+)
 from swiss_grounding.corpus.connectors.sitemap import collect_sitemap_urls
 from swiss_grounding.corpus.models import (
     ConnectorResult,
@@ -157,22 +161,26 @@ class HtmlConnector:
             self._warned_hosts.add(root)
             logger.warning("robots.txt for %s: %s -- disallowing the whole host", root, message)
 
-    def _before(self, url: str) -> None:
-        """Per-host politeness, shared with every other connector and thread (see politeness)."""
-        delay = self._delays.get(_robots_root(url), self._policy.delay_seconds)
+    def _before(self, url: str, min_delay: float = 0.0) -> None:
+        """Per-host politeness, shared with every other connector and thread (see politeness).
+
+        `min_delay` is the source's own `config.delay_seconds` (A11 site adaptation), if any.
+        """
+        delay = max(self._delays.get(_robots_root(url), self._policy.delay_seconds), min_delay)
         self._throttle.wait(url, delay, self._sleep)
 
-    def _robots_allow(self, url: str) -> bool:
+    def _robots_allow(self, url: str, min_delay: float = 0.0) -> bool:
         if not self._policy.respect_robots:
             return True
         root = _robots_root(url)
         if root not in self._robots:
-            self._before(root + "/robots.txt")
+            self._before(root + "/robots.txt", min_delay)
             parser, problem = load_robots(self._http, root)
             if problem:
                 self._warn_once(root, problem)
             self._robots[root] = parser
-            self._delays[root] = host_delay(self._policy.delay_seconds, parser.crawl_delay(ROBOTS_USER_AGENT), root)
+            self._delays[root] = host_delay(max(self._policy.delay_seconds, min_delay),
+                                            parser.crawl_delay(ROBOTS_USER_AGENT), root)
         return self._robots[root].can_fetch(url, ROBOTS_USER_AGENT)
 
     @staticmethod
@@ -185,13 +193,13 @@ class HtmlConnector:
         return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
                 and not _matches(url, pdf_patterns))
 
-    def _allowed(self, url: str, prefixes: tuple[str, ...]) -> bool:
+    def _allowed(self, url: str, prefixes: tuple[str, ...], min_delay: float = 0.0) -> bool:
         path = urlparse(url).path.lower()
         return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
-                and self._robots_allow(url))
+                and self._robots_allow(url, min_delay))
 
     def _seed_from_sitemaps(self, cfg: Mapping, queue: CrawlQueue, limit: int, prefixes: tuple[str, ...],
-                            pdf_patterns: tuple[re.Pattern[str], ...]) -> list[tuple[str, str]]:
+                            pdf_patterns: tuple[re.Pattern[str], ...], min_delay: float = 0.0) -> list[tuple[str, str]]:
         """Queue URLs from config.sitemap_urls matching config.sitemap_include (A11), at most
         `limit`. Known or already-queued URLs do not use up the budget: it is for new pages."""
         if not cfg.get("sitemap_urls"):
@@ -201,12 +209,15 @@ class HtmlConnector:
             return not queue.is_known_or_queued(url) and self._crawlable(url, prefixes, pdf_patterns)
 
         seeds = collect_sitemap_urls(self._http, tuple(cfg["sitemap_urls"]), tuple(cfg.get("sitemap_include", ())),
-                                     limit, accept=accept, fetchable=self._robots_allow, before=self._before)
+                                     limit, accept=accept, fetchable=lambda u: self._robots_allow(u, min_delay),
+                                     before=lambda u: self._before(u, min_delay), throttle=self._throttle,
+                                     sleep=self._sleep)
         for url in seeds.urls:
             queue.add(url)
         return list(seeds.errors)
 
-    def _get(self, url: str, conditional: bool, known: Mapping[str, KnownState]) -> httpx.Response:
+    def _get(self, url: str, conditional: bool, known: Mapping[str, KnownState],
+             min_delay: float = 0.0) -> httpx.Response:
         headers = {}
         # Only revisit-queue pages (known, and linked from nowhere reachable this run) are sent
         # conditionally: a 304 on any other page would hide the links it carries.
@@ -215,28 +226,30 @@ class HtmlConnector:
             headers["if-none-match"] = prior.etag
         if prior and prior.last_modified:
             headers["if-modified-since"] = prior.last_modified
-        self._before(url)
-        return self._http.get(url, headers=headers, follow_redirects=True, timeout=30)
+        return request_with_backoff(
+            url, self._throttle, lambda u: self._before(u, min_delay),
+            lambda: self._http.get(url, headers=headers, follow_redirects=True, timeout=30), self._sleep)
 
     def run(self, spec: SourceSpec, known: Mapping[str, KnownState]) -> ConnectorResult:
         cfg = spec.config
         prefixes = tuple(cfg["allow_prefixes"])
         max_pages = int(cfg.get("max_pages", DEFAULT_MAX_PAGES))
         pdf_patterns = tuple(re.compile(p) for p in cfg.get("pdf_link_patterns", ()))
+        min_delay = float(cfg.get("delay_seconds", 0.0))
         queue = CrawlQueue(cfg["start_urls"], known)
-        errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns)
+        errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay)
         crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)),
                               tuple(cfg.get("pdf_allow_prefixes", prefixes)))
         crawl.errors.extend(errors)
         pages = 0
         while pages < max_pages and (item := queue.pop()) is not None:
             url, conditional = item
-            if url in queue.seen or not self._allowed(url, prefixes):
+            if url in queue.seen or not self._allowed(url, prefixes, min_delay):
                 continue
             queue.seen.add(url)
             pages += 1
             try:
-                response = self._get(url, conditional, known)
+                response = self._get(url, conditional, known, min_delay)
             except httpx.HTTPError as exc:
                 crawl.errors.append((url, f"fetch failed: {exc}"))
                 continue
