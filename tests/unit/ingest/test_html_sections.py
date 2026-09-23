@@ -161,3 +161,20 @@ def test_extract_links_reads_href_from_custom_elements_but_not_head_resources():
     links = extract_links(html, base_url="https://www.stadt-zuerich.ch/de/stadtleben.html")
     assert links == ("https://www.stadt-zuerich.ch/de/stadtleben/kultur.html",
                      "https://www.stadt-zuerich.ch/de/service/impressum.html")
+
+
+def test_content_selector_overrides_the_default_content_root():
+    html = """<html lang="de"><body><div id="skip"><h1>Kopfzeile</h1><p>Menü Startseite Kontakt</p></div>
+      <div id="content"><h1>Merkblätter</h1><p>Die Merkblätter der AHV.</p></div></body></html>"""
+    default = html_to_page(html, url="https://x/", default_language="de")
+    chosen = html_to_page(html, url="https://x/", default_language="de", content_selector="#content")
+    assert default.title == "Kopfzeile"
+    assert chosen.title == "Merkblätter"
+    assert "Menü" not in " ".join(s.text for s in chosen.sections)
+    assert "Die Merkblätter der AHV." in chosen.sections[0].text
+
+
+def test_content_selector_that_matches_nothing_falls_back_to_the_default_root():
+    html = "<html><body><main><h1>Hi</h1><p>Text.</p></main></body></html>"
+    page = html_to_page(html, url="https://x/", default_language="de", content_selector="#missing")
+    assert page.title == "Hi" and page.sections

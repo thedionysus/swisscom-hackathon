@@ -114,3 +114,34 @@ def test_accepts_sources_with_disjoint_prefixes(tmp_path):
     path = tmp_path / "m.yaml"
     path.write_text(MANIFEST + OVERLAP.replace("https://www.bern.ch/docs/", "https://www.stadt-bern.ch/"))
     assert len(load_manifest(path).sources) == 3
+
+
+SITE_CONFIG = ('config: {start_urls: ["https://www.bern.ch/"], allow_prefixes: ["https://www.bern.ch/"], '
+               'language_links_selector: "nav#language a[href]", content_selector: "#content", '
+               'pdf_link_patterns: ["^https://www\\\\.bern\\\\.ch/p/"], sitemap_urls: ["https://www.bern.ch/sitemap.xml.gz"], '
+               'sitemap_include: ["/themen/"]}')
+BERN_CONFIG = 'config: {start_urls: ["https://www.bern.ch/"], allow_prefixes: ["https://www.bern.ch/"]}'
+
+
+def test_accepts_site_adaptation_keys(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, SITE_CONFIG))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["sitemap_include"] == ["/themen/"]
+
+
+@pytest.mark.parametrize(("old", "new", "message"), [
+    ('"^https://www\\\\.bern\\\\.ch/p/"', '"(unclosed"', "pdf_link_patterns"),
+    ('["/themen/"]', '["[a-"]', "sitemap_include"),
+    ('"nav#language a[href]"', '"nav#language a[href"', "language_links_selector"),
+    ('"#content"', '"##"', "content_selector"),
+    ('["https://www.bern.ch/sitemap.xml.gz"]', '["/sitemap.xml"]', "sitemap_urls"),
+    ('["/themen/"]', '"/themen/"', "sitemap_include"),
+])
+def test_rejects_invalid_site_adaptation_keys(tmp_path, old, new, message):
+    path = tmp_path / "m.yaml"
+    config = SITE_CONFIG.replace(old, new)
+    assert config != SITE_CONFIG
+    path.write_text(MANIFEST.replace(BERN_CONFIG, config))
+    with pytest.raises(ValueError, match=message):
+        load_manifest(path)

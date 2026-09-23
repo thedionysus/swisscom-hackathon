@@ -1,6 +1,8 @@
+import re
 from pathlib import Path
 from typing import Any, Literal
 
+import soupsieve
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -28,6 +30,7 @@ class SourceEntry(BaseModel):
             for key in ("start_urls", "allow_prefixes"):
                 if not self.config.get(key):
                     raise ValueError(f"source {self.id}: html connector needs config.{key}")
+            _check_site_adaptations(self.id, self.config)
         if self.connector == "fedlex" and not self.config.get("sr_numbers"):
             raise ValueError(f"source {self.id}: fedlex connector needs config.sr_numbers")
         dupes = sorted({lang for lang in self.languages if self.languages.count(lang) > 1})
@@ -40,6 +43,36 @@ class SourceEntry(BaseModel):
                           level=self.level, extent_id=self.extent_id, connector=self.connector, tier=self.tier,
                           languages=tuple(self.languages), config=dict(self.config),
                           retrieved_via=self.retrieved_via)
+
+
+def _string_list(source_id: str, config: dict[str, Any], key: str) -> list[str]:
+    value = config.get(key, [])
+    if not isinstance(value, list) or not all(isinstance(v, str) and v for v in value):
+        raise ValueError(f"source {source_id}: config.{key} must be a list of non-empty strings")
+    return value
+
+
+def _check_site_adaptations(source_id: str, config: dict[str, Any]) -> None:
+    """Optional per-site keys of the html connector (A11): fail at load time, not mid-crawl."""
+    for key in ("pdf_link_patterns", "sitemap_include"):
+        for pattern in _string_list(source_id, config, key):
+            try:
+                re.compile(pattern)
+            except re.error as exc:
+                raise ValueError(f"source {source_id}: config.{key} has an invalid regex {pattern!r}: {exc}") from exc
+    for url in _string_list(source_id, config, "sitemap_urls"):
+        if not url.startswith(("http://", "https://")):
+            raise ValueError(f"source {source_id}: config.sitemap_urls must be absolute URLs, got {url!r}")
+    for key in ("language_links_selector", "content_selector"):
+        if key not in config:
+            continue
+        selector = config[key]
+        if not isinstance(selector, str) or not selector.strip():
+            raise ValueError(f"source {source_id}: config.{key} must be a non-empty CSS selector")
+        try:
+            soupsieve.compile(selector)
+        except soupsieve.SelectorSyntaxError as exc:
+            raise ValueError(f"source {source_id}: config.{key} is not a valid CSS selector: {selector!r}") from exc
 
 
 class Manifest(BaseModel):
