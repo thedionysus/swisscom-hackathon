@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0011
 date: 2026-09-21
 ---
 
