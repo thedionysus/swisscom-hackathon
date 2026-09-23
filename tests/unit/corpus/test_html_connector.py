@@ -351,3 +351,53 @@ def test_robots_verdict_is_shared_with_the_crawler():
     assert robots_verdict(_client(robots), "https://www.example.ch/de/hund", respect=False) == "disallowed-ignored"
     failing = _client(robots_response=lambda request: httpx.Response(503))
     assert robots_verdict(failing, "https://www.example.ch/de/katze", respect=True) == "disallowed"
+
+
+# --- RFC 9309 longest-match and Crawl-delay -----------------------------------------------------
+
+# be.ch's real robots.txt: a broad Disallow followed by a narrower Allow inside it. The old
+# urllib.robotparser applies the FIRST matching rule top to bottom and would wrongly refuse the
+# PDF; RFC 9309 (and protego) apply the LONGEST matching rule, so the narrower Allow wins.
+BE_CH_STYLE_ROBOTS = "User-agent: *\nDisallow: /content/\nAllow: /content/dam/\nCrawl-delay: 10\n"
+
+
+def test_longest_match_allows_the_narrower_dam_prefix_pdf():
+    from swiss_grounding.corpus.connectors.html import robots_verdict
+    client = _client(BE_CH_STYLE_ROBOTS)
+    assert robots_verdict(client, "https://www.be.ch/content/dam/x.pdf", respect=True) == "allowed"
+
+
+def test_longest_match_still_disallows_the_broader_prefix():
+    from swiss_grounding.corpus.connectors.html import robots_verdict
+    client = _client(BE_CH_STYLE_ROBOTS)
+    assert robots_verdict(client, "https://www.be.ch/content/page", respect=True) == "disallowed"
+
+
+def test_crawl_delay_raises_the_host_delay_above_the_policy_default():
+    from swiss_grounding.corpus.connectors.html import host_delay
+    assert host_delay(base_delay=0.5, crawl_delay=10.0) == 10.0
+    assert host_delay(base_delay=15.0, crawl_delay=10.0) == 15.0  # policy delay already higher
+    assert host_delay(base_delay=0.5, crawl_delay=None) == 0.5
+
+
+def test_crawl_delay_is_capped_at_thirty_seconds():
+    from swiss_grounding.corpus.connectors.html import host_delay
+    assert host_delay(base_delay=0.5, crawl_delay=90.0) == 30.0
+
+
+def test_connector_uses_the_hosts_crawl_delay_for_its_own_throttling():
+    """be.ch's Crawl-delay: 10 must reach HostThrottle.wait as the effective per-host delay,
+    even though the policy's own default delay is much smaller."""
+    waits: list[float] = []
+
+    class RecordingThrottle:
+        def wait(self, url, delay, sleep):
+            waits.append(delay)
+
+    pages = {"https://www.be.ch/de/": PAGES["https://www.x.ch/de/"]}
+    spec = SourceSpec(id="be", name="BE", publisher="BE", authority="official_info", level="cantonal",
+                      extent_id="CH-BE", connector="html", tier=1, languages=("de",),
+                      config={"start_urls": ["https://www.be.ch/de/"], "allow_prefixes": ["https://www.be.ch/de/"]})
+    client = _client(BE_CH_STYLE_ROBOTS, pages=pages)
+    HtmlConnector(client, CrawlPolicy(True, 0.5), throttle=RecordingThrottle()).run(spec, known={})
+    assert 10.0 in waits

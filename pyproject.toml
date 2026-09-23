@@ -21,6 +21,7 @@ dependencies = [
     "openai>=1.60",
     "pypdfium2>=4.30",
     "pillow>=10.0",
+    "protego>=0.3",
 ]
 
 [project.optional-dependencies]

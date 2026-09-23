@@ -106,8 +106,12 @@ def test_content_selector_drops_navigation_outside_the_content_root():
                      content_selector="#dnn_ContentPane")
     [before] = _run(_client(pages), plain).documents
     [after] = _run(_client(pages), narrowed).documents
-    assert any("Brotkrumennavigation" in s.breadcrumb for s in before.sections)
-    assert not any("Brotkrumennavigation" in s.breadcrumb for s in after.sections)
+    # The breadcrumb's own heading ("Brotkrumennavigation") is a visually-hidden <h2
+    # class="sr-only">, so it is dropped everywhere now, with or without a content selector; the
+    # breadcrumb LINK TEXT (not a heading) is still page noise without the narrower selector.
+    assert not any("Brotkrumennavigation" in s.breadcrumb for s in before.sections)
+    assert any("Startseite" in s.text for s in before.sections)
+    assert not any("Startseite" in s.text for s in after.sections)
     assert after.title == "Beiträge AHV/IV/EO/ALV"
     assert "Lohnbeiträge" in after.sections[0].text
 

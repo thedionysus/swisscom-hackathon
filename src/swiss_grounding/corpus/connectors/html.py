@@ -3,10 +3,10 @@ import re
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
-from urllib import robotparser
 from urllib.parse import urldefrag, urlparse
 
 import httpx
+from protego import Protego
 
 from swiss_grounding.corpus.connectors.crawl_queue import CrawlQueue
 from swiss_grounding.corpus.connectors.html_meta import work_key
@@ -27,7 +27,11 @@ SKIP_SUFFIXES = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".zip", ".xml"
                  ".docx", ".doc", ".xlsx", ".xls", ".mp4", ".mp3")
 DEFAULT_MAX_PAGES = 300
 DEFAULT_MAX_PDFS = 50
-_DENY_ALL_ROBOTS = ("User-agent: *", "Disallow: /")
+_DENY_ALL_ROBOTS = "User-agent: *\nDisallow: /\n"
+# RFC 9309 leaves an unbounded Crawl-delay unpoliced; we cap it so one host cannot stall a whole
+# run. A host that genuinely needs longer belongs on a lower max_pages/schedule, not a longer wait.
+MAX_CRAWL_DELAY_SECONDS = 30.0
+ROBOTS_USER_AGENT = "*"  # matches robots_verdict's/HtmlConnector's own can_fetch calls
 
 
 def _robots_root(url: str) -> str:
@@ -35,34 +39,46 @@ def _robots_root(url: str) -> str:
     return f"{parts.scheme}://{parts.netloc}"
 
 
-def load_robots(http: httpx.Client, root: str) -> tuple[robotparser.RobotFileParser, str | None]:
+def load_robots(http: httpx.Client, root: str) -> tuple[Protego, str | None]:
     """The parsed robots.txt of a host, and why the whole host is disallowed when it could not be read.
 
-    A fetch failure, 401/403 or 5xx disallows the host; any other non-200 (e.g. 404) allows everything.
+    A fetch failure, 401/403 or 5xx disallows the host; any other non-200 (e.g. 404) allows
+    everything. Parsed with protego (RFC 9309: longest matching rule wins, not the first one --
+    urllib.robotparser gets this wrong, which wrongly refused be.ch's own PDFs under a narrower
+    Allow nested inside a broader Disallow).
     """
-    parser = robotparser.RobotFileParser()
     try:
         response = http.get(root + "/robots.txt", timeout=20, follow_redirects=True)
     except httpx.HTTPError as exc:
-        parser.parse(_DENY_ALL_ROBOTS)
-        return parser, f"fetch failed: {exc}"
+        return Protego.parse(_DENY_ALL_ROBOTS), f"fetch failed: {exc}"
     if response.status_code == 200:
-        parser.parse(response.text.splitlines())
-        return parser, None
+        return Protego.parse(response.text), None
     if response.status_code in (401, 403) or response.status_code >= 500:
-        parser.parse(_DENY_ALL_ROBOTS)
-        return parser, f"HTTP {response.status_code}"
-    parser.parse([])
-    return parser, None
+        return Protego.parse(_DENY_ALL_ROBOTS), f"HTTP {response.status_code}"
+    return Protego.parse(""), None
 
 
 def robots_verdict(http: httpx.Client, url: str, respect: bool) -> str:
     """'allowed', 'disallowed', or 'disallowed-ignored' (disallowed, but RESPECT_ROBOTS is off),
     with the crawler's own rules."""
     parser, _problem = load_robots(http, _robots_root(url))
-    if parser.can_fetch("*", url):
+    if parser.can_fetch(url, ROBOTS_USER_AGENT):
         return "allowed"
     return "disallowed" if respect else "disallowed-ignored"
+
+
+def host_delay(base_delay: float, crawl_delay: float | None, root: str = "") -> float:
+    """The per-host delay HostThrottle should enforce: at least the robots.txt Crawl-delay (for
+    our user agent, falling back to `*`), never less than the policy's own base delay, capped at
+    MAX_CRAWL_DELAY_SECONDS (logged when the cap bites)."""
+    if crawl_delay is None:
+        return base_delay
+    wanted = max(base_delay, crawl_delay)
+    if wanted > MAX_CRAWL_DELAY_SECONDS:
+        logger.warning("robots.txt for %s asks for a %.1fs crawl-delay; capping at %.1fs",
+                       root or "host", wanted, MAX_CRAWL_DELAY_SECONDS)
+        return MAX_CRAWL_DELAY_SECONDS
+    return wanted
 
 
 @dataclass(frozen=True)
@@ -132,7 +148,8 @@ class HtmlConnector:
         self._policy = policy
         self._sleep = sleep
         self._throttle = throttle or SHARED_THROTTLE
-        self._robots: dict[str, robotparser.RobotFileParser] = {}
+        self._robots: dict[str, Protego] = {}
+        self._delays: dict[str, float] = {}
         self._warned_hosts: set[str] = set()
 
     def _warn_once(self, root: str, message: str) -> None:
@@ -142,7 +159,8 @@ class HtmlConnector:
 
     def _before(self, url: str) -> None:
         """Per-host politeness, shared with every other connector and thread (see politeness)."""
-        self._throttle.wait(url, self._policy.delay_seconds, self._sleep)
+        delay = self._delays.get(_robots_root(url), self._policy.delay_seconds)
+        self._throttle.wait(url, delay, self._sleep)
 
     def _robots_allow(self, url: str) -> bool:
         if not self._policy.respect_robots:
@@ -154,7 +172,8 @@ class HtmlConnector:
             if problem:
                 self._warn_once(root, problem)
             self._robots[root] = parser
-        return self._robots[root].can_fetch("*", url)
+            self._delays[root] = host_delay(self._policy.delay_seconds, parser.crawl_delay(ROBOTS_USER_AGENT), root)
+        return self._robots[root].can_fetch(url, ROBOTS_USER_AGENT)
 
     @staticmethod
     def _in_prefixes(url: str, prefixes: tuple[str, ...]) -> bool:
