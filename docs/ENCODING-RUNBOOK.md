@@ -27,6 +27,28 @@ pass `--allow-fake` against the dev database. `--dry-run` is always safe (no wri
 
 ---
 
+## 0. Handing the database to another machine (optional)
+
+The crawl takes hours, so a teammate can start from a copy instead. On the machine that crawled (after the fetch
+has exited):
+
+```bash
+docker exec swisscom-hackathon-db-1 pg_dump -U swiss -d swiss_grounding -Fc > corpus.dump
+tar czf corpus-data.tgz data/        # raw PDFs/XML and page images for OCR; paths in the DB are relative to data/
+```
+
+On the receiving machine, from the repo root on the same branch:
+
+```bash
+docker compose up -d db
+docker exec -i swisscom-hackathon-db-1 pg_restore -U swiss -d swiss_grounding --clean --if-exists --no-owner < corpus.dump
+tar xzf corpus-data.tgz              # recreates data/ next to the repo
+uv run swiss-grounding corpus status # documents per source should match the sender's
+```
+
+Then run §1 as usual. `corpus fetch` is incremental: it adds sources missing from the dump (or newly added to the
+manifest) and re-checks the rest.
+
 ## 1. Check crawl status, resume if needed
 
 First wait for any running fetch to exit — this must print nothing:
@@ -48,7 +70,23 @@ Confirms documents exist for every declared source/language. `fetch` resumes inc
 
 ## 2. Set up `.env`
 
-Edit `.env` (based on `.env.example`):
+The pipeline runs with **OpenAI or Anthropic**, interchangeably. Pick the provider you have a key for; every
+step below is the same except where marked.
+
+**With an Anthropic key**, edit `.env`:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+CORPUS_LLM_PROVIDER=anthropic     # OCR and descriptions via Claude (CORPUS_ANTHROPIC_MODEL, default Claude Haiku 4.5)
+CORPUS_BUDGET_USD=<your credit>   # e.g. 5 — the cap stops paid work when the credit is used up
+CORPUS_OCR_BUDGET_USD=<share of it for OCR, e.g. 1>
+EMBEDDING_BACKEND=sentence_transformers
+```
+
+Differences on Anthropic: calls run synchronously (no Batch API), and spend is priced at Claude rates. Skip §8 and
+§10 (the `openai-3l` index needs an OpenAI key). The local `bge-m3` index (§11) is the one the server answers from.
+
+**With an OpenAI key**, edit `.env` (based on `.env.example`):
 
 ```
 OPENAI_API_KEY=sk-...
@@ -66,8 +104,10 @@ actual per-model enqueued-token limit (OpenAI dashboard → Settings → Limits 
 value means many sequential batches, each up to 24h. A batch that exceeds the account's limit fails and leaves
 its tasks pending (see "Resuming" below).
 
-Leave `ANTHROPIC_API_KEY` / `LLM_BACKEND` alone — the corpus track's Anthropic fallback
-(`CORPUS_LLM_PROVIDER=anthropic`) is sync-only and not used in this run.
+**When the credit is smaller than the estimate:** the cap refuses a stage whose estimate exceeds what is left, and
+the refusal message says how many tasks fit. Re-run that stage with `--limit <that number>`. Spend the credit in
+this order: document descriptions, then chunk descriptions, then OCR. Chunks left without a description are still
+embedded locally with `--allow-undescribed` (§11), and get described when more credit arrives.
 
 ## 3. Verify prices
 
@@ -221,9 +261,14 @@ uv run swiss-grounding corpus index --index openai-3l
 
 ```bash
 uv sync --extra embed
-uv run swiss-grounding corpus embed --index bge-m3
+uv run swiss-grounding corpus embed --index bge-m3                       # described chunks
+uv run swiss-grounding corpus embed --index bge-m3 --allow-undescribed   # only if the credit ran out before every chunk was described
 uv run swiss-grounding corpus index --index bge-m3
 ```
+
+`--allow-undescribed` embeds the remaining chunks as breadcrumb + text. When they are described later, their
+embedding text changes and the next `embed` run re-embeds exactly those chunks. Build the index after the last
+`embed` run of the night. Rebuilding it later is fine.
 
 Requires `EMBEDDING_BACKEND=sentence_transformers` (set in §2) — with `fake` (the default), `embed --index bge-m3`
 refuses to write against the dev database unless `--allow-fake` is passed. With FlagEmbedding installed this also
