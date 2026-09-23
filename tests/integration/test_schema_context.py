@@ -38,7 +38,8 @@ select is_nullable, column_default
 from information_schema.columns
 where table_name = 'chunk' and column_name = 'context_en'
 """
-INDEX = "select 1 as present from pg_indexes where tablename = 'chunk' and indexname = 'chunk_tsv_idx'"
+INDEX = ("select 1 as present from pg_indexes where schemaname = 'public' and tablename = 'chunk' "
+         "and indexname = 'chunk_tsv_idx'")
 
 
 def _tsv_definition(conn) -> str | None:

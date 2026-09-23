@@ -118,17 +118,17 @@ def test_batch_runner_marks_batches_done_after_collecting(tmp_path):
     assert done == [("batch-1", "completed")]
 
 
-def test_submit_lines_splits_on_max_bytes(tmp_path):
+def test_submit_sequentially_splits_on_max_bytes(tmp_path):
     client = FakeOpenAI()
     lines = [{"custom_id": str(i), "body": "x" * 40} for i in range(4)]
     runner = BatchRunner(client, work_dir=tmp_path, max_per_file=100, max_bytes=120, poll_seconds=0,
                          record=lambda *a: None)
-    batch_ids = runner.submit_lines(lines, kind="describe", endpoint="/v1/chat/completions")
+    batch_ids = [bid for bid, _ in runner.submit_sequentially(lines, kind="describe", endpoint="/v1/chat/completions")]
     assert len(batch_ids) > 1
     assert sum(len(f) for f in client.submitted) == 4
 
 
-def test_submit_lines_splits_on_max_tokens_per_file(tmp_path):
+def test_submit_sequentially_splits_on_max_tokens_per_file(tmp_path):
     """A line's estimated input tokens (system + user text) also forces a new file, so a run
     never enqueues more than one file's worth of tokens at a time against the org's queue limit."""
     client = FakeOpenAI()
@@ -138,7 +138,7 @@ def test_submit_lines_splits_on_max_tokens_per_file(tmp_path):
               "body": {"model": "gpt-5-nano",
                        "messages": [{"role": "system", "content": ""}, {"role": "user", "content": "x" * 150}]}}
              for i in range(3)]
-    batch_ids = runner.submit_lines(lines, kind="describe", endpoint="/v1/chat/completions")
+    batch_ids = [bid for bid, _ in runner.submit_sequentially(lines, kind="describe", endpoint="/v1/chat/completions")]
     assert len(batch_ids) == 2
     assert [len(f) for f in client.submitted] == [2, 1]
 
@@ -149,7 +149,7 @@ def test_resume_collects_already_submitted_batches(tmp_path):
     tasks = [LlmTask(str(i), "gpt-5-nano", "s", "u") for i in range(3)]
     lines = [{"custom_id": t.custom_id, "method": "POST", "url": "/v1/chat/completions",
               "body": {"model": t.model}} for t in tasks]
-    batch_ids = runner.submit_lines(lines, kind="describe", endpoint="/v1/chat/completions")
+    batch_ids = [bid for bid, _ in runner.submit_sequentially(lines, kind="describe", endpoint="/v1/chat/completions")]
     out = list(runner.resume(batch_ids))
     assert sorted(o.custom_id for o in out) == ["0", "1", "2"]
     assert all(o.data == {"ok": o.custom_id} for o in out)
@@ -178,7 +178,7 @@ def test_resume_reports_missing_outcomes_for_a_failed_batch_when_input_is_known(
     client = FakeOpenAI(statuses={"batch-1": "failed"})
     runner = BatchRunner(client, work_dir=tmp_path, max_per_file=50, poll_seconds=0, record=lambda *a: None)
     lines = [{"custom_id": "0", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-5-nano"}}]
-    batch_ids = runner.submit_lines(lines, kind="describe", endpoint="/v1/chat/completions")
+    batch_ids = [bid for bid, _ in runner.submit_sequentially(lines, kind="describe", endpoint="/v1/chat/completions")]
     out = list(runner.resume(batch_ids))
     assert len(out) == 1 and out[0].custom_id == "0" and out[0].data is None
     assert "no result: batch batch-1 failed" in out[0].error

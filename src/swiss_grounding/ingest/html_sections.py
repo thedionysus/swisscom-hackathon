@@ -12,8 +12,10 @@ DROP_TAGS = ("nav", "footer", "header", "script", "style", "noscript", "aside", 
 # Class tokens CMSes use to visually hide a heading from sighted users while keeping it in the
 # DOM for screen readers (chur.ch's "Inhalt", others' "Navigation"/"Kopfzeile"). Such a heading
 # is never the page title and never a real section break -- its text is dropped entirely.
+# The bare `hidden` token is deliberately absent: utility CSS pairs it with a breakpoint
+# (`hidden md:block`), so a heading carrying it is usually a real, responsive heading.
 _HIDDEN_CLASSES = frozenset({
-    "sr-only", "visually-hidden", "visuallyhidden", "hidden", "invisible", "screen-reader-text",
+    "sr-only", "visually-hidden", "visuallyhidden", "invisible", "screen-reader-text",
     "element-invisible", "u-visually-hidden", "show-for-sr", "access", "offscreen",
 })
 _HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.IGNORECASE)

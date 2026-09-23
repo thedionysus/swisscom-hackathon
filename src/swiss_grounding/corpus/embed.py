@@ -188,10 +188,28 @@ def _current_hashes(conn: psycopg.Connection, keys: Sequence[tuple[int, str]]) -
     return {(r["id"], r["language"]): r["h"] for r in rows}
 
 
-def _flush(conn: psycopg.Connection, index: IndexSpec, rows: list[tuple], tokens: int, report: dict) -> None:
-    """Write the rows whose chunk still exists with the same embedded text, record the block's spend, commit."""
-    current = _current_hashes(conn, [(cid, lang) for cid, lang, _, _ in rows])
+def _stored_hashes(conn: psycopg.Connection, index: IndexSpec,
+                   keys: Sequence[tuple[int, str]]) -> dict[tuple[int, str], str]:
+    rows = conn.execute(
+        f"select e.chunk_id, e.language, e.text_hash from {index.table} e "
+        f"join unnest(%s::bigint[], %s::text[]) as k(id, lang) on e.chunk_id = k.id and e.language = k.lang",
+        ([k[0] for k in keys], [k[1] for k in keys])).fetchall()
+    return {(r["chunk_id"], r["language"]): r["text_hash"] for r in rows}
+
+
+def _flush(conn: psycopg.Connection, index: IndexSpec, rows: list[tuple], row_tokens: list[int],
+           other_tokens: int, report: dict) -> None:
+    """Write the rows whose chunk still exists with the same embedded text, record the block's spend, commit.
+
+    A row whose vector is already stored under the same hash was ingested (and billed) by an earlier, interrupted
+    run of this batch, so its tokens are not recorded again. `other_tokens` (error lines) are always recorded.
+    """
+    keys = [(cid, lang) for cid, lang, _, _ in rows]
+    current = _current_hashes(conn, keys)
+    stored = _stored_hashes(conn, index, keys)
     fresh = [row for row in rows if current.get((row[0], row[1])) == row[2]]
+    tokens = other_tokens + sum(used for row, used in zip(rows, row_tokens, strict=True)
+                                if stored.get((row[0], row[1])) != row[2])
     if fresh:
         _write(conn, index, fresh)
     if tokens:
@@ -222,22 +240,23 @@ def _ingest_batch(database_url: str, index: IndexSpec, batch_runner, batch_id: s
     """Fetch one batch, write its vectors in committed blocks of WRITE_BLOCK, then mark it done (after the commit)."""
     seen: set[str] = set()
     with connect(database_url) as conn:
-        rows, tokens = [], 0
+        rows, row_tokens, other_tokens = [], [], 0
         for raw in batch_runner.fetch(batch_id):
             custom_id, vector, used, error = _parse_line(raw)
             seen.add(custom_id)
-            tokens += used
             if error is not None:
                 log.warning("embed batch %s: %s failed: %s", batch_id, custom_id, error)
                 report["failed"] += 1
+                other_tokens += used
                 continue
             lang, cid, digest = custom_id.split("|")
             rows.append((int(cid), lang, digest, vector))
+            row_tokens.append(used)
             if len(rows) >= WRITE_BLOCK:
-                _flush(conn, index, rows, tokens, report)
-                rows, tokens = [], 0
-        if rows or tokens:
-            _flush(conn, index, rows, tokens, report)
+                _flush(conn, index, rows, row_tokens, other_tokens, report)
+                rows, row_tokens, other_tokens = [], [], 0
+        if rows or other_tokens:
+            _flush(conn, index, rows, row_tokens, other_tokens, report)
     missing = (expected or set()) - seen
     if missing:
         log.warning("embed batch %s: %d request(s) returned no result", batch_id, len(missing))

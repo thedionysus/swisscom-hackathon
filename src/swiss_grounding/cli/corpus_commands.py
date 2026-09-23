@@ -232,20 +232,24 @@ def _check_budget(conn, settings: Settings, estimate: float, kind: str | None = 
 
 # --- estimate ---------------------------------------------------------------------------------------
 
-def _echo_describe_estimates(conn, settings: Settings, batch: bool) -> None:
+def _echo_describe_estimates(conn, settings: Settings, batch: bool) -> float:
+    """Prints the describe lines; returns docs + projected chunks, the describe share of the run's total."""
     doc_model = _priced_model(settings, settings.corpus_doc_model)
     chunk_model = _priced_model(settings, settings.corpus_chunk_model)
     docs = build_doc_tasks(conn, settings.corpus_doc_model, None)
     chunks = build_chunk_tasks(conn, settings.corpus_chunk_model, None)
     projected, projected_usd = project_chunk_tasks(conn, chunk_model, batch=batch)
-    typer.echo(f"describe docs: {len(docs)} tasks, estimate {usd(estimate_describe(docs, doc_model, batch=batch))}")
+    docs_usd = estimate_describe(docs, doc_model, batch=batch)
+    typer.echo(f"describe docs: {len(docs)} tasks, estimate {usd(docs_usd)}")
     typer.echo(f"describe chunks: {len(chunks)} tasks in described groups, estimate "
                f"{usd(estimate_describe(chunks, chunk_model, batch=batch))}")
     typer.echo(f"describe chunks projected: {projected} tasks, estimate {usd(projected_usd)} "
                "(every group, once documents are described)")
+    return docs_usd + projected_usd
 
 
-def _echo_embed_estimates(conn, batch: bool) -> None:
+def _echo_embed_estimates(conn, batch: bool) -> float:
+    """Prints the embed lines; returns the openai-3l estimate projected with descriptions."""
     spec = INDEXES["openai-3l"]
     pending = pending_for_index(conn, spec, require_description=False, limit=None)
     before = estimate_embeddings(pending, spec.model, batch=batch)
@@ -254,6 +258,7 @@ def _echo_embed_estimates(conn, batch: bool) -> None:
     typer.echo(f"embed openai-3l projected with descriptions: {len(pending)} chunks, estimate {usd(before + extra)}")
     local = pending_for_index(conn, INDEXES["bge-m3"], require_description=False, limit=None)
     typer.echo(f"embed bge-m3: {len(local)} chunks, local (free)")
+    return before + extra
 
 
 @corpus_app.command("estimate")
@@ -264,9 +269,10 @@ def estimate_cmd() -> None:
     batch = settings.corpus_llm_provider != "anthropic"     # the Anthropic fallback is sync-only
     ocr_model = _priced_model(settings, settings.corpus_ocr_model)
     with connect(settings.database_url) as conn:
-        typer.echo(f"ocr: estimate {usd(estimate_ocr(conn, ocr_model, batch=batch))}")
-        _echo_describe_estimates(conn, settings, batch)
-        _echo_embed_estimates(conn, batch=True)
+        ocr_usd = estimate_ocr(conn, ocr_model, batch=batch)
+        typer.echo(f"ocr: estimate {usd(ocr_usd)}")
+        describe_usd = _echo_describe_estimates(conn, settings, batch)
+        embed_usd = _echo_embed_estimates(conn, batch=True)
         in_flight = conn.execute("select count(*) as n, coalesce(sum(estimated_usd), 0) as usd "
                                  "from corpus.batch_job where ingested_at is null and status <> all(%s)",
                                  (list(TERMINAL_NON_COUNTING_STATUSES),)).fetchone()
@@ -274,6 +280,9 @@ def estimate_cmd() -> None:
     typer.echo(f"estimates at {'batch' if batch else 'sync'} price; sync costs x{SYNC_MULTIPLIER:g}")
     typer.echo(f"batches in flight: {in_flight['n']} ({usd(float(in_flight['usd']))})")
     typer.echo(f"spent so far: {usd(total)} of {usd(settings.corpus_budget_usd)}")
+    # The go/no-go number: ocr + docs + projected chunk pass + openai-3l projected with descriptions.
+    label = "batch price" if batch else "ocr/describe at sync price, embed at batch price"
+    typer.echo(f"total estimate ({label}): {usd(ocr_usd + describe_usd + embed_usd)}")
 
 
 # --- ocr --------------------------------------------------------------------------------------------
@@ -368,7 +377,7 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
     if not dry_run:
         _resume_chat(settings, DESCRIBE_KINDS[what], run_fn, priced)
     with connect(settings.database_url) as conn:
-        if what == "chunks" and not dry_run:
+        if not dry_run:     # before either pass: doc excerpts and chunk tasks both leave furniture out
             typer.echo(f"marked {mark_repeated_furniture(conn)} repeated furniture chunk(s) as boilerplate")
             conn.commit()
         tasks = (build_doc_tasks if what == "docs" else build_chunk_tasks)(conn, task_model, limit)

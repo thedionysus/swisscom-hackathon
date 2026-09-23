@@ -117,3 +117,24 @@ def test_replayed_outcome_is_skipped_without_spend_or_quarantine(corpus_db, tmp_
         assert conn.execute("select count(*) as n from corpus.llm_spend").fetchone()["n"] == 1
         assert conn.execute("select count(*) as n from corpus.quarantine").fetchone()["n"] == 0
         assert conn.execute("select text from corpus.chunk").fetchone()["text"] == "Seite eins"
+
+
+def test_missing_page_image_is_quarantined_and_does_not_use_up_the_limit(corpus_db, tmp_path):
+    image = tmp_path / "p2.png"
+    Image.new("RGB", (10, 10), "white").save(image)
+    gone = tmp_path / "gone.png"
+    doc = ParsedDocument(source_id="ahv", url="https://ahv/m.pdf", language="de", work_key="pdf:https://ahv/m.pdf",
+                         title="Merkblatt", extraction="pdf_text",
+                         sections=(ParsedSection("de:p1", ("Merkblatt", "p. 1"), "page=1", "", needs_ocr=True,
+                                                 ocr_image=str(gone), ocr_digest="d1"),
+                                   ParsedSection("de:p2", ("Merkblatt", "p. 2"), "page=2", "", needs_ocr=True,
+                                                 ocr_image=str(image), ocr_digest="d2")))
+    with connect(corpus_db) as conn:
+        upsert_source(conn, SPEC)
+        persist_document(conn, doc, SPEC, datetime(2026, 9, 24, tzinfo=UTC))
+        conn.commit()
+        tasks = build_ocr_tasks(conn, model="gpt-5-mini", limit=1)
+    assert len(tasks) == 1 and tasks[0].image_png_b64
+    with connect(corpus_db) as conn:
+        rows = conn.execute("select source_id, stage, reason from corpus.quarantine").fetchall()
+    assert [(r["source_id"], r["stage"], r["reason"]) for r in rows] == [("ocr", "ocr", f"page image missing: {gone}")]
