@@ -30,6 +30,41 @@ DEFAULT_MAX_PDFS = 50
 _DENY_ALL_ROBOTS = ("User-agent: *", "Disallow: /")
 
 
+def _robots_root(url: str) -> str:
+    parts = urlparse(url)
+    return f"{parts.scheme}://{parts.netloc}"
+
+
+def load_robots(http: httpx.Client, root: str) -> tuple[robotparser.RobotFileParser, str | None]:
+    """The parsed robots.txt of a host, and why the whole host is disallowed when it could not be read.
+
+    A fetch failure, 401/403 or 5xx disallows the host; any other non-200 (e.g. 404) allows everything.
+    """
+    parser = robotparser.RobotFileParser()
+    try:
+        response = http.get(root + "/robots.txt", timeout=20, follow_redirects=True)
+    except httpx.HTTPError as exc:
+        parser.parse(_DENY_ALL_ROBOTS)
+        return parser, f"fetch failed: {exc}"
+    if response.status_code == 200:
+        parser.parse(response.text.splitlines())
+        return parser, None
+    if response.status_code in (401, 403) or response.status_code >= 500:
+        parser.parse(_DENY_ALL_ROBOTS)
+        return parser, f"HTTP {response.status_code}"
+    parser.parse([])
+    return parser, None
+
+
+def robots_verdict(http: httpx.Client, url: str, respect: bool) -> str:
+    """'allowed', 'disallowed', or 'disallowed-ignored' (disallowed, but RESPECT_ROBOTS is off),
+    with the crawler's own rules."""
+    parser, _problem = load_robots(http, _robots_root(url))
+    if parser.can_fetch("*", url):
+        return "allowed"
+    return "disallowed" if respect else "disallowed-ignored"
+
+
 @dataclass(frozen=True)
 class CrawlPolicy:
     respect_robots: bool
@@ -112,24 +147,12 @@ class HtmlConnector:
     def _robots_allow(self, url: str) -> bool:
         if not self._policy.respect_robots:
             return True
-        host = urlparse(url)
-        root = f"{host.scheme}://{host.netloc}"
+        root = _robots_root(url)
         if root not in self._robots:
-            parser = robotparser.RobotFileParser()
             self._before(root + "/robots.txt")
-            try:
-                response = self._http.get(root + "/robots.txt", timeout=20, follow_redirects=True)
-            except httpx.HTTPError as exc:
-                parser.parse(_DENY_ALL_ROBOTS)
-                self._warn_once(root, f"fetch failed: {exc}")
-            else:
-                if response.status_code == 200:
-                    parser.parse(response.text.splitlines())
-                elif response.status_code in (401, 403) or response.status_code >= 500:
-                    parser.parse(_DENY_ALL_ROBOTS)
-                    self._warn_once(root, f"HTTP {response.status_code}")
-                else:
-                    parser.parse([])
+            parser, problem = load_robots(self._http, root)
+            if problem:
+                self._warn_once(root, problem)
             self._robots[root] = parser
         return self._robots[root].can_fetch("*", url)
 

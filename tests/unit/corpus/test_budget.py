@@ -16,3 +16,9 @@ def test_batch_cost_and_sync_doubles_it():
 def test_unknown_model_is_refused():
     with pytest.raises(KeyError):
         cost_usd("gpt-99", 1, 1)
+
+
+def test_the_anthropic_fallback_model_has_a_price():
+    from swiss_grounding.corpus.budget import PRICES
+    assert PRICES["claude-haiku-4-5-20251001"] == PRICES["claude-haiku-4-5"] == (0.5, 2.5)
+    assert cost_usd("claude-haiku-4-5", 1_000_000, 1_000_000, batch=False) == pytest.approx(6.0)

@@ -186,3 +186,11 @@ def _akn_with_article_text(body_text: str) -> str:
     </body>
   </act>
 </akomaNtoso>"""
+
+
+def test_probe_counts_in_force_consolidations(tmp_path):
+    bindings = {"de": [_binding("2025-07-01", "https://f/a.xml"), _binding("2027-01-01", "https://f/b.xml")]}
+    connector = FedlexConnector(httpx.Client(transport=_transport(bindings)), today=lambda: date(2026, 9, 24),
+                                data_dir=tmp_path, sleep=lambda s: None)
+    assert connector.probe("220", "de") == 2
+    assert connector.probe("220", "en") == 0

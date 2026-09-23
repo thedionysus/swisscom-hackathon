@@ -161,26 +161,43 @@ def build_doc_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> 
 
 
 # One chunk per (group, status, align_key, language): the newest document's. Groups wait for their
-# document description.
-PENDING_CHUNKS = f"""
+# document description, except in the projection.
+_PENDING_CHUNKS = """
 select distinct on (c.translation_group_id, c.status, c.align_key, c.language)
        c.id, c.language, c.translation_group_id, c.status, c.align_key, c.breadcrumb, c.text, c.topics
 from corpus.chunk c join corpus.translation_group g on g.id = c.translation_group_id
-where c.status in {LIVE} and c.description = '' and c.text <> '' and g.description_by_lang <> '{{}}'::jsonb
+where c.status in {live} and c.description = '' and c.text <> ''{doc_condition}
 order by c.translation_group_id, c.status, c.align_key, c.language, c.document_id desc
 """
+_DOC_DESCRIBED = " and g.description_by_lang <> '{}'::jsonb"
+PENDING_CHUNKS = _PENDING_CHUNKS.format(live=LIVE, doc_condition=_DOC_DESCRIBED)
+PROJECTED_CHUNKS = _PENDING_CHUNKS.format(live=LIVE, doc_condition="")
+# Input tokens a document description adds to a chunk prompt, for groups not yet described.
+PROJECTED_DOC_DESCRIPTION_TOKENS = 85
 
 
-def build_chunk_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> list[LlmTask]:
-    rows = conn.execute(
+def _chunk_rows(conn: psycopg.Connection, pending_sql: str, limit: int | None) -> list[dict]:
+    return conn.execute(
         "select p.translation_group_id as gid, p.status, p.align_key, g.description_by_lang as doc, "
         "jsonb_object_agg(p.language, jsonb_build_object('breadcrumb', p.breadcrumb, 'text', left(p.text, %s))) as v, "
         "jsonb_object_agg(p.language, p.id) as ids, "
         "(array_agg(to_jsonb(p.topics) order by p.language))[1] as prior "
-        f"from ({PENDING_CHUNKS}) p join corpus.translation_group g on g.id = p.translation_group_id "
+        f"from ({pending_sql}) p join corpus.translation_group g on g.id = p.translation_group_id "
         "group by p.translation_group_id, p.status, p.align_key, g.description_by_lang "
         "order by p.translation_group_id, p.align_key limit %s", (CHUNK_TEXT_CHARS, limit)).fetchall()
-    return [_chunk_task(r, model) for r in rows]
+
+
+def build_chunk_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> list[LlmTask]:
+    return [_chunk_task(r, model) for r in _chunk_rows(conn, PENDING_CHUNKS, limit)]
+
+
+def project_chunk_tasks(conn: psycopg.Connection, model: str, batch: bool = True) -> tuple[int, float]:
+    """(task count, USD) of the chunk pass as it will be once every document is described: groups without a
+    document description yet are counted too, with PROJECTED_DOC_DESCRIPTION_TOKENS added to their prompt."""
+    rows = _chunk_rows(conn, PROJECTED_CHUNKS, None)
+    undescribed = sum(1 for r in rows if not r["doc"])
+    extra = cost_usd(model, undescribed * PROJECTED_DOC_DESCRIPTION_TOKENS, 0, batch=batch) if undescribed else 0.0
+    return len(rows), estimate_describe([_chunk_task(r, model) for r in rows], model, batch=batch) + extra
 
 
 def _chunk_task(r: dict, model: str) -> LlmTask:

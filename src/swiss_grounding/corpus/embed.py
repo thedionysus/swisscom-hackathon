@@ -125,12 +125,31 @@ def _record_sync_spend(conn: psycopg.Connection, provider) -> None:
                  input_tokens=tokens, output_tokens=0, estimated=False)
 
 
+def token_groups(pending: Sequence[dict], max_items: int, max_tokens: int | None = None) -> list[list[dict]]:
+    """Consecutive groups of at most `max_items` texts and, when given, `max_tokens` estimated tokens.
+    A single text over `max_tokens` is sent on its own (the provider truncates or rejects it)."""
+    groups: list[list[dict]] = []
+    current: list[dict] = []
+    tokens = 0
+    for item in pending:
+        cost = estimate_tokens(item["text"])
+        if current and (len(current) >= max_items or (max_tokens is not None and tokens + cost > max_tokens)):
+            groups.append(current)
+            current, tokens = [], 0
+        current.append(item)
+        tokens += cost
+    if current:
+        groups.append(current)
+    return groups
+
+
 def embed_local(database_url: str, index: IndexSpec, provider, batch_size: int = 256,
-                require_description: bool = True) -> int:
+                require_description: bool = True, max_tokens_per_request: int | None = None) -> int:
     """Embed pending chunks with an in-process provider, committing every batch (resumable).
 
     Vectors of unchanged chunks are copied first; a provider with `embed_with_sparse` also fills `sparse`; a paid
-    provider's spend is recorded with each batch. Returns the number of vectors newly embedded.
+    provider's spend is recorded with each batch. A request holds at most `batch_size` texts and, when
+    `max_tokens_per_request` is given, that many estimated tokens. Returns the number of vectors newly embedded.
     """
     written = 0
     with connect(database_url) as conn:
@@ -138,8 +157,7 @@ def embed_local(database_url: str, index: IndexSpec, provider, batch_size: int =
                  reuse_embeddings(conn, index, require_description))
         conn.commit()
         pending = pending_for_index(conn, index, require_description, None)
-        for start in range(0, len(pending), batch_size):
-            part = pending[start:start + batch_size]
+        for part in token_groups(pending, batch_size, max_tokens_per_request):
             texts = [p["text"] for p in part]
             if hasattr(provider, "embed_with_sparse"):
                 pairs = provider.embed_with_sparse(texts)

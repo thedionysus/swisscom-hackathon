@@ -133,6 +133,10 @@ class FedlexConnector:
             })
         return rows
 
+    def probe(self, sr: str, lang: str) -> int:
+        """Number of in-force consolidations of one SR number in one language (check-manifest)."""
+        return len(self._rows(sr, lang, self._today(), in_force_only=True))
+
     def _rows_for_language(self, sr: str, lang: str, today: date) -> dict[str, dict]:
         """{status: row} for one SR/language: in-force consolidations first; for an OPTIONAL
         language with none in force, fall back to its newest consolidation regardless of end
