@@ -154,10 +154,9 @@ class BatchRunner:
         log.info("submitted %s batch %s with %d requests", kind, batch.id, len(lines))
         return batch.id
 
-    def collect(self, batch_id: str) -> Iterator[str]:
-        """Wait for one batch and yield its raw result lines (successes and errors), then mark
-        it done (A3) so a later `ensure_within` no longer counts it as in flight. See the class
-        docstring for the commit-before-advancing contract this implies for callers."""
+    def fetch(self, batch_id: str) -> list[str]:
+        """Wait for one batch and return its raw result lines (successes and errors) WITHOUT marking
+        it done. A caller that commits results in blocks calls `done(batch_id)` after its last commit."""
         while True:
             try:
                 batch = self._client.batches.retrieve(batch_id)
@@ -175,8 +174,18 @@ class BatchRunner:
         for file_id in (batch.output_file_id, getattr(batch, "error_file_id", None)):
             if file_id:
                 lines.extend(line for line in self._client.files.content(file_id).text.splitlines() if line.strip())
-        yield from lines
-        self._mark_done(batch_id, batch.status)
+        return lines
+
+    def done(self, batch_id: str) -> None:
+        """Mark a fetched batch done (A3): it no longer counts as in flight for `ensure_within`."""
+        self._mark_done(batch_id, self._batch_status.get(batch_id, "unknown"))
+
+    def collect(self, batch_id: str) -> Iterator[str]:
+        """Wait for one batch and yield its raw result lines (successes and errors), then mark
+        it done (A3) so a later `ensure_within` no longer counts it as in flight. See the class
+        docstring for the commit-before-advancing contract this implies for callers."""
+        yield from self.fetch(batch_id)
+        self.done(batch_id)
 
     def _group_lines(self, lines: Sequence[dict]) -> list[list[dict]]:
         """A4 plus the enqueued-token-limit fix: a new file starts when adding a line would pass
@@ -236,15 +245,21 @@ class BatchRunner:
                 log.warning("batch %s returned no results and its input file is not known to this runner; "
                            "cannot report which custom ids are missing", batch_id)
 
-    def run(self, tasks: Sequence[LlmTask], kind: str, estimated_usd: float = 0.0) -> Iterator[LlmOutcome]:
-        """Submit and collect one file at a time, so this run never has more than one file's worth
-        of tokens enqueued against the org's per-model limit."""
-        from swiss_grounding.corpus.providers import OpenAILLM
-        lines = [{"custom_id": t.custom_id, "method": "POST", "url": CHAT_ENDPOINT, "body": OpenAILLM.chat_body(t)}
-                 for t in tasks]
+    def submit_sequentially(self, lines: Sequence[dict], kind: str, endpoint: str,
+                            estimated_usd: float = 0.0) -> Iterator[tuple[str, list[dict]]]:
+        """Submit one file at a time, yielding (batch_id, its lines). The next file is submitted only
+        when the caller asks for it, i.e. after it has collected the previous one, so this run never
+        has more than one file's worth of tokens enqueued against the org's per-model limit."""
         groups = self._group_lines(lines)
         total = len(lines)
         for index, group in enumerate(groups):
             estimate = estimated_usd * (len(group) / total) if total else 0.0
-            batch_id = self._submit(group, kind, CHAT_ENDPOINT, index, estimate)
+            yield self._submit(group, kind, endpoint, index, estimate), group
+
+    def run(self, tasks: Sequence[LlmTask], kind: str, estimated_usd: float = 0.0) -> Iterator[LlmOutcome]:
+        """Submit and collect one file at a time (see `submit_sequentially`)."""
+        from swiss_grounding.corpus.providers import OpenAILLM
+        lines = [{"custom_id": t.custom_id, "method": "POST", "url": CHAT_ENDPOINT, "body": OpenAILLM.chat_body(t)}
+                 for t in tasks]
+        for batch_id, group in self.submit_sequentially(lines, kind, CHAT_ENDPOINT, estimated_usd):
             yield from self._collect_group(batch_id, (line["custom_id"] for line in group))
