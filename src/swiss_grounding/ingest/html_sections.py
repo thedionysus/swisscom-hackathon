@@ -29,8 +29,11 @@ class Page:
     sections: tuple[Section, ...]
 
 
-def _content_root(soup: BeautifulSoup) -> Tag | None:
-    for selector in MAIN_CANDIDATES:
+def _content_root(soup: BeautifulSoup, content_selector: str | None = None) -> Tag | None:
+    """The element holding the page content: `content_selector` when given and matching, else the
+    first of <main>, <article>, [role=main], <body>."""
+    candidates = (content_selector, *MAIN_CANDIDATES) if content_selector else MAIN_CANDIDATES
+    for selector in candidates:
         node = soup.select_one(selector)
         if node is not None:
             return node
@@ -124,11 +127,15 @@ def _split_by_headings(root: Tag, title: str) -> tuple[Section, ...]:
     return tuple(sections)
 
 
-def html_to_page(html: str, url: str, default_language: str) -> Page:
-    """Parse an HTML page into a title, a language, and heading-delimited sections."""
+def html_to_page(html: str, url: str, default_language: str, content_selector: str | None = None) -> Page:
+    """Parse an HTML page into a title, a language, and heading-delimited sections.
+
+    `content_selector` (CSS) picks the content root for sites without a usable <main>; when it
+    matches nothing the default candidates apply.
+    """
     soup = BeautifulSoup(html, "lxml")
     language = _language(soup, default_language)
-    root = _content_root(soup)
+    root = _content_root(soup, content_selector)
     if root is None:
         return Page(title=_title(soup, None), language=language, sections=())
     _clean(root, _NON_HEADER_DROP_TAGS)  # drop nav/footer/etc. first so their h1s can't win

@@ -132,3 +132,38 @@ def test_download_aborts_past_max_bytes_via_content_length(tmp_path):
         SPEC, [DiscoveredPdf("https://x.ch/huge.pdf", "de", "Huge", "x")], known={})
     assert result.documents == ()
     assert any("larger than" in reason for _, reason in result.errors)
+
+
+def test_response_that_is_not_a_pdf_is_rejected(tmp_path):
+    client = httpx.Client(transport=httpx.MockTransport(
+        lambda r: httpx.Response(200, text="<html>Login</html>", headers={"content-type": "text/html"})))
+    result = PdfConnector(client, data_dir=tmp_path, sleep=lambda s: None).run_pdfs(
+        SPEC, [DiscoveredPdf("https://www.ahv-iv.ch/p/2.01.d", "de", "2.01", "x")], known={})
+    assert result.documents == ()
+    assert result.errors == (("https://www.ahv-iv.ch/p/2.01.d", "not a PDF (content-type text/html)"),)
+    assert not list(tmp_path.rglob("*.pdf"))
+
+
+def test_octet_stream_is_accepted_only_with_pdf_magic_bytes(tmp_path):
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = SAMPLE if request.url.path.endswith("real") else b"PK\x03\x04zip"
+        return httpx.Response(200, content=body, headers={"content-type": "application/octet-stream"})
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    result = PdfConnector(client, data_dir=tmp_path, sleep=lambda s: None).run_pdfs(
+        SPEC, [DiscoveredPdf("https://x.ch/p/real", "de", "Real", "x"),
+               DiscoveredPdf("https://x.ch/p/zip", "de", "Zip", "x")], known={})
+    assert [d.url for d in result.documents] == ["https://x.ch/p/real"]
+    assert result.errors == (("https://x.ch/p/zip", "not a PDF (content-type application/octet-stream)"),)
+
+
+def test_metadata_title_whitespace_is_collapsed(tmp_path):
+    """Live AHV leaflet: the PDF title metadata holds a carriage return mid-title."""
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    writer.add_metadata({"/Title": "2.01 - Lohnbeiträge an die\rAHV,  die IV "})
+    out = BytesIO()
+    writer.write(out)
+    doc = parse_pdf(out.getvalue(), url="https://www.ahv-iv.ch/p/2.01.d", language="de", title_hint="x",
+                    source_id="x", artifact_path="t", ocr_dir=tmp_path)
+    assert doc.title == "2.01 - Lohnbeiträge an die AHV, die IV"

@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     corpus_budget_usd: float = 100.0
     corpus_ocr_budget_usd: float = 10.0
     respect_robots: bool = True
+    # Browser-style prefix, the conventional honest-bot form: ch.ch serves a 404 shell to user
+    # agents without one (A11). Used for every corpus HTTP client.
+    corpus_user_agent: str = (
+        "Mozilla/5.0 (compatible; swiss-grounding/0.2; +https://github.com/thedionysus/swisscom-hackathon)"
+    )
     data_dir: str = "data"
 
     @model_validator(mode="after")

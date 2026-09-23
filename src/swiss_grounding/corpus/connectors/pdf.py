@@ -24,6 +24,10 @@ from swiss_grounding.corpus.models import (
 MIN_TEXT_CHARS = 80
 RENDER_SCALE = 150 / 72
 MAX_PDF_BYTES = 30_000_000
+# Servers that label a download generically: accepted only when the body starts like a PDF.
+GENERIC_CONTENT_TYPES = frozenset({"", "application/octet-stream", "binary/octet-stream", "application/download",
+                                   "application/force-download", "application/x-download"})
+PDF_MAGIC_WINDOW = 1024
 
 
 @contextmanager
@@ -46,8 +50,8 @@ def _render(document: pdfium.PdfDocument, index: int, path: Path) -> tuple[str, 
 def parse_pdf(content: bytes, *, url: str, language: str, title_hint: str, source_id: str,
               artifact_path: str | None, ocr_dir: Path | str) -> ParsedDocument:
     reader = PdfReader(BytesIO(content))
-    meta_title = (reader.metadata.title if reader.metadata and reader.metadata.title else "").strip()
-    title = meta_title or title_hint.strip() or Path(urlparse(url).path).name
+    meta_title = " ".join((reader.metadata.title if reader.metadata and reader.metadata.title else "").split())
+    title = meta_title or " ".join(title_hint.split()) or Path(urlparse(url).path).name
     stem = Path(artifact_path).stem if artifact_path else Path(urlparse(url).path).stem
     sections = []
     document: pdfium.PdfDocument | None = None
@@ -77,6 +81,15 @@ class _TooLarge(Exception):
     pass
 
 
+class _NotPdf(Exception):
+    def __init__(self, content_type: str):
+        super().__init__(f"not a PDF (content-type {content_type or 'missing'})")
+
+
+def _media_type(headers: httpx.Headers) -> str:
+    return headers.get("content-type", "").split(";")[0].strip().lower()
+
+
 class PdfConnector:
     def __init__(self, http: httpx.Client, data_dir: Path | str, sleep: Callable[[float], None] = time.sleep,
                  delay_seconds: float = 0.5):
@@ -94,6 +107,12 @@ class PdfConnector:
             if response.status_code >= 300:
                 response.close()
                 return response.status_code, response.headers, b""
+            # Links matched by pdf_link_patterns carry no .pdf suffix, so the response type is the
+            # only proof of a PDF; an HTML login page or error shell must not reach the parser.
+            media_type = _media_type(response.headers)
+            if "pdf" not in media_type and media_type not in GENERIC_CONTENT_TYPES:
+                response.close()
+                raise _NotPdf(media_type)
             content_length = response.headers.get("content-length")
             if content_length and int(content_length) > MAX_PDF_BYTES:
                 response.close()
@@ -104,6 +123,8 @@ class PdfConnector:
                 if len(body) > MAX_PDF_BYTES:
                     response.close()
                     raise _TooLarge
+            if "pdf" not in media_type and b"%PDF" not in body[:PDF_MAGIC_WINDOW]:
+                raise _NotPdf(media_type)
             return response.status_code, response.headers, bytes(body)
 
     def run_pdfs(self, spec: SourceSpec, pdfs: Sequence[DiscoveredPdf],
@@ -120,6 +141,9 @@ class PdfConnector:
                 status, response_headers, content = self._download(pdf.url, headers)
             except _TooLarge:
                 errors.append((pdf.url, f"PDF larger than {MAX_PDF_BYTES} bytes"))
+                continue
+            except _NotPdf as exc:
+                errors.append((pdf.url, str(exc)))
                 continue
             except httpx.HTTPError as exc:
                 errors.append((pdf.url, f"fetch failed: {exc}"))
