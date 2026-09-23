@@ -6,7 +6,7 @@ from swiss_grounding.app import load_location_tree
 from swiss_grounding.db.connection import connect
 from swiss_grounding.locations.models import ResolvedLocation
 from swiss_grounding.serving.models import SearchRequest
-from swiss_grounding.serving.relevance import ProvisionalRelevance
+from swiss_grounding.serving.relevance import FEATURES, ProvisionalRelevance
 from swiss_grounding.serving.reranker import OverlapReranker, passage_text
 from swiss_grounding.serving.search_service import SearchService, query_embedder
 from tests.integration.serving.corpus_fixture import EMB, add_doc
@@ -167,3 +167,14 @@ def test_reranker_cache_scores_a_shared_federal_passage_once(serving_db):
     assert resp.status == "results"
     federal = passage_text(("SR 220 OR", "Art. 266c"), "Kündigungsfrist Wohnung drei Monate")
     assert reranker.scored_passages.count(federal) == 1
+
+
+def test_scored_for_eval_yields_feature_vectors_per_group(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c",
+                breadcrumb=("SR 220 OR", "Art. 266c"))
+    rows = service(serving_db).scored_for_eval(SearchRequest(question="Kündigungsfrist Wohnung?"))
+    assert rows
+    for features, key in rows:
+        assert len(features) == len(FEATURES)
+        assert isinstance(key, str)

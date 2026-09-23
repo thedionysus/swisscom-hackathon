@@ -140,6 +140,36 @@ class SearchService:
             out.append(ScoredGroup(g, score, self.relevance.probability(x, rerank_score=score), tier))
         return sorted(out, key=lambda s: -s.relevance)
 
+    def scored_for_eval(self, request: SearchRequest) -> list[tuple[tuple[float, ...], str]]:
+        """(features, citation key) of every scored group, for every place of the request; evals only."""
+        out = []
+        q = self._embed(request)
+        for outcome in place_outcomes(request.question, request.locations, self.resolver, self.tree):
+            if pre_search(outcome) is None:
+                out.extend(self._eval_rows(outcome, q, request))
+        return out
+
+    def _eval_rows(self, outcome: PlaceOutcome, q: _Query, request: SearchRequest):
+        path, local = self._scope_path(outcome)
+        arm = ArmQuery(request.question, q.lang, q.vec, q.sparse, request.translations, q.translation_vecs, path,
+                       local, request.as_of, self.rerank_candidates, self.rerank_candidates,
+                       self.local_quota if local else 0)
+        with connect(self.database_url) as conn:
+            cands = gather_candidates(conn, arm, index=self.index, ef_search=self.ef_search)
+            versions = aligned_versions(conn, list(dict.fromkeys((c.translation_group_id, c.align_key)
+                                                                 for c in cands)), request.as_of)
+        groups = collapse(cands, versions, q.lang)
+        reps = [g.representative for g in groups]
+        scores = self.reranker.score(request.question, [passage_text(r.breadcrumb, r.text) for r in reps])
+        today = request.as_of or self.today()
+        rows = []
+        for g, score in zip(groups, scores, strict=True):
+            rep = g.representative
+            x = feature_vector(g, rerank_score=score, question_lang=q.lang, tier=self._tier(rep.extent_id, path),
+                               today=today)
+            rows.append((x, f"{rep.url}#{rep.anchor}" if rep.anchor else rep.url))
+        return rows
+
     def _cite(self, s: ScoredGroup, queries: Sequence[str]) -> Citation:
         g, rep = s.group, s.group.representative
         return Citation(
