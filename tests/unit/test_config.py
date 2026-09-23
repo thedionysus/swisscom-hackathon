@@ -43,7 +43,10 @@ def test_anthropic_backend_requires_key(monkeypatch):
 
 def test_corpus_settings_defaults(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgresql://x")
-    for key in ("OPENAI_API_KEY", "CORPUS_LLM_PROVIDER", "RESPECT_ROBOTS", "CORPUS_BUDGET_USD"):
+    for key in (
+        "OPENAI_API_KEY", "CORPUS_LLM_PROVIDER", "RESPECT_ROBOTS", "CORPUS_BUDGET_USD",
+        "DATA_DIR", "CORPUS_OCR_BUDGET_USD", "CORPUS_DOC_MODEL", "CORPUS_CHUNK_MODEL", "CORPUS_OCR_MODEL",
+    ):
         monkeypatch.delenv(key, raising=False)
     from swiss_grounding.config import Settings
     s = Settings(_env_file=None)
