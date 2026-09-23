@@ -232,3 +232,31 @@ def test_collect_retries_after_a_network_error(tmp_path):
     out = list(runner.run(tasks, kind="describe"))
     assert out[0].data == {"ok": "0"}
     assert calls["n"] == 2
+
+
+def test_fetch_then_done_marks_the_batch_only_when_told(tmp_path):
+    """Embedding ingestion commits in blocks, so it fetches a batch's lines and signals `done`
+    itself once the last block is committed."""
+    client = FakeOpenAI()
+    done = []
+    runner = BatchRunner(client, work_dir=tmp_path, poll_seconds=0,
+                         mark_done=lambda batch_id, status: done.append((batch_id, status)))
+    [(batch_id, group)] = list(runner.submit_sequentially(
+        [{"custom_id": "a", "method": "POST", "url": "/v1/chat/completions", "body": {}}], "embed",
+        "/v1/chat/completions", estimated_usd=1.0))
+    assert [line["custom_id"] for line in group] == ["a"]
+    lines = runner.fetch(batch_id)
+    assert len(lines) == 1 and done == []
+    runner.done(batch_id)
+    assert done == [(batch_id, "completed")]
+
+
+def test_submit_sequentially_submits_the_next_file_only_when_asked(tmp_path):
+    client = FakeOpenAI()
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=1, poll_seconds=0)
+    lines = [{"custom_id": str(i), "method": "POST", "url": "/v1/embeddings", "body": {"input": "x"}}
+             for i in range(3)]
+    gen = runner.submit_sequentially(lines, "embed", "/v1/embeddings")
+    next(gen)
+    assert len(client.submitted) == 1
+    assert len(list(gen)) == 2 and len(client.submitted) == 3
