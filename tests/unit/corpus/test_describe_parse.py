@@ -41,3 +41,14 @@ def test_chunk_reply_rejects_non_boolean_boilerplate():
 def test_long_descriptions_are_trimmed():
     [(_, text)] = parse_doc_reply({"descriptions": {"de": "a" * 2000}, "topics": []}, ("de",))[0].items()
     assert len(text) == 600
+
+
+def test_estimate_counts_languages_from_the_custom_id():
+    from swiss_grounding.corpus.budget import cost_usd
+    from swiss_grounding.corpus.describe import ESTIMATE_TOKENS_PER_LANGUAGE, estimate_describe
+    from swiss_grounding.corpus.runner import LlmTask
+
+    one = LlmTask(custom_id="doc|g_1|de", model="gpt-5-mini", system="s", user="u")
+    three = LlmTask(custom_id="chunk|g_1|current|de=1,fr=2,it=3|art_1|x", model="gpt-5-mini", system="s", user="u")
+    difference = estimate_describe([three], "gpt-5-mini") - estimate_describe([one], "gpt-5-mini")
+    assert difference == pytest.approx(cost_usd("gpt-5-mini", 0, 2 * ESTIMATE_TOKENS_PER_LANGUAGE))
