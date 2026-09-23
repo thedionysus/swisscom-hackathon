@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="act">
+    <preface><p><docTitle>Obligationenrecht</docTitle></p></preface>
+    <body>
+      <article eId="art_336_c">
+        <num>
+          Art. 336<i>c</i>
+        </num>
+        <heading>
+          Kündigung zur Unzeit
+          <authorialNote><p>Fassung gemäss Ziff. I des BG vom 18. März 1988.</p></authorialNote>
+        </heading>
+        <paragraph eId="art_336_c/para_1">
+          <num>
+            1
+          </num>
+          <content>
+            <p>
+              Nach Ablauf der Probezeit darf der Arbeitgeber das Arbeitsverhältnis nicht kündigen:
+            </p>
+            <blockList eId="art_336_c/para_1/lst_1">
+              <item eId="art_336_c/para_1/lst_1/lit_a">
+                <num>
+                  a.
+                </num>
+                <p>
+                  während die andere Partei Militärdienst leistet;
+                </p>
+              </item>
+              <item eId="art_336_c/para_1/lst_1/lit_b">
+                <num>
+                  b.
+                </num>
+                <p>
+                  während der Arbeitnehmer ohne eigenes Verschulden durch Krankheit ganz oder teilweise an der Arbeitsleistung verhindert ist;
+                </p>
+              </item>
+            </blockList>
+          </content>
+        </paragraph>
+        <paragraph eId="art_336_c/para_2">
+          <num>
+            2
+          </num>
+          <content>
+            <p>
+              Die Kündigung, die während einer der in Absatz 1 festgesetzten Sperrfristen erklärt wird, ist nichtig.
+            </p>
+          </content>
+        </paragraph>
+      </article>
+    </body>
+  </act>
+</akomaNtoso>
