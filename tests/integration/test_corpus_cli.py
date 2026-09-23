@@ -149,6 +149,31 @@ def test_fake_describe_all_sync_describes_everything_and_spends_nothing(corpus_d
     assert chunks and all(c["description"] for c in chunks)
 
 
+@pytest.mark.parametrize("what", ["docs", "all"])
+def test_describe_docs_marks_repeated_furniture_before_building_doc_tasks(corpus_db, monkeypatch, what):
+    _no_openai(monkeypatch)
+    with connect(corpus_db) as conn:
+        upsert_source(conn, AHV)
+        for i in range(3):
+            persist_document(conn, ParsedDocument(
+                source_id="ahv", url=f"https://ahv/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+                sections=(ParsedSection("de:0", ("Seite",), None, f"Eigener Inhalt {i}."),
+                          ParsedSection("de:9", ("Seite",), None, "Kontakt: AHV, Bundesgasse 1, 3011 Bern"))),
+                AHV, NOW)
+    built = []
+
+    def spy(conn, model, limit):
+        tasks = build_doc_tasks(conn, model, limit)
+        built.extend(tasks)
+        return tasks
+    monkeypatch.setattr(corpus_commands, "build_doc_tasks", spy)
+    result = _invoke("describe", "--what", what, "--sync")
+    assert result.exit_code == 0, result.output
+    assert len(built) == 3 and not any("Bundesgasse" in t.user for t in built)
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.chunk where status = 'boilerplate'").fetchone()["n"] == 3
+
+
 def test_fake_ocr_and_embed_spend_nothing(corpus_db, monkeypatch, tmp_path):
     _no_openai(monkeypatch)
     _seed_scan(corpus_db, tmp_path)
@@ -261,6 +286,19 @@ def test_estimate_projects_chunk_descriptions_before_documents_are_described(cor
     assert "describe chunks projected: 1 tasks" in result.output
     assert "embed openai-3l before descriptions: 2 chunks" in result.output
     assert "embed openai-3l projected with descriptions: 2 chunks" in result.output
+
+
+def test_estimate_ends_with_a_total_of_ocr_docs_projected_chunks_and_projected_embeddings(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    monkeypatch.setattr(corpus_commands, "estimate_ocr", lambda conn, model, batch=True: 1.0)
+    monkeypatch.setattr(corpus_commands, "estimate_describe", lambda tasks, model, batch=True: 2.0)
+    monkeypatch.setattr(corpus_commands, "project_chunk_tasks", lambda conn, model, batch=True: (1, 3.0))
+    monkeypatch.setattr(corpus_commands, "estimate_embeddings", lambda pending, model, batch=True: 4.0)
+    monkeypatch.setattr(corpus_commands, "PROJECTED_DESCRIPTION_TOKENS", 0)
+    result = _invoke("estimate")
+    assert result.exit_code == 0, result.output
+    # ocr 1 + docs 2 + projected chunks 3 + openai-3l projected 4; the described-groups chunk line is not added
+    assert result.output.rstrip().splitlines()[-1] == "total estimate (batch price): $10.00"
 
 
 def test_anthropic_fallback_is_estimated_at_its_own_price(corpus_db, monkeypatch):

@@ -234,3 +234,10 @@ def test_various_hidden_markers_are_all_recognised():
         page = html_to_page(html, url="https://x/", default_language="de")
         for banned in ("Hidden", "Aria", "Style", "Visually", "Screen", "Offscreen"):
             assert banned not in page.title, hidden_h1
+
+
+def test_responsive_hidden_utility_class_is_not_treated_as_hidden():
+    # Tailwind's `hidden md:block` hides a heading only on small screens; it is a real heading.
+    html = '<main><h1 class="hidden md:block">Steuererklärung</h1><p>Body.</p></main>'
+    page = html_to_page(html, url="https://x/", default_language="de")
+    assert page.title == "Steuererklärung"

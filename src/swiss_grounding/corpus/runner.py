@@ -115,8 +115,7 @@ class BatchRunner:
     runs before each file of `run()`/`submit_sequentially()` is submitted; raising stops the run there.
 
     `run()` submits and collects one file at a time (rather than all of them up front) so the
-    org's per-model enqueued-token limit is never exceeded by this run alone; `submit_lines()` is
-    still available for callers that need every batch id before collecting any of them.
+    org's per-model enqueued-token limit is never exceeded by this run alone.
     """
 
     def __init__(self, client, work_dir: Path | str, max_per_file: int = 50_000, max_bytes: int = 150_000_000,
@@ -210,12 +209,6 @@ class BatchRunner:
         if current:
             groups.append(current)
         return groups
-
-    def submit_lines(self, lines: Sequence[dict], kind: str, endpoint: str, estimated_usd: float = 0.0) -> list[str]:
-        groups = self._group_lines(lines)
-        total = len(lines)
-        return [self._submit(group, kind, endpoint, index, estimated_usd * (len(group) / total) if total else 0.0)
-                for index, group in enumerate(groups)]
 
     def _collect_group(self, batch_id: str, expected_ids: Sequence[str]) -> Iterator[LlmOutcome]:
         expected = set(expected_ids)

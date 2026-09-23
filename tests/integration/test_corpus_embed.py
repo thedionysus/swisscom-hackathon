@@ -232,6 +232,23 @@ def test_batch_result_for_changed_or_deleted_chunk_is_skipped(corpus_db, tmp_pat
     assert ids == [pending[1]["id"]]
 
 
+def test_resuming_the_same_batch_twice_records_its_spend_once(corpus_db, tmp_path):
+    index = INDEXES["openai-3l"]
+    with connect(corpus_db) as conn:
+        _seed_three(conn)
+        pending = pending_for_index(conn, index, require_description=True, limit=None)
+    client = FakeEmbeddingBatches()
+    lines = [{"custom_id": f"{p['language']}|{p['id']}|{p['hash']}", "method": "POST", "url": "/v1/embeddings",
+              "body": {"model": index.model, "input": p["text"]}} for p in pending]
+    [(batch_id, _group)] = list(BatchRunner(client, tmp_path, poll_seconds=0).submit_sequentially(
+        lines, "embed", "/v1/embeddings"))
+    for _ in range(2):      # e.g. the process died after writing but before the batch was marked ingested
+        resume_embed_batches(corpus_db, index, BatchRunner(client, tmp_path, poll_seconds=0), [batch_id])
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.emb_openai_3l").fetchone()["n"] == 3
+        assert spent(conn, "embed") == pytest.approx(cost_usd(index.model, 30, 0))
+
+
 def test_hnsw_build_sets_maintenance_memory_and_workers(corpus_db, monkeypatch):
     """Parallel HNSW builds exhaust Docker's 64 MB /dev/shm, so workers default to 0 (serial)."""
     import contextlib

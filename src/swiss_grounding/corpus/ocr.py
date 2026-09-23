@@ -9,6 +9,7 @@ batch runner serialises every line before splitting files), so a lazy generator 
 memory. Callers bound memory with `limit`.
 """
 import base64
+import logging
 from collections.abc import Sequence
 
 import psycopg
@@ -17,6 +18,8 @@ from swiss_grounding.corpus.budget import OCR_IMAGE_TOKENS, cost_usd, record_spe
 from swiss_grounding.corpus.persist import quarantine
 from swiss_grounding.corpus.runner import LlmOutcome, LlmTask
 from swiss_grounding.db.connection import connect
+
+log = logging.getLogger(__name__)
 
 OCR_SYSTEM = "You transcribe scanned pages of official Swiss documents. Reply with JSON only."
 OCR_PROMPT = (
@@ -36,16 +39,37 @@ def _pending(conn: psycopg.Connection, limit: int | None) -> list[dict]:
                         "order by id limit %s", (limit,)).fetchall()
 
 
-def _read_image_b64(path: str) -> str:
-    with open(path, "rb") as handle:
-        return base64.b64encode(handle.read()).decode()
+def _read_image_b64(path: str | None) -> str | None:
+    """The page image as base64, or None when the file is gone (paths are relative to the working directory)."""
+    if not path:
+        return None
+    try:
+        with open(path, "rb") as handle:
+            return base64.b64encode(handle.read()).decode()
+    except FileNotFoundError:
+        return None
 
 
 def build_ocr_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> list[LlmTask]:
-    return [LlmTask(custom_id=f"ocr|{row['language']}|{row['id']}", model=model, system=OCR_SYSTEM,
-                    user=OCR_PROMPT, image_png_b64=_read_image_b64(row["ocr_image"]),
-                    max_output_tokens=OCR_MAX_OUTPUT_TOKENS)
-            for row in _pending(conn, limit)]
+    """Up to `limit` tasks. A page whose image file is missing is quarantined (stage `ocr`) and skipped, so it
+    never uses up the limit; it stays pending, and a later run from the right directory picks it up again.
+    Commits when it quarantined anything, so a caller that aborts afterwards (e.g. on budget) keeps the record."""
+    tasks: list[LlmTask] = []
+    missing = 0
+    for row in _pending(conn, None):
+        if limit is not None and len(tasks) >= limit:
+            break
+        image = _read_image_b64(row["ocr_image"])
+        if image is None:
+            quarantine(conn, "ocr", f"chunk:{row['id']}", "ocr", f"page image missing: {row['ocr_image']}")
+            missing += 1
+            continue
+        tasks.append(LlmTask(custom_id=f"ocr|{row['language']}|{row['id']}", model=model, system=OCR_SYSTEM,
+                             user=OCR_PROMPT, image_png_b64=image, max_output_tokens=OCR_MAX_OUTPUT_TOKENS))
+    if missing:
+        log.warning("ocr: %d page image(s) missing, quarantined (run from the repo root?)", missing)
+        conn.commit()
+    return tasks
 
 
 def estimate_ocr(conn: psycopg.Connection, model: str, image_tokens: int = OCR_IMAGE_TOKENS,
