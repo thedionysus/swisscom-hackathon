@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="act">
+    <preface><p><docTitle>Test</docTitle></p></preface>
+    <body>
+      <article eId="art_64_c">
+        <num>Art. 64<i>c</i></num>
+        <heading>Test</heading>
+        <paragraph eId="art_64_c/para_1">
+          <num>1</num>
+          <content>
+            <p>Siehe Artikel 64<i>c</i> Absatz 1 sowie Art. 12<sup>bis</sup> der Grenzkodex<authorialNote><p>Fassung gemäss Ziff. I.</p></authorialNote> .</p>
+          </content>
+        </paragraph>
+      </article>
+    </body>
+  </act>
+</akomaNtoso>

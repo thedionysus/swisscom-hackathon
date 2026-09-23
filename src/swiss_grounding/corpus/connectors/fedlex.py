@@ -1,5 +1,6 @@
 """Fedlex SPARQL connector: every manifest language, current and scheduled consolidations."""
 import dataclasses
+import logging
 import time
 from collections.abc import Callable, Mapping
 from datetime import date
@@ -12,6 +13,8 @@ from swiss_grounding.corpus.chunker import MAX_CHARS
 from swiss_grounding.corpus.connectors.fedlex_akn import parse_akn
 from swiss_grounding.corpus.models import ConnectorResult, KnownState, ParsedDocument, SourceSpec
 
+log = logging.getLogger(__name__)
+
 ENDPOINT = "https://fedlex.data.admin.ch/sparqlendpoint"
 LANGUAGE_URI = {
     "de": "http://publications.europa.eu/resource/authority/language/DEU",
@@ -21,9 +24,12 @@ LANGUAGE_URI = {
 }
 XML_FORMAT_URI = "http://publications.europa.eu/resource/authority/file-type/XML"
 OPTIONAL_LANGUAGES = frozenset({"en"})   # English exists for ~290 acts only; its absence is not an error
+# `%(today)s` is filled with an xsd:date literal from the injected clock rather than SPARQL `now()`,
+# so a fixed `today` (as used in tests, and for reproducible re-runs) is what decides "in force".
 QUERY = """
 PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT DISTINCT ?abstract ?dateApplicability ?dateEndApplicability ?title ?fileUrl WHERE {
   ?abstract a jolux:ConsolidationAbstract ;
             jolux:classifiedByTaxonomyEntry ?entry .
@@ -42,9 +48,12 @@ SELECT DISTINCT ?abstract ?dateApplicability ?dateEndApplicability ?title ?fileU
   }
   ?manif jolux:format <%(xml)s> ;
          jolux:isExemplifiedBy ?fileUrl .
-  FILTER(!bound(?dateEndApplicability) || ?dateEndApplicability >= now())
+  %(end_filter)s
 }
 """
+# Only rows still in force as of `today`; omitted entirely for the optional-language fallback
+# query, which needs every consolidation ever published, ended or not.
+IN_FORCE_FILTER = 'FILTER(!bound(?dateEndApplicability) || ?dateEndApplicability >= "%(today)s"^^xsd:date)'
 ATTEMPTS = 3
 
 
@@ -96,16 +105,20 @@ class FedlexConnector:
             try:
                 return call()
             except (httpx.TransportError, httpx.HTTPStatusError) as exc:
-                transient = isinstance(exc, httpx.TransportError) or exc.response.status_code >= 500
+                transient = isinstance(exc, httpx.TransportError) or (
+                    exc.response.status_code >= 500 or exc.response.status_code == 429)
                 if attempt == ATTEMPTS or not transient:
                     raise
                 self._sleep(attempt * 1.0)
         raise AssertionError("unreachable")
 
-    def _rows(self, sr: str, lang: str) -> list[dict]:
+    def _rows(self, sr: str, lang: str, today: date, *, in_force_only: bool) -> list[dict]:
+        end_filter = IN_FORCE_FILTER % {"today": today.isoformat()} if in_force_only else ""
+
         def call() -> list[dict]:
             response = self._http.post(
-                ENDPOINT, data={"query": QUERY % {"sr": sr, "lang": LANGUAGE_URI[lang], "xml": XML_FORMAT_URI}},
+                ENDPOINT, data={"query": QUERY % {"sr": sr, "lang": LANGUAGE_URI[lang], "xml": XML_FORMAT_URI,
+                                                   "end_filter": end_filter}},
                 headers={"accept": "application/sparql-results+json"}, timeout=60)
             response.raise_for_status()
             return response.json()["results"]["bindings"]
@@ -120,46 +133,78 @@ class FedlexConnector:
             })
         return rows
 
+    def _rows_for_language(self, sr: str, lang: str, today: date) -> dict[str, dict]:
+        """{status: row} for one SR/language: in-force consolidations first; for an OPTIONAL
+        language with none in force, fall back to its newest consolidation regardless of end
+        date, reported as `current` (amendment: English translations can lag the in-force text)."""
+        rows = self._rows(sr, lang, today, in_force_only=True)
+        if rows:
+            current, scheduled = choose_consolidations(rows, today)
+            statuses = {}
+            if current is not None:
+                statuses["current"] = current
+            if scheduled is not None:
+                statuses["scheduled"] = scheduled
+            return statuses
+        if lang not in OPTIONAL_LANGUAGES:
+            return {}
+        any_rows = self._rows(sr, lang, today, in_force_only=False)
+        if not any_rows:
+            return {}
+        newest = max(any_rows, key=lambda r: r["applicability"])
+        log.info("SR %s [%s]: no in-force consolidation; using newest available consolidation "
+                 "(%s, ended %s)", sr, lang, newest["applicability"], newest["end"])
+        return {"current": newest}
+
     def run(self, spec: SourceSpec, known: Mapping[str, KnownState]) -> ConnectorResult:
         documents, unchanged, errors = [], [], []
         today = self._today()
         for sr in spec.config["sr_numbers"]:
-            sr_documents: list[ParsedDocument] = []
+            by_lang: dict[str, dict[str, dict]] = {}
             for lang in spec.languages:
                 if lang not in LANGUAGE_URI:
                     continue
                 try:
-                    rows = self._rows(sr, lang)
+                    statuses = self._rows_for_language(sr, lang, today)
                 except (httpx.HTTPError, KeyError, ValueError) as exc:
                     errors.append((f"SR {sr} [{lang}]", f"SR {sr} [{lang}] SPARQL failed: {exc}"))
                     continue
-                if not rows:
-                    if lang not in OPTIONAL_LANGUAGES:
-                        errors.append((f"SR {sr} [{lang}]", f"SR {sr} [{lang}]: no in-force consolidation found"))
+                if not statuses and lang not in OPTIONAL_LANGUAGES:
+                    errors.append((f"SR {sr} [{lang}]", f"SR {sr} [{lang}]: no in-force consolidation found"))
                     continue
-                for row, status in zip(choose_consolidations(rows, today), ("current", "scheduled"), strict=True):
-                    if row is None:
-                        continue
-                    url = _page_url(row["abstract"], row["applicability"], lang)
-                    if url in known:
-                        unchanged.append(url)
-                        continue
+                if statuses:
+                    by_lang[lang] = statuses
+                self._sleep(0.5)
+
+            statuses_present = {status for per_lang in by_lang.values() for status in per_lang}
+            sr_documents: list[ParsedDocument] = []
+            for status in statuses_present:
+                group = [(lang, per_lang[status]) for lang, per_lang in by_lang.items() if status in per_lang]
+                urls = {lang: _page_url(row["abstract"], row["applicability"], lang) for lang, row in group}
+                if group and all(url in known for url in urls.values()):
+                    # Every language version of this SR+status is unchanged: skip the whole group.
+                    unchanged.extend(urls.values())
+                    continue
+                # At least one language version is new: re-download every language version of this
+                # SR+status (even the "known" ones), so split-paragraph alignment (amendment)
+                # always sees every language, not just the ones that changed upstream this run.
+                for lang, row in group:
+                    url = urls[lang]
                     try:
                         xml = self._with_retry(lambda u=row["file_url"]: self._fetch_xml(u))
-                    except httpx.HTTPError as exc:
-                        errors.append((url, f"XML download failed: {exc}"))
-                        continue
-                    title = row["title"] or f"SR {sr}"
-                    sections = parse_akn(xml, act_title=title, sr=sr)
-                    if not sections:
-                        errors.append((url, "no articles parsed"))
+                        title = row["title"] or f"SR {sr}"
+                        sections = parse_akn(xml, act_title=title, sr=sr)
+                        if not sections:
+                            raise ValueError("no articles parsed")
+                        artifact_path = save_artifact(self._data_dir, spec.id, url, xml.encode(), ".xml")
+                    except Exception as exc:  # noqa: BLE001 - one bad URL must not abort the rest of the run
+                        errors.append((url, f"{type(exc).__name__}: {exc}"))
                         continue
                     sr_documents.append(ParsedDocument(
                         source_id=spec.id, url=url, language=lang, work_key=row["abstract"], title=title,
                         sections=sections, identifier=f"SR {sr}", is_authentic=lang != "en",
                         valid_from=row["applicability"], valid_to=row["end"], status=status,
-                        artifact_path=save_artifact(self._data_dir, spec.id, url, xml.encode(), ".xml")))
-                self._sleep(0.5)
+                        artifact_path=artifact_path))
             documents.extend(_mark_split_paragraphs(sr_documents))
         return ConnectorResult(documents=tuple(documents), unchanged_urls=tuple(unchanged), errors=tuple(errors))
 

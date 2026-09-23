@@ -115,6 +115,65 @@ def test_split_paragraphs_aligns_across_languages_when_any_version_overflows(tmp
     assert fr_section.split_paragraphs is True
 
 
+def test_english_falls_back_to_newest_consolidation_when_none_in_force(tmp_path):
+    """Review fix: when English has no in-force row (a stale official translation that was never
+    updated), fall back to its newest consolidation regardless of end date, reported as
+    status='current' with its real (past) valid_to and is_authentic=False."""
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST":
+            body = request.content.decode()
+            if "ENG" not in body:
+                return httpx.Response(200, json={"results": {"bindings": [_binding("2025-07-01", "https://f/de.xml")]}})
+            if "dateEndApplicability >=" in body:
+                return httpx.Response(200, json={"results": {"bindings": []}})
+            return httpx.Response(200, json={"results": {"bindings": [
+                _binding("2020-01-01", "https://f/en-old.xml", title="Code of Obligations")]}})
+        if "en-old" in str(request.url):
+            return httpx.Response(200, text=XML)
+        return httpx.Response(200, text=XML)
+
+    connector = FedlexConnector(httpx.Client(transport=httpx.MockTransport(handler)),
+                                today=lambda: date(2026, 9, 24), data_dir=tmp_path, sleep=lambda s: None)
+    result = connector.run(SPEC, known={})
+    assert result.errors == ()
+    en = next(d for d in result.documents if d.language == "en")
+    assert en.status == "current"
+    assert en.is_authentic is False
+    assert en.title == "Code of Obligations"
+
+
+def test_partial_known_triggers_full_language_group_redownload(tmp_path):
+    """Review fix: if any language version of a SR+status is new, every language version of that
+    group is re-downloaded (even ones already `known`), so split_paragraphs stays aligned even
+    when only one language actually changed upstream this run."""
+    from swiss_grounding.corpus.chunker import MAX_CHARS
+
+    de_xml = _akn_with_article_text("x" * 1700)
+    fr_xml = _akn_with_article_text("y" * (MAX_CHARS + 100))
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST":
+            body = request.content.decode()
+            lang = "fr" if "FRA" in body else "de"
+            return httpx.Response(200, json={"results": {"bindings": [_binding("2025-07-01", f"https://f/{lang}.xml")]}})
+        if "fr" in str(request.url):
+            return httpx.Response(200, text=fr_xml)
+        return httpx.Response(200, text=de_xml)
+
+    spec = SourceSpec(id="fedlex", name="Fedlex", publisher="Federal Chancellery", authority="federal_law",
+                      level="federal", extent_id="CH", connector="fedlex", tier=1, languages=("de", "fr"),
+                      config={"sr_numbers": ["220"]})
+    connector = FedlexConnector(httpx.Client(transport=httpx.MockTransport(handler)),
+                                today=lambda: date(2026, 9, 24), data_dir=tmp_path, sleep=lambda s: None)
+    de_url = "https://www.fedlex.admin.ch/eli/cc/27/317_321_377/20250701/de"
+    result = connector.run(spec, known={de_url: KnownState(None, None, "h")})
+    assert result.unchanged_urls == ()
+    by_lang = {d.language: d for d in result.documents}
+    assert set(by_lang) == {"de", "fr"}
+    assert by_lang["de"].sections[0].split_paragraphs is True
+    assert by_lang["fr"].sections[0].split_paragraphs is True
+
+
 def _akn_with_article_text(body_text: str) -> str:
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
