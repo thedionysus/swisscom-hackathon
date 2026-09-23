@@ -273,3 +273,12 @@ def test_estimate_uses_batch_price_by_default(corpus_db):
         tasks = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
     assert estimate_describe(tasks, model="gpt-5-mini", batch=False) == pytest.approx(
         2 * estimate_describe(tasks, model="gpt-5-mini"))
+
+
+def test_chunk_tasks_are_projected_before_documents_are_described(corpus_db):
+    from swiss_grounding.corpus.describe import project_chunk_tasks
+    with connect(corpus_db) as conn:
+        _seed(conn)
+        assert build_chunk_tasks(conn, model="gpt-5-nano", limit=None) == []
+        count, usd = project_chunk_tasks(conn, model="gpt-5-nano")
+    assert count == 1 and usd > 0

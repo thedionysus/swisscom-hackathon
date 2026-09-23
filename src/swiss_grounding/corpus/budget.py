@@ -5,6 +5,9 @@ PRICES: dict[str, tuple[float, float]] = {
     "text-embedding-3-large": (0.065, 0.0),
     "gpt-5-mini": (0.125, 1.0),
     "gpt-5-nano": (0.025, 0.2),
+    # Anthropic sync fallback, stated at half its list price like the rows above (sync x2 = $1 / $5).
+    "claude-haiku-4-5-20251001": (0.5, 2.5),
+    "claude-haiku-4-5": (0.5, 2.5),
 }
 SYNC_MULTIPLIER = 2.0
 CHARS_PER_TOKEN = 3          # conservative for German/French/Italian

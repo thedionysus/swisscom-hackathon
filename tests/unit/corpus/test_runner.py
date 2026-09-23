@@ -260,3 +260,22 @@ def test_submit_sequentially_submits_the_next_file_only_when_asked(tmp_path):
     next(gen)
     assert len(client.submitted) == 1
     assert len(list(gen)) == 2 and len(client.submitted) == 3
+
+
+def test_a_before_submit_refusal_on_file_two_stops_submission(tmp_path):
+    """The CLI's before_submit re-checks the cap against actual spend before each later file."""
+    client = FakeOpenAI()
+    checked = []
+
+    def before_submit(usd):
+        checked.append(usd)
+        if len(checked) == 2:
+            raise RuntimeError("budget refused")
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=2, poll_seconds=0, before_submit=before_submit)
+    tasks = [LlmTask(str(i), "gpt-5-nano", "s", "u") for i in range(4)]
+    out = []
+    with pytest.raises(RuntimeError, match="budget refused"):
+        out.extend(runner.run(tasks, kind="describe-doc", estimated_usd=4.0))
+    assert len(client.submitted) == 1
+    assert sorted(o.custom_id for o in out) == ["0", "1"]
+    assert checked == [2.0, 2.0]

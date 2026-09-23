@@ -111,7 +111,8 @@ class BatchRunner:
     generator by the caller — callers must have committed the outcome of each yielded line (or at
     least be certain they will) before asking for the next one, since `mark_done` is the signal that
     this batch no longer counts as "in flight" for `budget.ensure_within` (A3). `resume(batch_ids)`
-    re-attaches to batches already submitted by an earlier, interrupted run.
+    re-attaches to batches already submitted by an earlier, interrupted run. `before_submit(file_usd)`
+    runs before each file of `run()`/`submit_sequentially()` is submitted; raising stops the run there.
 
     `run()` submits and collects one file at a time (rather than all of them up front) so the
     org's per-model enqueued-token limit is never exceeded by this run alone; `submit_lines()` is
@@ -122,7 +123,8 @@ class BatchRunner:
                 max_tokens_per_file: int = 2_000_000, poll_seconds: float = 60,
                 record: Callable[..., None] = lambda *a: None,
                 mark_done: Callable[[str, str], None] = lambda *a: None,
-                sleep: Callable[[float], None] = time.sleep):
+                sleep: Callable[[float], None] = time.sleep,
+                before_submit: Callable[[float], None] = lambda usd: None):
         self._client = client
         self._dir = Path(work_dir)
         self._max = max_per_file
@@ -132,6 +134,7 @@ class BatchRunner:
         self._record = record
         self._mark_done = mark_done
         self._sleep = sleep
+        self._before_submit = before_submit
         self._batch_status: dict[str, str] = {}
         self._expected_ids: dict[str, set[str]] = {}
 
@@ -254,6 +257,8 @@ class BatchRunner:
         total = len(lines)
         for index, group in enumerate(groups):
             estimate = estimated_usd * (len(group) / total) if total else 0.0
+            # Raises to stop: later files are checked against the spend the earlier ones actually recorded.
+            self._before_submit(estimate)
             yield self._submit(group, kind, endpoint, index, estimate), group
 
     def run(self, tasks: Sequence[LlmTask], kind: str, estimated_usd: float = 0.0) -> Iterator[LlmOutcome]:

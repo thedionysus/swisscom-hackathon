@@ -51,16 +51,18 @@ def _seed_law(url):
                                                              "art_336_c", TEXT[lang]),)), FEDLEX, NOW)
 
 
-def _seed_scan(url, tmp_path):
-    image = tmp_path / "p1.png"
-    Image.new("RGB", (10, 10), "white").save(image)
+def _seed_scan(url, tmp_path, pages=1):
+    sections = []
+    for n in range(1, pages + 1):
+        image = tmp_path / f"p{n}.png"
+        Image.new("RGB", (10, 10), "white").save(image)
+        sections.append(ParsedSection(f"de:p{n}", ("Merkblatt", f"p. {n}"), f"page={n}", "", needs_ocr=True,
+                                      ocr_image=str(image), ocr_digest=f"d{n}"))
     with connect(url) as conn:
         upsert_source(conn, AHV)
         persist_document(conn, ParsedDocument(
             source_id="ahv", url="https://ahv/m.pdf", language="de", work_key="pdf:https://ahv/m.pdf",
-            title="Merkblatt", extraction="pdf_text",
-            sections=(ParsedSection("de:p1", ("Merkblatt", "p. 1"), "page=1", "", needs_ocr=True,
-                                    ocr_image=str(image), ocr_digest="d1"),)), AHV, NOW)
+            title="Merkblatt", extraction="pdf_text", sections=tuple(sections)), AHV, NOW)
 
 
 def _insert_batch(url, batch_id, kind, estimated=0.5):
@@ -233,3 +235,56 @@ def test_fetch_prints_a_tally_per_source_and_the_promotion_line(corpus_db, tmp_p
     assert result.exit_code == 0, result.output
     assert "tiny:" in result.output and "promote: promoted=0" in result.output
     assert _invoke("fetch", "--manifest", str(path), "--source", "nope").exit_code != 0
+
+
+def test_fake_providers_refuse_to_write_into_a_real_database(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    monkeypatch.setattr(corpus_commands, "TEST_DB_PREFIX", "not_this_database_")
+    _seed_law(corpus_db)
+    for args in (("describe", "--what", "docs", "--sync"), ("ocr",), ("embed", "--index", "bge-m3"),
+                 ("embed", "--index", "openai-3l", "--allow-undescribed")):
+        refused = _invoke(*args)
+        assert refused.exit_code == 2 and "--allow-fake" in refused.output, args
+    assert _invoke("describe", "--what", "docs", "--dry-run").exit_code == 0
+    assert _invoke("estimate").exit_code == 0
+    with connect(corpus_db) as conn:
+        assert conn.execute("select description_by_lang from corpus.translation_group").fetchone()[
+            "description_by_lang"] == {}
+    allowed = _invoke("describe", "--what", "docs", "--sync", "--allow-fake")
+    assert allowed.exit_code == 0, allowed.output
+
+
+def test_estimate_projects_chunk_descriptions_before_documents_are_described(corpus_db):
+    _seed_law(corpus_db)
+    result = _invoke("estimate")
+    assert result.exit_code == 0, result.output
+    assert "describe chunks projected: 1 tasks" in result.output
+    assert "embed openai-3l before descriptions: 2 chunks" in result.output
+    assert "embed openai-3l projected with descriptions: 2 chunks" in result.output
+
+
+def test_anthropic_fallback_is_estimated_at_its_own_price(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    monkeypatch.setenv("CORPUS_LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "k")
+    result = _invoke("describe", "--what", "docs", "--dry-run")
+    assert result.exit_code == 0, result.output
+    assert "claude-haiku-4-5-20251001" in result.output
+
+
+def test_ocr_without_a_limit_runs_in_slices_until_nothing_is_pending(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    monkeypatch.setattr(corpus_commands, "OCR_SLICE", 1)
+    _seed_scan(corpus_db, tmp_path, pages=2)
+    result = _invoke("ocr")
+    assert result.exit_code == 0, result.output
+    assert result.output.count("ocr: {'done': 1") == 2
+    with connect(corpus_db) as conn:
+        assert conn.execute("select count(*) as n from corpus.chunk where needs_ocr").fetchone()["n"] == 0
+
+
+def test_an_unreachable_database_is_one_friendly_line(corpus_db, monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://nobody:x@127.0.0.1:9/nothing")
+    result = _invoke("describe", "--what", "docs", "--dry-run")
+    assert result.exit_code == 1
+    assert "database" in result.output.lower() and "Traceback" not in result.output

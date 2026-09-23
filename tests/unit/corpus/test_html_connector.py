@@ -341,3 +341,13 @@ def test_page_that_fails_to_parse_is_an_error_not_a_failed_source(monkeypatch):
     result = HtmlConnector(_client(), CrawlPolicy(True, 0)).run(_spec(), known={})
     assert {d.url for d in result.documents} == {"https://www.x.ch/de/", "https://www.x.ch/fr/"}
     assert any(u == "https://www.x.ch/de/hund" and "parse failed" in reason for u, reason in result.errors)
+
+
+def test_robots_verdict_is_shared_with_the_crawler():
+    from swiss_grounding.corpus.connectors.html import robots_verdict
+    robots = "User-agent: *\nDisallow: /de/hund\n"
+    assert robots_verdict(_client(robots), "https://www.example.ch/de/hund", respect=True) == "disallowed"
+    assert robots_verdict(_client(robots), "https://www.example.ch/de/katze", respect=True) == "allowed"
+    assert robots_verdict(_client(robots), "https://www.example.ch/de/hund", respect=False) == "disallowed-ignored"
+    failing = _client(robots_response=lambda request: httpx.Response(503))
+    assert robots_verdict(failing, "https://www.example.ch/de/katze", respect=True) == "disallowed"
