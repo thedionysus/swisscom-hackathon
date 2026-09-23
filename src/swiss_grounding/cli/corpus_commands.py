@@ -24,9 +24,12 @@ from swiss_grounding.corpus.budget import (
     PRICES,
     SYNC_MULTIPLIER,
     TERMINAL_NON_COUNTING_STATUSES,
+    BudgetExceeded,
     cost_usd,
     ensure_within,
+    remaining_budget,
     spent,
+    tasks_that_fit,
 )
 from swiss_grounding.corpus.describe import (
     build_chunk_tasks,
@@ -224,10 +227,20 @@ def _resume_chat(settings: Settings, kind: str, run_fn, model: str) -> None:
     typer.echo(f"resumed {kind}: {run_fn(settings.database_url, runner, [], model=model, batch=True)}")
 
 
-def _check_budget(conn, settings: Settings, estimate: float, kind: str | None = None,
+def _check_budget(conn, settings: Settings, estimate: float, num_tasks: int, kind: str | None = None,
                   kind_cap: float | None = None) -> None:
-    """Raises BudgetExceeded, which `friendly_errors` turns into one line and exit 2."""
-    ensure_within(conn, estimate=estimate, total_cap=settings.corpus_budget_usd, kind=kind, kind_cap=kind_cap)
+    """Raises BudgetExceeded, which `friendly_errors` turns into one line and exit 2. On refusal, the
+    message also says how many of `num_tasks` fit in what is left, so the operator does not have to
+    guess `--limit`."""
+    try:
+        ensure_within(conn, estimate=estimate, total_cap=settings.corpus_budget_usd, kind=kind, kind_cap=kind_cap)
+    except BudgetExceeded as exc:
+        remaining = remaining_budget(conn, total_cap=settings.corpus_budget_usd, kind=kind, kind_cap=kind_cap)
+        fit = tasks_that_fit(remaining, estimate, num_tasks)
+        if fit:
+            raise BudgetExceeded(f"{exc} — about {fit:,} of {num_tasks:,} tasks fit; "
+                                 f"re-run with --limit {fit}") from exc
+        raise BudgetExceeded(f"{exc} — no tasks fit in what is left") from exc
 
 
 # --- estimate ---------------------------------------------------------------------------------------
@@ -300,7 +313,7 @@ def _ocr_pilot(settings: Settings, pages: int) -> None:
             return
         estimate = len(tasks) * _ocr_page_usd(priced, batch=False)
         typer.echo(f"pilot: {len(tasks)} page(s), estimate {usd(estimate)} ({_price_label(priced, False)})")
-        _check_budget(conn, settings, estimate, kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
+        _check_budget(conn, settings, estimate, len(tasks), kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
         last_id = conn.execute("select coalesce(max(id), 0) as id from corpus.llm_spend").fetchone()["id"]
     report = run_ocr(settings.database_url, SyncRunner(_llm(settings), workers=SYNC_WORKERS), tasks, model=priced,
                      batch=False)
@@ -335,7 +348,7 @@ def _ocr_slices(settings: Settings, sync: bool, limit: int | None) -> None:
                 return
             estimate = len(tasks) * _ocr_page_usd(priced, batch)
             typer.echo(f"ocr round: {len(tasks)} page(s), estimate {usd(estimate)} ({_price_label(priced, batch)})")
-            _check_budget(conn, settings, estimate, kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
+            _check_budget(conn, settings, estimate, len(tasks), kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
         runner = _chat_runner(settings, sync, kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
         report = run_ocr(settings.database_url, runner, tasks, model=priced, batch=batch, estimated_usd=estimate)
         typer.echo(f"ocr: {report}")
@@ -385,7 +398,7 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
         typer.echo(f"{what}: {len(tasks)} tasks, estimate {usd(estimate)} ({_price_label(priced, batch)})")
         if dry_run or not tasks:
             return
-        _check_budget(conn, settings, estimate)
+        _check_budget(conn, settings, estimate, len(tasks))
     report = run_fn(settings.database_url, _chat_runner(settings, sync), tasks, model=priced, batch=batch,
                     estimated_usd=estimate)
     typer.echo(f"{what}: {report}")
@@ -473,7 +486,7 @@ def embed_cmd(index: str = typer.Option(..., "--index", help="openai-3l or bge-m
         if dry_run or not pending:
             return
         if paid:
-            _check_budget(conn, settings, estimate, kind="embed")
+            _check_budget(conn, settings, estimate, len(pending), kind="embed")
     if limit is not None and not batch:
         typer.echo("note: --limit applies to the Batch path only; embedding every pending chunk")
     if not batch:

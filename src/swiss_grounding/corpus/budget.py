@@ -76,3 +76,23 @@ def ensure_within(conn: psycopg.Connection, *, estimate: float, total_cap: float
         part = spent(conn, kind) + _in_flight_batch_usd(conn, kind)
         if part + estimate > kind_cap:
             raise BudgetExceeded(f"{kind} budget: spent ${part:.2f} + estimate ${estimate:.2f} > cap ${kind_cap:.2f}")
+
+
+def remaining_budget(conn: psycopg.Connection, *, total_cap: float, kind: str | None = None,
+                     kind_cap: float | None = None) -> float:
+    """Headroom left for a new estimate: the total cap's, and the kind sub-cap's when one applies (the
+    smaller of the two, same as `ensure_within` checking both)."""
+    remaining = total_cap - spent(conn) - _in_flight_batch_usd(conn)
+    if kind and kind_cap is not None:
+        kind_remaining = kind_cap - spent(conn, kind) - _in_flight_batch_usd(conn, kind)
+        remaining = min(remaining, kind_remaining)
+    return remaining
+
+
+def tasks_that_fit(remaining_usd: float, estimate_usd: float, num_tasks: int) -> int:
+    """How many of `num_tasks` fit in `remaining_usd`, at the same average per-task price that produced
+    `estimate_usd` for all of them. Never negative, never more than `num_tasks`."""
+    if num_tasks <= 0 or estimate_usd <= 0 or remaining_usd <= 0:
+        return 0
+    per_task = estimate_usd / num_tasks
+    return max(0, min(num_tasks, int(remaining_usd // per_task)))

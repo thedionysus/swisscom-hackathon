@@ -91,6 +91,45 @@ def test_openai_llm_raises_reply_error_but_keeps_billed_usage():
     assert exc_info.value.finish_reason == "stop"
 
 
+def test_anthropic_llm_complete_sends_the_expected_request_shape():
+    from swiss_grounding.corpus.providers import AnthropicLLM
+    from swiss_grounding.corpus.runner import LlmTask
+
+    llm = AnthropicLLM(api_key="test", model="claude-x")
+    calls = []
+
+    class FakeBlock:
+        type = "text"
+        text = '{"ok": true}'
+
+    class FakeUsage:
+        input_tokens = 5
+        output_tokens = 2
+
+    class FakeResponse:
+        content = (FakeBlock(),)
+        stop_reason = "end_turn"
+        usage = FakeUsage()
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return FakeResponse()
+
+    llm._client.messages.create = create
+    task = LlmTask("t", "claude-x", "sys prompt", "describe this", image_png_b64="QQBB", max_output_tokens=600)
+    data, usage = llm.complete(task)
+
+    assert data == {"ok": True} and usage.input_tokens == 5 and usage.output_tokens == 2
+    assert len(calls) == 1
+    kwargs = calls[0]
+    assert kwargs["model"] == "claude-x"
+    assert kwargs["max_tokens"] == 600
+    assert kwargs["system"] == "sys prompt"
+    content = kwargs["messages"][0]["content"]
+    assert content[0] == {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": "QQBB"}}
+    assert content[1] == {"type": "text", "text": "describe this"}
+
+
 def test_anthropic_llm_raises_reply_error_but_keeps_billed_usage():
     from swiss_grounding.corpus.providers import AnthropicLLM, ReplyError
     from swiss_grounding.corpus.runner import LlmTask
