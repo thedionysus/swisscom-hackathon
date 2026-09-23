@@ -2,6 +2,7 @@ from datetime import UTC, date, datetime
 
 import pytest
 
+from swiss_grounding.corpus import fetch_stage
 from swiss_grounding.corpus.fetch_stage import run_fetch
 from swiss_grounding.corpus.models import (
     ConnectorResult,
@@ -77,6 +78,57 @@ def test_failed_document_is_quarantined_without_losing_its_neighbours(corpus_db)
     assert urls == {"https://x/first", "https://x/last"}
     assert [(r["url"], r["stage"]) for r in q] == [("https://x/broken", "persist")]
     assert report["bern"]["added"] == 2 and report["bern"]["failed"] == 1
+
+
+class TailSteps:
+    def run(self, spec, known):
+        return ConnectorResult(unchanged_urls=("https://x/touch-breaks", "https://x/fine"),
+                               errors=(("https://x/bad", "HTTP 500"),))
+
+
+def test_one_failing_tail_step_does_not_lose_the_others(corpus_db, monkeypatch):
+    real_touch = fetch_stage.touch_unchanged
+
+    def touch(conn, url, now):
+        if url.endswith("touch-breaks"):
+            conn.execute("select 1/0")
+        real_touch(conn, url, now)
+
+    monkeypatch.setattr(fetch_stage, "touch_unchanged", touch)
+    report = run_fetch(corpus_db, [_spec("bern")], {"html": TailSteps()}, None, now=lambda: NOW)
+    with connect(corpus_db) as conn:
+        q = [r["url"] for r in conn.execute("select url from corpus.quarantine").fetchall()]
+    assert q == ["https://x/bad"]
+    assert report["bern"]["unchanged"] == 1 and report["bern"]["failed"] == 2
+
+
+def test_duplicate_urls_are_counted(corpus_db):
+    class SameUrl:
+        def run(self, spec, known):
+            return ConnectorResult(documents=(_doc(spec.id, "https://x/shared"),))
+
+    report = run_fetch(corpus_db, [_spec("bern")], {"html": SameUrl()}, None, now=lambda: NOW)
+    report2 = run_fetch(corpus_db, [_spec("thun")], {"html": SameUrl()}, None, now=lambda: NOW)
+    assert report["bern"]["added"] == 1 and report2["thun"]["duplicate"] == 1
+
+
+def test_promote_failure_is_logged_and_the_report_survives(corpus_db, monkeypatch):
+    def broken(conn, today):
+        raise RuntimeError("promote exploded")
+
+    monkeypatch.setattr(fetch_stage, "promote_due", broken)
+    report = run_fetch(corpus_db, [_spec("bern")], {"html": FakeHtml()}, FakePdf(), now=lambda: NOW)
+    assert report["bern"]["added"] == 2
+    assert report["_promote"]["promote_failed"] == 1
+
+
+def test_source_failure_keeps_its_tally_when_quarantine_cannot_be_written(corpus_db, monkeypatch):
+    def broken(*args):
+        raise RuntimeError("database gone")
+
+    monkeypatch.setattr(fetch_stage, "quarantine", broken)
+    report = run_fetch(corpus_db, [_spec("boom")], {"html": FakeHtml()}, None, now=lambda: NOW)
+    assert report["boom"]["failed"] == 1
 
 
 def test_scheduled_versions_are_promoted_after_the_run(corpus_db):
