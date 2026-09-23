@@ -38,8 +38,10 @@ Anthropic calls run synchronously. OpenAI calls use the Batch API unless `--sync
 5. **Never use fake providers against a real database.** `CORPUS_LLM_PROVIDER=fake` and `EMBEDDING_BACKEND=fake`
    are for tests; paid commands refuse to write with them unless `--allow-fake` is passed. Never pass it outside
    tests.
-6. **One fetch at a time.** Check `pgrep -f "corpus fetch"` prints nothing before starting a fetch or a paid
-   stage. Documents are written only when each source finishes crawling.
+6. **Never crawl one source twice at once.** A second `corpus fetch` may run beside a running one only with
+   `--source` flags naming other sources (other hosts); otherwise the same site is hit twice as fast and the two
+   runs race on the same URLs. Check `pgrep -fl "corpus fetch"` first. Documents are written only when each source
+   finishes crawling, so start paid stages after every fetch has exited.
 7. **Long commands run in `tmux` or `nohup`.** Re-running the same command resumes it; submitted batches and
    finished work are skipped.
 8. **Report what you did:** `corpus status` numbers, spend per kind, quarantine count, and anything refused.
