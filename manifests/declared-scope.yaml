@@ -175,6 +175,119 @@ sources:
       max_pages: 300
       max_pdfs: 150
 
+  # ---------------- Federal: companies, commercial register and VAT ----------------
+  # All three are on the new federal CMS (flat /{lang}/{slug} URLs, __NUXT_DATA__ translationPages,
+  # /sitemap/{lang}.xml), so sitemap_include keeps the seeds on topic. zefix.ch / zefix.admin.ch is not
+  # crawled: its robots.txt disallows everything for "*" (only Googlebot/Bingbot get the welcome pages).
+  - id: ehra
+    name: Federal Commercial Registry Office (EHRA) at the Federal Office of Justice
+    publisher: Federal Office of Justice FOJ
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    # The office's commercial-register pages exist in de/fr/it only (none in the en sitemap).
+    languages: [de, fr, it]
+    config:
+      start_urls: ["https://www.bj.admin.ch/de/handelsregister-zefix-und-regix", "https://www.bj.admin.ch/fr/registre-du-commerce-zefix-et-regix", "https://www.bj.admin.ch/it/registro-di-commercio-zefix-e-regix"]
+      allow_prefixes: ["https://www.bj.admin.ch/de/", "https://www.bj.admin.ch/fr/", "https://www.bj.admin.ch/it/"]
+      pdf_allow_prefixes: ["https://www.bj.admin.ch/dam/"]
+      sitemap_urls: ["https://www.bj.admin.ch/sitemap/de.xml", "https://www.bj.admin.ch/sitemap/fr.xml", "https://www.bj.admin.ch/sitemap/it.xml"]
+      sitemap_include:
+        - "/de/.*(handelsregister|ehra|zefix|regix|firmenrecherche|gmbh|aktienrecht)"
+        - "/fr/.*(registre-du-commerce|ofrc|zefix|regix|raisons-de-commerce|sarl|societe-anonyme)"
+        - "/it/.*(registro-di-commercio|ufrc|zefix|regix|sagl|societa-anonima)"
+      max_pages: 150
+      max_pdfs: 10
+  - id: estv_vat
+    name: Federal Tax Administration — value added tax
+    publisher: Federal Tax Administration FTA
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.estv.admin.ch/de/mehrwertsteuer", "https://www.estv.admin.ch/fr/taxe-sur-la-valeur-ajoutee", "https://www.estv.admin.ch/it/imposta-sul-valore-aggiunto", "https://www.estv.admin.ch/en/value-added-tax"]
+      allow_prefixes: ["https://www.estv.admin.ch/de/", "https://www.estv.admin.ch/fr/", "https://www.estv.admin.ch/it/", "https://www.estv.admin.ch/en/"]
+      pdf_allow_prefixes: ["https://www.estv.admin.ch/dam/"]
+      sitemap_urls: ["https://www.estv.admin.ch/sitemap/de.xml", "https://www.estv.admin.ch/sitemap/fr.xml", "https://www.estv.admin.ch/sitemap/it.xml", "https://www.estv.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(mwst|mehrwertsteuer|saldosteuersatz|vorsteuer)"
+        - "/fr/.*(tva|taxe-sur-la-valeur-ajoutee|taux-de-la-dette-fiscale|impot-prealable)"
+        - "/it/.*((^|[/-])iva([-/]|$)|imposta-sul-valore-aggiunto|aliquote-saldo|imposta-precedente)"
+        - "/en/.*((^|[/-])vat([-/]|$)|value-added-tax|net-tax-rate|input-tax)"
+      max_pages: 300
+      max_pdfs: 20
+  - id: kmu_admin
+    name: SME portal — founding a company, legal forms and the commercial register
+    publisher: State Secretariat for Economic Affairs SECO
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.kmu.admin.ch/de/gruendung-uebersicht", "https://www.kmu.admin.ch/fr/creation-apercu", "https://www.kmu.admin.ch/it/costituzione", "https://www.kmu.admin.ch/en/creation-en"]
+      allow_prefixes: ["https://www.kmu.admin.ch/de/", "https://www.kmu.admin.ch/fr/", "https://www.kmu.admin.ch/it/", "https://www.kmu.admin.ch/en/"]
+      sitemap_urls: ["https://www.kmu.admin.ch/sitemap/de.xml", "https://www.kmu.admin.ch/sitemap/fr.xml", "https://www.kmu.admin.ch/sitemap/it.xml", "https://www.kmu.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(gruend|handelsregister|rechtsform|einzelunternehmen|gmbh|aktiengesellschaft|kollektivgesellschaft|kommanditgesellschaft|genossenschaft|mehrwertsteuer|mwst)"
+        - "/fr/.*(creer-son-entreprise|creation-d|creations-d|creation-apercu|creation-fr|fonder|registre-du-commerce|forme-juridique|raison-individuelle|entreprise-individuelle|sarl|societe-anonyme|societe-en-nom-collectif|societe-en-commandite|societe-cooperative|tva)"
+        - "/it/.*(costituzione|fondare|creare-una?-(ditta|impresa)|creazione-di|registro-di-commercio|forma-giuridica|ditta-individuale|sagl|societa-anonima|societa-in-nome-collettivo|societa-in-accomandita|societa-cooperativa|(^|[/-])iva([-/]|$))"
+        - "/en/.*(start-up|starting-a|setting-up|founder|founding|business-creation|companies-created|creation-en|commercial-register|legal-form|sole-proprietorship|limited-liability|limited-company|limited-partnership|general-partnership|corporation|cooperative|(^|[/-])vat([-/]|$))"
+      max_pages: 300
+      max_pdfs: 0
+
+  # ---------------- Federal: weather and climate ----------------
+  # English lives on meteoswiss.admin.ch, German/French/Italian on their own hosts, linked by hreflang.
+  # Scope: danger levels and warnings, the weather-and-climate glossary, climate change, services.
+  # Forecast, local-forecast and publication pages are left out. The page body sits in web-component
+  # templates, so <main> is empty; mch-detail-page is the element that holds it.
+  - id: meteoswiss
+    name: MeteoSwiss — hazards, climate and weather explained
+    publisher: Federal Office of Meteorology and Climatology MeteoSwiss
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.meteoswiss.admin.ch/weather/hazards.html", "https://www.meteoschweiz.admin.ch/wetter/gefahren.html", "https://www.meteosuisse.admin.ch/meteo/dangers.html", "https://www.meteosvizzera.admin.ch/tempo/pericoli.html",
+                   "https://www.meteoswiss.admin.ch/climate/climate-change.html", "https://www.meteoschweiz.admin.ch/klima/klimawandel.html", "https://www.meteosuisse.admin.ch/climat/changement-climatique.html", "https://www.meteosvizzera.admin.ch/clima/i-cambiamenti-climatici.html",
+                   "https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z.html", "https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-von-a-bis-z.html", "https://www.meteosuisse.admin.ch/meteo/meteo-et-climat-de-a-a-z.html", "https://www.meteosvizzera.admin.ch/tempo/tempo-e-clima-dalla-a-alla-z.html",
+                   "https://www.meteoswiss.admin.ch/services-and-publications/service.html", "https://www.meteoschweiz.admin.ch/service-und-publikationen/service.html", "https://www.meteosuisse.admin.ch/services-et-publications/service.html", "https://www.meteosvizzera.admin.ch/servizi-e-pubblicazioni/prestazioni.html"]
+      allow_prefixes: ["https://www.meteoswiss.admin.ch/weather/hazards", "https://www.meteoschweiz.admin.ch/wetter/gefahren", "https://www.meteosuisse.admin.ch/meteo/dangers", "https://www.meteosvizzera.admin.ch/tempo/pericoli",
+                       "https://www.meteoswiss.admin.ch/climate/climate-change", "https://www.meteoschweiz.admin.ch/klima/klimawandel", "https://www.meteosuisse.admin.ch/climat/changement-climatique", "https://www.meteosvizzera.admin.ch/clima/i-cambiamenti-climatici",
+                       "https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z", "https://www.meteoschweiz.admin.ch/wetter/wetter-und-klima-von-a-bis-z", "https://www.meteosuisse.admin.ch/meteo/meteo-et-climat-de-a-a-z", "https://www.meteosvizzera.admin.ch/tempo/tempo-e-clima-dalla-a-alla-z",
+                       "https://www.meteoswiss.admin.ch/services-and-publications/service", "https://www.meteoschweiz.admin.ch/service-und-publikationen/service", "https://www.meteosuisse.admin.ch/services-et-publications/service", "https://www.meteosvizzera.admin.ch/servizi-e-pubblicazioni/prestazioni"]
+      content_selector: "mch-detail-page"
+      max_pages: 400
+      max_pdfs: 0
+
+  # ---------------- Institutional ----------------
+  - id: schweizer_wanderwege
+    name: Schweizer Wanderwege / Suisse Rando / Sentieri Svizzeri
+    publisher: Schweizer Wanderwege
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it]
+    config:
+      # Scope from the registry entry (/de/wandern, /de/wissen) plus the fr/it versions that hreflang
+      # names (/fr/randonner, /it/escursionismo, /fr/savoir; "wissen" has no Italian version).
+      # robots.txt sets Crawl-delay: 10, which the crawler honours.
+      start_urls: ["https://www.schweizer-wanderwege.ch/de/wandern", "https://www.schweizer-wanderwege.ch/fr/randonner", "https://www.schweizer-wanderwege.ch/it/escursionismo", "https://www.schweizer-wanderwege.ch/de/wissen", "https://www.schweizer-wanderwege.ch/fr/savoir"]
+      allow_prefixes: ["https://www.schweizer-wanderwege.ch/de/wandern", "https://www.schweizer-wanderwege.ch/fr/randonner", "https://www.schweizer-wanderwege.ch/it/escursionismo", "https://www.schweizer-wanderwege.ch/de/wissen", "https://www.schweizer-wanderwege.ch/fr/savoir"]
+      max_pages: 300
+      max_pdfs: 0
+
   # ---------------- Cantons ----------------
   - id: zh_canton
     name: Kanton Zürich
