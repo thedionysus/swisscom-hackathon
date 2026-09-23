@@ -22,6 +22,8 @@ FAKE_BACKENDS = {
     "EMBEDDING_DIM": "8",
     "CORPUS_LLM_PROVIDER": "fake",
     "CORPUS_INDEXES": "bge-m3",
+    "QUERY_EMBEDDER": "fake",
+    "RERANKER_MODEL": "overlap",
 }
 
 
