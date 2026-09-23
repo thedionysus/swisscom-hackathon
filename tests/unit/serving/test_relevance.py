@@ -53,3 +53,19 @@ def test_load_rejects_a_model_with_different_features(tmp_path):
                                 "threshold": 0.4}))
     with pytest.raises(ValueError, match="features"):
         load_relevance(path, "r")
+
+
+def test_load_rejects_a_model_missing_a_required_key(tmp_path):
+    path = tmp_path / "m.json"
+    path.write_text(json.dumps({"reranker": "r", "features": list(FEATURES), "bias": 0.0, "threshold": 0.4}))
+    with pytest.raises(ValueError, match=r"m\.json.*weights"):
+        load_relevance(path, "r")
+
+
+@pytest.mark.parametrize("z_weight", [1000.0, -1000.0])
+def test_logistic_probability_is_stable_for_extreme_scores(z_weight):
+    model = LogisticRelevance(weights=(z_weight,) + (0.0,) * (len(FEATURES) - 1), bias=0.0, threshold=0.5,
+                              reranker="r")
+    p = model.probability((1.0,) + (0.0,) * (len(FEATURES) - 1), rerank_score=0.5)
+    assert 0.0 <= p <= 1.0
+    assert (p > 0.999999) if z_weight > 0 else (p < 0.000001)

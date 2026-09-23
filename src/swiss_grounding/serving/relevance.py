@@ -22,6 +22,14 @@ def _logit(p: float) -> float:
     return math.log(p / (1 - p))
 
 
+def _sigmoid(z: float) -> float:
+    """1 / (1 + exp(-z)), computed so neither branch ever overflows."""
+    if z >= 0:
+        return 1.0 / (1.0 + math.exp(-z))
+    ez = math.exp(z)
+    return ez / (1.0 + ez)
+
+
 def feature_vector(g: GroupHit, *, rerank_score: float, question_lang: str | None, tier: int | None,
                    today: date) -> tuple[float, ...]:
     rep = g.representative
@@ -59,7 +67,7 @@ class LogisticRelevance:
 
     def probability(self, features: Sequence[float], *, rerank_score: float) -> float:
         z = self.bias + sum(w * x for w, x in zip(self.weights, features, strict=True))
-        return 1.0 / (1.0 + math.exp(-z))
+        return _sigmoid(z)
 
 
 Relevance = ProvisionalRelevance | LogisticRelevance
@@ -74,5 +82,8 @@ def load_relevance(path: Path | str, reranker: str) -> Relevance:
         return ProvisionalRelevance(PROVISIONAL_THRESHOLD)
     if tuple(data["features"]) != FEATURES:
         raise ValueError(f"{path}: features {data['features']} do not match {list(FEATURES)}; refit")
+    for key in ("weights", "bias", "threshold"):
+        if key not in data:
+            raise ValueError(f"{path}: missing required key {key!r}")
     return LogisticRelevance(tuple(float(w) for w in data["weights"]), float(data["bias"]),
                              float(data["threshold"]), reranker)
