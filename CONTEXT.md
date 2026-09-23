@@ -84,7 +84,7 @@ _Avoid_: Similarity or relevance for the cosine sense; tree distance or depth fo
 ### Scope
 
 **Declared scope**:
-The topics and places the server states it answers for: federal information for all of Switzerland, six named cantons, seven named municipalities, and a named set of live lookups. Answer quality is promised inside it and nowhere else.
+The topics and places the server states it answers for: federal information for all of Switzerland, six named cantons, seven named municipalities, and three live lookups. It also names what is not covered: computed amounts (tax bills, pensions), the commercial register, statistics, geodata and weather. Answer quality is promised inside it and nowhere else.
 _Avoid_: Coverage, supported area
 
 **Outside-scope question**:
