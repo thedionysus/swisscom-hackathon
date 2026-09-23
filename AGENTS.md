@@ -31,9 +31,15 @@ hand.
 
 ## Two pipelines live side by side until the legacy one is retired
 
-- **Where new work goes:** `corpus/` (and the serving track's `serving/`). The legacy pipeline is `ingest/`,
-  `registry/`, `retrieval/`, the `swiss-grounding ingest` and `query` commands, and the `public` tables. It is being
-  replaced, so don't fix bugs there.
+- **Where new work goes:** `corpus/` (and the serving track's `serving/`). The legacy pipeline is being replaced, so
+  don't fix bugs in its legacy-only code: `ingest/`, `registry/` and `retrieval/` (except the shared modules listed
+  next), the `swiss-grounding ingest` and `query` commands, and the `public` document/chunk tables.
+- **Shared code that is still live:** the corpus pipeline imports a few legacy modules. Fixes there reach the corpus,
+  and they must move before the legacy code is deleted:
+  - `ingest/html_sections.py`: HTML to sections and links (`corpus/connectors/html_page.py:10`)
+  - `retrieval/embedder.py`: `FakeEmbedder` (`corpus/providers.py:9`)
+  - `db/connection.py` and `db/migrate.py`
+  - the `public.location` table (`corpus/describe.py` reads place names from it)
 - **Code that exists twice:** the Fedlex SPARQL query, the Anthropic client and the JSON reply parsing. Edit the
   `corpus/` copy. The legacy Fedlex fetcher still has the #26 bug.
 - **Legacy-only settings:** `LLM_BACKEND`, `LLM_MODEL`, `EMBEDDING_MODEL`, `USER_AGENT` and `CRAWL_MAX_PAGES`. The

@@ -1,5 +1,13 @@
 # What the two rnckp lists give Swiss Grounding
 
+> **Note (2026-09-24): written for the legacy registry** (`registry/sources/*.yaml`, `fetch_strategy:
+> html_crawl | api | fedlex_sparql | pdf`). The legacy pipeline is being retired (#52). **The links, endpoints
+> and findings below are still valid.** To add a source now, write an entry in `manifests/declared-scope.yaml`
+> (`connector: html | fedlex`, `start_urls`, `allow_prefixes`, `level`, `extent_id`, `tier`, `languages`; ADR
+> 0009) or a new connector in `corpus/connectors/`. The open source work is tracked in #37, #39, #45, #46 and
+> #47.
+
+
 Assessed 2026-09-22 against the pipeline at `ec2d7ed` (fetch strategies: `fedlex_sparql`,
 `html_crawl`, `api`, `pdf`; categories: hiking, waste, dogs, taxes, housing, transport, parking,
 schools, health, safety). Every claim below was checked with a live request on that date unless

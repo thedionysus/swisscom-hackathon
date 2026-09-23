@@ -1,5 +1,13 @@
 # Source catalogue — implementation brief for new ingestion sources
 
+> **Note (2026-09-24): written for the legacy registry** (`registry/sources/*.yaml`, `fetch_strategy:
+> html_crawl | api | fedlex_sparql | pdf`). The legacy pipeline is being retired (#52). **The links, endpoints
+> and findings below are still valid.** To add a source now, write an entry in `manifests/declared-scope.yaml`
+> (`connector: html | fedlex`, `start_urls`, `allow_prefixes`, `level`, `extent_id`, `tier`, `languages`; ADR
+> 0009) or a new connector in `corpus/connectors/`. The open source work is tracked in #37, #39, #45, #46 and
+> #47.
+
+
 Status 2026-09-22. Every entry below was verified with live requests on that date; the evidence,
 sampled responses and verify commands are in `docs/sources/ogd_lists_assessment.md` on PR #31
 (Appendix B for wire formats, Appendix C for the Wikipedia reference list). This file is the
