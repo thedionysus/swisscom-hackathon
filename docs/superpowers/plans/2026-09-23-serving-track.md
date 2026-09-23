@@ -160,7 +160,9 @@ In `src/swiss_grounding/config.py`, add these fields after `data_dir` and a vali
     transport_base_url: str = "https://transport.opendata.ch/v1"
     reference_rate_url: str = "https://www.bwo.admin.ch/de/referenzzinssatz"
     lookup_timeout_seconds: float = 8.0
-    dump_release_url: str = "https://github.com/thedionysus/swisscom-hackathon/releases/download/corpus-latest"
+    # ADR 0017 (amended): the dump is a release asset of our private repository, downloaded with `gh`.
+    dump_release_repo: str = "thedionysus/swisscom-hackathon"
+    dump_release_tag: str = "corpus-latest"
 ```
 
 ```python
@@ -5306,7 +5308,6 @@ dump_app = typer.Typer(help="Prebuilt database dump.")
 DB_ARGS = ["-U", "swiss", "-d", "swiss_grounding"]
 DUMP_DIR = Path("data/dump")
 RESTORE_PGOPTIONS = "-c maintenance_work_mem=1GB -c max_parallel_maintenance_workers=0"
-DOWNLOAD_ATTEMPTS = 3
 
 
 def _compose(*args: str, stdout=None) -> None:
@@ -5329,29 +5330,24 @@ def dump_export_cmd(out: Path = typer.Option(Path("dist"), "--out"),
         with (out / "openai.dump").open("wb") as f:
             _compose("exec", "-T", "db", "pg_dump", *DB_ARGS, "-Fc", "--data-only", "-t", "corpus.emb_openai_3l*",
                      stdout=f)
-    typer.echo(f"{len(parts)} parts and {MANIFEST_NAME} in {out}; upload them to the 'corpus-latest' release")
+    typer.echo(f"{len(parts)} parts and {MANIFEST_NAME} in {out}. Publish them to the private repository:\n"
+               f"  gh release create corpus-latest {out}/* --repo thedionysus/swisscom-hackathon "
+               f"--title 'Prebuilt corpus' --notes 'Restore with: uv run swiss-grounding setup'\n"
+               f"  (or `gh release upload corpus-latest {out}/* --clobber` to replace an existing one)")
 
 
-def _download(client: httpx.Client, url: str, target: Path) -> None:
-    """Resumable download into target.partial, renamed only when complete; retried on network errors."""
-    partial = target.with_suffix(target.suffix + ".partial")
-    for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
-        offset = partial.stat().st_size if partial.exists() else 0
-        headers = {"Range": f"bytes={offset}-"} if offset else {}
-        try:
-            with client.stream("GET", url, headers=headers) as r:
-                r.raise_for_status()
-                mode = "ab" if r.status_code == 206 else "wb"
-                with partial.open(mode) as f:
-                    for block in r.iter_bytes():
-                        f.write(block)
-            partial.rename(target)
-            return
-        except httpx.HTTPError:
-            if attempt == DOWNLOAD_ATTEMPTS:
-                raise
-            typer.echo(f"download interrupted, retrying ({attempt}/{DOWNLOAD_ATTEMPTS})")
+def _gh_download(settings, pattern: str) -> None:
+    """Download release assets of our private repository. `gh` uses the caller's GitHub login, so only
+    people with access to the repository (the team and the evaluators we invite) can download."""
+    _run(["gh", "release", "download", settings.dump_release_tag, "--repo", settings.dump_release_repo,
+          "--pattern", pattern, "--dir", str(DUMP_DIR), "--skip-existing"])
 
+
+def _run(cmd: list[str]) -> None:
+    try:
+        subprocess.run(cmd, check=True)
+    except FileNotFoundError as exc:
+        raise typer.BadParameter(f"{cmd[0]} is not installed; see the README's setup section") from exc
 ```
 
 Add `setup` as a top-level command, registered on the main app with `app.command("setup")(setup_cmd)` in `main.py`:
@@ -5362,13 +5358,10 @@ def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do 
     settings = load_settings()
     DUMP_DIR.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
-    with httpx.Client(timeout=60.0, follow_redirects=True) as client:
-        manifest = client.get(f"{settings.dump_release_url}/{MANIFEST_NAME}").raise_for_status().json()
-        for part in manifest["parts"]:
-            target = DUMP_DIR / part["name"]
-            if not target.exists() or target.stat().st_size != part["bytes"]:
-                typer.echo(f"downloading {part['name']} ({part['bytes'] // 2**20} MiB)")
-                _download(client, f"{settings.dump_release_url}/{part['name']}", target)
+    # Parts already in data/dump (e.g. copied from a USB stick) are kept; a wrong one fails the checksum.
+    _gh_download(settings, MANIFEST_NAME)
+    _gh_download(settings, "corpus.dump.part*")
+    manifest = json.loads((DUMP_DIR / MANIFEST_NAME).read_text())
     verify_parts(DUMP_DIR, manifest)
     dump = join_parts(DUMP_DIR, manifest, DUMP_DIR / "corpus.dump")
     _compose("up", "-d", "--wait", "db")
@@ -5391,11 +5384,11 @@ def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do 
 
 Register `dump_app` with `app.add_typer(dump_app, name="dump")` (extend the `serving_commands` import in `main.py` with `dump_app, setup_cmd`). Also pin the database image in `docker-compose.yml` to the pgvector version the dump was made with (`pgvector/pgvector:0.8.x-pg16`, the exact tag `docker compose images db` shows), so a restore never meets a different extension version. `pg_restore` exits non-zero on warnings such as pre-existing extensions; if that happens on a clean volume, capture the message in the runbook and add `--exit-on-error` only if every warning is understood.
 
-**Before publishing the release, decide who may download it.** The dump redistributes text crawled from cantonal and municipal sites. Check the terms of use of each source in the manifest (the robots/terms switch governs crawling, not redistribution). If any source forbids redistribution, exclude its rows from the public dump or publish the release in a private repository shared with the evaluators. Record the decision in ADR 0017.
+**Access is private (decided 2026-09-23).** The dump redistributes text crawled from cantonal and municipal sites, so it is published only as a release of our private repository. Evaluators get read access to the repository and download with their own `gh` login; nothing is served from a public URL.
 
 - [ ] **Step 4: Rehearse locally and commit**
 
-Run `uv run swiss-grounding dump export --out dist`, then on a fresh volume (`docker compose down -v`) serve `dist/` with `python -m http.server 8765 -d dist` and run `DUMP_RELEASE_URL=http://localhost:8765 uv run swiss-grounding setup --skip-models`. Record part sizes and the restore time for the README.
+Run `uv run swiss-grounding dump export --out dist` and publish with the printed `gh release create` command. Then on a fresh volume (`docker compose down -v`, `rm -rf data/dump`) run `uv run swiss-grounding setup --skip-models`, which downloads the release with `gh`. Record part sizes, download time and restore time for the README.
 
 ```bash
 git add src/swiss_grounding/serving/dump.py src/swiss_grounding/cli tests/unit/serving/test_dump.py
@@ -5404,7 +5397,9 @@ git commit -m "feat: prebuilt dump export and one-command setup (ADR 0017)"
 
 ---
 
-### Task 27: README: declared scope, keyless setup, tools, robots switch, results
+### Task 27: README: how to run the project, declared scope, tools, robots switch, results
+
+The README is the one document an evaluator follows: from a fresh clone of the private repository to a running MCP server connected to their client, with every command in order and nothing assumed. Its first lines say that the repository and the prebuilt database are private, and that evaluators are added as collaborators (repository Settings → Collaborators) before they start. Test the README by following it literally on a clean checkout (Task 28 check 12).
 
 **Files:**
 - Modify: `README.md`
@@ -5412,7 +5407,7 @@ git commit -m "feat: prebuilt dump export and one-command setup (ADR 0017)"
 
 - [ ] **Step 1: Rewrite the README top half** with these sections, in this order:
   1. *What it answers*: the output of `swiss_scope` verbatim (covered and not covered), and the five challenge samples with what the server does for each.
-  2. *Setup (no API key)*: requirements (Docker with ≥ 6 GB memory, about 15 GB free disk for the dump, torch and models); `cp .env.example .env` (it already names the compose database; `QUERY_EMBEDDER` stays unset); `docker compose up -d db`, `uv sync --extra embed`, `uv run swiss-grounding setup`, `uv run swiss-grounding serve`; MCP client config snippet (the one in `evals/judge/mcp.json`). After setup, `HF_HUB_OFFLINE=1` avoids model-hub calls at start.
+  2. *Setup (no API key)*: requirements (Docker with ≥ 6 GB memory, about 15 GB free disk for the dump, torch and models; `uv`; the GitHub CLI `gh`, logged in with `gh auth login` as an account that has access to this private repository, which is how the prebuilt database is downloaded); `cp .env.example .env` (it already names the compose database; `QUERY_EMBEDDER` stays unset); `docker compose up -d db`, `uv sync --extra embed`, `uv run swiss-grounding setup`, `uv run swiss-grounding serve`; MCP client config snippet (the one in `evals/judge/mcp.json`). After setup, `HF_HUB_OFFLINE=1` avoids model-hub calls at start.
   3. *Tools*: the six tools with one line each (from their docstrings).
   4. *How it ranks and when it abstains*: one paragraph each from ADR 0012 and ADR 0013.
   5. *Rebuilding the index*: the encoding runbook (`docs/ENCODING-RUNBOOK.md`), `RESPECT_ROBOTS=true` as the documented default switch, and the build scripts.
