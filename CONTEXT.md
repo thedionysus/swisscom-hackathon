@@ -59,15 +59,26 @@ A word that fixes which level a place name means: Kanton, Stadt, Gemeinde, Kreis
 _Avoid_: Qualifier, prefix
 
 **Specificity tier**:
-How far a chunk's extent sits from the jurisdiction a question resolved to, counted in steps up the extent path: 0 is that jurisdiction itself, 1 its parent, rising to the federal root. The reranker's outer ordering key, published on every citation as `tier`. A chunk claims one only if it also clears the relevance floor, so `null` means no claim was earned -- never a large tier.
+How far a chunk's extent sits from the jurisdiction a question resolved to, counted in steps up the extent path: 0 is that jurisdiction itself, 1 its parent, rising to the federal root. Published on every citation as `tier`, and one of the features of the relevance probability. It no longer orders results by itself.
 _Avoid_: Level, depth, rank, specificity score
 
 **Relevance floor**:
-The cosine distance at or below which a chunk may claim a specificity tier. It governs eligibility for that claim and nothing else: a chunk above the floor keeps its place in the result, ordered by score among the others that claimed no tier, so the floor can never turn a result into `no_evidence`. Uncalibrated today and deliberately so -- the corpus cannot yet support a measured value.
-_Avoid_: Relevance threshold, cutoff, minimum score
+Retired. The uncalibrated cosine distance that let a chunk claim a specificity tier. Replaced by the reranker score and, once fitted, the relevance probability.
+
+**Reranker**:
+The cross-encoder model that reads the question and a candidate passage together and scores how well the passage answers it. Not the old tier-first ordering, which also went by this name.
+_Avoid_: Scorer, ranking stage
+
+**Relevance probability**:
+The calibrated probability that a passage answers the question, fitted on judged pairs from the golden set. It orders results and decides abstention. Until it is fitted, the reranker score stands in for it.
+_Avoid_: Confidence score, similarity
+
+**Abstention threshold**:
+The relevance probability below which the server answers `no_evidence` rather than cite its best passage. It is chosen for a target precision, not set by hand.
+_Avoid_: Cutoff, floor
 
 **Distance**:
-Overloaded, and both senses reach the reranker and are published side by side on every citation. A citation's `distance` is a *cosine distance* in embedding space, from the chunk to the vector that was searched. Its `tier` is a distance in the *location tree*, counted in hops up the extent path. Name the sense whenever both are in scope; in code `Hit.distance` is the first and `hops_to_extent` the second, and `LocationTree.distance` is the second under the ambiguous name.
+Overloaded, and both senses are published side by side on every citation. A citation's `distance` is a *cosine distance* in embedding space, from the chunk to the vector that was searched. Its `tier` is a distance in the *location tree*, counted in hops up the extent path. Name the sense whenever both are in scope; in code `Hit.distance` is the first and `hops_to_extent` the second, and `LocationTree.distance` is the second under the ambiguous name.
 _Avoid_: Similarity or relevance for the cosine sense; tree distance or depth for the hop sense
 
 ### Scope
