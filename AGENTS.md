@@ -5,8 +5,8 @@ searchable corpus. The step-by-step procedure is `docs/ENCODING-RUNBOOK.md`; thi
 
 ## What the pipeline is
 
-`corpus fetch` crawls the declared sources (free). `corpus ocr` and `corpus describe` call a paid language model.
-`corpus embed --index bge-m3` embeds every chunk locally (free). `corpus index` builds the search indexes. The
+`corpus fetch` crawls the declared sources (free). `corpus run` does everything after it in order: `ocr` and
+`describe` (a paid language model), then `embed` and `index` for the configured indexes (bge-m3 locally, free). The
 server answers questions from the local bge-m3 index and needs no key.
 
 The local index embeds breadcrumb + description + text, and descriptions are written by the paid model. So even a
@@ -21,13 +21,11 @@ The pipeline runs with **OpenAI or Anthropic**. The choice is one setting, not a
 
 Anthropic calls run synchronously. OpenAI calls use the Batch API unless `--sync` is passed.
 
-## The API key is for OCR and descriptions only, never for embeddings
+## Which work the key pays for is configuration
 
-Embeddings are computed **locally** with bge-m3 (`corpus embed --index bge-m3`), and the server answers from that
-index. **Do not run `corpus embed --index openai-3l` or `corpus index --index openai-3l`**, even when an OpenAI key
-is set, unless the person you work for explicitly asks for the OpenAI index. Those two steps are optional and are
-marked so in the runbook. `corpus estimate` prints an `embed openai-3l` line and includes it in its total; subtract
-it when judging what the run will cost.
+`CORPUS_INDEXES` (default `bge-m3`, local). With only local indexes, the key pays for OCR and descriptions; add
+`openai-3l` to also build the OpenAI index. The code enforces this — use `corpus run` and don't pass `--index` by
+hand.
 
 ## Rules
 
@@ -37,11 +35,13 @@ it when judging what the run will cost.
 2. **Smoke-test the key first.** Run one small sync call per paid stage before any full run:
    `corpus describe --what docs --limit 1 --sync`, then inspect `corpus.translation_group`. It costs under a cent
    and proves the key, the model and the reply format work.
-3. **Always run `--dry-run` or `corpus estimate` before a paid command.** If a stage is refused for budget, the
-   message says how many tasks fit; re-run with `--limit <that number>`. Spend in this order: document
-   descriptions, chunk descriptions, OCR.
-4. **Order matters:** documents are described before chunks, and chunks before `embed`. Otherwise every chunk is
-   embedded twice. If the credit runs out, finish with `corpus embed --index bge-m3 --allow-undescribed`.
+3. **Then `corpus estimate` (or `corpus run --dry-run`), then `corpus run`.** It runs OCR, document and chunk
+   descriptions, embeddings and indexes in the right order (descriptions before embeddings, so nothing is embedded
+   twice). A paid stage that does not fit the remaining budget runs only the part that fits; if the credit runs
+   out before every chunk is described, the index still covers every chunk. `--skip-ocr` leaves scanned pages for
+   later. Re-running `corpus run` continues where it stopped.
+4. **Don't run the stages by hand** (`ocr`, `describe`, `embed`, `index`) unless the person you work for asks; the
+   runbook keeps them as the manual path.
 5. **Never use fake providers against a real database.** `CORPUS_LLM_PROVIDER=fake` and `EMBEDDING_BACKEND=fake`
    are for tests; paid commands refuse to write with them unless `--allow-fake` is passed. Never pass it outside
    tests.

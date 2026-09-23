@@ -79,8 +79,8 @@ is built in stages. Only some of them call a paid API:
 | `corpus fetch` (crawl Fedlex and the official sites) | No |
 | `corpus ocr` (transcribe scanned PDF pages) | Yes: OpenAI (or Anthropic) |
 | `corpus describe` (a short description of every document and chunk) | Yes: OpenAI (or Anthropic) |
-| `corpus embed --index openai-3l` | Yes: OpenAI |
-| `corpus embed --index bge-m3` (local model) | No, but it embeds the descriptions |
+| `corpus embed` for `openai-3l` (only when it is in `CORPUS_INDEXES`) | Yes: OpenAI |
+| `corpus embed` for `bge-m3` (local model, the `CORPUS_INDEXES` default) | No, but it embeds the descriptions |
 | Search and the MCP server | No: questions are embedded locally with bge-m3 |
 
 **Even the local bge-m3 index needs the API, indirectly.** Every chunk is embedded as
@@ -89,6 +89,10 @@ article under its subject and adds the words a resident would use, and it is wri
 a language model. So a full-quality local index can only be built after `corpus describe`
 has run with a key. At the current corpus size (about 130k chunks) the whole paid part
 costs roughly $14 at batch prices, well under the $100 cap.
+
+`CORPUS_INDEXES` decides which embedding indexes are built, and so whether the key also
+pays for embeddings: the default `bge-m3` is local; add `openai-3l` to also build the
+OpenAI index. `corpus run` does every stage after `corpus fetch` in order, within the budget.
 
 Two ways around it:
 
