@@ -19,8 +19,15 @@ The pipeline runs with **OpenAI or Anthropic**. The choice is one setting, not a
 - Anthropic key: `ANTHROPIC_API_KEY=…` and `CORPUS_LLM_PROVIDER=anthropic`
 - OpenAI key: `OPENAI_API_KEY=…` and `CORPUS_LLM_PROVIDER=openai`
 
-Anthropic calls run synchronously. OpenAI calls use the Batch API unless `--sync` is passed. Only the optional
-`openai-3l` index needs an OpenAI key; skip `embed --index openai-3l` and `index --index openai-3l` without one.
+Anthropic calls run synchronously. OpenAI calls use the Batch API unless `--sync` is passed.
+
+## The API key is for OCR and descriptions only, never for embeddings
+
+Embeddings are computed **locally** with bge-m3 (`corpus embed --index bge-m3`), and the server answers from that
+index. **Do not run `corpus embed --index openai-3l` or `corpus index --index openai-3l`**, even when an OpenAI key
+is set, unless the person you work for explicitly asks for the OpenAI index. Those two steps are optional and are
+marked so in the runbook. `corpus estimate` prints an `embed openai-3l` line and includes it in its total; subtract
+it when judging what the run will cost.
 
 ## Rules
 
