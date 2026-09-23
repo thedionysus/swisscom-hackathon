@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 from collections import deque
 from collections.abc import Callable, Mapping
@@ -9,6 +10,7 @@ from urllib.parse import urldefrag, urlparse
 import httpx
 
 from swiss_grounding.corpus.connectors.html_meta import page_meta, work_key
+from swiss_grounding.corpus.connectors.sitemap import collect_sitemap_urls
 from swiss_grounding.corpus.models import (
     LANGUAGES,
     ConnectorResult,
@@ -84,6 +86,11 @@ def _language_groups(alternates_by_url: Mapping[str, Mapping[str, str]],
     return result
 
 
+def _matches(url: str, patterns: tuple[re.Pattern[str], ...]) -> bool:
+    """True when `url` is one of config.pdf_link_patterns: a PDF to hand over, never a page to crawl."""
+    return any(p.search(url) for p in patterns)
+
+
 class HtmlConnector:
     def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep):
         self._http = http
@@ -129,21 +136,48 @@ class HtmlConnector:
         return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
                 and self._robots_allow(url))
 
+    def _pause(self) -> None:
+        if self._policy.delay_seconds:
+            self._sleep(self._policy.delay_seconds)
+
+    def _sitemap_seeds(self, cfg: Mapping, prefixes: tuple[str, ...], limit: int,
+                       pdf_patterns: tuple[re.Pattern[str], ...]) -> tuple[tuple[str, ...], list[tuple[str, str]]]:
+        """URLs from config.sitemap_urls matching config.sitemap_include (A11), at most `limit`."""
+        if not cfg.get("sitemap_urls"):
+            return (), []
+
+        def accept(url: str) -> bool:
+            path = urlparse(url).path.lower()
+            return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
+                    and not _matches(url, pdf_patterns))
+
+        seeds = collect_sitemap_urls(self._http, tuple(cfg["sitemap_urls"]), tuple(cfg.get("sitemap_include", ())),
+                                     limit, accept=accept, fetchable=self._robots_allow, pause=self._pause)
+        return seeds.urls, list(seeds.errors)
+
     def run(self, spec: SourceSpec, known: Mapping[str, KnownState]) -> ConnectorResult:
         cfg = spec.config
         prefixes = tuple(cfg["allow_prefixes"])
         pdf_prefixes = tuple(cfg.get("pdf_allow_prefixes", prefixes))
         max_pages = int(cfg.get("max_pages", DEFAULT_MAX_PAGES))
         max_pdfs = int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS))
+        language_links_selector = cfg.get("language_links_selector")
+        content_selector = cfg.get("content_selector")
+        pdf_patterns = tuple(re.compile(p) for p in cfg.get("pdf_link_patterns", ()))
         start_urls = tuple(cfg["start_urls"])
         frontier = deque(start_urls)
         revisit = deque(u for u in known if u not in start_urls)
         queued = set(frontier) | set(revisit)
+        seeded, errors = self._sitemap_seeds(cfg, prefixes, max_pages, pdf_patterns)
+        for url in seeded:
+            if url not in queued:
+                frontier.append(url)
+                queued.add(url)
         seen: set[str] = set()
         pending: list[ParsedDocument] = []
         alternates_by_url: dict[str, dict[str, str]] = {}
         page_languages: dict[str, str] = {}
-        unchanged, gone, errors = [], [], []
+        unchanged, gone = [], []
         pdfs: dict[str, DiscoveredPdf] = {}
         pages = 0
         while (frontier or revisit) and pages < max_pages:
@@ -170,8 +204,7 @@ class HtmlConnector:
                 errors.append((url, f"fetch failed: {exc}"))
                 continue
             finally:
-                if self._policy.delay_seconds:
-                    self._sleep(self._policy.delay_seconds)
+                self._pause()
             final = str(response.url)
             if final != url:
                 # A redirect's own destination scope matters more than whatever status it ends
@@ -202,8 +235,9 @@ class HtmlConnector:
             default_lang = spec.languages[0]
             # Sentinel default so we can tell "no <html lang>" apart from "declared as the
             # source's default language" -- both would otherwise read as default_lang.
-            page = html_to_page(html, url=final, default_language="")
-            meta = page_meta(html, final)
+            page = html_to_page(html, url=final, default_language="", content_selector=content_selector)
+            meta = page_meta(html, final, language_links_selector=language_links_selector,
+                             pdf_link_patterns=pdf_patterns)
             self_lang = next((lang for lang, href in meta.alternates.items()
                               if urldefrag(href)[0] == urldefrag(final)[0]), None)
             declared_lang = self_lang or (page.language or None)
@@ -214,15 +248,20 @@ class HtmlConnector:
                 lang = declared_lang
                 emit = lang in LANGUAGES and lang in spec.languages
 
+            # Language versions go to the front of the queue, before the page's own links (which
+            # often include the language switcher): A1 groups only pages crawled in the same run,
+            # so a pair split by max_pages would lose its shared work_key. An alternate already
+            # queued further back (linked from an earlier page) is pulled forward; the later
+            # duplicate entry is skipped as seen.
+            for alt_lang, href in meta.alternates.items():
+                if alt_lang in spec.languages and href not in seen and self._in_prefixes(href, prefixes):
+                    frontier.appendleft(href)
+                    queued.add(href)
             for link in extract_links(html, base_url=final):
-                if link not in seen and link not in queued and self._in_prefixes(link, prefixes):
+                if (link not in seen and link not in queued and self._in_prefixes(link, prefixes)
+                        and not _matches(link, pdf_patterns)):
                     frontier.append(link)
                     queued.add(link)
-            for alt_lang, href in meta.alternates.items():
-                if (alt_lang in spec.languages and href not in seen and href not in queued
-                        and self._in_prefixes(href, prefixes)):
-                    frontier.append(href)
-                    queued.add(href)
 
             if not emit:
                 continue
