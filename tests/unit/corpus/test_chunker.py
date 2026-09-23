@@ -53,3 +53,39 @@ def test_ocr_page_is_one_empty_chunk():
 
 def test_empty_sections_are_dropped():
     assert chunk_document(_doc(ParsedSection("de:0", ("T",), None, "   "))) == ()
+
+
+def test_split_paragraphs_flag_forces_per_paragraph_split_even_if_short():
+    s = ParsedSection("art_5", CRUMB, "art_5", "1 Kurz.\n2 Auch kurz.",
+                      paragraphs=(("art_5/para_1", "1 Kurz."), ("art_5/para_2", "2 Auch kurz.")),
+                      split_paragraphs=True)
+    chunks = chunk_document(_doc(s))
+    assert [c.align_key for c in chunks] == ["art_5/para_1", "art_5/para_2"]
+    assert chunks[0].text == "1 Kurz."
+
+
+def test_windows_do_not_start_mid_word():
+    words = [f"Wort{i}xyzabc" for i in range(300)]  # varying lengths so windows can't land on aligned boundaries
+    text = " ".join(words)
+    chunks = chunk_document(_doc(ParsedSection("de:3", ("Seite", "Abschnitt"), None, text)))
+    assert len(chunks) > 1
+    word_set = set(words)
+    for c in chunks[1:]:
+        first_token = c.text.split(" ", 1)[0].rstrip(".")
+        assert first_token in word_set
+
+
+def test_sentence_cut_skips_legal_abbreviations():
+    # the only ". " occurrences before the MAX_CHARS boundary are legal abbreviations; a naive
+    # rfind(". ") would cut right after "lit. ", splitting mid-reference
+    padding = "Wort " * 190
+    abbrev_clause = "Art. 5 Abs. 2 lit. a regelt die Kündigung zur Unzeit gemäss diesem Gesetz und dessen Anhang"
+    filler = " Wort" * 260
+    text = padding + abbrev_clause + filler
+    chunks = chunk_document(_doc(ParsedSection("de:9", ("Seite",), None, text)))
+    assert len(chunks) > 1
+    for c in chunks:
+        stripped = c.text.rstrip()
+        assert not stripped.endswith("Art.")
+        assert not stripped.endswith("Abs.")
+        assert not stripped.endswith("lit.")

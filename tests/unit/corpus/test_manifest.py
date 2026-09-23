@@ -56,3 +56,32 @@ def test_rejects_unknown_language(tmp_path):
     path.write_text(MANIFEST.replace("[de, fr]", "[de, xx]"))
     with pytest.raises(ValueError):
         load_manifest(path)
+
+
+def test_rejects_duplicate_languages(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace("[de, fr]", "[de, de]"))
+    with pytest.raises(ValueError):
+        load_manifest(path)
+
+
+def test_rejects_invalid_id(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace("id: bern_city", "id: Bern City!"))
+    with pytest.raises(ValueError):
+        load_manifest(path)
+
+
+def test_reads_manifest_as_utf8(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_bytes((MANIFEST.replace("Stadt Bern", "Stadt Zürich")).encode("utf-8"))
+    manifest = load_manifest(path)
+    assert manifest.sources[1].name == "Stadt Zürich"
+
+
+def test_select_sources_rejects_unknown_source_ids(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST)
+    manifest = load_manifest(path)
+    with pytest.raises(ValueError, match="unknown_id"):
+        select_sources(manifest, tier=2, source_ids=("bern_city", "unknown_id"))
