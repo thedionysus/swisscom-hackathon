@@ -106,7 +106,12 @@ class SearchService:
         citations = ()
         if status == "results":
             queries = [q.request.question, *q.request.translations.values()]
-            keep = [s for s in scored if s.relevance >= self.relevance.threshold][: q.request.limit]
+            relevant = [s for s in scored if s.relevance >= self.relevance.threshold]
+            if o.kind == "none":
+                # A placeless answer cites federal evidence only: cantonal and municipal passages
+                # apply to one place and would mislead a user elsewhere (ADR 0013).
+                relevant = [s for s in relevant if s.group.representative.extent_id == "CH"]
+            keep = relevant[: q.request.limit]
             citations = tuple(self._cite(s, queries) for s in keep)
         loc = o.resolved.location if o.resolved else None
         return PlaceResult(o.text, status, loc.id if loc else None, loc.label("de") if loc else None,

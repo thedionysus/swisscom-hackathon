@@ -24,3 +24,4 @@ The challenge grades four failure answers differently: not covered, missing cont
 - The tool description tells clients to pass the country when the user names one ("Konstanz, Deutschland").
 - In a question with no place argument, a country name counts only as the place of the question ("in Deutschland", "en France"). "Permis étranger" or "Umzug ins Ausland" are Swiss federal topics, not foreign places.
 - A foreign town that shares its name with a Swiss commune and appears with no country is answered as Swiss. The response names the commune so the calling model can correct it.
+- A question with no place that a federal passage answers cites federal passages only; cantonal and municipal passages apply to one place and are not shown without it (added 2026-09-24).
