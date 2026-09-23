@@ -10,6 +10,7 @@ from collections.abc import Sequence
 
 import numpy as np
 import psycopg
+import psycopg.sql
 from pgvector import HalfVector, SparseVector
 
 from swiss_grounding.corpus.budget import PRICES, cost_usd, estimate_tokens, record_spend
@@ -43,18 +44,20 @@ def _hash(text: str) -> str:
 
 def pending_for_index(conn: psycopg.Connection, index: IndexSpec, require_description: bool,
                       limit: int | None) -> list[dict]:
-    """Eligible chunks whose stored vector is missing or was made from a different text."""
+    """Eligible chunks whose stored vector is missing or was made from a different text.
+
+    The hash comparison runs in SQL so `limit` counts only chunks that actually need embedding.
+    """
     rows = conn.execute(
-        f"select c.id, c.language, c.breadcrumb, c.description, c.text, e.text_hash as stored "
+        f"select c.id, c.language, c.breadcrumb, c.description, c.text "
         f"from corpus.chunk c left join {index.table} e on e.chunk_id = c.id and e.language = c.language "
-        f"where {ELIGIBLE} and (not %s or c.description <> '') order by c.id limit %s",
+        f"where {ELIGIBLE} and (not %s or c.description <> '') "
+        f"and e.text_hash is distinct from {TEXT_HASH_SQL} order by c.id limit %s",
         (require_description, limit)).fetchall()
     out = []
     for r in rows:
         text = embedding_text(r["breadcrumb"], r["description"], r["text"])
-        digest = _hash(text)
-        if r["stored"] != digest:
-            out.append({"id": r["id"], "language": r["language"], "text": text, "hash": digest})
+        out.append({"id": r["id"], "language": r["language"], "text": text, "hash": _hash(text)})
     return out
 
 
@@ -255,11 +258,20 @@ def resume_embed_batches(database_url: str, index: IndexSpec, batch_runner,
     return report
 
 
-def build_vector_indexes(database_url: str, index: IndexSpec) -> None:
-    """HNSW per language partition. Build after bulk loading: inserting into a live HNSW index is far slower."""
+def build_vector_indexes(database_url: str, index: IndexSpec, parallel_workers: int = 0,
+                         maintenance_work_mem: str = "1GB") -> None:
+    """HNSW per language partition. Build after bulk loading: inserting into a live HNSW index is far slower.
+
+    `parallel_workers` > 0 speeds the build but needs shared memory: in Docker give the db service a large
+    `shm_size`, else Postgres fails with "could not resize shared memory segment". 0 builds serially.
+    """
+    if parallel_workers < 0:
+        raise ValueError("parallel_workers must be >= 0")
     table = index.table.split(".")[1]
     with connect(database_url) as conn:
-        conn.execute("set maintenance_work_mem = '1GB'")
+        conn.execute(psycopg.sql.SQL("set maintenance_work_mem = {}").format(psycopg.sql.Literal(maintenance_work_mem)))
+        conn.execute(psycopg.sql.SQL("set max_parallel_maintenance_workers = {}").format(
+            psycopg.sql.Literal(parallel_workers)))
         for lang in LANGS:
             conn.execute(f"create index if not exists {table}_{lang}_hnsw on corpus.{table}_{lang} "
                          f"using hnsw (embedding {index.opclass}) with (m = 16, ef_construction = 64)")

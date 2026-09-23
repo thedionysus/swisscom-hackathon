@@ -46,7 +46,7 @@ def test_corpus_settings_defaults(monkeypatch):
     for key in (
         "OPENAI_API_KEY", "CORPUS_LLM_PROVIDER", "RESPECT_ROBOTS", "CORPUS_BUDGET_USD",
         "DATA_DIR", "CORPUS_OCR_BUDGET_USD", "CORPUS_DOC_MODEL", "CORPUS_CHUNK_MODEL", "CORPUS_OCR_MODEL",
-        "CORPUS_USER_AGENT",
+        "CORPUS_USER_AGENT", "CORPUS_INDEX_PARALLEL_WORKERS",
     ):
         monkeypatch.delenv(key, raising=False)
     from swiss_grounding.config import Settings
@@ -59,6 +59,8 @@ def test_corpus_settings_defaults(monkeypatch):
     assert s.corpus_ocr_budget_usd == 10.0
     assert s.respect_robots is True
     assert s.data_dir == "data"
+    # Parallel HNSW builds need more /dev/shm than Docker's 64 MB default; serial is safe everywhere.
+    assert s.corpus_index_parallel_workers == 0
     # ch.ch serves a 404 shell to user agents without a browser-style prefix (A11).
     assert s.corpus_user_agent == ("Mozilla/5.0 (compatible; swiss-grounding/0.2; "
                                    "+https://github.com/thedionysus/swisscom-hackathon)")

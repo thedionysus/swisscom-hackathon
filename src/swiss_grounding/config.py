@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     corpus_anthropic_model: str = "claude-haiku-4-5-20251001"
     corpus_budget_usd: float = 100.0
     corpus_ocr_budget_usd: float = 10.0
+    # Workers for HNSW index builds. 0 = serial: parallel builds need more /dev/shm than Docker's 64 MB default.
+    corpus_index_parallel_workers: int = 0
     respect_robots: bool = True
     # Browser-style prefix, the conventional honest-bot form: ch.ch serves a 404 shell to user
     # agents without one (A11). Used for every corpus HTTP client.
