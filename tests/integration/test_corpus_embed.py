@@ -107,6 +107,18 @@ def test_sql_text_hash_matches_python(corpus_db):
     assert row["h"] == p["hash"]
 
 
+def test_limit_counts_only_pending_chunks(corpus_db):
+    """Already-embedded chunks first in id order must not use up the limit."""
+    with connect(corpus_db) as conn:
+        _seed_three(conn)
+    embed_local(corpus_db, INDEXES["bge-m3"], FakeEmbeddings(1024), batch_size=8)
+    with connect(corpus_db) as conn:
+        _seed(conn, url="u9", text="Neu.", day=28)
+        [p] = pending_for_index(conn, INDEXES["bge-m3"], require_description=True, limit=1)
+        assert p["text"].endswith("Neu.") and p["hash"] == conn.execute(
+            f"select {TEXT_HASH_SQL} as h from corpus.chunk c where id = %s", (p["id"],)).fetchone()["h"]
+
+
 def test_undescribed_chunks_wait(corpus_db):
     with connect(corpus_db) as conn:
         _seed(conn)
@@ -218,6 +230,28 @@ def test_batch_result_for_changed_or_deleted_chunk_is_skipped(corpus_db, tmp_pat
     with connect(corpus_db) as conn:
         ids = [r["chunk_id"] for r in conn.execute("select chunk_id from corpus.emb_openai_3l")]
     assert ids == [pending[1]["id"]]
+
+
+def test_hnsw_build_sets_maintenance_memory_and_workers(corpus_db, monkeypatch):
+    """Parallel HNSW builds exhaust Docker's 64 MB /dev/shm, so workers default to 0 (serial)."""
+    import contextlib
+
+    from swiss_grounding.corpus import embed
+
+    seen = []
+
+    @contextlib.contextmanager
+    def spying_connect(url):
+        with connect(url) as conn:
+            yield conn
+            seen.append(conn.execute(
+                "select current_setting('maintenance_work_mem') as mem, "
+                "current_setting('max_parallel_maintenance_workers') as workers").fetchone())
+
+    monkeypatch.setattr(embed, "connect", spying_connect)
+    build_vector_indexes(corpus_db, INDEXES["openai-3l"])
+    build_vector_indexes(corpus_db, INDEXES["openai-3l"], parallel_workers=2, maintenance_work_mem="256MB")
+    assert seen == [{"mem": "1GB", "workers": "0"}, {"mem": "256MB", "workers": "2"}]
 
 
 def test_hnsw_indexes_are_built_per_language(corpus_db):
