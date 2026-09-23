@@ -1,7 +1,9 @@
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator, model_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+DEFAULT_CORPUS_INDEXES = ("bge-m3",)
 
 
 class Settings(BaseSettings):
@@ -33,6 +35,9 @@ class Settings(BaseSettings):
     corpus_chunk_model: str = "gpt-5-nano"
     corpus_ocr_model: str = "gpt-5-mini"
     corpus_anthropic_model: str = "claude-haiku-4-5-20251001"
+    # Embedding indexes the pipeline builds (CORPUS_INDEXES, comma-separated). bge-m3 is local and free;
+    # openai-3l is paid and needs OPENAI_API_KEY. `corpus embed`/`index`/`run` build exactly these.
+    corpus_indexes: Annotated[tuple[str, ...], NoDecode] = DEFAULT_CORPUS_INDEXES
     corpus_budget_usd: float = 100.0
     corpus_ocr_budget_usd: float = 10.0
     # Estimated input tokens per Batch API file; raise them to the account's enqueued-token limit (runbook).
@@ -47,6 +52,28 @@ class Settings(BaseSettings):
         "Mozilla/5.0 (compatible; swiss-grounding/0.2; +https://github.com/thedionysus/swisscom-hackathon)"
     )
     data_dir: str = "data"
+
+    @field_validator("corpus_indexes", mode="before")
+    @classmethod
+    def _split_indexes(cls, value: object) -> object:
+        """`bge-m3, openai-3l` -> ("bge-m3", "openai-3l"): blanks dropped, duplicates removed, order kept."""
+        parts = value.split(",") if isinstance(value, str) else value
+        if not isinstance(parts, (list, tuple)):
+            return value
+        return tuple(dict.fromkeys(str(p).strip() for p in parts if str(p).strip()))
+
+    @model_validator(mode="after")
+    def _indexes_are_known(self) -> "Settings":
+        # Imported here: keeps config free of the provider module's heavy imports.
+        from swiss_grounding.corpus.providers import INDEXES
+        if not self.corpus_indexes:
+            raise ValueError(f"CORPUS_INDEXES must name at least one of {sorted(INDEXES)}")
+        unknown = [name for name in self.corpus_indexes if name not in INDEXES]
+        if unknown:
+            raise ValueError(f"CORPUS_INDEXES: unknown index {', '.join(unknown)}; known: {sorted(INDEXES)}")
+        if "openai-3l" in self.corpus_indexes and not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY is required when CORPUS_INDEXES includes openai-3l")
+        return self
 
     @model_validator(mode="after")
     def _anthropic_needs_key(self) -> "Settings":

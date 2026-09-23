@@ -8,12 +8,12 @@ from typer.testing import CliRunner
 
 from swiss_grounding.cli import corpus_commands
 from swiss_grounding.cli.main import app
-from swiss_grounding.corpus.budget import spent
+from swiss_grounding.corpus.budget import estimate_tokens, spent
 from swiss_grounding.corpus.describe import build_doc_tasks, estimate_describe
 from swiss_grounding.corpus.embed import pending_for_index
 from swiss_grounding.corpus.models import ParsedDocument, ParsedSection, SourceSpec
 from swiss_grounding.corpus.persist import persist_document, upsert_source
-from swiss_grounding.corpus.providers import INDEXES
+from swiss_grounding.corpus.providers import INDEXES, Usage
 from swiss_grounding.db.connection import connect
 
 pytestmark = pytest.mark.integration
@@ -106,9 +106,14 @@ class _FinishedBatches:
         self.files = Files()
 
 
-def _openai_mode(monkeypatch, client, tmp_path):
-    monkeypatch.setenv("CORPUS_LLM_PROVIDER", "openai")
+def _with_openai_index(monkeypatch):
+    monkeypatch.setenv("CORPUS_INDEXES", "bge-m3,openai-3l")
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+
+def _openai_mode(monkeypatch, client, tmp_path):
+    _with_openai_index(monkeypatch)
+    monkeypatch.setenv("CORPUS_LLM_PROVIDER", "openai")
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setattr(corpus_commands, "_openai_client", lambda settings: client)
 
@@ -176,6 +181,7 @@ def test_describe_docs_marks_repeated_furniture_before_building_doc_tasks(corpus
 
 def test_fake_ocr_and_embed_spend_nothing(corpus_db, monkeypatch, tmp_path):
     _no_openai(monkeypatch)
+    _with_openai_index(monkeypatch)
     _seed_scan(corpus_db, tmp_path)
     assert _invoke("ocr", "--sync").exit_code == 0
     result = _invoke("embed", "--index", "openai-3l", "--allow-undescribed")
@@ -291,10 +297,11 @@ def test_fetch_prints_a_tally_per_source_and_the_promotion_line(corpus_db, tmp_p
 
 def test_fake_providers_refuse_to_write_into_a_real_database(corpus_db, monkeypatch):
     _no_openai(monkeypatch)
+    _with_openai_index(monkeypatch)
     monkeypatch.setattr(corpus_commands, "TEST_DB_PREFIX", "not_this_database_")
     _seed_law(corpus_db)
     for args in (("describe", "--what", "docs", "--sync"), ("ocr",), ("embed", "--index", "bge-m3"),
-                 ("embed", "--index", "openai-3l", "--allow-undescribed")):
+                 ("embed", "--index", "openai-3l", "--allow-undescribed"), ("run",)):
         refused = _invoke(*args)
         assert refused.exit_code == 2 and "--allow-fake" in refused.output, args
     assert _invoke("describe", "--what", "docs", "--dry-run").exit_code == 0
@@ -315,13 +322,18 @@ def test_estimate_projects_chunk_descriptions_before_documents_are_described(cor
     assert "embed openai-3l projected with descriptions: 2 chunks" in result.output
 
 
-def test_estimate_ends_with_a_total_of_ocr_docs_projected_chunks_and_projected_embeddings(corpus_db, monkeypatch):
-    _seed_law(corpus_db)
+def _fixed_estimates(monkeypatch):
     monkeypatch.setattr(corpus_commands, "estimate_ocr", lambda conn, model, batch=True: 1.0)
     monkeypatch.setattr(corpus_commands, "estimate_describe", lambda tasks, model, batch=True: 2.0)
     monkeypatch.setattr(corpus_commands, "project_chunk_tasks", lambda conn, model, batch=True: (1, 3.0))
     monkeypatch.setattr(corpus_commands, "estimate_embeddings", lambda pending, model, batch=True: 4.0)
     monkeypatch.setattr(corpus_commands, "PROJECTED_DESCRIPTION_TOKENS", 0)
+
+
+def test_estimate_ends_with_a_total_of_ocr_docs_projected_chunks_and_projected_embeddings(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    _with_openai_index(monkeypatch)
+    _fixed_estimates(monkeypatch)
     result = _invoke("estimate")
     assert result.exit_code == 0, result.output
     # ocr 1 + docs 2 + projected chunks 3 + openai-3l projected 4; the described-groups chunk line is not added
@@ -353,3 +365,138 @@ def test_an_unreachable_database_is_one_friendly_line(corpus_db, monkeypatch):
     result = _invoke("describe", "--what", "docs", "--dry-run")
     assert result.exit_code == 1
     assert "database" in result.output.lower() and "Traceback" not in result.output
+
+
+# --- CORPUS_INDEXES ----------------------------------------------------------------------------------
+
+def _count(url, sql):
+    with connect(url) as conn:
+        return conn.execute(sql).fetchone()["n"]
+
+
+def test_estimate_marks_unconfigured_indexes_and_leaves_them_out_of_the_total(corpus_db, monkeypatch):
+    _seed_law(corpus_db)
+    _fixed_estimates(monkeypatch)
+    result = _invoke("estimate")
+    assert result.exit_code == 0, result.output
+    assert "embed openai-3l before descriptions: 2 chunks, estimate $4.00 (not configured, excluded)" in result.output
+    assert "(not configured, excluded)" not in next(line for line in result.output.splitlines()
+                                                    if line.startswith("embed bge-m3"))
+    # ocr 1 + docs 2 + projected chunks 3; openai-3l is not in CORPUS_INDEXES
+    assert result.output.rstrip().splitlines()[-1] == "total estimate (batch price): $6.00"
+
+
+@pytest.mark.parametrize("command", [("embed", "--index", "openai-3l"), ("embed", "--index", "openai-3l", "--dry-run"),
+                                     ("index", "--index", "openai-3l")])
+def test_an_index_not_in_corpus_indexes_is_refused(corpus_db, command):
+    _seed_law(corpus_db)
+    result = _invoke(*command)
+    assert result.exit_code == 2, result.output
+    assert "openai-3l is not in CORPUS_INDEXES (currently: bge-m3); add it there to build it" in result.output
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_openai_3l") == 0
+
+
+def test_embed_without_an_index_embeds_every_configured_index(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    result = _invoke("embed", "--allow-undescribed")
+    assert result.exit_code == 0, result.output
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 2
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_openai_3l") == 0
+    assert _invoke("index").exit_code == 0
+
+
+# --- corpus run --------------------------------------------------------------------------------------
+
+def _positions(output: str, markers: list[str]) -> list[int]:
+    return [output.index(marker) for marker in markers]
+
+
+def test_run_with_fake_providers_does_every_stage_in_order_for_free(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    _seed_scan(corpus_db, tmp_path)
+    result = _invoke("run", "--allow-fake")
+    assert result.exit_code == 0, result.output
+    order = _positions(result.output, ["== ocr", "== describe docs", "== describe chunks", "== embed bge-m3",
+                                       "== index bge-m3", "run summary"])
+    assert order == sorted(order)
+    assert "openai-3l" not in result.output.split("run summary")[0]
+    with connect(corpus_db) as conn:
+        assert spent(conn) == 0.0
+        chunks = conn.execute("select description, needs_ocr from corpus.chunk").fetchall()
+    assert len(chunks) == 3 and all(c["description"] and not c["needs_ocr"] for c in chunks)
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 3
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_openai_3l") == 0
+    assert "chunks: described=3 undescribed=0" in result.output
+    assert "embeddings: bge-m3=3 openai-3l=0" in result.output
+
+    again = _invoke("run", "--allow-fake")
+    assert again.exit_code == 0, again.output
+    summary = again.output.split("run summary")[1]
+    assert "ocr: done=0 failed=0 skipped=0 refused=0" in summary
+    assert "describe docs: done=0 failed=0 skipped=0 refused=0" in summary
+    assert "describe chunks: done=0 failed=0 skipped=0 refused=0" in summary
+    assert "embed bge-m3: written=0" in summary
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 3
+    with connect(corpus_db) as conn:
+        assert spent(conn) == 0.0
+
+
+class _BillingFakeLLM:
+    """Fake replies billed at exactly the tokens the estimate assumes, so the cap binds as it would for real."""
+
+    def complete(self, task):
+        languages = corpus_commands._fake_reply(task)["descriptions"]
+        return (corpus_commands._fake_reply(task),
+                Usage(estimate_tokens(task.system + task.user), 110 * len(languages) + 40))
+
+
+def _seed_pages(url, count=3):
+    with connect(url) as conn:
+        upsert_source(conn, AHV)
+        for i in range(count):
+            persist_document(conn, ParsedDocument(
+                source_id="ahv", url=f"https://ahv/{i}", language="de", work_key=f"html:{i}", title=f"Seite {i}",
+                sections=(ParsedSection("de:0", ("Seite",), None, f"Eigener Inhalt der Seite {i}."),)),
+                AHV, NOW)
+        tasks = build_doc_tasks(conn, "gpt-5-mini", None)
+    return estimate_describe(tasks, "gpt-5-mini", batch=False) / len(tasks)
+
+
+def test_run_under_a_tiny_cap_describes_what_fits_and_still_embeds_every_chunk(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    per_doc = _seed_pages(corpus_db)
+    cap = per_doc * 2.5
+    monkeypatch.setenv("CORPUS_BUDGET_USD", str(cap))
+    monkeypatch.setattr(corpus_commands, "_llm", lambda settings: _BillingFakeLLM())
+    result = _invoke("run", "--skip-ocr", "--allow-fake")
+    assert result.exit_code == 0, result.output
+    assert "== ocr" not in result.output
+    assert "budget" in result.output
+    with connect(corpus_db) as conn:
+        described = conn.execute("select count(*) as n from corpus.translation_group "
+                                 "where description_by_lang <> '{}'::jsonb").fetchone()["n"]
+        undescribed = conn.execute("select count(*) as n from corpus.chunk where description = ''").fetchone()["n"]
+        assert 0 < spent(conn) <= cap
+    assert described == 2 and undescribed >= 1
+    assert _count(corpus_db, "select count(*) as n from corpus.emb_bge_m3") == 3
+
+
+def test_run_dry_run_prints_the_plan_and_writes_nothing(corpus_db, monkeypatch, tmp_path):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    _seed_scan(corpus_db, tmp_path)
+    hnsw = "select count(*) as n from pg_indexes where schemaname = 'corpus' and indexname like '%hnsw%'"
+    indexes_before = _count(corpus_db, hnsw)
+    result = _invoke("run", "--dry-run")
+    assert result.exit_code == 0, result.output
+    assert "plan:" in result.output and "estimate" in result.output
+    for sql in ("select count(*) as n from corpus.emb_bge_m3", "select count(*) as n from corpus.emb_openai_3l",
+                "select count(*) as n from corpus.llm_spend", "select count(*) as n from corpus.batch_job",
+                "select count(*) as n from corpus.quarantine",
+                "select count(*) as n from corpus.chunk where description <> ''",
+                "select count(*) as n from corpus.translation_group where description_by_lang <> '{}'::jsonb"):
+        assert _count(corpus_db, sql) == 0, sql
+    assert _count(corpus_db, hnsw) == indexes_before
+    assert _count(corpus_db, "select count(*) as n from corpus.chunk where needs_ocr") == 1

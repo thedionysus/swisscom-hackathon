@@ -73,3 +73,46 @@ def test_openai_provider_needs_a_key(monkeypatch):
     from swiss_grounding.config import Settings
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
         Settings(_env_file=None, corpus_llm_provider="openai")
+
+
+def _corpus_env(monkeypatch, indexes: str | None = None, openai_key: str | None = None):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    for name, value in (("CORPUS_INDEXES", indexes), ("OPENAI_API_KEY", openai_key)):
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
+
+
+def test_corpus_indexes_default_to_the_local_index(monkeypatch):
+    _corpus_env(monkeypatch)
+    assert Settings(_env_file=None).corpus_indexes == ("bge-m3",)
+
+
+def test_corpus_indexes_parse_a_comma_separated_list(monkeypatch):
+    _corpus_env(monkeypatch, " bge-m3 , openai-3l,", openai_key="sk-test")
+    assert Settings(_env_file=None).corpus_indexes == ("bge-m3", "openai-3l")
+
+
+def test_corpus_indexes_reject_an_unknown_index(monkeypatch):
+    import pytest
+
+    _corpus_env(monkeypatch, "bge-m3,cohere-v3")
+    with pytest.raises(ValueError, match="cohere-v3"):
+        Settings(_env_file=None)
+
+
+def test_corpus_indexes_reject_an_empty_list(monkeypatch):
+    import pytest
+
+    _corpus_env(monkeypatch, " , ")
+    with pytest.raises(ValueError, match="CORPUS_INDEXES"):
+        Settings(_env_file=None)
+
+
+def test_the_openai_index_needs_an_openai_key(monkeypatch):
+    import pytest
+
+    _corpus_env(monkeypatch, "bge-m3,openai-3l")
+    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+        Settings(_env_file=None)

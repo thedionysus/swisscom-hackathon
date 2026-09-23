@@ -38,3 +38,15 @@ def test_the_guard_refuses_fake_writes_to_a_real_database():
     assert exc.value.exit_code == 2
     cc._guard_fake(_settings(), uses_fake=False, allow_fake=False, what="describe")
     cc._guard_fake(_settings(database_url=TEST_URL), uses_fake=True, allow_fake=False, what="describe")
+
+
+def test_configured_indexes_come_local_first():
+    settings = _settings(corpus_indexes=("openai-3l", "bge-m3"), openai_api_key="sk-test")
+    assert [spec.name for spec in cc._configured_indexes(settings)] == ["bge-m3", "openai-3l"]
+
+
+def test_an_unconfigured_index_is_refused_with_the_configured_list():
+    with pytest.raises(typer.Exit) as exc:
+        cc._require_configured(_settings(), "openai-3l")
+    assert exc.value.exit_code == 2
+    cc._require_configured(_settings(), "bge-m3")

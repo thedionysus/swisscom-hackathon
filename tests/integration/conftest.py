@@ -21,6 +21,7 @@ FAKE_BACKENDS = {
     "EMBEDDING_BACKEND": "fake",
     "EMBEDDING_DIM": "8",
     "CORPUS_LLM_PROVIDER": "fake",
+    "CORPUS_INDEXES": "bge-m3",
 }
 
 

@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import typer
 
 from swiss_grounding.app import build_query_core
-from swiss_grounding.cli.corpus_commands import corpus_app
+from swiss_grounding.cli.corpus_run import corpus_app
 from swiss_grounding.cli.eval_commands import eval_app
 from swiss_grounding.config import load_settings
 from swiss_grounding.db.connection import connect
