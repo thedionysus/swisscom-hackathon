@@ -50,6 +50,7 @@ packages = ["src/swiss_grounding"]
 testpaths = ["tests"]
 markers = ["integration: needs DATABASE_URL and a running PostgreSQL"]
 asyncio_mode = "auto"
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
