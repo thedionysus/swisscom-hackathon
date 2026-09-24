@@ -74,11 +74,11 @@ What to expect:
 The declared-scope corpus (`swiss-grounding corpus …`, steps in `docs/ENCODING-RUNBOOK.md`)
 is built in stages. Only some of them call a paid API.
 
-On a database that has never held the corpus (and was not restored from a dump), the corpus
-schema has to exist first. As of 2026-09-24 `swiss-grounding corpus init` creates it, and
-re-running it is harmless. Without it, `corpus status` fails with `relation "corpus.document"
-does not exist`. The runbook §1 has the details; if the commands change, check
-`swiss-grounding corpus --help`.
+On a database that has never held the corpus (and was not restored from a dump, such as
+the one `swiss-grounding setup` restores), the corpus schema has to exist first. As of
+2026-09-24 `swiss-grounding corpus init` creates it, and re-running it is harmless.
+Without it, `corpus status` fails with `relation "corpus.document" does not exist`. The
+runbook §1 has the details; if the commands change, check `swiss-grounding corpus --help`.
 
 | Stage | Needs a key? |
 |---|---|

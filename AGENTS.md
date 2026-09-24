@@ -6,10 +6,8 @@ searchable corpus. The step-by-step procedure is `docs/ENCODING-RUNBOOK.md`; thi
 ## What the pipeline is
 
 `corpus fetch` crawls the declared sources (free). `corpus run` does everything after it in order: `ocr` and
-`describe` (a paid language model), then `embed` and `index` for the configured indexes (bge-m3 locally, free). Once
-the serving track lands (`docs/superpowers/plans/2026-09-23-serving-track.md`, Task 19), the server answers questions
-from the local bge-m3 index and needs no key. Until then the server still reads the legacy `public` tables: nothing in
-`retrieval/` or `mcp_server/` reads the `corpus` schema yet.
+`describe` (a paid language model), then `embed` and `index` for the configured indexes (bge-m3 locally, free). The
+server answers questions from the local bge-m3 index and needs no key.
 
 The local index embeds breadcrumb + description + text, and descriptions are written by the paid model. So even a
 local build needs an API key for full quality (README, "Which steps need an API key").
