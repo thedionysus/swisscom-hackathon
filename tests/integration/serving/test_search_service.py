@@ -192,3 +192,14 @@ def test_duplicate_text_and_other_language_versions_are_cited_once(serving_db):
     urls = [c.url for p in resp.places for c in p.citations]
     assert len([u for u in urls if u in ("https://ch.ch/x/de", "https://ch.ch/y/de")]) == 1
     assert len([u for u in urls if u.startswith("https://ch.ch/z/")]) == 1
+
+
+def test_the_question_language_version_is_the_one_cited(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="v", lang="en", text="next federal elections vote elezioni", align="s1",
+                url="https://ch.ch/en/v")
+        add_doc(conn, group="v", lang="it", text="prossime elezioni federali", align="s9",
+                url="https://ch.ch/it/v")
+    resp = service(serving_db, threshold=0.0).search(SearchRequest(question="Quando sono le prossime elezioni?"))
+    urls = [c.url for p in resp.places for c in p.citations if c.url.startswith("https://ch.ch/")]
+    assert urls == ["https://ch.ch/it/v"]
