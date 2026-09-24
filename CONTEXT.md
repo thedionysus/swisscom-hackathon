@@ -91,6 +91,14 @@ _Avoid_: Coverage, supported area
 A question about a place outside Switzerland, or about a topic or place outside the declared scope. It is answered by saying so, never by asking the user for a location and never by answering from nearby evidence. For a place outside Switzerland, the answer also tells the calling model to look elsewhere. For a Swiss place outside the declared scope, federal evidence is still given and only the local part is declared not covered.
 _Avoid_: Unsupported query, out-of-coverage, fallback
 
+**Place-dependent question**:
+A placeless question whose relevant evidence comes from two or more different places, each with its own page on the subject, and whose federal evidence, if any, defers to them rather than answering. Answered by asking for the municipality. Decided from the evidence after the search, not from the question's words.
+_Avoid_: Local question, municipal topic, ask-back trigger
+
+**Deferring passage**:
+A federal passage that is relevant to the question but points to the canton or commune for the actual answer ("register with your commune"). Relevant without answering; the reason a placeless question is asked back despite federal evidence.
+_Avoid_: Overview page, pointer page
+
 **Unresolved place**:
 A place named in a question that the Swiss commune register cannot match. It is treated as outside Switzerland, with a hint to retry if it was a misspelled Swiss place. Distinct from a question that names no place at all.
 _Avoid_: Unknown location, missing location
@@ -116,6 +124,14 @@ _Avoid_: Translation, copy
 **Translation group**:
 The set of language versions that publish the same document. A document published in only one language forms a group of one.
 _Avoid_: Language family, document cluster
+
+**Query translation**:
+The question rendered in another language store's language, so that store is searched and reranked in its own language. Sent by the client or, since ADR 0018, produced by the server; a client-sent one always wins.
+_Avoid_: Multilingual query, expanded query
+
+**Translated passage**:
+The cited passage rendered in the question's language when it was published in another one. Published beside the passage, never instead of it: the passage stays the quotable published text, the translated passage is what an answer is written from.
+_Avoid_: Translation of the citation, localised passage
 
 **Aligned chunk**:
 A chunk's counterpart in another language version of its translation group, matched by position in the document's structure (for law, the same article and paragraph).

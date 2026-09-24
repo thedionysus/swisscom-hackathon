@@ -148,3 +148,37 @@ def test_openai_serving_index_needs_a_key(monkeypatch):
     from swiss_grounding.config import Settings
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
         Settings(_env_file=None, serving_index="openai-3l")
+
+
+def test_translation_settings_default_to_every_language_and_no_key(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.delenv("SUPERTEXT_API_KEY", raising=False)
+    s = Settings(_env_file=None)
+    assert s.supertext_api_key is None
+    assert s.translate_query_languages == ("de", "fr", "it", "en")   # Romansh off by default, see config.py
+    assert s.translate_citations is True
+
+
+def test_translate_query_languages_is_a_comma_separated_list(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.setenv("TRANSLATE_QUERY_LANGUAGES", "de, fr,,fr")
+    assert Settings(_env_file=None).translate_query_languages == ("de", "fr")
+
+
+def test_translate_query_languages_rejects_an_unknown_language(monkeypatch):
+    import pytest
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.setenv("TRANSLATE_QUERY_LANGUAGES", "de,es")
+    with pytest.raises(ValueError, match="TRANSLATE_QUERY_LANGUAGES"):
+        Settings(_env_file=None)
+
+
+def test_translator_is_supertext_only_with_a_key(monkeypatch):
+    from swiss_grounding.app import build_translator
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.delenv("SUPERTEXT_API_KEY", raising=False)
+    assert build_translator(Settings(_env_file=None)).name == "none"
+    monkeypatch.setenv("SUPERTEXT_API_KEY", "k")
+    assert build_translator(Settings(_env_file=None)).name == "supertext"
