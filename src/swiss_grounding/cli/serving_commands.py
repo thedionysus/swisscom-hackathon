@@ -38,6 +38,13 @@ from swiss_grounding.serving.models import SearchRequest
 serving_app = typer.Typer(help="Serving: schema, calendars, latency stats.")
 
 
+@serving_app.command("init")
+def init_cmd() -> None:
+    """Create or update the serving schema (idempotent)."""
+    apply_serving_schema(load_settings().database_url)
+    typer.echo("serving schema ready")
+
+
 @serving_app.command("calendar")
 def calendar_cmd() -> None:
     """Import the Zürich waste calendar (OpenERZ) as corpus documents. Run `corpus embed` afterwards."""

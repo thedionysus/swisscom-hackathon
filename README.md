@@ -2,23 +2,144 @@
 
 Jurisdiction-aware retrieval over Swiss public sources, exposed as an MCP server and a CLI.
 
-Ask a chat assistant "When is cardboard collected in 8003?" or "Can my dog run off leash in
-Kanton Zürich?" and it answers from federal law, cantonal and municipal pages, and the Zurich
-waste calendar, with citations, instead of guessing. Every answer says which jurisdiction it
-applies to and admits when a place is not covered.
+**This repository and its prebuilt database are private.** If you are an evaluator, you should
+already have been added as a collaborator (repository Settings -> Collaborators); if not, ask for
+access before starting. Setup below downloads the prebuilt database from a release of this
+repository with `gh`, using your own GitHub login, so `gh auth login` with that account is a
+prerequisite, not optional.
 
-## How it works
+## What it answers
 
-1. **Ingest.** Fetchers pull pages from registered sources (Fedlex SPARQL, HTML crawls of
-   ch.ch, zh.ch, stadt-zuerich.ch and schweizer-wanderwege.ch, the Open ERZ waste API).
-   Each document is translated to English, tagged with topic categories, narrowed to the
-   jurisdiction it applies to, chunked, embedded, and stored in Postgres with pgvector.
-2. **Retrieve.** A hybrid search (vector plus full text) ranks chunks, filtered by location
-   and category, with a penalty for calendar events that have already passed.
-3. **Serve.** An MCP server exposes search, coverage, and document tools that a chat client
-   such as Claude Code or Claude Desktop calls on the user's behalf.
+The server's own `swiss_scope` tool states this; the text below is its exact output, and is what
+the server tells a client that asks about something outside it:
 
-## Quick start (fake translation and embeddings)
+> Covered: federal information for all of Switzerland; cantonal information for Zurich, Bern,
+> Vaud, Geneva, Ticino and Graubünden; municipal services for Zürich, Bern, Lausanne, Genève,
+> Lugano, Chur and Scuol; lookups for health insurance premiums, public transport connections, the
+> reference interest rate. Not covered: places outside Switzerland; computed amounts such as tax
+> bills or pensions (the official rules and calculators are cited instead); looking up a specific
+> company in the commercial register (how the register works is covered); live weather forecasts,
+> statistics and geodata (MeteoSwiss hazard guidance is covered); cantonal and municipal rules
+> outside the named cantons and municipalities.
+
+The challenge's five sample questions, and what the server does for each:
+
+| # | Question | What the server does |
+|---|---|---|
+| 1 | *Wann wird bei uns das nächste Mal Karton abgeholt?* (no place given) | `swiss_search` returns `needs_location`: it asks for the municipality before answering, because no federal passage covers a waste-collection date. |
+| 2 | *Échanger mon permis de conduire étranger dans le canton de Vaud, et en combien de temps?* | `swiss_search` with `locations=["Vaud"]` returns the federal 12-month rule (VZV/OAC, SR 741.51) and the Vaud cantonal procedure page, both in French. |
+| 3 | *Premio mensile più basso, adulto 30 anni, Lugano, franchigia 2500?* | `swiss_premium(municipality="Lugano", age=30, deductible=2500)`: a lookup over the loaded BAG premium table, not a text search. |
+| 4 | *Cura èn las vacanzas d'atun 2026 per la scola da Scuol?* (Romansh) | `swiss_search` resolves Scuol (GR) and returns the school's 2026 autumn-holiday dates from the Scuol source. |
+| 5 | *Rundfunkbeitrag nach meinem Umzug nach Konstanz?* | With `locations=["Konstanz"]` (or "Konstanz, Deutschland") the resolver cannot place it in Switzerland, so `swiss_search` returns `outside_scope` and tells the client to look elsewhere; it does not guess a Swiss fee. Without a location argument, "Konstanz" is not recognised as foreign (ADR 0013) and the server asks back instead — a known, accepted gap, see `docs/CHALLENGE-FIT.md`. |
+
+## Setup (no API key)
+
+Requirements:
+
+- **Docker**, with at least 6 GB of memory allocated to it, and about 15 GB of free disk (the
+  prebuilt database dump plus its restored size).
+- **`uv`** (Python package/venv manager).
+- **`torch` and the local models** (`bge-m3` and a cross-encoder reranker, a few GB total): pulled
+  in by `uv sync --extra embed` and downloaded once by `setup` below.
+- **The GitHub CLI, `gh`**, logged in as an account with access to this private repository:
+  `gh auth login`. `setup` uses it to download the prebuilt database from a release asset; without
+  access, the download is refused with an actionable message.
+
+Steps, in order:
+
+```bash
+cp .env.example .env                    # already points at the compose database; leave QUERY_EMBEDDER unset
+docker compose up -d db
+uv sync --extra embed
+uv run swiss-grounding setup             # downloads, verifies and restores the dump; pre-downloads the models
+uv run swiss-grounding serve             # starts the MCP server over stdio
+```
+
+`setup` needs no API key: the prebuilt database already carries the bge-m3 index and the
+descriptions it depends on (ADR 0017). It prints how long the restore and index rebuild took.
+
+After `setup` has run once, set `HF_HUB_OFFLINE=1` in `.env` to stop the model libraries from
+checking the Hugging Face Hub for updates at every start.
+
+Connect an MCP client with the config in `evals/judge/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "swiss-grounding": {
+      "command": "uv",
+      "args": ["run", "swiss-grounding", "serve"]
+    }
+  }
+}
+```
+
+For Claude Code: `claude mcp add swiss-grounding --scope user -- uv --directory "$(pwd)" run swiss-grounding serve`,
+then open a new session and run `/mcp` to confirm the six tools are listed.
+
+## Tools
+
+| Tool | Purpose |
+|---|---|
+| `swiss_search(question, locations, translations, as_of, limit)` | Find passages in official Swiss sources that answer a question, for up to three places. Returns citations with `passage`, `url`, `publisher`, `extent_label`, `tier`, `relevance`, and dates; abstains with `no_evidence` when nothing relevant was found. |
+| `swiss_get_document(document_id, chunk_id, reference, language)` | Read the whole article or section around a search hit, or look one up by official reference (e.g. "Art. 336c OR") or URL. |
+| `swiss_scope()` | What this server covers and what it does not — quote it verbatim when telling a user a question is not covered. |
+| `swiss_premium(municipality, age, deductible, accident, model, year, limit)` | Cheapest monthly basic health-insurance premiums (BAG data) for a Swiss municipality, age and deductible. |
+| `swiss_connections(origin, destination, date, time, limit)` | Next public transport connections between two Swiss stops (live timetable). |
+| `swiss_reference_rate()` | The current Swiss mortgage reference interest rate for rents (BWO), with its effective date. |
+
+Chunks are retrieved on their English translation; the original German, French, Italian or Romansh
+text is stored and can be requested through `swiss_get_document`.
+
+## How it ranks and when it abstains
+
+Candidates come from dense, sparse and keyword search per language store, merged with RRF into the
+top 30, then collapsed into translation groups and scored by a cross-encoder reranker (the group's
+version in the question's language when one exists, otherwise its best-scoring version). The
+server orders results by that reranker score and abstains with `no_evidence` when the top score is
+below a fitted threshold; once the golden set is labelled, the threshold comes from a logistic
+relevance model fit on reranker score, same-language flag, RRF rank, corroboration and other
+features, chosen for a target precision on a held-out split (ADR 0012).
+
+`swiss_search` decides its response status in a fixed order: a place outside Switzerland gets
+`outside_scope` (never a guess); a local question with no place given gets `needs_location` unless
+a federal passage already answers it; a Swiss place outside the declared cantons/municipalities
+gets federal evidence plus `outside_scope` for the rest; a failed live lookup gets
+`source_unavailable`; and a top relevance score below the abstention threshold gets `no_evidence`
+(ADR 0013).
+
+## Rebuilding the index
+
+The declared-scope corpus is built by the encoding pipeline described end to end in
+`docs/ENCODING-RUNBOOK.md` (fetch, OCR, describe, embed, index). `RESPECT_ROBOTS=true` is the
+documented default switch for robots.txt / terms-of-use compliance during crawling
+(`.env.example`); it is on by default and must stay on unless a source's own terms are checked
+individually. After encoding finishes, `docs/SERVING-RUNBOOK.md` covers the remaining steps:
+serving schema, calendars, lookup data, evaluation gates, and publishing the prebuilt dump.
+
+## Evaluation
+
+The numbers below come from running these commands, in this order, against the encoded corpus, and
+pasting their output verbatim (do not round up numbers or omit failing rows):
+
+```bash
+uv run swiss-grounding eval golden --split holdout --record
+uv run swiss-grounding eval recall
+uv run swiss-grounding eval faithfulness
+uv run swiss-grounding serving stats
+```
+
+Record the date and `git rev-parse HEAD` of the run alongside the output.
+
+**Results: pending the first run on the encoded corpus (see `docs/SERVING-RUNBOOK.md`).**
+
+## Legacy pipeline
+
+The sections below describe the original ingest pipeline (source registry, fake-backend quick
+start, offline demo). It predates the declared-scope corpus and the serving track above; it still
+works, but evaluators should use "Setup (no API key)" instead.
+
+### Quick start (fake translation and embeddings)
 
 This path needs no API key or model download and runs in a couple of minutes. Search
 quality is meaningless with fake embeddings; it is for checking that the plumbing works.
@@ -34,7 +155,7 @@ quality is meaningless with fake embeddings; it is for checking that the plumbin
     uv run swiss-grounding query "What does the Animal Welfare Act require of dog owners?" --location Switzerland
     uv run swiss-grounding query "When is cardboard collected in 8003?" --location 8003 --categories waste
 
-## Real backends
+### Real backends
 
 For real answers, switch embeddings to bge-m3 and translation to Claude before ingesting.
 
@@ -69,7 +190,7 @@ What to expect:
 - The embedding dimension is fixed when the schema is created. Changing it means
   `docker compose down -v` and starting over.
 
-## Which steps need an API key
+### Which steps need an API key
 
 The declared-scope corpus (`swiss-grounding corpus …`, steps in `docs/ENCODING-RUNBOOK.md`)
 is built in stages. Only some of them call a paid API:
@@ -104,7 +225,7 @@ Two ways around it:
   retrieval quality. Once descriptions exist, the changed text is detected and those
   chunks are embedded again.
 
-## Connect a chat client
+### Connect a chat client (legacy)
 
 The server speaks MCP over stdio. Register it once and the client starts it on demand.
 The Docker database must be running whenever you chat.
@@ -141,21 +262,7 @@ Good first questions:
 - "What are the noise rules in Geneva?" shows the coverage tool reporting no live data
   instead of the assistant guessing.
 
-## Tools
-
-| Tool | Purpose |
-|---|---|
-| `swiss_resolve_location(query)` | Resolve a place name, canton, district, or postal code to a jurisdiction node. |
-| `swiss_search(question, location, categories, as_of, limit, response_format)` | Hybrid search with jurisdiction filtering. Returns citations with `url`, `snippet_en`, `extent_id`, `authority`, `valid_from`, `event_date`, and a `notice` explaining what was retrieved. `response_format="detailed"` adds original-language snippets and `retrieved_at`. |
-| `swiss_get_document(document_id, chunk_id)` | Full document or one chunk from a previous result. |
-| `swiss_list_categories()` | Topic categories that `swiss_search` filters on. Passing them excludes evidence carrying none of them, rather than reranking it; a question whose subject nothing on the jurisdiction path covers returns `no_evidence`. |
-| `swiss_coverage(location)` | Per source and jurisdiction: document count, last retrieval, and fetch health. `health` is `ok`, `degraded`, `failing`, or `unknown`; `fixture_only` marks rows that come only from demo data. A failing or fixture-only row is not live coverage even if `documents` is non-zero. |
-| `swiss_suggest_source(url, reason, ...)` | Propose a new source. Official government domains are approved automatically as `official_info`; other domains wait for human review. |
-
-Chunks are retrieved on their English translation; the original German, French, or Italian
-text is stored and returned in `detailed` citations.
-
-## Operating the ingest
+### Operating the ingest
 
     uv run swiss-grounding ingest --source <id>      # one source
     uv run swiss-grounding ingest --all              # every registered source
@@ -180,14 +287,14 @@ Things that trip people up:
   `CRAWL_DELAY_SECONDS`, `FETCH_TIMEOUT_SECONDS`, `FETCH_RETRY_ATTEMPTS`,
   `FETCH_RETRY_BACKOFF_SECONDS`.
 
-## Offline demo
+### Offline demo
 
 Loads a small fixture of Zurich hiking and dog pages so the tools return something without
 any network access. Fixture documents are flagged `fixture_only` in `swiss_coverage`.
 
     uv run swiss-grounding load-fixture tests/fixtures/zurich_hiking.json
 
-## Sources
+### Sources
 
     uv run swiss-grounding sources list
     uv run swiss-grounding sources review          # pending suggestions from MCP clients
@@ -213,7 +320,7 @@ exactly one category is declared. A source declaring several says what it *cover
 statement about an individual chunk: writing all five of `fedlex`'s onto one article would be
 the very defect ADR 0003 removes. Such a chunk is stored with no topics at all.
 
-## Tests
+### Tests
 
     uv run pytest tests/unit
     DATABASE_URL=postgresql://swiss:swiss@localhost:5433/swiss_grounding uv run pytest -m integration
@@ -222,13 +329,13 @@ The integration suite creates a throwaway `swiss_grounding_test_*` database on t
 and drops it afterwards, so it is safe to point at the quick-start database. Run it
 serially (no `pytest -n`).
 
-## Further reading
+### Further reading
 
 Design: `docs/superpowers/specs/2026-09-10-swiss-grounding-mcp-design.md`
 Plans: `docs/superpowers/plans/`
 Research: `research/README.md`
 
-## Evals
+### Evals (legacy probes)
 
 Probes are hand-written adversarial questions under `evals/probes/`, one YAML file per location tier (city, communes, lookalikes). Each probe states the expected tool response and, once recorded, the observed one. `status: red` marks a probe the server fails today. See `CONTEXT.md` for the failure classes and `docs/adr/` for the decisions behind the expectations.
 
