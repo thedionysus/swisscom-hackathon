@@ -46,8 +46,12 @@ def _robots_root(url: str) -> str:
 def load_robots(http: httpx.Client, root: str) -> tuple[Protego, str | None]:
     """The parsed robots.txt of a host, and why the whole host is disallowed when it could not be read.
 
-    A fetch failure, 401/403 or 5xx disallows the host; any other non-200 (e.g. 404) allows
-    everything. Parsed with protego (RFC 9309: longest matching rule wins, not the first one --
+    RFC 9309 section 2.3.1: any 4xx -- 401 and 403 included -- means robots.txt is unavailable, and
+    everything is allowed (2.3.1.3); a fetch failure or a 5xx means it is unreachable, and the whole
+    host is disallowed (2.3.1.4). bl-api.webcloud7.ch answers its robots.txt with a login redirect
+    that ends in 403, so under the RFC it may be crawled (#57).
+
+    Parsed with protego (RFC 9309: longest matching rule wins, not the first one --
     urllib.robotparser gets this wrong, which wrongly refused be.ch's own PDFs under a narrower
     Allow nested inside a broader Disallow).
     """
@@ -57,7 +61,7 @@ def load_robots(http: httpx.Client, root: str) -> tuple[Protego, str | None]:
         return Protego.parse(_DENY_ALL_ROBOTS), f"fetch failed: {exc}"
     if response.status_code == 200:
         return Protego.parse(response.text), None
-    if response.status_code in (401, 403) or response.status_code >= 500:
+    if response.status_code >= 500:
         return Protego.parse(_DENY_ALL_ROBOTS), f"HTTP {response.status_code}"
     return Protego.parse(""), None
 
