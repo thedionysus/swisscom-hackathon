@@ -88,6 +88,7 @@ class _Settings:
     dump_release_tag = "corpus-latest"
     dump_release_repo = "thedionysus/swisscom-hackathon"
     supertext_api_key = "k-123"
+    zbern_mcp_token = None
 
 
 def test_publish_key_uploads_the_key_from_env_and_removes_the_temp_file(tmp_path, monkeypatch):
@@ -104,6 +105,20 @@ def test_publish_key_uploads_the_key_from_env_and_removes_the_temp_file(tmp_path
     assert seen["cmd"][:3] == ["gh", "release", "upload"] and "--clobber" in seen["cmd"]
     assert seen["content"] == "SUPERTEXT_API_KEY=k-123\n"
     assert not (tmp_path / "supertext.env").exists()
+
+
+def test_publish_key_uploads_the_zbern_token_beside_the_translation_key(tmp_path, monkeypatch):
+    from pydantic import SecretStr
+
+    class Both(_Settings):
+        zbern_mcp_token = SecretStr("z-456")
+    seen = {}
+    monkeypatch.setattr(serving_commands, "load_settings", lambda: Both())
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands.subprocess, "run",
+                        lambda cmd, **kw: seen.setdefault("content", pathlib.Path(cmd[4]).read_text(encoding="utf-8")))
+    serving_commands.publish_key_cmd()
+    assert seen["content"] == "SUPERTEXT_API_KEY=k-123\nZBERN_MCP_TOKEN=z-456\n"
 
 
 def test_publish_key_refuses_without_a_key(monkeypatch):

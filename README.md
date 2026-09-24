@@ -93,6 +93,23 @@ then open a new session and run `/mcp` to confirm the six tools are listed.
 Chunks are retrieved on their English translation; the original German, French, Italian or Romansh
 text is stored and can be requested through `swiss_get_document`.
 
+### Swiss Parliament tools (optional, from zbern.ch)
+
+Questions about the Federal Parliament and federal popular votes (members, business items, debates,
+roll-call votes, vote results down to municipality, upcoming votes) are answered by the zbern.ch MCP
+server, a separate server with its own database. Set `ZBERN_MCP_URL` and our server lists its tools
+beside the six above, prefixed `zbern_`, and forwards calls to it (ADR 0018):
+
+```bash
+ZBERN_MCP_URL=https://mcp.zbern.ch/mcp      # or a local run of the zbern-mcp repository
+ZBERN_MCP_TOKEN=...                         # bearer token for the hosted endpoint; never commit it
+ZBERN_MCP_EXCLUDE=query,list_tables,describe_table,get_reference   # the default: raw SQL stays off
+```
+
+The zbern tools, their descriptions and the zbern instructions are discovered from that server and
+re-read every five minutes, so they follow its changes without a change here. If it cannot be reached,
+our own tools keep working and a `zbern_*` call answers `source_unavailable`.
+
 ## How it ranks and when it abstains
 
 Candidates come from dense, sparse and keyword search per language store, merged with RRF into the

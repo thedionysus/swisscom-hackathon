@@ -24,6 +24,7 @@ FAKE_BACKENDS = {
     "CORPUS_INDEXES": "bge-m3",
     "QUERY_EMBEDDER": "fake",
     "RERANKER_MODEL": "overlap",
+    "ZBERN_MCP_URL": "",         # never proxy the zbern server from a test
 }
 
 
