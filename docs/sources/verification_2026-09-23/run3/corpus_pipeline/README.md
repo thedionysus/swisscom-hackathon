@@ -63,7 +63,9 @@ Run it from a checkout of `main` with this folder copied in.
 | Gazette connector (Amtsblattportal) | #39. Our 13 gazette rows and the query facts verified on 2026-09-23 go there. |
 | robots.txt for PDFs, Crawl-delay for PDFs, robots groups naming our token | PR #51 (open) |
 | Law-platform registration for the three city law collections marked `municipal_law` | #44 |
-| JSON / REST connector, PDF discovery gaps, smaller fetch fixes | new issues, spec in `connector_specs.md` |
+| JSON / REST connector | #55 |
+| PDF discovery gaps (fixed PDF lists, links in JSON attributes, page language) | #56 |
+| Smaller fetch fixes (TLS, PDF titles, retries, size cap, validator, sitemap rewrite) | #57 |
 
 **Decided by the user on 2026-09-23:**
 - Gazettes go through the documented Amtsblattportal API.

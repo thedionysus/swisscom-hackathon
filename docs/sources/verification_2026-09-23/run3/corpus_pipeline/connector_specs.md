@@ -29,6 +29,8 @@
 
 ## 1. JSON / REST records connector (`connector: json`): new
 
+Tracked in #55.
+
 ### Why
 - Structured sources cannot enter the corpus today.
 - The old pipeline's `api` strategy has no successor. Non-HTML responses are skipped (`corpus/connectors/html.py:257`), and PDFs come only from links found by the HTML crawl (`fetch_stage.py:84-85`).
@@ -108,6 +110,8 @@ Draft; the key names are suggestions.
 
 ## 2. PDF discovery gaps in the HTML connector: small
 
+Tracked in #56.
+
 ### 2a. Fixed list of PDF URLs (`config.pdf_urls`)
 
 **Today.** PDFs come only from `<a href>` links on pages the crawl stores:
@@ -180,6 +184,8 @@ json_link_attributes:
 ---
 
 ## 3. Smaller fetch fixes (checklist)
+
+Tracked in #57.
 
 - [ ] **TLS per source.**
   - `corpus_http` builds one client with only headers and a timeout (`cli/corpus_source_commands.py:46-47`).
