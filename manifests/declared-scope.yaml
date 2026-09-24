@@ -1,4 +1,7 @@
-# Declared-scope source manifest; field reference in docs/MAINTAINING.md. Tier 1 = the declared scope.
+# Declared-scope source manifest; field reference in docs/MAINTAINING.md. Tier 1 = the declared scope;
+# tier 2 = other cantons and cities; tier 3 = bulk or gazette collections (opt-in). `corpus fetch --tier N`
+# crawls tiers 1..N. The Run 3 entries at the end come from docs/sources/verification_2026-09-23/run3/ on
+# branch sources/run3-discovery (corpus_pipeline/manifest_candidates.yaml).
 # Optional per-site keys: language_links_selector, content_selector, pdf_link_patterns,
 # sitemap_urls/sitemap_include. Start URLs verified live on 2026-09-23 with the corpus user agent.
 version: 1
@@ -520,3 +523,1305 @@ sources:
       max_pages: 300
       max_pdfs: 40
       delay_seconds: 3
+
+  # ---------------- Run 3 (2026-09-23): sources found and verified in the sub-national discovery ----------------
+
+  # Run 3: be_vgb_themen (html_crawl, https://www.vgb.justice.be.ch)
+  # host has 43 German URLs (run3-a.md:135); Crawl-delay 10 on BE hosts honoured for pages
+  - id: be_vgb_themen
+    name: "Verwaltungsgericht des Kantons Bern – Verfahren und Kosten"
+    publisher: "Verwaltungsgericht des Kantons Bern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BE
+    connector: html
+    tier: 1
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.vgb.justice.be.ch/de/start/themen.html"]
+      allow_prefixes: ["https://www.vgb.justice.be.ch/de/start/themen"]
+      max_pages: 60
+      max_pdfs: 0
+
+  # Run 3: be_zsg_themen (html_crawl, https://www.zsg.justice.be.ch)
+  # robots Crawl-delay 10 (stage0 summary) is honoured for pages (html.py:182-183)
+  - id: be_zsg_themen
+    name: "Zivil- und Strafgerichtsbarkeit Kanton Bern – Themen und Schlichtungsbehörden"
+    publisher: "Zivil- und Strafgerichtsbarkeit des Kantons Bern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BE
+    connector: html
+    tier: 1
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.zsg.justice.be.ch/de/start/themen.html", "https://www.zsg.justice.be.ch/de/start/ueber-uns/schlichtungsbehoerden.html"]
+      allow_prefixes: ["https://www.zsg.justice.be.ch/de/start/themen", "https://www.zsg.justice.be.ch/de/start/ueber-uns/schlichtungsbehoerden"]
+      max_pages: 90
+      max_pdfs: 0
+
+  # Run 3: ge-justice-themes (html_crawl, https://justice.ge.ch)
+  - id: ge_justice_themes
+    name: "Pouvoir judiciaire de Genève – Thèmes et frais de procédure"
+    publisher: "Pouvoir judiciaire de la République et canton de Genève"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-GE
+    connector: html
+    tier: 1
+    languages: ["fr"]
+    config:
+      start_urls: ["https://justice.ge.ch/fr/themes"]
+      allow_prefixes: ["https://justice.ge.ch/fr/theme/", "https://justice.ge.ch/fr/contenu/frais-dune-procedure-civile", "https://justice.ge.ch/fr/contenu/commission-de-conciliation-en-matiere-de-baux-et-loyers", "https://justice.ge.ch/fr/contenu/tribunal-des-", "https://justice.ge.ch/fr/themes"]
+      max_pages: 120
+      max_pdfs: 0
+
+  # Run 3: gr_justiz_guidance (html_crawl, https://www.justiz-gr.ch)
+  # agent recommends the 305-URL sitemap as seed (run3-e.md:149) but its URL is not recorded; link-following only
+  - id: gr_justiz_guidance
+    name: "Justiz Graubünden – Dienstleistungen, Schlichtung, Betreibung und Konkurs"
+    publisher: "Justiz Graubünden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-GR
+    connector: html
+    tier: 1
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.justiz-gr.ch/gerichte/obergericht/dienstleistungenthemen/", "https://www.justiz-gr.ch/schlichtungsbehoerden-und-mediation/dienstleistungenthemen/", "https://www.justiz-gr.ch/schlichtungsbehoerden-und-mediation/ueber-uns/", "https://www.justiz-gr.ch/schuldbetreibung-und-konkurs/dienstleistungenthemen/"]
+      allow_prefixes: ["https://www.justiz-gr.ch/gerichte/obergericht/dienstleistungenthemen/", "https://www.justiz-gr.ch/schlichtungsbehoerden-und-mediation/", "https://www.justiz-gr.ch/schuldbetreibung-und-konkurs/dienstleistungenthemen/"]
+      max_pages: 50
+      max_pdfs: 0
+
+  # Run 3: lugano_legislazione, lugano_legislazione_all
+  # merges the 6-PDF sample and the full list (122 /law/<id>/<slug> links, offline page_meta). authority municipal_law: legal text from the city's own collection (authority rule, memory 2026-09-22)
+  - id: lugano_legislazione
+    name: "Città di Lugano – Legislazione comunale"
+    publisher: "Città di Lugano"
+    authority: municipal_law
+    level: municipal
+    extent_id: CH-TI-5192
+    connector: html
+    tier: 1
+    languages: ["it"]
+    config:
+      start_urls: ["https://www.lugano.ch/la-mia-citta/amministrazione/legislazione.html"]
+      allow_prefixes: ["https://www.lugano.ch/la-mia-citta/amministrazione/legislazione"]
+      pdf_allow_prefixes: ["https://www.lugano.ch/law/"]
+      pdf_link_patterns: ["^https://www\\.lugano\\.ch/law/\\d+/"]
+      max_pages: 3
+      max_pdfs: 130
+
+  # Run 3: vd-justice (html_crawl, https://www.vd.ch)
+  - id: vd_justice
+    name: "Canton de Vaud – Justice, justices de paix, tribunal des baux"
+    publisher: "Canton de Vaud"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VD
+    connector: html
+    tier: 1
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.vd.ch/justice", "https://www.vd.ch/ojv/justices-de-paix"]
+      allow_prefixes: ["https://www.vd.ch/ojv/justices-de-paix", "https://www.vd.ch/ojv/tribunal-des-baux", "https://www.vd.ch/justice"]
+      max_pages: 120
+      max_pdfs: 0
+
+  # Run 3: gerichte_zh_themen (html_crawl, https://www.gerichte-zh.ch)
+  # intermittent: server drops httpx connections (catalogue); transport errors are not retried (politeness.py:21,121-127 retry only 429/503), so expect partial coverage
+  - id: gerichte_zh_themen
+    name: "Gerichte Kanton Zürich – Rechtliche Themen"
+    publisher: "Gerichte des Kantons Zürich"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-ZH
+    connector: html
+    tier: 1
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.gerichte-zh.ch/de/themen"]
+      allow_prefixes: ["https://www.gerichte-zh.ch/de/themen"]
+      sitemap_urls: ["https://www.gerichte-zh.ch/sitemap.xml"]
+      sitemap_include: ["/de/themen"]
+      max_pages: 300
+      max_pdfs: 0
+
+  # Run 3: zh_verwaltungsgericht (html_crawl, https://www.zh.ch)
+  - id: zh_verwaltungsgericht
+    name: "Verwaltungsgericht des Kantons Zürich – Verfahren"
+    publisher: "Verwaltungsgericht des Kantons Zürich"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-ZH
+    connector: html
+    tier: 1
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.zh.ch/de/politik-staat/streitigkeiten-vor-verwaltungsgericht.html", "https://www.zh.ch/de/gerichte-notariate/verwaltungsgericht.html"]
+      allow_prefixes: ["https://www.zh.ch/de/politik-staat/streitigkeiten-vor-verwaltungsgericht", "https://www.zh.ch/de/gerichte-notariate/verwaltungsgericht"]
+      max_pages: 30
+      max_pdfs: 0
+
+  # Run 3: ag_gerichte (html_crawl, https://www.ag.ch)
+  - id: ag_gerichte
+    name: "Gerichte Kanton Aargau – Organisation, Schlichtung, Merkblätter"
+    publisher: "Kanton Aargau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ag.ch/de/ueber-uns/gerichte-kanton-aargau"]
+      allow_prefixes: ["https://www.ag.ch/de/ueber-uns/gerichte-kanton-aargau"]
+      max_pages: 160
+      max_pdfs: 0
+
+  # Run 3: ag_hunde (html_crawl, https://www.ag.ch)
+  - id: ag_hunde
+    name: "Hunde im Kanton Aargau"
+    publisher: "Kanton Aargau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ag.ch/de/themen/landwirtschaft-tiere/heim-und-nutztiere/hunde"]
+      allow_prefixes: ["https://www.ag.ch/de/themen/landwirtschaft-tiere/heim-und-nutztiere/hunde"]
+      max_pages: 20
+      max_pdfs: 0
+
+  # Run 3: ag_steuern_wegleitung (html_crawl, https://www.ag.ch)
+  - id: ag_steuern_wegleitung
+    name: "Wegleitung zur Steuererklärung (natürliche Personen) Kanton Aargau"
+    publisher: "Kanton Aargau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ag.ch/de/themen/steuern-finanzen/steuern-startseite/steuererklaerung-einreichen/wegleitung-zur-steuererklaerung"]
+      allow_prefixes: ["https://www.ag.ch/de/themen/steuern-finanzen/steuern-startseite/steuererklaerung-einreichen/wegleitung-zur-steuererklaerung", "https://www.ag.ch/de/themen/steuern-finanzen/steuern/steuererklaerung-einreichen/wegleitung"]
+      max_pages: 130
+      max_pdfs: 0
+
+  # Run 3: ag_strassenverkehr (html_crawl, https://www.ag.ch)
+  - id: ag_strassenverkehr
+    name: "Strassenverkehrsamt Aargau – Gebühren, Fahrzeuge, Führerausweise"
+    publisher: "Kanton Aargau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ag.ch/de/themen/mobilitaet-verkehr/strassenverkehr/steuern-gebuehren", "https://www.ag.ch/de/themen/mobilitaet-verkehr/strassenverkehr/fahrzeuge", "https://www.ag.ch/de/themen/mobilitaet-verkehr/strassenverkehr/fuehrerausweise"]
+      allow_prefixes: ["https://www.ag.ch/de/themen/mobilitaet-verkehr/strassenverkehr/steuern-gebuehren", "https://www.ag.ch/de/themen/mobilitaet-verkehr/strassenverkehr/fahrzeuge", "https://www.ag.ch/de/themen/mobilitaet-verkehr/strassenverkehr/fuehrerausweise"]
+      max_pages: 120
+      max_pdfs: 0
+
+  # Run 3: ai_gerichte (html_crawl, https://www.ai.ch)
+  # content_selector #content: content marker documented in the agent report
+  # ftw-simplelayout block, /view and /download sub-URLs sit inside the prefixes and cannot be denied (run3-c.md:302); they use page budget
+  - id: ai_gerichte
+    name: "Appenzell Innerrhoden – Gerichte, Vermittler, Schlichtungsstelle"
+    publisher: "Kanton Appenzell Innerrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AI
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ai.ch/gerichte/vermittler", "https://www.ai.ch/gerichte/bezirksgericht/formulare", "https://www.ai.ch/gerichte/rechtsprechung", "https://www.ai.ch/themen/persoenliches/wohnen-und-umziehen/schlichtungsstelle-mietverhaeltnisse"]
+      allow_prefixes: ["https://www.ai.ch/gerichte/vermittler", "https://www.ai.ch/gerichte/bezirksgericht/formulare", "https://www.ai.ch/gerichte/rechtsprechung", "https://www.ai.ch/themen/persoenliches/wohnen-und-umziehen/schlichtungsstelle-mietverhaeltnisse"]
+      content_selector: "#content"
+      max_pages: 170
+      max_pdfs: 0
+
+  # Run 3: ai_guidance (html_crawl, https://www.ai.ch)
+  # content_selector #content: content marker documented in the agent report
+  # ai_ferienplan folded in: its PDF is linked from this source's ferienplan start page as '.pdf/download' (offline page_meta found it); PDFs default to the allow_prefixes
+  - id: ai_guidance
+    name: "Appenzell Innerrhoden – Tierhaltung, Strassenverkehr, Ferienplan"
+    publisher: "Kanton Appenzell Innerrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AI
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan", "https://www.ai.ch/themen/landwirtschaft-tierhaltung/tierhaltung", "https://www.ai.ch/themen/mobilitaet-und-verkehr/strassenverkehr"]
+      allow_prefixes: ["https://www.ai.ch/themen/landwirtschaft-tierhaltung/tierhaltung", "https://www.ai.ch/themen/mobilitaet-und-verkehr/strassenverkehr", "https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan"]
+      pdf_link_patterns: ["\\.pdf/download$"]
+      content_selector: "#content"
+      max_pages: 320
+      max_pdfs: 10
+
+  # Run 3: ai_steuer_pdfs
+  # pdf-index case: a publikationen sub-page links 51 '.pdf/download' files (offline page_meta with the pattern); PDFs sit under the page path, so the allow_prefixes cover them
+  - id: ai_steuer_pdfs
+    name: "Appenzell Innerrhoden – Steuern: Publikationen und Merkblätter"
+    publisher: "Kanton Appenzell Innerrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AI
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ai.ch/themen/steuern/publikationen", "https://www.ai.ch/themen/steuern/publikationen/merkblaetter-ab-steuerperiode-2026"]
+      allow_prefixes: ["https://www.ai.ch/themen/steuern/publikationen"]
+      pdf_link_patterns: ["\\.pdf/download$"]
+      content_selector: "#content"
+      max_pages: 40
+      max_pdfs: 60
+
+  # Run 3: ar_ferienrichtdaten
+  # parent page links 9 PDFs, 8 of them in the eHandbuch folder (offline page_meta); folder prefix keeps the next Ferienrichtdaten version
+  - id: ar_ferienrichtdaten
+    name: "Appenzell Ausserrhoden – eHandbuch Volksschule: Regelungen und Ferienrichtdaten"
+    publisher: "Kanton Appenzell Ausserrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AR
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://ar.ch/verwaltung/departement-bildung-und-kultur/amt-fuer-volksschule-und-sport/ehandbuch-volksschule/schulbetrieb/regelungen/"]
+      allow_prefixes: ["https://ar.ch/verwaltung/departement-bildung-und-kultur/amt-fuer-volksschule-und-sport/ehandbuch-volksschule/schulbetrieb/regelungen/"]
+      pdf_allow_prefixes: ["https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/"]
+      content_selector: "#mainCol"
+      max_pages: 3
+      max_pdfs: 10
+
+  # Run 3: ar_gerichte (html_crawl, https://ar.ch)
+  # content_selector #mainCol: content marker documented in the agent report
+  - id: ar_gerichte
+    name: "Appenzell Ausserrhoden – Gerichte: Rechtsgebiete, Schlichtung, Rechtspflege"
+    publisher: "Kanton Appenzell Ausserrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AR
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://ar.ch/gerichte/kantonsgericht/rechtsgebiete/", "https://ar.ch/gerichte/vermittler-und-schlichtungsstellen/", "https://ar.ch/gerichte/kantonsgericht/unentgeltliche-rechtspflege/", "https://ar.ch/gerichte/kantonsgericht/rechtsauskunft/"]
+      allow_prefixes: ["https://ar.ch/gerichte/kantonsgericht/rechtsgebiete/", "https://ar.ch/gerichte/vermittler-und-schlichtungsstellen/", "https://ar.ch/gerichte/kantonsgericht/unentgeltliche-rechtspflege/", "https://ar.ch/gerichte/kantonsgericht/rechtsauskunft/"]
+      content_selector: "#mainCol"
+      max_pages: 30
+      max_pdfs: 0
+
+  # Run 3: ar_hunde_strassenverkehr (html_crawl, https://ar.ch)
+  # content_selector #mainCol: content marker documented in the agent report
+  - id: ar_hunde_strassenverkehr
+    name: "Appenzell Ausserrhoden – Hunde und Strassenverkehrsamt"
+    publisher: "Kanton Appenzell Ausserrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AR
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://ar.ch/verwaltung/departement-gesundheit-und-soziales/veterinaeramt/hunde/", "https://ar.ch/verwaltung/departement-inneres-und-sicherheit/strassenverkehrsamt/"]
+      allow_prefixes: ["https://ar.ch/verwaltung/departement-gesundheit-und-soziales/veterinaeramt/hunde/", "https://ar.ch/verwaltung/departement-inneres-und-sicherheit/strassenverkehrsamt/"]
+      content_selector: "#mainCol"
+      max_pages: 140
+      max_pdfs: 0
+
+  # Run 3: ar_steuer_pdfs
+  # pdf-index case: the page links 54 PDFs as plain <a href> (offline page_meta)
+  - id: ar_steuer_pdfs
+    name: "Appenzell Ausserrhoden – Steuerverwaltung: Gesetze, Weisungen, Merkblätter"
+    publisher: "Kanton Appenzell Ausserrhoden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AR
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://ar.ch/verwaltung/departement-finanzen/steuerverwaltung/gesetzeweisungenmerkblaetter/"]
+      allow_prefixes: ["https://ar.ch/verwaltung/departement-finanzen/steuerverwaltung/gesetzeweisungenmerkblaetter/"]
+      pdf_allow_prefixes: ["https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/"]
+      content_selector: "#mainCol"
+      max_pages: 5
+      max_pdfs: 60
+
+  # Run 3: bs_gerichte (html_crawl, https://www.bs.ch)
+  # robots Crawl-delay 10 (stage0 summary) honoured for pages
+  - id: bs_gerichte
+    name: "Gerichte Basel-Stadt – Verfahren, Kosten, Schlichtung"
+    publisher: "Kanton Basel-Stadt"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BS
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.bs.ch/willkommen-bei-den-gerichten", "https://www.bs.ch/regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten/schlichtungsverfahren"]
+      allow_prefixes: ["https://www.bs.ch/willkommen-bei-den-gerichten", "https://www.bs.ch/gerichte-judikative/", "https://www.bs.ch/regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten"]
+      max_pages: 190
+      max_pdfs: 0
+
+  # Run 3: fr-dogs (html_crawl, https://www.fr.ch)
+  - id: fr_dogs
+    name: "Canton de Fribourg – Chiens"
+    publisher: "État de Fribourg"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-FR
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.fr.ch/vie-quotidienne/animaux-de-compagnie/chiens"]
+      allow_prefixes: ["https://www.fr.ch/vie-quotidienne/animaux-de-compagnie/chiens"]
+      max_pages: 25
+      max_pdfs: 0
+
+  # Run 3: fr-justice (html_crawl, https://www.fr.ch)
+  # ~40 /etat-et-droit/justice/arrets-de-la-section-* archive pages cannot be denied (run3-d.md:81)
+  - id: fr_justice
+    name: "Canton de Fribourg – Justice et procédures"
+    publisher: "État de Fribourg"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-FR
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.fr.ch/etat-et-droit/justice"]
+      allow_prefixes: ["https://www.fr.ch/etat-et-droit/poursuites-et-faillites/procedure-de-", "https://www.fr.ch/etat-et-droit/justice"]
+      max_pages: 230
+      max_pdfs: 0
+
+  # Run 3: fr-ocn (html_crawl, https://www.ocn.ch)
+  - id: fr_ocn
+    name: "OCN Fribourg – Conduire et véhicules"
+    publisher: "Office de la circulation et de la navigation (OCN), Fribourg"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-FR
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.ocn.ch/fr/conduire"]
+      allow_prefixes: ["https://www.ocn.ch/fr/changements-de/", "https://www.ocn.ch/fr/conduire"]
+      max_pages: 340
+      max_pdfs: 0
+
+  # Run 3: fr-school-holidays (html_crawl, https://www.fr.ch)
+  - id: fr_school_holidays
+    name: "Canton de Fribourg – Vacances scolaires"
+    publisher: "État de Fribourg"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-FR
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.fr.ch/dfac/vacances-scolaires"]
+      allow_prefixes: ["https://www.fr.ch/dfac/vacances-scolaires"]
+      max_pages: 10
+      max_pdfs: 0
+
+  # Run 3: fr-tax-instructions
+  # /document/57721 has no .pdf suffix, hence pdf_link_patterns; it redirects to the PDF (run3-d.md:67) and the PDF connector follows redirects (pdf.py:124)
+  - id: fr_tax_instructions
+    name: "Canton de Fribourg – Instructions générales concernant la déclaration d'impôt"
+    publisher: "État de Fribourg"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-FR
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers"]
+      allow_prefixes: ["https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers"]
+      pdf_allow_prefixes: ["https://www.fr.ch/document/57721"]
+      pdf_link_patterns: ["^https://www\\.fr\\.ch/document/\\d+$"]
+      max_pages: 2
+      max_pdfs: 1
+
+  # Run 3: vernier_reglements
+  # UNVERIFIED: the saved list page is a Drupal error message, so the PDF link format was not checked offline; a Vernier regulation PDF sits under /sites/default/files/ (saved copy)
+  - id: vernier_reglements
+    name: "Ville de Vernier – Règlements communaux"
+    publisher: "Ville de Vernier"
+    authority: municipal_law
+    level: municipal
+    extent_id: CH-GE-6643
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.vernier.ch/administration-et-autorites/publications?category=38&profile=_all"]
+      allow_prefixes: ["https://www.vernier.ch/administration-et-autorites/publications?category=38"]
+      pdf_allow_prefixes: ["https://www.vernier.ch/sites/default/files/"]
+      max_pages: 10
+      max_pdfs: 60
+
+  # Run 3: gl-pdfs
+  # PARTIAL: only the holiday PDF; the cantonal Wegleitung PDF is linked from no page (run3-b.md:180) and needs fixed-URL PDF support. Extent CH-GL per run3-b.md:193; 5 s delay assumed for this govis host (inferred)
+  - id: gl_pdfs
+    name: "Kanton Glarus – Ferienpläne und Brückentage (published by Glarus Nord)"
+    publisher: "Gemeinde Glarus Nord"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-GL
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.glarus-nord.ch/online-schalter/bildung/ferienplan-wichtige-termine.html/2648"]
+      allow_prefixes: ["https://www.glarus-nord.ch/online-schalter/bildung/ferienplan-wichtige-termine.html/2648"]
+      pdf_allow_prefixes: ["https://www.glarus-nord.ch/public/upload/assets/35598/"]
+      delay_seconds: 5
+      max_pages: 2
+      max_pdfs: 1
+
+  # Run 3: gl-schlichtung (html_crawl, https://www.gl.ch)
+  # govis host: 5 s spacing gave 0 x 429 (run3-b.md:186)
+  - id: gl_schlichtung
+    name: "Kanton Glarus – Kantonale Schlichtungsbehörde"
+    publisher: "Kanton Glarus"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-GL
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.gl.ch/rechtspflege/kantonale-schlichtungsbehoerde.html/316"]
+      allow_prefixes: ["https://www.gl.ch/rechtspflege/kantonale-schlichtungsbehoerde/", "https://www.gl.ch/rechtspflege/kantonale-schlichtungsbehoerde.html/316"]
+      delay_seconds: 5
+      max_pages: 15
+      max_pdfs: 0
+
+  # Run 3: ju-dogs (html_crawl, https://www.jura.ch)
+  - id: ju_dogs
+    name: "Canton du Jura – Chiens"
+    publisher: "République et Canton du Jura"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-JU
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.jura.ch/fr/Autorites/Administration/DES/SCAV/Section-affaires-veterinaires/Chiens/Chiens.html"]
+      allow_prefixes: ["https://www.jura.ch/fr/Autorites/Administration/DES/SCAV/Section-affaires-veterinaires/Chiens/"]
+      max_pages: 10
+      max_pdfs: 0
+
+  # Run 3: ju-justice (html_crawl, https://www.jura.ch)
+  # ju-court-tariff folded in: the TC circulars page (inside this source's prefix) links the tariff; pinned to the version it links on 2026-09-23 (modif. du 17.12.2024), not Run 3's older ff78dbf9 URL
+  - id: ju_justice
+    name: "Canton du Jura – Justice"
+    publisher: "République et Canton du Jura"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-JU
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.jura.ch/fr/Autorites/JUST/Instances-judiciaires/Tribunal-cantonal/Circulaires/Circulaires-du-Tribunal-cantonal-et-de-ses-sections.html", "https://www.jura.ch/fr/Autorites/JUST/La-justice-jurassienne.html"]
+      allow_prefixes: ["https://www.jura.ch/fr/Autorites/JUST/"]
+      pdf_allow_prefixes: ["https://www.jura.ch/Htdocs/Files/v/24c7050894616e097d0bb6ec1d9bdfe79cd872889f3fa13c5f23564b079ea990.pdf/"]
+      max_pages: 80
+      max_pdfs: 1
+
+  # Run 3: ju-ovj (html_crawl, https://www.jura.ch)
+  - id: ju_ovj
+    name: "Office des véhicules du Jura (OVJ)"
+    publisher: "République et Canton du Jura"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-JU
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.jura.ch/fr/Autorites/Administration/DEC/OVJ/Office-des-vehicules-OVJ.html"]
+      allow_prefixes: ["https://www.jura.ch/fr/Autorites/Administration/DEC/OVJ/"]
+      max_pages: 45
+      max_pdfs: 0
+
+  # Run 3: ju-school-holidays (html_crawl, https://www.jura.ch)
+  - id: ju_school_holidays
+    name: "Canton du Jura – Vacances scolaires"
+    publisher: "République et Canton du Jura"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-JU
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.jura.ch/fr/Autorites/Administration/DFNS/SEN/Vacances-scolaires/Vacances-scolaires.html"]
+      allow_prefixes: ["https://www.jura.ch/fr/Autorites/Administration/DFNS/SEN/Vacances-scolaires/"]
+      max_pages: 10
+      max_pdfs: 0
+
+  # Run 3: ju-tax-guide
+  # jura.ch serves every file from one flat content-addressed folder, so each JU source pins its own file hash; a new version gets a new hash and needs a manifest update. The new pipeline sends GET only, so the HEAD-404 blocker is gone (pdf.py:124)
+  - id: ju_tax_guide
+    name: "Canton du Jura – Guide général de la déclaration d'impôt 2025"
+    publisher: "République et Canton du Jura"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-JU
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html"]
+      allow_prefixes: ["https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/"]
+      pdf_allow_prefixes: ["https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf/"]
+      max_pages: 3
+      max_pdfs: 1
+
+  # Run 3: lu-gerichte-guidance (html_crawl, https://gerichte.lu.ch)
+  # content_selector #mainContent: NOT from an agent report; found by parsing the agents' saved LU pages offline (0 sections without it, 1-15 with it). Review before merging.
+  - id: lu_gerichte_guidance
+    name: "Gerichte Luzern – Rechtsgebiete und Schlichtungsbehörden"
+    publisher: "Gerichte des Kantons Luzern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-LU
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://gerichte.lu.ch/rechtsgebiete", "https://gerichte.lu.ch/organisation/schlichtungsbehoerden"]
+      allow_prefixes: ["https://gerichte.lu.ch/rechtsgebiete", "https://gerichte.lu.ch/organisation/schlichtungsbehoerden"]
+      content_selector: "#mainContent"
+      sitemap_urls: ["https://gerichte.lu.ch/xmlsitemap"]
+      sitemap_include: ["^https://gerichte\\.lu\\.ch/(rechtsgebiete|organisation/schlichtungsbehoerden)"]
+      max_pages: 150
+      max_pdfs: 0
+
+  # Run 3: lu-hunde (html_crawl, https://veterinaerdienst.lu.ch)
+  # content_selector #mainContent: NOT from an agent report; found by parsing the agents' saved LU pages offline (0 sections without it, 1-15 with it). Review before merging.
+  # host sitemap lists 1 URL; link-following covers the /hunde pages (run3-b.md:20)
+  - id: lu_hunde
+    name: "Kanton Luzern – Hunde (Veterinärdienst)"
+    publisher: "Kanton Luzern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-LU
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://veterinaerdienst.lu.ch/hunde"]
+      allow_prefixes: ["https://veterinaerdienst.lu.ch/hunde"]
+      content_selector: "#mainContent"
+      max_pages: 15
+      max_pdfs: 0
+
+  # Run 3: lu-schulferien
+  # content_selector #mainContent: from the offline parse of saved LU pages, not an agent report
+  # parent page links both PDFs (with ?rev= query strings; prefix match still holds)
+  - id: lu_schulferien
+    name: "Kanton Luzern – Schulferien (Ferienpläne der Gemeinden)"
+    publisher: "Kanton Luzern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-LU
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://volksschulbildung.lu.ch/syst_schulen/ss_schulsystem/ss_syst_ferien"]
+      allow_prefixes: ["https://volksschulbildung.lu.ch/syst_schulen/ss_schulsystem/ss_syst_ferien"]
+      pdf_allow_prefixes: ["https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/"]
+      content_selector: "#mainContent"
+      max_pages: 3
+      max_pdfs: 5
+
+  # Run 3: lu-steuerbuch (html_crawl, https://steuerbuch.lu.ch)
+  # content_selector #mainContent: NOT from an agent report; found by parsing the agents' saved LU pages offline (0 sections without it, 1-15 with it). Review before merging.
+  - id: lu_steuerbuch
+    name: "Luzerner Steuerbuch"
+    publisher: "Kanton Luzern, Dienststelle Steuern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-LU
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://steuerbuch.lu.ch/band1", "https://steuerbuch.lu.ch/band2", "https://steuerbuch.lu.ch/band2a", "https://steuerbuch.lu.ch/band3", "https://steuerbuch.lu.ch/band4"]
+      allow_prefixes: ["https://steuerbuch.lu.ch/band"]
+      content_selector: "#mainContent"
+      sitemap_urls: ["https://steuerbuch.lu.ch/xmlsitemap"]
+      sitemap_include: ["^https://steuerbuch\\.lu\\.ch/band"]
+      max_pages: 450
+      max_pdfs: 0
+
+  # Run 3: lu-strassenverkehrsamt (html_crawl, https://strassenverkehrsamt.lu.ch)
+  # content_selector #mainContent: NOT from an agent report; found by parsing the agents' saved LU pages offline (0 sections without it, 1-15 with it). Review before merging.
+  - id: lu_strassenverkehrsamt
+    name: "Strassenverkehrsamt Luzern – Strassenverkehr"
+    publisher: "Kanton Luzern"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-LU
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://strassenverkehrsamt.lu.ch/Strassenverkehr/steuern_gebuehren"]
+      allow_prefixes: ["https://strassenverkehrsamt.lu.ch/Strassenverkehr/"]
+      content_selector: "#mainContent"
+      sitemap_urls: ["https://strassenverkehrsamt.lu.ch/xmlsitemap"]
+      sitemap_include: ["^https://strassenverkehrsamt\\.lu\\.ch/Strassenverkehr/"]
+      max_pages: 240
+      max_pdfs: 0
+
+  # Run 3: ne-dogs (html_crawl, https://www.ne.ch)
+  - id: ne_dogs
+    name: "Canton de Neuchâtel – Animaux (chiens)"
+    publisher: "République et canton de Neuchâtel"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NE
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.ne.ch/themes/vie-quotidienne-et-famille/animaux/soccuper-danimaux"]
+      allow_prefixes: ["https://www.ne.ch/themes/vie-quotidienne-et-famille/animaux/"]
+      max_pages: 30
+      max_pdfs: 0
+
+  # Run 3: ne-justice (html_crawl, https://www.ne.ch)
+  # <main> holds the text (run3-d.md:180,194) and is the default content root (html_sections.py:30); the jurisprudence year lists cannot be denied
+  - id: ne_justice
+    name: "Canton de Neuchâtel – Droits et justice, autorités judiciaires"
+    publisher: "République et canton de Neuchâtel"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NE
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.ne.ch/themes/etat-droit-et-finances/droits-et-justice", "https://www.ne.ch/autorites/autorites-judiciaires"]
+      allow_prefixes: ["https://www.ne.ch/autorites/autorites-judiciaires", "https://www.ne.ch/themes/etat-droit-et-finances/droits-et-justice"]
+      max_pages: 60
+      max_pdfs: 0
+
+  # Run 3: ne-scan (html_crawl, https://www.scan-ne.ch)
+  # whole host (Run 3 allowlist includes '/'); no sitemap (run3-d.md:196)
+  - id: ne_scan
+    name: "SCAN Neuchâtel – Conducteurs et véhicules"
+    publisher: "Service cantonal des automobiles et de la navigation (SCAN), Neuchâtel"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NE
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.scan-ne.ch/"]
+      allow_prefixes: ["https://www.scan-ne.ch/"]
+      max_pages: 150
+      max_pdfs: 0
+
+  # Run 3: ne-school-calendar (html_crawl, https://www.ne.ch)
+  - id: ne_school_calendar
+    name: "Canton de Neuchâtel – Calendrier et vacances scolaires"
+    publisher: "République et canton de Neuchâtel"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NE
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.ne.ch/themes/scolarite-et-formation/calendrier-et-vacances-scolaires"]
+      allow_prefixes: ["https://www.ne.ch/themes/scolarite-et-formation/calendrier-et-vacances-scolaires"]
+      max_pages: 10
+      max_pdfs: 0
+
+  # Run 3: ne-tax-instructions
+  # the page links 115 PDFs (offline page_meta); pinned to the one Run 3 selected. Drupal's month folder changes on re-upload
+  - id: ne_tax_instructions
+    name: "Canton de Neuchâtel – Instructions générales, impôt des personnes physiques"
+    publisher: "République et canton de Neuchâtel"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NE
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.ne.ch/themes/impots/documents-et-liens-utiles"]
+      allow_prefixes: ["https://www.ne.ch/themes/impots/documents-et-liens-utiles"]
+      pdf_allow_prefixes: ["https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf"]
+      max_pages: 2
+      max_pdfs: 1
+
+  # Run 3: neuchatel_ville_reglementation
+  # UNVERIFIED WORKAROUND: the unprefixed page declares itself the 'de' hreflang alternate although it is French (<html lang=fr>), so the parser marks it German, does not emit it and drops its 79 PDF links (html_page.py:52-58, html.py:318-322; offline). Starting at the site's own 'fr' alternate avoids that only if /fr/... serves the page without redirecting (not saved, not checked). max_pages 1 keeps the crawl on the current list; the former-commune lists hold ABROGE texts. The dog arrêté 12.21 is scanned (9/9 pages need OCR, offline parse_pdf) and is OCR'd by corpus run (pdf.py:75-82, ocr.py)
+  - id: neuchatel_ville_reglementation
+    name: "Ville de Neuchâtel – Réglementation communale"
+    publisher: "Ville de Neuchâtel"
+    authority: municipal_law
+    level: municipal
+    extent_id: CH-NE-6458
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.neuchatelville.ch/fr/votre-commune/reglementation"]
+      allow_prefixes: ["https://www.neuchatelville.ch/fr/votre-commune/reglementation", "https://www.neuchatelville.ch/votre-commune/reglementation"]
+      pdf_allow_prefixes: ["https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/"]
+      max_pages: 1
+      max_pdfs: 85
+
+  # Run 3: nw-gerichte (html_crawl, https://www.nw.ch)
+  - id: nw_gerichte
+    name: "Nidwalden – Kantonsgericht und Schlichtungsbehörde"
+    publisher: "Kanton Nidwalden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NW
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.nw.ch/kantonsgerichtrechtspflege", "https://www.nw.ch/kantonsgerichtrechtsauskunft", "https://www.nw.ch/kantonsgerichtzustaendigkeit", "https://www.nw.ch/schlichtungsbehoerde/326"]
+      allow_prefixes: ["https://www.nw.ch/kantonsgericht", "https://www.nw.ch/schlichtungsbeh"]
+      max_pages: 25
+      max_pdfs: 0
+
+  # Run 3: nw-hunde (html_crawl, https://www.nw.ch)
+  - id: nw_hunde
+    name: "Nidwalden – Hundekontrolle und Hundesteuer"
+    publisher: "Kanton Nidwalden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-NW
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.nw.ch/amtjustizdienste/581"]
+      allow_prefixes: ["https://www.nw.ch/amtjustizdienste/581"]
+      max_pages: 10
+      max_pdfs: 0
+
+  # Run 3: ow-pdfs
+  # dienstleistungen/5276 links /_doc/454867, 447907, 447910 as plain links (offline). /publikationen/40733 (Wegleitung, /_doc/447067) was not saved, so that link is unverified
+  - id: ow_pdfs
+    name: "Kanton Obwalden – Schulferienpläne und Wegleitung Steuern"
+    publisher: "Kanton Obwalden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-OW
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ow.ch/dienstleistungen/5276", "https://www.ow.ch/publikationen/40733"]
+      allow_prefixes: ["https://www.ow.ch/dienstleistungen/5276", "https://www.ow.ch/publikationen/40733"]
+      pdf_allow_prefixes: ["https://www.ow.ch/_doc/", "https://www.ow.ch/_docn/"]
+      pdf_link_patterns: ["^https://www\\.ow\\.ch/_docn?/\\d+"]
+      max_pages: 4
+      max_pdfs: 6
+
+  # Run 3: vsz-ownw (html_crawl, https://www.vsz.ch)
+  # whole site (121 sitemap URLs); covers OW and NW but extent is CH-OW (run3-b.md:123, multi-canton trap)
+  - id: vsz_ownw
+    name: "Verkehrssicherheitszentrum Obwalden/Nidwalden"
+    publisher: "Verkehrssicherheitszentrum Obwalden/Nidwalden"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-OW
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.vsz.ch/"]
+      allow_prefixes: ["https://www.vsz.ch/"]
+      max_pages: 150
+      max_pdfs: 0
+
+  # Run 3: sg_gerichte_info (html_crawl, https://www.sg.ch)
+  # content_selector #maincontent: content marker documented in the agent report
+  # sg_gerichte_kostenmerkblatt folded in: merkblaetter.html (inside this prefix) links 10 procedure/cost leaflets in that DAM folder, including the Handelsgericht one (offline page_meta)
+  - id: sg_gerichte_info
+    name: "Gerichte St.Gallen – Informationen & Schlichtungsstellen"
+    publisher: "Kanton St.Gallen"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.sg.ch/recht/gerichte/informationen---formulare/merkblaetter.html", "https://www.sg.ch/recht/gerichte/informationen---formulare.html", "https://www.sg.ch/recht/gerichte/organisation---standorte/schlichtungsstellen-und-vermittlungsaemter.html"]
+      allow_prefixes: ["https://www.sg.ch/recht/gerichte/informationen---formulare", "https://www.sg.ch/recht/gerichte/organisation---standorte/schlichtungsstellen-und-vermittlungsaemter"]
+      pdf_allow_prefixes: ["https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/"]
+      content_selector: "#maincontent"
+      max_pages: 45
+      max_pdfs: 12
+
+  # Run 3: sg_guidance (html_crawl, https://www.sg.ch)
+  # content_selector #maincontent: content marker documented in the agent report
+  - id: sg_guidance
+    name: "Kanton St.Gallen – Hunde, Ferienplan, Strassenverkehr"
+    publisher: "Kanton St.Gallen"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.sg.ch/umwelt-natur/veterinaerwesen/tiere-halten/hunde.html", "https://www.sg.ch/bildung-sport/volksschule/aus-dem-amt/ferienplan.html", "https://www.sg.ch/verkehr/strassenverkehr.html"]
+      allow_prefixes: ["https://www.sg.ch/umwelt-natur/veterinaerwesen/tiere-halten/hunde", "https://www.sg.ch/bildung-sport/volksschule/aus-dem-amt/ferienplan", "https://www.sg.ch/verkehr/strassenverkehr"]
+      content_selector: "#maincontent"
+      max_pages: 180
+      max_pdfs: 0
+
+  # Run 3: sg_steuerbuch, sg_steuerbuch_pdfs
+  # merges the 1-PDF sample and the pdf-index row: the table of contents links 248 PDFs (offline page_meta)
+  - id: sg_steuerbuch
+    name: "St.Galler Steuerbuch"
+    publisher: "Kanton St.Gallen, Steueramt"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.sg.ch/steuern-finanzen/steuern/steuerbuch/inhaltsverzeichnis.html"]
+      allow_prefixes: ["https://www.sg.ch/steuern-finanzen/steuern/steuerbuch"]
+      pdf_allow_prefixes: ["https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/"]
+      content_selector: "#maincontent"
+      max_pages: 10
+      max_pdfs: 260
+
+  # Run 3: so_gerichte (html_crawl, https://so.ch)
+  - id: so_gerichte
+    name: "Gerichte Kanton Solothurn – Zuständigkeit, Friedensrichter, Mietschlichtung"
+    publisher: "Kanton Solothurn"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SO
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://so.ch/gerichte/", "https://so.ch/verwaltung/departement-des-innern/departementssekretariat/oberaemter/schlichtung-und-vermittlung/"]
+      allow_prefixes: ["https://so.ch/gerichte/", "https://so.ch/verwaltung/departement-des-innern/departementssekretariat/oberaemter/schlichtung-und-vermittlung/"]
+      max_pages: 100
+      max_pdfs: 0
+
+  # Run 3: so_hunde (html_crawl, https://so.ch)
+  - id: so_hunde
+    name: "Hunde im Kanton Solothurn"
+    publisher: "Kanton Solothurn"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SO
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://so.ch/verwaltung/volkswirtschaftsdepartement/amt-fuer-landwirtschaft/tiere-und-lebensmittel/tierschutz/hunde/", "https://so.ch/verwaltung/departement-des-innern/departementssekretariat/oberaemter/hundehaltung/"]
+      allow_prefixes: ["https://so.ch/verwaltung/volkswirtschaftsdepartement/amt-fuer-landwirtschaft/tiere-und-lebensmittel/tierschutz/hunde/", "https://so.ch/verwaltung/departement-des-innern/departementssekretariat/oberaemter/hundehaltung/", "https://so.ch/verwaltung/volkswirtschaftsdepartement/amt-fuer-wald-jagd-und-fischerei/wildtiere/mit-hund-im-wald-leinenpflicht/"]
+      max_pages: 20
+      max_pdfs: 0
+
+  # Run 3: so_mfk (html_crawl, https://so.ch)
+  - id: so_mfk
+    name: "Motorfahrzeugkontrolle Kanton Solothurn"
+    publisher: "Kanton Solothurn"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SO
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://so.ch/verwaltung/bau-und-justizdepartement/motorfahrzeugkontrolle/"]
+      allow_prefixes: ["https://so.ch/verwaltung/bau-und-justizdepartement/motorfahrzeugkontrolle/"]
+      max_pages: 170
+      max_pdfs: 0
+
+  # Run 3: so_schulferien
+  # parent page links the three plans (offline page_meta)
+  - id: so_schulferien
+    name: "Schulferienpläne der Volksschulen im Kanton Solothurn"
+    publisher: "Kanton Solothurn"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SO
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://so.ch/verwaltung/departement-fuer-bildung-kultur-und-sport/volksschulamt/aktuell/ferienplan/"]
+      allow_prefixes: ["https://so.ch/verwaltung/departement-fuer-bildung-kultur-und-sport/volksschulamt/aktuell/ferienplan/"]
+      pdf_allow_prefixes: ["https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/"]
+      max_pages: 3
+      max_pdfs: 5
+
+  # Run 3: so_steuerbuch (html_crawl, https://steuerbuch.so.ch)
+  # sitemap index -> pages child with 175 locs (run3-a.md:344)
+  - id: so_steuerbuch
+    name: "Solothurner Steuerbuch"
+    publisher: "Kanton Solothurn, Steueramt"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SO
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://steuerbuch.so.ch/steuern/"]
+      allow_prefixes: ["https://steuerbuch.so.ch/steuern/"]
+      sitemap_urls: ["https://steuerbuch.so.ch/sitemap.xml"]
+      sitemap_include: ["/steuern/"]
+      max_pages: 220
+      max_pdfs: 0
+
+  # Run 3: sz-justiz (html_crawl, https://www.sz.ch)
+  # govis host: 5 s spacing gave 0 x 429 (run3-b.md:93)
+  - id: sz_justiz
+    name: "Kanton Schwyz – Justiz"
+    publisher: "Kanton Schwyz"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SZ
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.sz.ch/behoerden/justiz.html/8756-8758-8801"]
+      allow_prefixes: ["https://www.sz.ch/behoerden/justiz/", "https://www.sz.ch/behoerden/justiz.html/8756-8758-8801"]
+      delay_seconds: 5
+      max_pages: 45
+      max_pdfs: 0
+
+  # Run 3: tg_ferienplan
+  # the page links 3 plans (offline); asset-id prefixes keep Run 3's two
+  - id: tg_ferienplan
+    name: "Kanton Thurgau – Ferienplan Volksschule"
+    publisher: "Kanton Thurgau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://av.tg.ch/themen/ferienplan.html/13415"]
+      allow_prefixes: ["https://av.tg.ch/themen/ferienplan.html/13415"]
+      pdf_allow_prefixes: ["https://av.tg.ch/public/upload/assets/179040/", "https://av.tg.ch/public/upload/assets/8713/"]
+      max_pages: 2
+      max_pdfs: 2
+
+  # Run 3: tg_gerichte_merkblaetter
+  # the saved page links 2 of the 3 Run 3 PDFs; the parent of 99108 (Merkblatt Rechtsöffnung) is unknown
+  - id: tg_gerichte_merkblaetter
+    name: "Bezirksgerichte Thurgau – Merkblätter"
+    publisher: "Bezirksgerichte des Kantons Thurgau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://bezirksgericht.tg.ch/arbon/merkblaetter.html/5652"]
+      allow_prefixes: ["https://bezirksgericht.tg.ch/arbon/merkblaetter.html/5652"]
+      pdf_allow_prefixes: ["https://bezirksgericht.tg.ch/public/upload/assets/37839/", "https://bezirksgericht.tg.ch/public/upload/assets/37840/", "https://bezirksgericht.tg.ch/public/upload/assets/99108/"]
+      max_pages: 2
+      max_pdfs: 3
+
+  # Run 3: tg_hunde (html_crawl, https://veterinaeramt.tg.ch)
+  - id: tg_hunde
+    name: "Thurgau – Hundewesen (Veterinäramt)"
+    publisher: "Kanton Thurgau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://veterinaeramt.tg.ch/tierschutz/haustiere/hundewesen.html/11290", "https://veterinaeramt.tg.ch/faq/hundewesen.html/14752"]
+      allow_prefixes: ["https://veterinaeramt.tg.ch/tierschutz/haustiere/hundewesen", "https://veterinaeramt.tg.ch/faq/hundewesen"]
+      max_pages: 15
+      max_pdfs: 0
+
+  # Run 3: tg_steuerpraxis (html_crawl, https://steuerpraxis.tg.ch)
+  # 7 dated editions in the sitemap (559 URLs in 2026-09); the prefix pins the 2026-09 edition, so the next edition needs a manifest update
+  - id: tg_steuerpraxis
+    name: "Thurgauer Steuerpraxis (Ausgabe 2026-09)"
+    publisher: "Kanton Thurgau, Steuerverwaltung"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://steuerpraxis.tg.ch/steuerpraxis/2026-09"]
+      allow_prefixes: ["https://steuerpraxis.tg.ch/steuerpraxis/2026-09"]
+      sitemap_urls: ["https://steuerpraxis.tg.ch/sitemap.xml"]
+      sitemap_include: ["/steuerpraxis/2026-09"]
+      max_pages: 620
+      max_pdfs: 0
+
+  # Run 3: tg_strassenverkehrsamt (html_crawl, https://strassenverkehrsamt.tg.ch)
+  - id: tg_strassenverkehrsamt
+    name: "Strassenverkehrsamt Thurgau – Gebühren, Führer- und Fahrzeugzulassung"
+    publisher: "Kanton Thurgau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://strassenverkehrsamt.tg.ch/gebuehren-und-steuern.html/16501", "https://strassenverkehrsamt.tg.ch/fuehrerzulassung.html/3617", "https://strassenverkehrsamt.tg.ch/fahrzeugzulassung.html/3615"]
+      allow_prefixes: ["https://strassenverkehrsamt.tg.ch/gebuehren-und-steuern", "https://strassenverkehrsamt.tg.ch/fuehrerzulassung", "https://strassenverkehrsamt.tg.ch/fahrzeugzulassung"]
+      max_pages: 100
+      max_pdfs: 0
+
+  # Run 3: ur-gerichte-rechtsgebiete (html_crawl, https://www.ur.ch)
+  - id: ur_gerichte_rechtsgebiete
+    name: "Uri – Gerichte: Rechtsgebiete"
+    publisher: "Kanton Uri"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-UR
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ur.ch/rechtsgebiete/3909", "https://www.ur.ch/rechtsgebiete/3912", "https://www.ur.ch/rechtsgebiete/3914", "https://www.ur.ch/rechtsgebiete/3915", "https://www.ur.ch/rechtsgebiete/3917", "https://www.ur.ch/rechtsgebiete/3918"]
+      allow_prefixes: ["https://www.ur.ch/rechtsgebiete/"]
+      max_pages: 20
+      max_pdfs: 0
+
+  # Run 3: ur-pdfs
+  # start URLs are the og:url of the saved /_rte/dienst/* pages, which link the /_doc/ PDFs as plain links (offline). Tarifordnung_2026.pdf (4th Run 3 URL) has no identified parent page
+  - id: ur_pdfs
+    name: "Kanton Uri – Wegleitung Steuern und Ferienpläne"
+    publisher: "Kanton Uri"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-UR
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.ur.ch/dienstleistungen/3869", "https://www.ur.ch/dienstleistungen/3125"]
+      allow_prefixes: ["https://www.ur.ch/dienstleistungen/3869", "https://www.ur.ch/dienstleistungen/3125"]
+      pdf_allow_prefixes: ["https://www.ur.ch/_doc/", "https://www.ur.ch/_docn/"]
+      pdf_link_patterns: ["^https://www\\.ur\\.ch/_docn?/\\d+"]
+      max_pages: 4
+      max_pdfs: 20
+
+  # Run 3: vs_guide_taxation (html_crawl, https://www.vs.ch)
+  # max_pdfs 0: vs.ch robots.txt disallows *.pdf
+  - id: vs_guide_taxation
+    name: "Canton du Valais – Guide de taxation"
+    publisher: "Canton du Valais"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VS
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.vs.ch/web/guide-de-taxation"]
+      allow_prefixes: ["https://www.vs.ch/web/guide-de-taxation"]
+      max_pages: 40
+      max_pdfs: 0
+
+  # Run 3: vs_scav_chiens (html_crawl, https://www.vs.ch)
+  # max_pdfs 0: vs.ch robots.txt disallows *.pdf
+  - id: vs_scav_chiens
+    name: "Canton du Valais – Affaires canines"
+    publisher: "Canton du Valais"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VS
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.vs.ch/web/scav/veterinaire/affaires-canines", "https://www.vs.ch/web/scav/veterinaire/securit%C3%A9-publique"]
+      allow_prefixes: ["https://www.vs.ch/web/scav/veterinaire/affaires-canines", "https://www.vs.ch/web/scav/veterinaire/securit", "https://www.vs.ch/web/scav/veterinaire/vente-acquisition-chiens"]
+      max_pages: 20
+      max_pdfs: 0
+
+  # Run 3: vs_scn (html_crawl, https://www.vs.ch)
+  # max_pdfs 0: vs.ch robots.txt disallows *.pdf
+  - id: vs_scn
+    name: "Canton du Valais – Service de la circulation routière et de la navigation"
+    publisher: "Canton du Valais"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VS
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.vs.ch/web/scn"]
+      allow_prefixes: ["https://www.vs.ch/web/scn"]
+      max_pages: 120
+      max_pdfs: 0
+
+  # Run 3: vs_tribunaux (html_crawl, https://www.vs.ch)
+  # max_pdfs 0: vs.ch robots.txt disallows *.pdf and the PDF connector does not read robots.txt
+  - id: vs_tribunaux
+    name: "Canton du Valais – Tribunaux"
+    publisher: "Canton du Valais"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VS
+    connector: html
+    tier: 2
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.vs.ch/web/tribunaux/sitemap"]
+      allow_prefixes: ["https://www.vs.ch/web/tribunaux/"]
+      max_pages: 150
+      max_pdfs: 0
+
+  # Run 3: zg-hunde-ferien (html_crawl, https://zg.ch)
+  # zg-pdfs folded in: both PDFs are linked from this source's two start pages (offline page_meta)
+  - id: zg_hunde_ferien
+    name: "Kanton Zug – Hunde und Schulferien"
+    publisher: "Kanton Zug"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-ZG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://zg.ch/de/natur-umwelt-tiere/veterinaerwesen/hunde", "https://zg.ch/de/bildung/bildungssystem/schulferien"]
+      allow_prefixes: ["https://zg.ch/de/natur-umwelt-tiere/veterinaerwesen/hunde", "https://zg.ch/de/bildung/bildungssystem/schulferien"]
+      pdf_allow_prefixes: ["https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/", "https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/"]
+      max_pages: 15
+      max_pdfs: 2
+
+  # Run 3: zg-recht-justiz (html_crawl, https://zg.ch)
+  - id: zg_recht_justiz
+    name: "Kanton Zug – Recht & Justiz"
+    publisher: "Kanton Zug"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-ZG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://zg.ch/de/recht-justiz"]
+      allow_prefixes: ["https://zg.ch/de/recht-justiz"]
+      max_pages: 130
+      max_pdfs: 0
+
+  # Run 3: ju_journal_officiel
+  # gazette (tier 3, opt-in): 33 weekly PDFs linked from the 2026 page (offline); notices can carry personal data; each new year needs a new start URL
+  - id: ju_journal_officiel
+    name: "Canton du Jura – Journal officiel (2026)"
+    publisher: "République et Canton du Jura"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-JU
+    connector: html
+    tier: 3
+    languages: ["fr"]
+    config:
+      start_urls: ["https://rsju.jura.ch/fr/Sommaire/Journal-officiel/Journaux-officiels-2026.html"]
+      allow_prefixes: ["https://rsju.jura.ch/fr/Sommaire/Journal-officiel/Journaux-officiels-2026.html"]
+      pdf_allow_prefixes: ["https://rsju.jura.ch/Htdocs/Files/v/"]
+      max_pages: 1
+      max_pdfs: 40
+
+  # Run 3: tg_rechtsprechung_sitemap
+  # court decisions (tier 3, bulk): 6,350 sitemap URLs (run3-c/sitemaps); per-source max_pages replaces the old 200-page cap (html.py:236). opencaselaw's TG Obergericht feed is stale (consolidated_report.md:236)
+  - id: tg_rechtsprechung
+    name: "Rechtsprechung der Thurgauer Gerichte"
+    publisher: "Gerichte des Kantons Thurgau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-TG
+    connector: html
+    tier: 3
+    languages: ["de"]
+    config:
+      start_urls: ["https://rechtsprechung.tg.ch/og/", "https://rechtsprechung.tg.ch/vg"]
+      allow_prefixes: ["https://rechtsprechung.tg.ch/"]
+      sitemap_urls: ["https://rechtsprechung.tg.ch/sitemap.xml"]
+      max_pages: 6500
+      max_pdfs: 0
+
+  # Run 3: vd_faovd
+  # gazette (tier 3, opt-in): the rubric page links 15 notice PDFs (offline); one PDF per notice. Rubrics with personal data (poursuites, faillites, successions) are left out
+  - id: vd_faovd
+    name: "Feuille des avis officiels du canton de Vaud – rubrique Communes"
+    publisher: "Canton de Vaud"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-VD
+    connector: html
+    tier: 3
+    languages: ["fr"]
+    config:
+      start_urls: ["https://www.faovd.ch/rubrique/communes/"]
+      allow_prefixes: ["https://www.faovd.ch/rubrique/communes/"]
+      pdf_allow_prefixes: ["https://www.faovd.ch/autres/"]
+      max_pages: 5
+      max_pdfs: 20
+
+  # ---------------- Run 3 (2026-09-23): blocked until a small pipeline change ----------------
+
+  # Run 3: ag_schulferien
+  # BLOCKED until a TLS fix: www.schulen-aargau.ch fails certificate verification in httpx (fetch test); the corpus client has no verify/CA option (corpus_source_commands.py:46-47)
+  - id: ag_schulferien
+    name: "Kantonal einheitliche Feriendaten Volksschule Aargau"
+    publisher: "Kanton Aargau"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-AG
+    connector: html
+    tier: 2
+    languages: ["de"]
+    config:
+      start_urls: ["https://www.schulen-aargau.ch/regelschule/schulorganisation/planung-ressourcen/stunden-ferienplanung"]
+      allow_prefixes: ["https://www.schulen-aargau.ch/regelschule/schulorganisation/planung-ressourcen/stunden-ferienplanung"]
+      pdf_allow_prefixes: ["https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan"]
+      max_pages: 2
+      max_pdfs: 1
