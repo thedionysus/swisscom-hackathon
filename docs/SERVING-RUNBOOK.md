@@ -25,20 +25,26 @@ documents are not searchable.
 
 ## 3. Load premium data
 
-BAG's premium archive keys rows by a BAG insurer number, not a name — the raw file has no insurer
-names in it. Before loading premiums, get the insurer register:
-
-1. Download the BAG "Verzeichnis der zugelassenen Krankenversicherer" (or the equivalent priminfo
-   export) and turn it into a two-column CSV, `id;name`, one row per insurer (BAG number; insurer
-   name). No header row.
-2. Pass it with `--insurers` when loading premiums for the year:
+BAG's premium archive keys rows by a BAG insurer number, not a name. The names come from BAG's
+register of approved health insurers ("Verzeichnis der zugelassenen Krankenversicherer",
+https://www.bag.admin.ch/de/verzeichnisse-der-zugelassenen-kranken-und-rueckversicherer, XLSX).
+For 2026 (checked 2026-09-24: all 34 insurers in the premium table are named in the register of 1.1.2026):
 
 ```bash
-uv run swiss-grounding lookups load-premiums <premiums.csv> <regions.csv> <year> --insurers <insurers.csv>
+curl -sL -o data/premium/insurers_2026.xlsx \
+  "https://www.bag.admin.ch/dam/de/sd-web/wKeV97535ICf/Zugelassene%20Krankenversicherer_1.1.2026.xlsx"
+uv run --with openpyxl python -c "
+import openpyxl
+ws = openpyxl.load_workbook('data/premium/insurers_2026.xlsx', read_only=True)['Index   Indice   Index ']
+rows = [(int(r[1]), ' '.join(str(r[3]).split())) for r in ws.iter_rows(values_only=True)
+        if isinstance(r[1], (int, float))]
+open('data/premium/insurers_2026.csv', 'w', encoding='utf-8').writelines(f'{n};{name}\\n' for n, name in rows)"
+uv run swiss-grounding lookups load-premiums data/premium/Prämien_CH.csv data/premium/regions_2026.csv 2026 \
+  --insurers data/premium/insurers_2026.csv
 ```
 
-Without `--insurers`, premiums load but `swiss_premium` can only report the BAG number, not a
-readable insurer name — do not skip this step for a release build.
+`load-premiums` warns about any insurer number the register does not name; with the command above it
+prints no warning. For a later year, take the newest register from the same page.
 
 ## 4. Golden set: dev split and labelling
 

@@ -103,6 +103,12 @@ def read_regions(path: Path, year: int) -> Iterator[RegionRow]:
         yield RegionRow(year, int(r["BFS-Nr."]), r["Kanton"].strip(), int(r["Region"]))
 
 
+def unnamed_insurers(premiums: Path, insurer_names: Mapping[str, str]) -> tuple[str, ...]:
+    """BAG insurer numbers in the premium file that the insurer register does not name."""
+    ids = {r[COLUMNS["insurer"]].strip() for r in _rows(premiums, PREMIUM_DELIMITER)}
+    return tuple(sorted(ids - set(insurer_names)))
+
+
 def load_premiums(conn: psycopg.Connection, premiums: Path, regions: Path, year: int,
                   insurer_names: Mapping[str, str]) -> tuple[int, int]:
     conn.execute("delete from serving.premium where year = %s", (year,))

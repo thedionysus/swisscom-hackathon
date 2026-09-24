@@ -21,3 +21,9 @@ def test_reads_regions():
 def test_age_class_boundaries():
     assert [age_class(a) for a in (0, 18, 19, 25, 26, 30)] == ["child", "child", "young_adult", "young_adult",
                                                                "adult", "adult"]
+
+
+def test_unnamed_insurers_lists_numbers_without_a_name():
+    from swiss_grounding.lookups.premium_data import unnamed_insurers
+    assert unnamed_insurers(FIX / "premiums_sample.csv", {"1509": "Kasse A"}) == ("0032",)
+    assert unnamed_insurers(FIX / "premiums_sample.csv", {"1509": "A", "0032": "B"}) == ()
