@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from swiss_grounding.corpus.manifest import load_manifest, select_sources
@@ -162,3 +164,53 @@ def test_rejects_invalid_site_adaptation_keys(tmp_path, old, new, message):
     path.write_text(MANIFEST.replace(BERN_CONFIG, config))
     with pytest.raises(ValueError, match=message):
         load_manifest(path)
+
+
+JSON_SOURCE = """
+  - id: sz_holidays
+    name: Schulferien Schwyz
+    publisher: Kanton Schwyz
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SZ
+    connector: json
+    tier: 2
+    languages: [de]
+    config:
+      url: "https://data.sz.ch/records?limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{schuljahr}-{name_schule}"
+      title_template: "Schulferien {schuljahr}: {name_schule}"
+      text_template: "Herbstferien {herbstferien_start} bis {herbstferien_ende}"
+"""
+
+
+def _json_manifest(tmp_path, old=None, new=None):
+    source = JSON_SOURCE if old is None else JSON_SOURCE.replace(old, new)
+    assert old is None or source != JSON_SOURCE
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST + source)
+    return path
+
+
+def test_accepts_a_json_source(tmp_path):
+    [spec] = select_sources(load_manifest(_json_manifest(tmp_path)), tier=2, source_ids=("sz_holidays",))
+    assert spec.connector == "json"
+    assert spec.config["paging"] == {"style": "offset", "size": 100}
+
+
+@pytest.mark.parametrize(("old", "new", "message"), [
+    ('url: "https://data.sz.ch/records?limit={size}&offset={offset}"', 'url: "/records"', "config.url"),
+    ("offset={offset}", "offset={start}", "may only use"),
+    ("{style: offset, size: 100}", "{style: scroll}", "paging.style"),
+    ("limit={size}&offset={offset}", "limit={size}", "needs {offset} in config.url"),
+    ("{style: offset, size: 100}", "{style: offset, size: 0}", "size must be"),
+    ("      records_path: results\n", "", "records_path"),
+    ('"{schuljahr}-{name_schule}"', '"{schuljahr"', "id_template"),
+    ('      text_template: "Herbstferien {herbstferien_start} bis {herbstferien_ende}"\n', "",
+     "text_template or config.html_path"),
+])
+def test_rejects_invalid_json_config(tmp_path, old, new, message):
+    with pytest.raises(ValueError, match=re.escape(message)):
+        load_manifest(_json_manifest(tmp_path, old, new))
