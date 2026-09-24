@@ -89,6 +89,11 @@ uv run swiss-grounding corpus status
 
 Confirms documents exist for every declared source/language. `fetch` resumes incrementally and costs nothing.
 
+> **Guidance for a fresh database** (checked 2026-09-24; the setup may change):
+> - **Symptom:** `corpus status` fails with `relation "corpus.document" does not exist`. The database has never held the corpus and was not restored from a dump (§0), so the corpus schema is missing.
+> - **Likely fix:** `uv run swiss-grounding corpus init` creates the schema. It only creates what is missing, so re-running it does no harm.
+> - **If that command has changed,** check `uv run swiss-grounding corpus --help`.
+
 ## 2. Set up `.env`
 
 The pipeline runs with **OpenAI or Anthropic**, interchangeably. Pick the provider you have a key for; every
