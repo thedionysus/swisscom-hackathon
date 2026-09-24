@@ -74,11 +74,13 @@ from swiss_grounding.db.connection import connect
 corpus_app = typer.Typer(help="Encoding track: fetch, describe, OCR and embed the declared-scope corpus.")
 register(corpus_app)
 
-SYNC_WORKERS = 8
 DIRECT_MAX_RETRIES = 8                   # direct calls beside batches run at the per-minute limit; 429s are retried
 LOCAL_EMBED_BATCH = 64
 OPENAI_EMBED_MAX_ITEMS = 2048            # inputs per embeddings request (OpenAI limit)
-OPENAI_EMBED_MAX_TOKENS = 250_000        # estimated tokens per sync embeddings request (limit is 300k)
+# Estimated tokens per sync embeddings request; OpenAI rejects a request over 300k real tokens. The estimate
+# (budget.CHARS_PER_TOKEN = 3) runs low on OCR'd pages full of digits and table pipes: at 250k estimated, a
+# request passed 300k real. 100k leaves a threefold margin; throughput is set by the tokens-per-minute limit.
+OPENAI_EMBED_MAX_TOKENS = 100_000
 PROJECTED_DESCRIPTION_TOKENS = 40        # a chunk description's share of the embedded text
 OCR_SLICE = 1000                         # pages built (images read) and run per round without --limit
 DESCRIBE_KINDS = {"docs": "describe-doc", "chunks": "describe-chunk"}
@@ -143,7 +145,9 @@ def _fake_reply(task: LlmTask) -> dict:
 
 def _llm(settings: Settings):
     if settings.corpus_llm_provider == "openai":
-        return OpenAILLM(settings.openai_api_key)
+        # A plain --sync run is direct calls too: without these retries, 846 of 1,648 OCR requests on a
+        # 200k-tokens-per-minute account ended in quarantine after the SDK default of 2.
+        return OpenAILLM(settings.openai_api_key, max_retries=DIRECT_MAX_RETRIES)
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
     return _FakeCorpusLLM()
@@ -214,7 +218,7 @@ def _batch_runner(settings: Settings, tokens_per_file: int, kind: str | None = N
 def _chat_runner(settings: Settings, sync: bool, kind: str | None = None, kind_cap: float | None = None):
     if _uses_batch(settings, sync):
         return _batch_runner(settings, settings.corpus_chat_tokens_per_file, kind, kind_cap)
-    return SyncRunner(_llm(settings), workers=SYNC_WORKERS)
+    return SyncRunner(_llm(settings), workers=settings.corpus_sync_workers)
 
 
 def _side_by_side(settings: Settings, sync: bool) -> bool:
@@ -397,7 +401,7 @@ def _ocr_pilot(settings: Settings, pages: int) -> None:
         typer.echo(f"pilot: {len(tasks)} page(s), estimate {usd(estimate)} ({_price_label(priced, False)})")
         _check_budget(conn, settings, estimate, len(tasks), kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
         last_id = conn.execute("select coalesce(max(id), 0) as id from corpus.llm_spend").fetchone()["id"]
-    report = run_ocr(settings.database_url, SyncRunner(_llm(settings), workers=SYNC_WORKERS), tasks, model=priced,
+    report = run_ocr(settings.database_url, SyncRunner(_llm(settings), workers=settings.corpus_sync_workers), tasks, model=priced,
                      batch=False)
     with connect(settings.database_url) as conn:
         used = conn.execute("select coalesce(sum(usd), 0) as usd, coalesce(sum(input_tokens), 0) as tokens "
@@ -550,7 +554,7 @@ def _embed_in_process(settings: Settings, spec: IndexSpec, require_description: 
         batch_size = LOCAL_EMBED_BATCH
     else:
         provider = (FakeEmbeddings(spec.dim) if settings.corpus_llm_provider == "fake"
-                    else OpenAIEmbeddings(settings.openai_api_key, spec.model))
+                    else OpenAIEmbeddings(settings.openai_api_key, spec.model, max_retries=DIRECT_MAX_RETRIES))
         batch_size, max_tokens = OPENAI_EMBED_MAX_ITEMS, OPENAI_EMBED_MAX_TOKENS
     written = embed_local(settings.database_url, spec, provider, batch_size=batch_size,
                           require_description=require_description, max_tokens_per_request=max_tokens)
