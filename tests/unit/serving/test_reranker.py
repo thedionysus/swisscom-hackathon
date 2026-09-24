@@ -32,3 +32,7 @@ def test_cross_encoder_separates_relevant_from_irrelevant():
         "Bei der Miete von Wohnungen können die Parteien mit einer Frist von drei Monaten kündigen.",
         "Hundehaltende müssen ihren Hund innert zehn Tagen anmelden."])
     assert good > 0.5 > bad
+
+
+def test_passage_text_strips_markdown_emphasis():
+    assert passage_text(("Permis",), "un délai de **12** **mois** ## Titre `x`") == "Permis\nun délai de 12 mois Titre x"

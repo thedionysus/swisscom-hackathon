@@ -1,4 +1,5 @@
 """swiss_search: places → candidates → groups → reranker → relevance → status → citations."""
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -30,7 +31,31 @@ from swiss_grounding.serving.status import decide, pre_search, uncovered_levels
 Embedded = tuple[np.ndarray, dict[int, float] | None]
 EmbedFn = Callable[[Sequence[str]], list[Embedded]]
 RerankCache = dict[tuple[int, str], float]
+WORDS = re.compile(r"\w+")
 EMPTY_QUESTION = "The question is empty. Send the user's question as they wrote it."
+
+
+def _normalised(text: str) -> str:
+    return " ".join(WORDS.findall(text.lower()))
+
+
+def distinct_citations(scored: Sequence[ScoredGroup]) -> list[ScoredGroup]:
+    """Drop repeats before citing: the same text published under another URL (ch.ch serves many
+    pages at two addresses), and another language version of a page already cited (HTML sections
+    do not align across languages, so their chunks form separate groups)."""
+    seen_text: set[str] = set()
+    cited_language: dict[str, str] = {}
+    kept = []
+    for s in scored:
+        rep = s.group.representative
+        text = _normalised(rep.text)
+        language = cited_language.get(rep.translation_group_id)
+        if text in seen_text or (language is not None and language != rep.language):
+            continue
+        seen_text.add(text)
+        cited_language[rep.translation_group_id] = rep.language
+        kept.append(s)
+    return kept
 
 
 def query_embedder(provider) -> EmbedFn:
@@ -111,7 +136,7 @@ class SearchService:
                 # A placeless answer cites federal evidence only: cantonal and municipal passages
                 # apply to one place and would mislead a user elsewhere (ADR 0013).
                 relevant = [s for s in relevant if s.group.representative.extent_id == "CH"]
-            keep = relevant[: q.request.limit]
+            keep = distinct_citations(relevant)[: q.request.limit]
             citations = tuple(self._cite(s, queries) for s in keep)
         loc = o.resolved.location if o.resolved else None
         return PlaceResult(o.text, status, loc.id if loc else None, loc.label("de") if loc else None,

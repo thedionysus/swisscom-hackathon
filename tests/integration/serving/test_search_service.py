@@ -146,7 +146,7 @@ def test_limit_keeps_the_most_relevant_groups_sorted_by_relevance(serving_db):
     [place] = resp.places
     assert len(place.citations) == 2
     assert place.citations[0].relevance >= place.citations[1].relevance
-    assert {c.relevance for c in place.citations} == {1.0, 0.8}
+    assert place.citations[0].passage == "Alpha Beta Gamma Delta Epsilon"
 
 
 def test_reranker_cache_scores_a_shared_federal_passage_once(serving_db):
@@ -178,3 +178,17 @@ def test_scored_for_eval_yields_feature_vectors_per_group(serving_db):
     for features, key in rows:
         assert len(features) == len(FEATURES)
         assert isinstance(key, str)
+
+
+def test_duplicate_text_and_other_language_versions_are_cited_once(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="a", lang="de", text="Führerausweis Umtausch zwölf Monate", url="https://ch.ch/x/de")
+        add_doc(conn, group="b", lang="de", text="Führerausweis Umtausch zwölf Monate", url="https://ch.ch/y/de")
+        add_doc(conn, group="c", lang="de", text="Führerausweis Umtausch Frist Monate", align="s1",
+                url="https://ch.ch/z/de")
+        add_doc(conn, group="c", lang="en", text="Führerausweis Umtausch Frist Monate licence", align="s2",
+                url="https://ch.ch/z/en")
+    resp = service(serving_db, threshold=0.0).search(SearchRequest(question="Führerausweis Umtausch Monate?"))
+    urls = [c.url for p in resp.places for c in p.citations]
+    assert len([u for u in urls if u in ("https://ch.ch/x/de", "https://ch.ch/y/de")]) == 1
+    assert len([u for u in urls if u.startswith("https://ch.ch/z/")]) == 1

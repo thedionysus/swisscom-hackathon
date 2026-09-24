@@ -12,8 +12,14 @@ FEATURES: tuple[str, ...] = (
     "rerank_logit", "same_language", "rrf_reciprocal", "corroboration", "corroboration_na",
     "independent", "tier", "tier_na", "is_law", "age_years",
 )
-# Set from the probes in docs/RESEARCH.md §H1 (irrelevant ≈ 0.00-0.02, relevant ≥ 0.8); Task 28 re-checks it.
-PROVISIONAL_THRESHOLD = 0.10
+# Until the logistic model is fitted (Task 22), relevance blends the reranker with the retrieval rank:
+# on the encoded corpus the reranker alone demoted the right Vaud passage (0.29) below wrong pages
+# (0.45) that bge-m3 retrieval ranked lower (docs/RESEARCH.md §H3). A passage the reranker scores
+# below RERANK_GATE keeps its reranker score, so a question with nothing relevant (Konstanz: ~0.00)
+# still ends below the threshold.
+PROVISIONAL_THRESHOLD = 0.20
+RERANK_GATE = 0.20
+RERANK_WEIGHT = 0.5
 EPS = 1e-6
 
 
@@ -54,7 +60,10 @@ class ProvisionalRelevance:
     fitted: bool = False
 
     def probability(self, features: Sequence[float], *, rerank_score: float) -> float:
-        return rerank_score
+        if rerank_score < RERANK_GATE:
+            return rerank_score
+        retrieval = features[FEATURES.index("rrf_reciprocal")]
+        return RERANK_WEIGHT * rerank_score + (1 - RERANK_WEIGHT) * retrieval
 
 
 @dataclass(frozen=True)
