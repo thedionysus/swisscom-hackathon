@@ -91,13 +91,33 @@ def stats_cmd() -> None:
 
 dump_app = typer.Typer(help="Prebuilt database dump.")
 DB_ARGS = ["-U", "swiss", "-d", "swiss_grounding"]
-DUMP_DIR = Path("data/dump")
 RESTORE_PGOPTIONS = "-c maintenance_work_mem=1GB -c max_parallel_maintenance_workers=0"
-DUMP_OUT_OPTION = typer.Option(Path("dist"), "--out")
+
+
+def repo_root() -> Path:
+    """The checkout root, found from this file's location so `dump export`/`setup` work from any
+    cwd. `serving_commands.py` lives at <root>/src/swiss_grounding/cli/, three parents up."""
+    root = Path(__file__).resolve().parents[3]
+    if not (root / "docker-compose.yml").exists():
+        raise RuntimeError(f"repo root {root} has no docker-compose.yml; move or reinstall the package")
+    return root
+
+
+REPO_ROOT = repo_root()
+DUMP_DIR = REPO_ROOT / "data" / "dump"
+DUMP_OUT_OPTION = typer.Option(REPO_ROOT / "dist", "--out")
 
 
 def _compose(*args: str, stdout=None) -> None:
-    subprocess.run(["docker", "compose", *args], check=True, stdout=stdout)
+    compose_file = REPO_ROOT / "docker-compose.yml"
+    cmd = ["docker", "compose", "-f", str(compose_file), *args]
+    try:
+        subprocess.run(cmd, check=True, stdout=stdout)
+    except FileNotFoundError as exc:
+        raise typer.BadParameter("docker is not installed; see the README's setup section") from exc
+    except subprocess.CalledProcessError as exc:
+        raise typer.BadParameter(
+            f"docker compose failed: is Docker running? (command: {' '.join(cmd)})") from exc
 
 
 @dump_app.command("export")
@@ -134,6 +154,10 @@ def _run(cmd: list[str]) -> None:
         subprocess.run(cmd, check=True)
     except FileNotFoundError as exc:
         raise typer.BadParameter(f"{cmd[0]} is not installed; see the README's setup section") from exc
+    except subprocess.CalledProcessError as exc:
+        raise typer.BadParameter(
+            "could not download the prebuilt database: run `gh auth login` with an account that has "
+            "access to thedionysus/swisscom-hackathon") from exc
 
 
 def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do not pre-download models")) -> None:
