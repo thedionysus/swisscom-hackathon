@@ -96,20 +96,27 @@ RESTORE_PGOPTIONS = "-c maintenance_work_mem=1GB -c max_parallel_maintenance_wor
 
 def repo_root() -> Path:
     """The checkout root, found from this file's location so `dump export`/`setup` work from any
-    cwd. `serving_commands.py` lives at <root>/src/swiss_grounding/cli/, three parents up."""
+    cwd. `serving_commands.py` lives at <root>/src/swiss_grounding/cli/, three parents up.
+
+    Resolved lazily (called only from inside `dump export`/`setup`, never at import time): every
+    `swiss-grounding` command imports this module through `main.py`, so an import-time call would
+    break the whole CLI outside a checkout, even for commands that never touch the dump.
+    """
     root = Path(__file__).resolve().parents[3]
     if not (root / "docker-compose.yml").exists():
         raise RuntimeError(f"repo root {root} has no docker-compose.yml; move or reinstall the package")
     return root
 
 
-REPO_ROOT = repo_root()
-DUMP_DIR = REPO_ROOT / "data" / "dump"
-DUMP_OUT_OPTION = typer.Option(REPO_ROOT / "dist", "--out")
+def dump_dir() -> Path:
+    return repo_root() / "data" / "dump"
+
+
+DUMP_OUT_OPTION = typer.Option(None, "--out", help="default: <repo root>/dist")
 
 
 def _compose(*args: str, stdout=None) -> None:
-    compose_file = REPO_ROOT / "docker-compose.yml"
+    compose_file = repo_root() / "docker-compose.yml"
     cmd = ["docker", "compose", "-f", str(compose_file), *args]
     try:
         subprocess.run(cmd, check=True, stdout=stdout)
@@ -121,9 +128,10 @@ def _compose(*args: str, stdout=None) -> None:
 
 
 @dump_app.command("export")
-def dump_export_cmd(out: Path = DUMP_OUT_OPTION,
+def dump_export_cmd(out: Path | None = DUMP_OUT_OPTION,
                     openai: bool = typer.Option(False, "--openai", help="also export the OpenAI vectors")) -> None:
     """Write the default dump (no OpenAI vectors) split into release-sized parts, plus a manifest."""
+    out = out or repo_root() / "dist"
     out.mkdir(parents=True, exist_ok=True)
     excludes = [f"--exclude-table-data={t}" for t in EXCLUDE_DATA]
     with (out / "corpus.dump").open("wb") as f:
@@ -146,7 +154,7 @@ def _gh_download(settings, pattern: str) -> None:
     """Download release assets of our private repository. `gh` uses the caller's GitHub login, so only
     people with access to the repository (the team and the evaluators we invite) can download."""
     _run(["gh", "release", "download", settings.dump_release_tag, "--repo", settings.dump_release_repo,
-          "--pattern", pattern, "--dir", str(DUMP_DIR), "--skip-existing"])
+          "--pattern", pattern, "--dir", str(dump_dir()), "--skip-existing"])
 
 
 def _run(cmd: list[str]) -> None:
@@ -163,14 +171,15 @@ def _run(cmd: list[str]) -> None:
 def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do not pre-download models")) -> None:
     """Download the prebuilt database, verify it, restore it, and pre-download the local models."""
     settings = load_settings()
-    DUMP_DIR.mkdir(parents=True, exist_ok=True)
+    directory = dump_dir()
+    directory.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     # Parts already in data/dump (e.g. copied from a USB stick) are kept; a wrong one fails the checksum.
     _gh_download(settings, MANIFEST_NAME)
     _gh_download(settings, "corpus.dump.part*")
-    manifest = _json_module.loads((DUMP_DIR / MANIFEST_NAME).read_text())
-    verify_parts(DUMP_DIR, manifest)
-    dump = join_parts(DUMP_DIR, manifest, DUMP_DIR / "corpus.dump")
+    manifest = _json_module.loads((directory / MANIFEST_NAME).read_text())
+    verify_parts(directory, manifest)
+    dump = join_parts(directory, manifest, directory / "corpus.dump")
     _compose("up", "-d", "--wait", "db")
     _compose("cp", str(dump), "db:/tmp/corpus.dump")
     dump.unlink()                                  # the parts stay; the joined copy is not needed twice

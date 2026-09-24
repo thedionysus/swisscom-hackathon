@@ -1,17 +1,20 @@
+import importlib
 import subprocess
 
 import pytest
 import typer
+from typer.testing import CliRunner
 
-from swiss_grounding.cli import serving_commands
+from swiss_grounding.cli import main, serving_commands
 
 
 def test_repo_root_has_docker_compose_file():
-    assert (serving_commands.REPO_ROOT / "docker-compose.yml").exists()
+    root = serving_commands.repo_root()
+    assert (root / "docker-compose.yml").exists()
 
 
 def test_dump_dir_is_under_repo_root():
-    assert serving_commands.DUMP_DIR.is_relative_to(serving_commands.REPO_ROOT)
+    assert serving_commands.dump_dir().is_relative_to(serving_commands.repo_root())
 
 
 def test_repo_root_raises_when_docker_compose_is_missing(tmp_path, monkeypatch):
@@ -57,3 +60,18 @@ def test_run_wraps_missing_executable(monkeypatch):
     monkeypatch.setattr(serving_commands.subprocess, "run", fake_run)
     with pytest.raises(typer.BadParameter, match="gh is not installed"):
         serving_commands._run(["gh", "release", "download"])
+
+
+def test_cli_help_works_even_when_repo_root_would_fail(monkeypatch):
+    """`main.py` imports `serving_commands` for every command; `repo_root()` must never run at
+    import time, or a broken repo root would break the whole CLI, not just `dump`/`setup`."""
+    def broken_repo_root():
+        raise RuntimeError("repo root has no docker-compose.yml")
+
+    monkeypatch.setattr(serving_commands, "repo_root", broken_repo_root)
+    reloaded_main = importlib.reload(main)
+    try:
+        result = CliRunner().invoke(reloaded_main.app, ["--help"])
+        assert result.exit_code == 0
+    finally:
+        importlib.reload(main)
