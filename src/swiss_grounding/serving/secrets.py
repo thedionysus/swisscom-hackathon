@@ -1,4 +1,4 @@
-"""The shared translation key, distributed as an asset of the private release (ADR 0018).
+"""The shared keys (Supertext translation, zbern.ch token), distributed as an asset of the private release.
 
 The team publishes `supertext.env` next to the corpus dump; `setup` downloads it with the caller's
 GitHub login and writes its keys into `.env`. Only the keys listed here are ever taken from the
@@ -8,8 +8,8 @@ import re
 from collections.abc import Mapping
 
 SECRETS_ASSET = "supertext.env"
-SHARED_KEYS: tuple[str, ...] = ("SUPERTEXT_API_KEY",)
-HEADER = "# Shared translation key installed by `swiss-grounding setup` (ADR 0018)"
+SHARED_KEYS: tuple[str, ...] = ("SUPERTEXT_API_KEY", "ZBERN_MCP_TOKEN")
+HEADER = "# Shared keys installed by `swiss-grounding setup`"
 LINE = re.compile(r"^\s*#?\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$")
 
 

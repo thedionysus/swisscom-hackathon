@@ -34,7 +34,13 @@ from swiss_grounding.serving.dump import (
     verify_parts,
 )
 from swiss_grounding.serving.models import SearchRequest
-from swiss_grounding.serving.secrets import SECRETS_ASSET, merge_env, parse_env, shared_env_text
+from swiss_grounding.serving.secrets import (
+    SECRETS_ASSET,
+    SHARED_KEYS,
+    merge_env,
+    parse_env,
+    shared_env_text,
+)
 
 serving_app = typer.Typer(help="Serving: schema, calendars, latency stats.")
 
@@ -182,9 +188,9 @@ def _run(cmd: list[str], what: str = "download the prebuilt database") -> None:
 
 
 def install_shared_key(settings, env_path: Path) -> bool:
-    """Download the shared translation key from the release and write it into `.env` (ADR 0018).
+    """Download the shared keys (translation, zbern token) from the release and write them into `.env`.
 
-    The asset is optional: a release without it leaves `.env` alone and translation off. The
+    The asset is optional: a release without it leaves `.env` alone, translation and zbern off. The
     download always replaces an earlier copy, so a rotated key reaches every machine on the next
     `setup`. Returns whether a key was installed."""
     asset = dump_dir() / SECRETS_ASSET
@@ -193,36 +199,40 @@ def install_shared_key(settings, env_path: Path) -> bool:
                              settings.dump_release_repo, "--pattern", SECRETS_ASSET, "--dir", str(dump_dir())],
                             capture_output=True, text=True, check=False)
     if result.returncode != 0 or not asset.exists():
-        typer.echo("no shared translation key on the release; translation stays off "
-                   "(set SUPERTEXT_API_KEY in .env yourself, or ask the team to run `dump publish-key`)")
+        typer.echo("no shared keys on the release; translation and the zbern tools stay off "
+                   "(set SUPERTEXT_API_KEY / ZBERN_MCP_TOKEN in .env yourself, or ask the team to run "
+                   "`dump publish-key`)")
         return False
     shared = parse_env(asset.read_text(encoding="utf-8"))
     asset.unlink()                                 # the key lives in .env only
     if not shared:
-        typer.echo(f"{SECRETS_ASSET} on the release holds no SUPERTEXT_API_KEY; translation stays off")
+        typer.echo(f"{SECRETS_ASSET} on the release holds none of {', '.join(SHARED_KEYS)}")
         return False
     current = env_path.read_text(encoding="utf-8") if env_path.exists() else ""
     env_path.write_text(merge_env(current, shared), encoding="utf-8")
-    typer.echo(f"shared translation key written to {env_path.name}")
+    typer.echo(f"shared keys written to {env_path.name}: {', '.join(sorted(shared))}")
     return True
 
 
 @dump_app.command("publish-key")
 def publish_key_cmd() -> None:
-    """Upload the SUPERTEXT_API_KEY from your .env to the private release, for everyone's `setup`."""
+    """Upload SUPERTEXT_API_KEY and ZBERN_MCP_TOKEN from your .env to the private release, for everyone's `setup`."""
     settings = load_settings()
-    if not settings.supertext_api_key:
-        raise typer.BadParameter("SUPERTEXT_API_KEY is not set in .env; nothing to publish")
+    values = {"SUPERTEXT_API_KEY": settings.supertext_api_key or "",
+              "ZBERN_MCP_TOKEN": settings.zbern_mcp_token.get_secret_value() if settings.zbern_mcp_token else ""}
+    if not any(values.values()):
+        raise typer.BadParameter("neither SUPERTEXT_API_KEY nor ZBERN_MCP_TOKEN is set in .env; nothing to publish")
     dump_dir().mkdir(parents=True, exist_ok=True)
     asset = dump_dir() / SECRETS_ASSET
-    asset.write_text(shared_env_text({"SUPERTEXT_API_KEY": settings.supertext_api_key}), encoding="utf-8")
+    asset.write_text(shared_env_text(values), encoding="utf-8")
     try:
         _run(["gh", "release", "upload", settings.dump_release_tag, str(asset), "--repo",
-              settings.dump_release_repo, "--clobber"], what="upload the translation key")
+              settings.dump_release_repo, "--clobber"], what="upload the shared keys")
     finally:
         asset.unlink(missing_ok=True)
-    typer.echo(f"{SECRETS_ASSET} published to release {settings.dump_release_tag} of {settings.dump_release_repo}; "
-               "collaborators get it on their next `swiss-grounding setup`")
+    published = ", ".join(k for k, v in values.items() if v)
+    typer.echo(f"{SECRETS_ASSET} ({published}) published to release {settings.dump_release_tag} of "
+               f"{settings.dump_release_repo}; collaborators get it on their next `swiss-grounding setup`")
 
 
 def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do not pre-download models")) -> None:

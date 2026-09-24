@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from swiss_grounding.serving.models import LANGS as SUPPORTED_LANGUAGES
 
 DEFAULT_CORPUS_INDEXES = ("bge-m3",)
+ZBERN_DEFAULT_EXCLUDE = ("query", "list_tables", "describe_table", "get_reference")
 DEFAULT_TRANSLATE_QUERY_LANGUAGES = ("de", "fr", "it", "en")
 
 
@@ -97,7 +98,18 @@ class Settings(BaseSettings):
     dump_release_repo: str = "thedionysus/swisscom-hackathon"
     dump_release_tag: str = "corpus-latest"
 
-    @field_validator("corpus_indexes", "translate_query_languages", mode="before")
+    # Swiss Parliament tools from the zbern.ch MCP server. Off unless ZBERN_MCP_URL is set.
+    zbern_mcp_url: str | None = None
+    zbern_mcp_token: SecretStr | None = None
+    zbern_mcp_prefix: str = "zbern_"
+    # zbern tool names (without the prefix) not to serve, comma-separated. The raw-SQL tools are off by
+    # default: they add four calls a model may take before answering; set ZBERN_MCP_EXCLUDE= to serve them.
+    zbern_mcp_exclude: Annotated[tuple[str, ...], NoDecode] = ZBERN_DEFAULT_EXCLUDE
+    zbern_mcp_timeout_seconds: float = 60.0
+    # How often the zbern tool list and instructions are re-read, so changes there show up without a restart.
+    zbern_mcp_refresh_seconds: float = 300.0
+
+    @field_validator("corpus_indexes", "translate_query_languages", "zbern_mcp_exclude", mode="before")
     @classmethod
     def _split_csv(cls, value: object) -> object:
         """`bge-m3, openai-3l` -> ("bge-m3", "openai-3l"): blanks dropped, duplicates removed, order kept."""

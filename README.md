@@ -103,7 +103,7 @@ beside the six above, prefixed `zbern_`, and forwards calls to it (ADR 0018):
 ```bash
 ZBERN_MCP_URL=https://mcp.zbern.ch/mcp      # or a local run of the zbern-mcp repository
 ZBERN_MCP_TOKEN=...                         # bearer token for the hosted endpoint; never commit it
-ZBERN_MCP_EXCLUDE=                          # optional, zbern tool names not to serve, comma-separated
+ZBERN_MCP_EXCLUDE=query,list_tables,describe_table,get_reference   # the default: raw SQL stays off
 ```
 
 The zbern tools, their descriptions and the zbern instructions are discovered from that server and

@@ -25,7 +25,7 @@ import httpx
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 from mcp.server.fastmcp import FastMCP
-from mcp.types import CallToolResult, TextContent, Tool
+from mcp.types import CallToolResult, TextContent, Tool, ToolAnnotations
 
 from swiss_grounding.config import Settings
 from swiss_grounding.serving.call_log import CallRecord, record_call
@@ -36,6 +36,9 @@ log = logging.getLogger(__name__)
 Transport = Callable[[], AbstractAsyncContextManager[tuple[Any, Any]]]
 
 DESCRIPTION_TAG = "[Swiss Parliament, via zbern.ch] "
+# The zbern server declares no annotations. Its tools only read (a read-only DuckDB plus BFS fetches), and
+# clients such as Claude Code ask the user before calling a tool without readOnlyHint.
+FORWARDED = ToolAnnotations(readOnlyHint=True, openWorldHint=True)
 UNAVAILABLE = ("The Swiss Parliament source (zbern.ch) cannot be reached right now. Tell the user this part "
                "cannot be answered at the moment; do not answer it from memory.")
 
@@ -119,6 +122,7 @@ class ZbernTools:
         # outputSchema is dropped: our own `source_unavailable` answer could not satisfy an arbitrary remote
         # schema, and clients reject a result that misses a declared schema. Remote results stay verbatim.
         return tool.model_copy(update={"name": self.prefix + tool.name, "outputSchema": None,
+                                       "annotations": tool.annotations or FORWARDED,
                                        "description": DESCRIPTION_TAG + (tool.description or "")})
 
     def _stale(self) -> bool:

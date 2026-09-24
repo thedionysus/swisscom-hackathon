@@ -97,6 +97,7 @@ async def test_remote_tools_are_served_with_a_prefix_beside_ours():
     assert person.description.startswith(zbern.DESCRIPTION_TAG)
     assert "Find members of parliament" in person.description
     assert set(person.inputSchema["properties"]) == {"name", "language"}
+    assert person.annotations.readOnlyHint is True    # clients gate on it; zbern sets none
 
 
 async def test_a_call_reaches_the_remote_tool_with_its_own_name_and_arguments():
@@ -226,6 +227,14 @@ def test_settings_from_env(monkeypatch):
     assert "secret-token" not in repr(s)
     tools = zbern.from_settings(s)
     assert tools is not None and tools.prefix == "zbern_"
+
+
+def test_the_raw_sql_tools_are_excluded_unless_asked_for(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    assert Settings(_env_file=None).zbern_mcp_exclude == ("query", "list_tables", "describe_table",
+                                                           "get_reference")
+    monkeypatch.setenv("ZBERN_MCP_EXCLUDE", "")
+    assert Settings(_env_file=None).zbern_mcp_exclude == ()
 
 
 @pytest.mark.parametrize("token, expected", [("t0k3n", "Bearer t0k3n"), (None, None)])

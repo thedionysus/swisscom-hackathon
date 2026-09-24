@@ -1,6 +1,7 @@
 from swiss_grounding.serving.secrets import HEADER, merge_env, parse_env, shared_env_text
 
 KEY = "SUPERTEXT_API_KEY"
+TOKEN = "ZBERN_MCP_TOKEN"
 
 
 def test_parse_env_takes_only_the_shared_keys():
@@ -35,6 +36,14 @@ def test_merge_appends_under_a_header_when_the_key_is_absent():
 
 def test_merge_into_an_empty_file():
     assert merge_env("", {KEY: "abc"}) == f"{HEADER}\nSUPERTEXT_API_KEY=abc\n"
+
+
+def test_both_shared_keys_travel_together():
+    text = shared_env_text({KEY: "abc", TOKEN: "tok"})
+    assert text == "SUPERTEXT_API_KEY=abc\nZBERN_MCP_TOKEN=tok\n"
+    assert parse_env(text) == {KEY: "abc", TOKEN: "tok"}
+    merged = merge_env("A=1\n# ZBERN_MCP_TOKEN=\n", {KEY: "abc", TOKEN: "tok"})
+    assert merged == f"A=1\nZBERN_MCP_TOKEN=tok\n\n{HEADER}\nSUPERTEXT_API_KEY=abc\n"
 
 
 def test_merge_ignores_keys_that_are_not_shared_and_empty_values():
