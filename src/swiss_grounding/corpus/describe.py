@@ -213,23 +213,26 @@ def _chunk_task(r: dict, model: str) -> LlmTask:
                    max_output_tokens=MAX_TOKENS_PER_LANGUAGE * len(languages) + MAX_TOKENS_OVERHEAD)
 
 
-def mark_repeated_furniture(conn: psycopg.Connection, min_documents: int = 3) -> int:
+def mark_repeated_furniture(conn: psycopg.Connection, min_documents: int = 3, keep_one: bool = False) -> int:
     """Set status 'boilerplate' on chunks whose exact text recurs in `min_documents`+ live documents of one source.
 
     RAG review E2: a footer, contact block or cookie notice that survived HTML cleaning is the same chunk on
     every page; finding it by repetition is free, where the model's verdict is paid per copy. Law is exempt:
     identical articles across acts ("Aufgehoben") are rare, legitimate, and carry different breadcrumbs.
-    Returns the number of chunks marked. The caller commits.
+    With `keep_one`, the copy in the source's lowest document id stays live and only the other copies are
+    marked, so the text is still found once. Afterwards a single live copy is left, which a later run of
+    either kind leaves alone until new copies arrive. Returns the number of chunks marked. The caller commits.
     """
     return conn.execute(
         "with live as (select c.id, c.language, c.chunk_hash, d.source_id, c.document_id from corpus.chunk c "
         f"join corpus.document d on d.id = c.document_id where c.status in {LIVE} "
         "and c.text <> '' and d.authority <> all(%s)), "
-        "repeated as (select source_id, chunk_hash from live group by source_id, chunk_hash "
-        "having count(distinct document_id) >= %s) "
+        "repeated as (select source_id, chunk_hash, min(document_id) as keeper from live "
+        "group by source_id, chunk_hash having count(distinct document_id) >= %s) "
         "update corpus.chunk c set status = 'boilerplate' from live l join repeated r "
         "on r.source_id = l.source_id and r.chunk_hash = l.chunk_hash "
-        "where c.id = l.id and c.language = l.language", (list(LAW_AUTHORITIES), min_documents)).rowcount
+        "where c.id = l.id and c.language = l.language and not (%s and l.document_id = r.keeper)",
+        (list(LAW_AUTHORITIES), min_documents, keep_one)).rowcount
 
 
 def estimate_describe(tasks: Sequence[LlmTask], model: str, batch: bool = True) -> float:
