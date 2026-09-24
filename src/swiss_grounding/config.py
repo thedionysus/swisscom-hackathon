@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     # per minute, separately from the Batch queue, so both together roughly double throughput at low
     # usage tiers; they cost twice the batch price. Size to the account's tokens-per-minute limit.
     corpus_direct_workers: int = 0
+    # Parallel requests of a plain --sync run (OCR, describe). Lower it on an account with a low tokens-per-minute
+    # limit: 8 kept a 200k-TPM account at its ceiling.
+    corpus_sync_workers: int = 8
     # Workers for HNSW index builds. 0 = serial: parallel builds need more /dev/shm than Docker's 64 MB default.
     corpus_index_parallel_workers: int = 0
     respect_robots: bool = True
