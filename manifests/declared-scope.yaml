@@ -3881,6 +3881,7 @@ sources:
       title_template: "Schulferien {schuljahr}: {name_schule} ({schulart})"
       text_template: "Ferienplan im Schuljahr {schuljahr} für {name_schule} ({schulart}, Bezirk {bezirk}, Kanton Schwyz). Schuljahresbeginn: {start_schuljahr}. Herbstferien: {herbstferien_start} bis {herbstferien_ende}. Weihnachtsferien: {weihnachtsferien_start} bis {weihnachtsferien_ende}. Sportferien: {sportferien_start} bis {sportferien_ende}. Frühlingsferien: {fruehlingsferien_start} bis {fruehlingsferien_ende}. Schuljahresende: {ende_schuljahr}."
       cite_url: "https://data.sz.ch/explore/assets/ferienplan-kanton-schwyz/"
+      robots_exception_reason: "Opendatasoft's platform robots.txt disallows /api/ for every crawler except Googlebot; this is the portal's documented public API for the dataset (open data, read-only), used only with ROBOTS_API_EXCEPTIONS=true."
 
   # Opendatasoft dataset 13350. Checked 2026-09-24: 58 records (holidays and school-free days per school year),
   # no empty fields, the id below is unique. www.baselland.ch itself answers a Cloudflare 403.
@@ -3901,6 +3902,7 @@ sources:
       title_template: "{name} {schuljahr} (Schulen im Kanton Basel-Landschaft)"
       text_template: "{name} im Schuljahr {schuljahr} an den Schulen des Kantons Basel-Landschaft: vom {startdatum} bis {enddatum}."
       cite_url: "https://data.bl.ch/explore/assets/13350/"
+      robots_exception_reason: "Opendatasoft's platform robots.txt disallows /api/ for every crawler except Googlebot; this is the portal's documented public API for the dataset (open data, read-only), used only with ROBOTS_API_EXCEPTIONS=true."
 
   # Plone REST behind wissen.zg.ch (an Angular app). Checked 2026-09-24: @search with fullobjects returns all
   # 1,343 items of the book, 100 per page with a working batching.next; paragraphs carry the text in text.data,
