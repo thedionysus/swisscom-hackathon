@@ -299,7 +299,8 @@ sources:
     tier: 1
     languages: [de]
     config:
-      start_urls: ["https://www.zh.ch/de/steuern-finanzen.html", "https://www.zh.ch/de/migration-integration.html", "https://www.zh.ch/de/mobilitaet.html", "https://www.zh.ch/de/bildung.html", "https://www.zh.ch/de/soziales.html"]
+      # Added first (so their PDFs fit max_pdfs): school holidays page (brief topic 9). Checked 2026-09-24 with the corpus code: robots allowed, in scope, parsed.
+      start_urls: ["https://www.zh.ch/de/bildung/bildungssystem/schulferien.html", "https://www.zh.ch/de/steuern-finanzen.html", "https://www.zh.ch/de/migration-integration.html", "https://www.zh.ch/de/mobilitaet.html", "https://www.zh.ch/de/bildung.html", "https://www.zh.ch/de/soziales.html"]
       allow_prefixes: ["https://www.zh.ch/de/steuern-finanzen", "https://www.zh.ch/de/migration-integration", "https://www.zh.ch/de/mobilitaet", "https://www.zh.ch/de/bildung", "https://www.zh.ch/de/soziales", "https://www.zh.ch/de/umwelt-tiere"]
       pdf_allow_prefixes: ["https://www.zh.ch/content/dam/"]
       max_pages: 800
@@ -322,6 +323,23 @@ sources:
       content_selector: "#main"
       max_pages: 800
       max_pdfs: 60
+  # Bern's cantonal holiday plan lives on a host outside be_canton (akvb-gemeinden.bkd.be.ch). From the Run 3
+  # candidates (branch sources/run3-discovery, run3/corpus_pipeline/manifest_candidates.yaml); checked 2026-09-24.
+  - id: be_schulferien_volksschule
+    name: Kantonale Ferienordnung Volksschule Bern (deutschsprachiger Teil) 2026/27–2031/32
+    publisher: Kanton Bern
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BE
+    connector: html
+    tier: 1
+    languages: [de]
+    config:
+      start_urls: ["https://www.akvb-gemeinden.bkd.be.ch/de/start/organisation-finanzierung/schulorganisation/schulferienplanung.html"]
+      allow_prefixes: ["https://www.akvb-gemeinden.bkd.be.ch/de/start/organisation-finanzierung/schulorganisation/schulferienplanung"]
+      pdf_allow_prefixes: ["https://www.akvb-gemeinden.bkd.be.ch/content/dam/akvb-gemeinden_bkd/dokumente/de/startseite/organisation-finanzierung/schulorganisation/schulferienplanung/"]
+      max_pages: 3
+      max_pdfs: 3
   - id: vd_canton
     name: Canton de Vaud
     publisher: Canton de Vaud
@@ -332,8 +350,9 @@ sources:
     tier: 1
     languages: [fr]
     config:
-      start_urls: ["https://www.vd.ch/mobilite", "https://www.vd.ch/etat-droit-finances/impots", "https://www.vd.ch/population", "https://www.vd.ch/formation"]
-      allow_prefixes: ["https://www.vd.ch/mobilite", "https://www.vd.ch/etat-droit-finances/impots", "https://www.vd.ch/population", "https://www.vd.ch/formation", "https://www.vd.ch/sante-soins-et-handicap"]
+      # Added first (so their PDFs fit max_pdfs): school holidays; exchanging a foreign driving licence and licence fees (brief sample question 2). Checked 2026-09-24 with the corpus code: robots allowed, in scope, parsed.
+      start_urls: ["https://www.vd.ch/formation/jours-feries-et-vacances-scolaires", "https://www.vd.ch/prestation/echanger-un-permis-de-conduire-etranger", "https://www.vd.ch/mobilite/automobile-et-navigation/frais-des-prestations-du-san/permis-de-conduire", "https://www.vd.ch/mobilite", "https://www.vd.ch/etat-droit-finances/impots", "https://www.vd.ch/population", "https://www.vd.ch/formation"]
+      allow_prefixes: ["https://www.vd.ch/mobilite", "https://www.vd.ch/etat-droit-finances/impots", "https://www.vd.ch/population", "https://www.vd.ch/formation", "https://www.vd.ch/sante-soins-et-handicap", "https://www.vd.ch/prestation/echanger-un-permis-de-conduire-etranger"]
       pdf_allow_prefixes: ["https://www.vd.ch/fileadmin/"]
       max_pages: 800
       max_pdfs: 60
@@ -361,7 +380,8 @@ sources:
     tier: 1
     languages: [it]
     config:
-      start_urls: ["https://www4.ti.ch/dfe/dc/", "https://www4.ti.ch/di/sc/", "https://www4.ti.ch/decs/"]
+      # Added first (so their PDFs fit max_pdfs): school calendar 2026/27 (brief topic 9). Checked 2026-09-24 with the corpus code: robots allowed, in scope, parsed.
+      start_urls: ["https://www4.ti.ch/decs/cosa-facciamo/calendario-scolastico/2026-2027", "https://www4.ti.ch/dfe/dc/", "https://www4.ti.ch/di/sc/", "https://www4.ti.ch/decs/"]
       allow_prefixes: ["https://www4.ti.ch/"]
       pdf_allow_prefixes: ["https://www4.ti.ch/fileadmin/", "http://www4.ti.ch/fileadmin/"]
       max_pages: 800
@@ -376,7 +396,8 @@ sources:
     tier: 1
     languages: [de, rm, it]
     config:
-      start_urls: ["https://www.gr.ch/DE/themen/wirtschaftundsteuern/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/RM/temas/economiataglias/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/IT/temi/economiaimposte/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/DE/themen/mobilitaetundverkehr/Seiten/MobilitaetundVerkehr.aspx", "https://www.gr.ch/DE/themen/gesundheitundpraevention/Seiten/GesundheitundPraevention.aspx", "https://www.gr.ch/DE/themen/bildungundforschung/Seiten/BildungundForschung.aspx", "https://www.gr.ch/DE/themen/bauundplanung/Seiten/BauundPlanung.aspx", "https://www.gr.ch/DE/themen/energieundumwelt/Seiten/EnergieundUmwelt.aspx", "https://www.gr.ch/DE/themen/schutz/Seiten/default.aspx"]
+      # Added first (so their PDFs fit max_pdfs): the page linking the 2026/27 holiday plan (Scuol row answers brief sample question 4) and the road traffic office (brief topic 11). Checked 2026-09-24 with the corpus code: robots allowed, in scope, parsed.
+      start_urls: ["https://www.gr.ch/DE/institutionen/verwaltung/ekud/avs/Schulbetrieb/schulorganisation/Seiten/Schulbetrieb.aspx", "https://www.gr.ch/DE/institutionen/verwaltung/djsg/stva/Seiten/Start.aspx", "https://www.gr.ch/DE/themen/wirtschaftundsteuern/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/RM/temas/economiataglias/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/IT/temi/economiaimposte/Seiten/WirtschaftundSteuern.aspx", "https://www.gr.ch/DE/themen/mobilitaetundverkehr/Seiten/MobilitaetundVerkehr.aspx", "https://www.gr.ch/DE/themen/gesundheitundpraevention/Seiten/GesundheitundPraevention.aspx", "https://www.gr.ch/DE/themen/bildungundforschung/Seiten/BildungundForschung.aspx", "https://www.gr.ch/DE/themen/bauundplanung/Seiten/BauundPlanung.aspx", "https://www.gr.ch/DE/themen/energieundumwelt/Seiten/EnergieundUmwelt.aspx", "https://www.gr.ch/DE/themen/schutz/Seiten/default.aspx"]
       allow_prefixes: ["https://www.gr.ch/DE/", "https://www.gr.ch/RM/", "https://www.gr.ch/IT/"]
       # Topic hubs have no text of their own; div.pageContent skips the hidden "Inhaltsbereich" h1.
       language_links_selector: "#LanguageSelectionList a[href]"
