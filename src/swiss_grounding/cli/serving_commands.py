@@ -22,7 +22,7 @@ from swiss_grounding.corpus.calendar import (
 )
 from swiss_grounding.corpus.persist import persist_document, upsert_source
 from swiss_grounding.db.connection import connect
-from swiss_grounding.lookups.premium_data import load_premiums
+from swiss_grounding.lookups.premium_data import load_premiums, unnamed_insurers
 from swiss_grounding.serving.call_log import latency_summary
 from swiss_grounding.serving.db import apply_serving_schema
 from swiss_grounding.serving.dump import (
@@ -75,6 +75,11 @@ def load_premiums_cmd(premiums: Path, regions: Path, year: int,
     with connect(load_settings().database_url) as conn:
         n_prem, n_reg = load_premiums(conn, premiums, regions, year, names)
     typer.echo(f"loaded {n_prem} premiums and {n_reg} municipalities for {year}")
+    missing = unnamed_insurers(premiums, names)
+    if missing:
+        typer.echo(f"warning: {len(missing)} insurer numbers have no name and will be shown as numbers: "
+                   f"{', '.join(missing)}. Pass the BAG insurer register with --insurers (see the runbook).",
+                   err=True)
 
 
 @serving_app.command("ask")
