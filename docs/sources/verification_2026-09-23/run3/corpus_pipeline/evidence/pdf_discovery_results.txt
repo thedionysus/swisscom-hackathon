@@ -1,0 +1,238 @@
+### https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan
+    pdf_links=2 links=29 bytes=31444 patterns=['\\.pdf/download$']
+       https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan/ftw-simplelayout-filelistingblock/feiertage-und-schulfreie-tage-2026-2027.pdf/download | Feiertage und schulfreie Tage 2026-2027.pdf
+       https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan/ftw-simplelayout-filelistingblock/ferienplan-ai_2026-2029.pdf/download | Ferienplan AI_2026-2029.pdf
+### https://www.ai.ch/themen/steuern/publikationen/merkblaetter-ab-steuerperiode-2026
+    pdf_links=51 links=128 bytes=129322 patterns=['\\.pdf/download$']
+       https://www.ai.ch/themen/steuern/publikationen/administration/organigramm-kstv-2023-12-01.pdf/download | 
+       https://www.ai.ch/themen/steuern/publikationen/administration/steuerfuesse-der-verschiedenen-koerperschaften-stand-2021.pdf/download | 
+       https://www.ai.ch/themen/steuern/publikationen/administration/steuerfuesse-fuer-die-liegenschaftssteuer-stand-2021.pdf/download | 
+       https://www.ai.ch/themen/steuern/publikationen/administration/Steuertarif_2001.pdf/download | 
+       https://www.ai.ch/themen/steuern/publikationen/grossratsbeschluesse/656-010-17-1-de_2023.pdf/download | 
+       https://www.ai.ch/themen/steuern/publikationen/grossratsbeschluesse/656-010-16-1-de_2022.pdf/download | 
+       ...
+### https://ar.ch/verwaltung/departement-bildung-und-kultur/amt-fuer-volksschule-und-sport/ehandbuch-volksschule/schulbetrieb/regelungen/
+    pdf_links=9 links=273 bytes=125706 patterns=[]
+       https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/Empfehlungen_zum_Datenschutz_in_der_Volkssch | Empfehlungen zum Datenschutz in der Volksschule
+       https://ar.ch/fileadmin/user_upload/Departement_Gesundheit_Soziales/KESB/Dateien/Formulare_und_Merkbl%C3%A4tter/Kindesschutz/Merkblatt_Meldung_an_KESB | Merkblatt Meldung an KESB
+       https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2025-01-22_Leitfaden_AusserordentlicheSeelis | Leitfaden ausserordentliche, seelisch stark belast
+       https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2023-08-01_Leitfaden_MeldeUndMitwirkungspfli | Melde- und Mitwirkungspflicht bei Verfahren der KE
+       https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2025-08-11_Richtlinie_PapiersammlungAnSchule | Richtline Papiersammlung
+       https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2026-06-23_FerienrichtdatenVolksschulenAppen | Ferienrichtdaten
+       ...
+### https://ar.ch/verwaltung/departement-finanzen/steuerverwaltung/gesetzeweisungenmerkblaetter/
+    pdf_links=54 links=315 bytes=147485 patterns=[]
+       https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/Bibliothek/Staatssteuerkommission/Besteuerung_der_Beteiligungs_-__Holding-_u | Besteuerung der Beteiligungs- Holding- und Verwalt
+       https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/Bibliothek/Staatssteuerkommission/Fahrtkosten_Arbeit.pdf | Kosten der Fahrt zum Arbeitsort (pdf)
+       https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/Bibliothek/Staatssteuerkommission/Kinderabzug_2010.pdf | Kinderabzug allgemein (2010) (pdf)
+       https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/Bibliothek/Staatssteuerkommission/Kinderabzug_2008.pdf | Kinderabzug allgemein (2008) (pdf)
+       https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/Bibliothek/Staatssteuerkommission/FHSKinderabzug2010.pdf | Kinderabzug beim Besuch einer Fachhochschule (2010
+       https://ar.ch/fileadmin/user_upload/Departement_Finanzen/Steuerverwaltung/Bibliothek/Staatssteuerkommission/FHS_Kinderabzug_05.pdf | Kinderabzug beim Besuch einer Fachhochschule (2005
+       ...
+### https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers
+    pdf_links=6 links=71 bytes=90509 patterns=['^https://www\\.fr\\.ch/document/\\d+$']
+       https://www.fr.ch/document/57721 | Instructions générales concernant la déclaration d
+       https://www.fr.ch/document/492491 | Procuration pour personnes physiques PDF, 459.05k
+       https://www.fr.ch/document/57736 | Assujettissement inférieur à une année en cas de d
+       https://www.fr.ch/document/401471 | Gains de loterie PDF, 143.23k
+       https://www.fr.ch/document/375771 | Traitement fiscal de la location d'immeubles meubl
+       https://www.fr.ch/document/413131 | Pratique applicable pour certains cas d’estimation
+### https://www.glarus-nord.ch/online-schalter/bildung/ferienplan-wichtige-termine.html/2648
+    pdf_links=1 links=93 bytes=29558 patterns=[]
+       https://www.glarus-nord.ch/public/upload/assets/35598/Ferienpl%C3%A4ne_2025-2028.pdf?fp=5 | Ferienpläne und Brückentage im Kanton Glarus gemäs
+### https://www.lugano.ch/la-mia-citta/amministrazione/legislazione.html
+    pdf_links=122 links=261 bytes=124837 patterns=['^https://www\\.lugano\\.ch/law/\\d+/']
+       https://www.lugano.ch/law/16177093/1-0-1-Regolamento-transitorio-concernente-le-misure-di-risanamento-della-CPCL-per-l-anno-2011-e-seguenti-del-29-nov | 1.0.1 Regolamento transitorio concernente le misur
+       https://www.lugano.ch/law/16371942/1-1-1-Regolamento-comunale-della-Citta-di-Lugano-del-14-marzo-1989 | 1.1.1 Regolamento comunale della Città di Lugano 
+       https://www.lugano.ch/law/39928072/1-1-2-Ordinanza-municipale-sulle-tasse-di-cancelleria | 1.1.2 Ordinanza municipale sulle tasse di cancelle
+       https://www.lugano.ch/law/16176777/1-1-3-Ordinanza-municipale-sulle-tasse-amministrative-relative-alle-procedure-di-naturalizzazione-del-25-gennaio-20 | 1.1.3 Ordinanza municipale sulle tasse amministrat
+       https://www.lugano.ch/law/16176778/1-1-4-Ordinanza-municipale-sul-servizio-di-controllo-finanze-Citta-di-Lugano-del-5-maggio-2022 | 1.1.4 Ordinanza municipale sul servizio di control
+       https://www.lugano.ch/law/31402717/1-1-5-Ordinanza-municipale-concernente-la-riscossione-delle-imposte-comunali-valevole-per-il-2026-del-23-dicembre-2 | 1.1.5 Ordinanza municipale concernente la riscossi
+       ...
+### https://www.ne.ch/themes/impots/documents-et-liens-utiles
+    pdf_links=115 links=613 bytes=598778 patterns=[]
+       https://www.ne.ch/sites/default/files/2025-10/SCCO_AideMemoireFiscal_PP.pdf | 
+       https://www.ne.ch/sites/default/files/2025-06/SCCO_F7116_DemandeAdaptationTranches_PP.pdf | Formulaire de demande d'adaptation des tranches (P
+       https://www.ne.ch/sites/default/files/2025-09/SCCO_FraisChancellerie.pdf | voir frais de chancellerie
+       https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf | 
+       https://www.ne.ch/sites/default/files/2025-10/SCCO_I757_ExtraitInstructionsGenerales_PP.pdf | 
+       https://www.ne.ch/sites/default/files/2025-10/SCCO_I759_InstructionsGeneralesIntermediaires_PP.pdf | 
+       ...
+### https://www.nw.ch/biddirektionssekrdienste/520
+    pdf_links=0 links=289 bytes=167148 patterns=['^https://www\\.nw\\.ch/_docn?/\\d+']
+### https://www.nw.ch/obgrechtsprechung
+    pdf_links=0 links=274 bytes=782935 patterns=['^https://www\\.nw\\.ch/_docn?/\\d+']
+### https://www.ow.ch/dienstleistungen/5276
+    pdf_links=3 links=316 bytes=97737 patterns=['^https://www\\.ow\\.ch/_docn?/\\d+']
+       https://www.ow.ch/_doc/454867 | Schulferienplan_2026-27
+       https://www.ow.ch/_doc/447907 | Schulferienplan_2027-28
+       https://www.ow.ch/_doc/447910 | Schulferienplan_prov__2028-2034
+### https://www.ow.ch/_rte/dienst/5276
+    pdf_links=3 links=316 bytes=97775 patterns=['^https://www\\.ow\\.ch/_docn?/\\d+']
+       https://www.ow.ch/_doc/454867 | Schulferienplan_2026-27
+       https://www.ow.ch/_doc/447907 | Schulferienplan_2027-28
+       https://www.ow.ch/_doc/447910 | Schulferienplan_prov__2028-2034
+### https://www.ow.ch/steuern/3517
+    pdf_links=1 links=329 bytes=108007 patterns=['^https://www\\.ow\\.ch/_docn?/\\d+']
+       https://www.estv.admin.ch/dam/de/sd-web/I3YyTvU3ThVA/dbst-ks-2019-1-045-d-de.pdf | LINK Externer Link wird in einem neuen Fenster geö
+### https://www.ur.ch/_rte/dienst/3869
+    pdf_links=5 links=303 bytes=81638 patterns=['^https://www\\.ur\\.ch/_docn?/\\d+']
+       https://www.ur.ch/_doc/437558 | Wegleitung zur Steuererklärung der natürlichen Per
+       https://www.ur.ch/_doc/437561 | Wegleitung zum Fragebogen für Landwirtschaft
+       https://www.ur.ch/_doc/437564 | Wegleitung zum Fragebogen 15 und 15a (mit kaufmänn
+       https://www.ur.ch/_doc/325837 | Vertretungsvollmacht (Deutsch)
+       https://www.ur.ch/_doc/325840 | Vertretungsvollmacht (Englisch)
+### https://www.ur.ch/_rte/dienst/3125
+    pdf_links=11 links=309 bytes=87673 patterns=['^https://www\\.ur\\.ch/_docn?/\\d+']
+       https://www.ur.ch/_doc/416077 | Ferienplan 2025/2026 nach Gemeinden
+       https://www.ur.ch/_doc/449362 | Ferienplan 2026/2027 nach Gemeinden
+       https://www.ur.ch/_doc/449368 | Ferienplan 2027/2028 nach Gemeinden
+       https://www.ur.ch/_doc/408841 | Rahmenplan 2025/2026
+       https://www.ur.ch/_doc/408844 | Rahmenplan 2026/2027
+       https://www.ur.ch/_doc/443662 | Rahmenplan 2027/2028
+       ...
+### https://www.ur.ch/_rtr/publikation_4903
+    pdf_links=0 links=0 bytes=621340 patterns=['^https://www\\.ur\\.ch/_docn?/\\d+']
+### https://www.ur.ch/_rte/publikation/42868
+    pdf_links=1 links=297 bytes=74889 patterns=['^https://www\\.ur\\.ch/_docn?/\\d+']
+       https://www.ur.ch/_doc/457969 | Amtsblatt Nr. 38 vom 18. September 2026_web
+### https://www.ur.ch/rechtsprechung
+    pdf_links=0 links=295 bytes=725670 patterns=['^https://www\\.ur\\.ch/_docn?/\\d+']
+### https://www.ur.ch/amtsblatt
+    pdf_links=0 links=300 bytes=1354047 patterns=['^https://www\\.ur\\.ch/_docn?/\\d+']
+### https://www.thun.ch/reglementeverordnungen
+    pdf_links=0 links=205 bytes=221710 patterns=['^https://www\\.thun\\.ch/_docn?/\\d+']
+### https://www.stadt-schaffhausen.ch/rechtssammlung
+    pdf_links=0 links=200 bytes=288240 patterns=['^https://www\\.stadt-schaffhausen\\.ch/_docn?/\\d+']
+### https://www.sg.ch/recht/gerichte/informationen---formulare/merkblaetter.html
+    pdf_links=10 links=73 bytes=105379 patterns=[]
+       https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Beschwerdeverfahren%20und%20die%20Kostenfolgen%20betreffend%20Kindes- | Beschwerdeverfahren und die Kostenfolgen betreffen
+       https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Merkblatt%20%C3%BCber%20das%20Opferhilfegesetz.pdf | Merkblatt über das Opferhilfegesetz (25 kB, PDF, 2
+       https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Merkblatt%20zu%20den%20Kosten%20und%20dem%20Verfahren%20vor%20Handels | Merkblatt zu den Kosten und dem Verfahren vor Hand
+       https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Rechtsmittelverfahren%20(Rekurs%20bzw.%20Beschwerde)%20und%20die%20Ko | Rechtsmittelverfahren (Rekurs bzw. Beschwerde) und
+       https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Rechtsmittelverfahren%20(Rekurs%20bzw.%20Beschwerde)%20und%20die%20Ko | Rechtsmittelverfahren (Rekurs bzw. Beschwerde) und
+       https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Rechtsmittelverfahren%20in%20Steuersachen%20und%20die%20Kostenfolgen. | Rechtsmittelverfahren in Steuersachen und die Kost
+       ...
+### https://www.sg.ch/steuern-finanzen/steuern/steuerbuch/inhaltsverzeichnis.html
+    pdf_links=248 links=315 bytes=320194 patterns=[]
+       https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/Inhaltsverzeichnis.pdf.ocFile/Inhaltsverzeichnis.pdf | Inhaltsverzeichnis
+       https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/Stichwortverzeichnis.pdf.ocFile/Stichwortverzeichnis.pdf | Stichwortverzeichnis
+       https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/A%20Organigramm%20KStA.pdf.ocFile/A%20Organigramm%20KStA.pdf | A
+       https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/B%20Mitarbeiter%20des%20KStA.pdf.ocFile/B%20Mitarbeiter%20des%20KS | B
+       https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/C%20Karten%20NP%20u%20%20JP.pdf.ocFile/C%20Karten%20NP%20u%20%20JP | C
+       https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/S%20Verzeichnis%20der%20Steuer%C3%A4mter.pdf.ocFile/S%20Verzeichni | S
+       ...
+### https://so.ch/verwaltung/departement-fuer-bildung-kultur-und-sport/volksschulamt/aktuell/ferienplan/
+    pdf_links=6 links=147 bytes=121228 patterns=[]
+       https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2025-2026.pdf | Ferien im Schuljahr 2025/2026 (pdf, 122 KB) Ferien
+       https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2026_2027.pdf | Ferien im Schuljahr 2026/2027 (pdf, 124 KB) Ferien
+       https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2027_2028.pdf | Ferien im Schuljahr 2027/2028 (pdf, 120 KB) Ferien
+       https://so.ch/fileadmin/internet/dbk/dbk-vsa/VSA/Ansprechpersonen_und_Zustaendigkeiten_Volksschulamt_August_2025_01.pdf | Ansprechpersonen und Zuständigkeiten Volksschulamt
+       https://so.ch/fileadmin/internet/dbk/dbk-vsa/Beratung/SPD/gebietszuteilung_spd.pdf | Ansprechpersonen und Gebietszuständigkeiten Schulp
+       https://so.ch/fileadmin/internet/dbk/dbk-vsa/VSA/Bildungsbericht_Nordwestschweiz_2017.pdf | Bildungsbericht Nordwestschweiz 2017 (pdf, 2.74 MB
+### https://stadtrecht.bern.ch/
+    pdf_links=0 links=0 bytes=3944 patterns=[]
+### https://stadtrecht.bern.ch/lex-151_21
+    pdf_links=0 links=0 bytes=3944 patterns=[]
+### https://stadtrecht.bern.ch/dgn-lex_901_1
+    pdf_links=0 links=0 bytes=3944 patterns=[]
+### https://www.stadt-zuerich.ch/de/politik-und-verwaltung/politik-und-recht/amtliche-sammlung.html
+    pdf_links=0 links=89 bytes=74541 patterns=[]
+### https://www.stadt-zuerich.ch/de/politik-und-verwaltung/politik-und-recht/amtliche-sammlung/7/712/110.html
+    pdf_links=0 links=7 bytes=25550 patterns=[]
+### https://bezirksgericht.tg.ch/arbon/merkblaetter.html/5652
+    pdf_links=2 links=46 bytes=32532 patterns=[]
+       https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2 | Eheprobleme - wie weiter
+       https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1 | Unentgeltliche Rechtspflege
+### https://www4.ti.ch/decs/cosa-facciamo/calendario-scolastico/2026-2027
+    pdf_links=4 links=38 bytes=23098 patterns=[]
+       https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2026_2027.pdf | Calendario scolastico 2026/2027
+       https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2027-2028.pdf | Calendario scolastico 2027/2028
+       https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2028-2029.pdf | Calendario scolastico 2028/2029
+       https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2029-2030.pdf | Calendario scolastico 2029/2030
+### https://www4.ti.ch/dfe/dc/dichiarazione/istruzioni-pf/istr-pf-attuale
+    pdf_links=5 links=57 bytes=21538 patterns=[]
+       https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf | Istruzioni Compilazione della dichiarazione d'impo
+       https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_2025_dom._1_e_2.pdf | Istruzioni in lingua it / fr / te Compilazione del
+       https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_ass_inferiore_anno.pdf | Istruzioni Compilazione della dichiarazione d’impo
+       https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Tabella_deduzioni_PF_2025.pdf | Tabella deduzioni
+       https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Flyer_2025.pdf | Flyer informativo
+### https://zg.ch/de/bildung/bildungssystem/schulferien
+    pdf_links=2 links=175 bytes=360375 patterns=[]
+       https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/Schulferien%20202627-203031.pdf | Schulferien im Überblick - 2026/27 bis 2030/31
+       https://cdn.zg.ch/dam/jcr:a3788f40-335f-4dbc-b50f-3530adf273d3/170608%20MM%20Ferien.pdf | Medienmitteilung Zuger Schulferien: wie lange sie 
+### https://zg.ch/de/natur-umwelt-tiere/veterinaerwesen/hunde
+    pdf_links=4 links=179 bytes=346583 patterns=[]
+       https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/Infoblatt%20Hundereglemente%20Januar%202026.pdf | Infoblatt Hundereglemente der Gemeinden im Kanton 
+       https://cdn.zg.ch/dam/jcr:19ebdb4b-5349-4a95-8f88-42875445d608/Broschuere_Augen_auf_beim_Hundekauf.pdf | Broschüre «Augen auf beim Hundekauf!»
+       https://cdn.zg.ch/dam/jcr:e231940c-f843-488f-95a0-3b1535a10431/BLV_Broschuere_Keine_Angst_vor_Hunden.pdf | Broschüre «Keine Angst vor Hunden»
+       https://cdn.zg.ch/dam/jcr:618dfee5-b272-4d65-9fee-74590d84ea74/BLVBroschuereHund2016.pdf | Broschüre «Mein Hund»
+### https://www.jura.ch/fr/Autorites/JUST/Instances-judiciaires/Tribunal-cantonal/Circulaires/Circulaires-du-Tribunal-cantonal-et-de-ses-sections.html
+    pdf_links=14 links=123 bytes=72653 patterns=[]
+       https://www.jura.ch/Htdocs/Files/v/7e43b8a8d048a4944335628927e433aa95a212e0b50c244649d649e389bc962a.pdf/Circulaire-n11-etat-au-5-mars-2026.pdf?downloa | Circulaire no 11 - Tenue des dossiers pénaux (PDF,
+       https://www.jura.ch/Htdocs/Files/v/e1fdc645065946abbbe38ceb3bd3d24cd31e22265ca16c331a116616059d8e3a.pdf/circulaire_no12_taxation_honoraires_UPDATE.pdf | Circulaire no 12 - Fixation des honoraires d'avoca
+       https://www.jura.ch/Htdocs/Files/v/4d677d6c02295583ff8cbd0ae8e3eff94e3882f5172181cc337a25a32a0218d0.pdf/circulaire_pagination_DEFINITIF.pdf?download=1 | Circulaire no 13 - Numérotation des pièces de proc
+       https://www.jura.ch/Htdocs/Files/v/798b09a48865be94b62f59419ebc528aadeb0f76eb8e7bb7251168b18101f8b3.pdf/AJG_31.3.2026-circulaire-no-14.pdf?download=1 | Circulaire no 14 - Octroi de l'assistance judiciai
+       https://www.jura.ch/Htdocs/Files/v/3aeb1d7bb01fecb7d203963cf8624c34a2e1e58ddbbe72463fb4e735ca1461b8.pdf/modes_citations.pdf?download=1 | Recommandations - Modes de citations (PDF, 233 Ko)
+       https://www.jura.ch/Htdocs/Files/v/24c7050894616e097d0bb6ec1d9bdfe79cd872889f3fa13c5f23564b079ea990.pdf/avances_emoluments_debours_juin-2016-modif.du1 | Tarif des avances, émoluments et débours (PDF, 274
+       ...
+### https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html
+    pdf_links=21 links=137 bytes=75547 patterns=[]
+       https://www.jura.ch/Htdocs/Files/v/b8eb5154874812aefd2c62a333ad8c9dbeed0dbd5409e61cf224720ff5fc22ef.pdf/DI-2025.pdf?download=1 | Déclaration d'impôt (PDF, 300 Ko)
+       https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf/Guide-general-2025.pdf?download=1 | Guide général 2025 (PDF, 1.5 Mo)
+       https://www.jura.ch/Htdocs/Files/v/03b10521cee5ff217003481f4b9a4700f5f8ce560346ab0b5c29cab19e307b34.pdf/Guide-general.pdf?download=1 | Guide général 2025 (version allemande) (PDF, 2.1 M
+       https://www.jura.ch/Htdocs/Files/v/372ce28fb76bddd152f2799f8ff2bf6064b42da15c9529a221bee504292587f0.pdf/Guide-ind-agr-2025-2026.pdf?download=1 | Guide complémentaire pour indépendants et agricult
+       https://www.jura.ch/Htdocs/Files/v/ddcbaa3420d1a67dfbcd9dccb16664cf654247801cf52f64c771c15a09c0a789.pdf/Guide-independant_agriculteur.pdf?download=1 | Guide complémentaire pour indépendants et agricult
+       https://www.jura.ch/Htdocs/Files/v/a25002d698d006806905d94d8d0d7362a06f94dd8d55a07b3fd39af4604ddd8e.pdf/formule-5A.pdf?download=1 | Etat des titres - Formule 5 (PDF, 55 Ko)
+       ...
+### https://www.neuchatelville.ch/votre-commune/reglementation
+    pdf_links=79 links=371 bytes=137399 patterns=[]
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/Fusion_documents/Convention_de_fusion.pdf | Convention de fusion
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Reglementation_2021/VdN_Table_chronologique_Aout_2026.pdf | Table des matières chronologique
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Reglementation_2021/100_CG_Reglement_general_de_la_Ville_ | 100 Règlement général de la Ville de Neuchâtel, du
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Reglementation_2021/100.2_CC_Reglement_politique_communic | 100.2 Règlement relatif à la politique de communic
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Reglementation_2021/100.3_CC_Indemnisation_Commissions_co | 100.3 Arrêté concernant l'indemnisation des membre
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Reglementation_2021/100.4_CC_Arrete_indemnisation_membres | 100.4 Arrêté concernant l’indemnisation des membre
+       ...
+### https://www.neuchatelville.ch/votre-commune/reglementation/anciennes-communes/reglementation-neuchatel
+    pdf_links=120 links=412 bytes=328969 patterns=[]
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/Fusion_documents/Convention_de_fusion.pdf | Convention de fusion
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/imported/Plan_20general_201_8.pdf | Plan de présentation
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/imported/Preface.pdf | Recueil systématique de la réglementation communal
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Tabmat_chrono_juin_2021.pdf | Table des matières chronologique
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/Tabmat_1_8_novembre_2020.pdf | Table des matières générale
+       https://www.neuchatelville.ch/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/imported/ABROGE_10_1_RG_Etat_au_080221.pdf | 10.1 - ABROGE - Règlement général de la commune de
+       ...
+### https://www.vernier.ch/administration-et-autorites/reglements-communaux
+    pdf_links=0 links=21 bytes=69478 patterns=[]
+### https://www.vernier.ch/administration-et-autorites/publications?category=38&profile=_all
+    pdf_links=0 links=0 bytes=67 patterns=[]
+### https://www.geneve.ch/autorites-administration/administration-municipale/reglements-municipaux
+    pdf_links=0 links=170 bytes=105465 patterns=[]
+### http://www.lausanne.ch/apps/actualites/index_recueil.php
+    pdf_links=193 links=234 bytes=935545 patterns=['serve\\.php\\?id=\\d+&kind=recueil']
+       http://www.lausanne.ch/apps/actualites/Next/serve.php?id=7&kind=recueil | Télécharger le fichier
+       http://www.lausanne.ch/apps/actualites/Next/serve.php?id=176&kind=recueil | Télécharger le fichier
+       http://www.lausanne.ch/apps/actualites/Next/serve.php?id=8&kind=recueil | Télécharger le fichier
+       http://www.lausanne.ch/apps/actualites/Next/serve.php?id=9&kind=recueil | Télécharger le fichier
+       http://www.lausanne.ch/apps/actualites/Next/serve.php?id=10&kind=recueil | Télécharger le fichier
+       http://www.lausanne.ch/apps/actualites/Next/serve.php?id=11&kind=recueil | Télécharger le fichier
+       ...
+### https://rsju.jura.ch/fr/Sommaire/Journal-officiel.html
+    pdf_links=0 links=94 bytes=72053 patterns=[]
+### https://www.chaux-de-fonds.ch/rapports-et-reglements/reglementation
+    pdf_links=0 links=60 bytes=83311 patterns=[]
+### https://www.faovd.ch/rubrique/communes/
+    pdf_links=15 links=82 bytes=1040219 patterns=[]
+       https://www.faovd.ch/autres/1508/6a5755ec7b21b707365832.pdf | 
+       https://www.faovd.ch/autres/1502/6a3ba49a9704e569562071.pdf | 
+       https://www.faovd.ch/autres/1497/6a265d04506ac245932434.pdf | 
+       https://www.faovd.ch/autres/1492/6a06e48e7d9fe784344981.pdf | 
+       https://www.faovd.ch/autres/1490/69fc255c8c4ed097610299.pdf | 
+       https://www.faovd.ch/autres/1487/69ef133e6707c603863823.pdf | 
+       ...
+### https://www.schulen-aargau.ch/regelschule/schulorganisation/planung-ressourcen/stunden-ferienplanung
+    pdf_links=3 links=28 bytes=55340 patterns=[]
+       https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan. | Kantonal einheitliche Feriendaten Schuljahr bis 20
+       https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/ktag-bereinigter-anhoerungsbericht-plv-v | Anhörungsbericht PLV und VALL (PDF, 3 Seiten, 129 
+       https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/ktag-synopse-anhoerung-plv-vall-1mai.pdf | Beilage Synopse PLV und VALL (PDF, 3 Seiten , 173 

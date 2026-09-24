@@ -1,0 +1,1473 @@
+{
+ "validation": {
+  "candidates": "PASS: 75 sources",
+  "per_entry": {
+   "pass": 75,
+   "fail": []
+  },
+  "merged_with_declared": "PASS: 102 sources (27 declared + 75 candidates)",
+  "prefix_clashes_all_pairs": [],
+  "duplicate_ids": []
+ },
+ "checks": {
+  "be_schulferien_volksschule": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 4,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "be_schulferien_volksschule"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "be_vgb_themen": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "be_vgb_themen"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "be_zsg_themen": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "be_zsg_themen"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ge_justice_themes": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ge-justice-themes"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "gr_justiz_guidance": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 4,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "gr_justiz_guidance"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "lugano_legislazione": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 122,
+   "pins": 6,
+   "pins_found_offline": 6,
+   "rows": [
+    "lugano_legislazione",
+    "lugano_legislazione_all"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vd_justice": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 12,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vd-justice"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "gerichte_zh_themen": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "gerichte_zh_themen"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "zh_verwaltungsgericht": {
+   "section": 1,
+   "tier": 1,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 17,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "zh_verwaltungsgericht"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ag_gerichte": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 2,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ag_gerichte"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ag_hunde": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 7,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ag_hunde"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ag_steuern_wegleitung": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 15,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ag_steuern_wegleitung"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ag_strassenverkehr": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 3,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ag_strassenverkehr"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ai_gerichte": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 4,
+   "start_pages_saved": 4,
+   "sections_on_saved_start_pages": 11,
+   "start_pages_emitting": 4,
+   "pdfs_in_scope_on_saved_start_pages": 8,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ai_gerichte"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ai_guidance": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 3,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 2,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 2,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "ai_guidance"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ai_steuer_pdfs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 14,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 51,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ai_steuer_pdfs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ar_ferienrichtdaten": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 8,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "ar_ferienrichtdaten"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ar_gerichte": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 4,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 2,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ar_gerichte"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ar_hunde_strassenverkehr": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ar_hunde_strassenverkehr"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ar_steuer_pdfs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 53,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ar_steuer_pdfs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "bs_gerichte": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 15,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "bs_gerichte"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "fr_dogs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "fr-dogs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "fr_justice": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "fr-justice"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "fr_ocn": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "fr-ocn"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "fr_school_holidays": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "fr-school-holidays"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "fr_tax_instructions": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "fr-tax-instructions"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vernier_reglements": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vernier_reglements"
+   ],
+   "unverified": true,
+   "lu": false
+  },
+  "gl_pdfs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "gl-pdfs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "gl_schlichtung": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 7,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "gl-schlichtung"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ju_dogs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 12,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ju-dogs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ju_justice": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 7,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "ju-justice"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ju_ovj": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 7,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ju-ovj"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ju_school_holidays": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 4,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ju-school-holidays"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ju_tax_guide": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "ju-tax-guide"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "lu_gerichte_guidance": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 2,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "lu-gerichte-guidance"
+   ],
+   "unverified": false,
+   "lu": true
+  },
+  "lu_hunde": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 5,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "lu-hunde"
+   ],
+   "unverified": false,
+   "lu": true
+  },
+  "lu_schulferien": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 3,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 2,
+   "pins": 2,
+   "pins_found_offline": 2,
+   "rows": [
+    "lu-schulferien"
+   ],
+   "unverified": false,
+   "lu": true
+  },
+  "lu_steuerbuch": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 5,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "lu-steuerbuch"
+   ],
+   "unverified": false,
+   "lu": true
+  },
+  "lu_strassenverkehrsamt": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "lu-strassenverkehrsamt"
+   ],
+   "unverified": false,
+   "lu": true
+  },
+  "ne_dogs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 55,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ne-dogs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ne_justice": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 11,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ne-justice"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ne_scan": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 18,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ne-scan"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ne_school_calendar": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 6,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ne-school-calendar"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ne_tax_instructions": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 11,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "ne-tax-instructions"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "neuchatel_ville_reglementation": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 79,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "neuchatel_ville_reglementation"
+   ],
+   "unverified": true,
+   "lu": false
+  },
+  "nw_gerichte": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 4,
+   "start_pages_saved": 4,
+   "sections_on_saved_start_pages": 14,
+   "start_pages_emitting": 4,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "nw-gerichte"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "nw_hunde": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 7,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "nw-hunde"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ow_pdfs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 8,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 3,
+   "pins": 2,
+   "pins_found_offline": 2,
+   "rows": [
+    "ow-pdfs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vsz_ownw": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 3,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vsz-ownw"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "sg_gerichte_info": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 3,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 10,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "sg_gerichte_info"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "sg_guidance": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 3,
+   "start_pages_saved": 3,
+   "sections_on_saved_start_pages": 13,
+   "start_pages_emitting": 3,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "sg_guidance"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "sg_steuerbuch": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 12,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 248,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "sg_steuerbuch",
+    "sg_steuerbuch_pdfs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "so_gerichte": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 7,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "so_gerichte"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "so_hunde": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 4,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "so_hunde"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "so_mfk": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 10,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "so_mfk"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "so_schulferien": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 6,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 3,
+   "pins": 3,
+   "pins_found_offline": 3,
+   "rows": [
+    "so_schulferien"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "so_steuerbuch": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "so_steuerbuch"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "sz_justiz": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 6,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "sz-justiz"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "tg_ferienplan": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 5,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 2,
+   "pins": 2,
+   "pins_found_offline": 2,
+   "rows": [
+    "tg_ferienplan"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "tg_gerichte_merkblaetter": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 2,
+   "pins": 2,
+   "pins_found_offline": 2,
+   "rows": [
+    "tg_gerichte_merkblaetter"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "tg_hunde": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "tg_hunde"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "tg_steuerpraxis": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "tg_steuerpraxis"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "tg_strassenverkehrsamt": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 3,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 2,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "tg_strassenverkehrsamt"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ur_gerichte_rechtsgebiete": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 6,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 8,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ur-gerichte-rechtsgebiete"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ur_pdfs": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 10,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 16,
+   "pins": 3,
+   "pins_found_offline": 3,
+   "rows": [
+    "ur-pdfs"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vs_guide_taxation": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vs_guide_taxation"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vs_scav_chiens": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 9,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vs_scav_chiens"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vs_scn": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 10,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vs_scn"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vs_tribunaux": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vs_tribunaux"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "zg_hunde_ferien": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 2,
+   "sections_on_saved_start_pages": 11,
+   "start_pages_emitting": 2,
+   "pdfs_in_scope_on_saved_start_pages": 2,
+   "pins": 2,
+   "pins_found_offline": 2,
+   "rows": [
+    "zg-hunde-ferien"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "zg_recht_justiz": {
+   "section": 1,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 0,
+   "sections_on_saved_start_pages": 0,
+   "start_pages_emitting": 0,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "zg-recht-justiz"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ju_journal_officiel": {
+   "section": 1,
+   "tier": 3,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 33,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "ju_journal_officiel"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "tg_rechtsprechung": {
+   "section": 1,
+   "tier": 3,
+   "problems": [],
+   "start_urls": 2,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 1,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 0,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "tg_rechtsprechung_sitemap"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "vd_faovd": {
+   "section": 1,
+   "tier": 3,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 681,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 15,
+   "pins": 0,
+   "pins_found_offline": 0,
+   "rows": [
+    "vd_faovd"
+   ],
+   "unverified": false,
+   "lu": false
+  },
+  "ag_schulferien": {
+   "section": 2,
+   "tier": 2,
+   "problems": [],
+   "start_urls": 1,
+   "start_pages_saved": 1,
+   "sections_on_saved_start_pages": 15,
+   "start_pages_emitting": 1,
+   "pdfs_in_scope_on_saved_start_pages": 1,
+   "pins": 1,
+   "pins_found_offline": 1,
+   "rows": [
+    "ag_schulferien"
+   ],
+   "unverified": false,
+   "lu": false
+  }
+ },
+ "overlap_with_declared": {
+  "vd-dogs": {
+   "vd_canton": [
+    "https://www.vd.ch/population"
+   ]
+  },
+  "vd-tax-instructions": {
+   "vd_canton": [
+    "https://www.vd.ch/fileadmin/"
+   ]
+  },
+  "vd-school-holidays": {
+   "vd_canton": [
+    "https://www.vd.ch/formation"
+   ]
+  },
+  "vd-san": {
+   "vd_canton": [
+    "https://www.vd.ch/mobilite"
+   ]
+  },
+  "ge-ocv": {
+   "ge_canton": [
+    "https://www.ge.ch/"
+   ]
+  },
+  "ge-ocv-fees": {
+   "ge_canton": [
+    "https://www.ge.ch/"
+   ]
+  },
+  "ti_giudiziario_guidance": {
+   "ti_canton": [
+    "https://www4.ti.ch/"
+   ]
+  },
+  "ti_uvc_cani": {
+   "ti_canton": [
+    "https://www4.ti.ch/"
+   ]
+  },
+  "ti_calendario_scolastico": {
+   "ti_canton": [
+    "https://www4.ti.ch/",
+    "https://www4.ti.ch/fileadmin/"
+   ]
+  },
+  "ti_sezione_circolazione": {
+   "ti_canton": [
+    "https://www4.ti.ch/"
+   ]
+  },
+  "ti_dc_istruzioni_pf": {
+   "ti_canton": [
+    "https://www4.ti.ch/",
+    "https://www4.ti.ch/fileadmin/"
+   ]
+  },
+  "gr_alt_hundewesen": {
+   "gr_canton": [
+    "https://www.gr.ch/DE/"
+   ]
+  },
+  "gr_stv_wegleitung": {
+   "gr_canton": [
+    "https://www.gr.ch/DE/"
+   ]
+  },
+  "gr_schulferien": {
+   "gr_canton": [
+    "https://www.gr.ch/DE/"
+   ]
+  },
+  "gr_stva": {
+   "gr_canton": [
+    "https://www.gr.ch/DE/"
+   ]
+  },
+  "gr_steuer_praxis_pdfs": {
+   "gr_canton": [
+    "https://www.gr.ch/DE/"
+   ]
+  },
+  "stadt_zuerich_as": {
+   "zuerich_city": [
+    "https://www.stadt-zuerich.ch/de/"
+   ]
+  },
+  "lausanne_recueil": {
+   "lausanne_city": [
+    "https://www.lausanne.ch/"
+   ]
+  },
+  "geneve_ville_reglements": {
+   "geneve_city": [
+    "https://www.geneve.ch/"
+   ]
+  }
+ },
+ "row_manifest": {
+  "ag_gerichte": "ag_gerichte",
+  "ag_hunde": "ag_hunde",
+  "ag_steuern_wegleitung": "ag_steuern_wegleitung",
+  "ag_strassenverkehr": "ag_strassenverkehr",
+  "ai_gerichte": "ai_gerichte",
+  "ai_guidance": "ai_guidance",
+  "ar_gerichte": "ar_gerichte",
+  "ar_hunde_strassenverkehr": "ar_hunde_strassenverkehr",
+  "be_vgb_themen": "be_vgb_themen",
+  "be_zsg_themen": "be_zsg_themen",
+  "bs_gerichte": "bs_gerichte",
+  "fr-dogs": "fr_dogs",
+  "fr-justice": "fr_justice",
+  "fr-ocn": "fr_ocn",
+  "fr-school-holidays": "fr_school_holidays",
+  "ge-justice-themes": "ge_justice_themes",
+  "gerichte_zh_themen": "gerichte_zh_themen",
+  "gl-schlichtung": "gl_schlichtung",
+  "gr_justiz_guidance": "gr_justiz_guidance",
+  "ju-dogs": "ju_dogs",
+  "ju-justice": "ju_justice",
+  "ju-ovj": "ju_ovj",
+  "ju-school-holidays": "ju_school_holidays",
+  "lu-gerichte-guidance": "lu_gerichte_guidance",
+  "lu-hunde": "lu_hunde",
+  "lu-steuerbuch": "lu_steuerbuch",
+  "lu-strassenverkehrsamt": "lu_strassenverkehrsamt",
+  "ne-dogs": "ne_dogs",
+  "ne-justice": "ne_justice",
+  "ne-scan": "ne_scan",
+  "ne-school-calendar": "ne_school_calendar",
+  "nw-gerichte": "nw_gerichte",
+  "nw-hunde": "nw_hunde",
+  "sg_gerichte_info": "sg_gerichte_info",
+  "sg_guidance": "sg_guidance",
+  "so_gerichte": "so_gerichte",
+  "so_hunde": "so_hunde",
+  "so_mfk": "so_mfk",
+  "so_steuerbuch": "so_steuerbuch",
+  "sz-justiz": "sz_justiz",
+  "tg_hunde": "tg_hunde",
+  "tg_steuerpraxis": "tg_steuerpraxis",
+  "tg_strassenverkehrsamt": "tg_strassenverkehrsamt",
+  "ur-gerichte-rechtsgebiete": "ur_gerichte_rechtsgebiete",
+  "vd-justice": "vd_justice",
+  "vs_guide_taxation": "vs_guide_taxation",
+  "vs_scav_chiens": "vs_scav_chiens",
+  "vs_scn": "vs_scn",
+  "vs_tribunaux": "vs_tribunaux",
+  "vsz-ownw": "vsz_ownw",
+  "zg-hunde-ferien": "zg_hunde_ferien",
+  "zg-recht-justiz": "zg_recht_justiz",
+  "zh_verwaltungsgericht": "zh_verwaltungsgericht",
+  "ai_ferienplan": "ai_guidance",
+  "sg_gerichte_kostenmerkblatt": "sg_gerichte_info",
+  "zg-pdfs": "zg_hunde_ferien",
+  "ju-court-tariff": "ju_justice",
+  "be_schulferien_volksschule": "be_schulferien_volksschule",
+  "ar_ferienrichtdaten": "ar_ferienrichtdaten",
+  "ar_steuer_pdfs": "ar_steuer_pdfs",
+  "ai_steuer_pdfs": "ai_steuer_pdfs",
+  "fr-tax-instructions": "fr_tax_instructions",
+  "gl-pdfs": "gl_pdfs",
+  "ju-tax-guide": "ju_tax_guide",
+  "lu-schulferien": "lu_schulferien",
+  "lugano_legislazione": "lugano_legislazione",
+  "lugano_legislazione_all": "lugano_legislazione",
+  "ne-tax-instructions": "ne_tax_instructions",
+  "ow-pdfs": "ow_pdfs",
+  "so_schulferien": "so_schulferien",
+  "sg_steuerbuch": "sg_steuerbuch",
+  "sg_steuerbuch_pdfs": "sg_steuerbuch",
+  "tg_ferienplan": "tg_ferienplan",
+  "tg_gerichte_merkblaetter": "tg_gerichte_merkblaetter",
+  "ur-pdfs": "ur_pdfs",
+  "neuchatel_ville_reglementation": "neuchatel_ville_reglementation",
+  "vernier_reglements": "vernier_reglements",
+  "ju_journal_officiel": "ju_journal_officiel",
+  "vd_faovd": "vd_faovd",
+  "tg_rechtsprechung_sitemap": "tg_rechtsprechung",
+  "ag_schulferien": "ag_schulferien"
+ }
+}

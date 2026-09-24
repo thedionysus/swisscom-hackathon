@@ -1,0 +1,266 @@
+##### ag_schulferien
+  URL https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan.pdf
+   key=bksvs-kantonal-einheitlicher-ferienplan.pdf
+   run3-a.md:445: | G3 holidays | VERIFIED | https://www.schulen-aargau.ch/regelschule/schulorganisation/planung-ressourcen/stunden-ferienplanung → PDF `…/bksvs-kantonal-einheitlicher-ferienplan.pdf` | Page 200, 1,231 words. PDF 200, 3 pages, text layer | "Herbstferien 40. / 41. Woche 29.09. – 10.10. 202
+   run3-a.md:522:   urls: ["https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan.pdf"]
+##### ai_ferienplan
+  URL https://www.ai.ch/themen/bildung/eltern-und-schule/ferienplan/ftw-simplelayout-filelistingblock/ferienplan-ai_2026-2029.pdf/download
+   key=download
+   run3-a.md:9: 1. **BL is reachable despite Cloudflare.** www.baselland.ch and kanton.baselland.ch return 403 "Just a moment..." even with a full Chrome 128 User-Agent. But the same site content is served as open JSON at `https://bl-api.webcloud7.ch/<same path>`. Content sits in `slblocks[*].text.data` (HTML), `@search` works, and files download via `<file>/@@download/file`. Every BL cell was filled this way.
+   run3-a.md:248: | C2 | VERIFIED (ordinance + fee in a form); fee page NONE | Ordinance SGS 170.31 GebT (bl.clex.ch); form `/politik-und-behorden/gerichte/leistungsverzeichnis/insolvenzerklaerung.pdf/@@download/file` | PDF 200, 2 pages, text layer. Ladder: AI path `/gerichte/kosten` → API 404; `@search` "Gerichtsgebühren" gave 33 hits, mostly tax-pra
+   run3-a.md:253: | G2 tax | **BLOCKED: Cloudflare** | API `/…/steuerverwaltung/steuerbuch` (200, 19 words) links only to https://kanton.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/steuerbuch → 403 | Structure seen only in WebSearch: volumes 1–3, per-entry PDFs such as `…/band2_010_01.pdf/@@download/file/…`. Entry count unknown | — | Reachable instead via the API: filing pages …/steuererklaerung-natuerliche-personen-und-e-tax-bl/(abzuege-
+   run3-a.md:264:   - Files: `<file-url>/@@download/file` (PDF with text layer).
+   run3-a.md:331: | C2 | VERIFIED (ordinance); resident fee page NONE | Ordinance **BGS 615.11 Gebührentarif (GT)** → https://bgs.so.ch/app/de/texts_of_law/615.11 (LexWork: enactment 2016-07-15, not abrogated) | Ladder: AI `/gerichte/gebuehren/` → 404 (pre-check). Sitemap grep for fees under /gerichte/ → 0. /gerichte/, downloads, central court cashier and regulations pages had no CHF (prior-run log; /gerichte/ re-fetched today). The law text was fetched live (`show_a
+##### ar_ferienrichtdaten
+  URL https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf
+   key=2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf
+   run3-c.md:219: | G3 holidays | VERIFIED | /…/ehandbuch-volksschule/schulbetrieb/regelungen/, which links the PDF "2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf" | 200. PDF 1 page, text layer. Found through the site's own search (`/search/?q
+   run3-c.md:256:   urls: ["https://ar.ch/fileadmin/user_upload/Departement_Bildung_Kultur/Amt_fuer_Volksschule/eHandbuch_Volksschule/2026-06-23_FerienrichtdatenVolksschulenAppenzellAusserrhoden_v1.3.pdf"]
+##### be_schulferien_volksschule
+  URL https://www.akvb-gemeinden.bkd.be.ch/content/dam/akvb-gemeinden_bkd/dokumente/de/startseite/organisation-finanzierung/schulorganisation/schulferienplanung/schulferien-kanton-bern-d.pdf
+   key=schulferien-kanton-bern-d.pdf
+   run3-a.md:128: | G3 holidays | VERIFIED (not in g5) | https://www.akvb-gemeinden.bkd.be.ch/de/start/organisation-finanzierung/schulorganisation/schulferienplanung.html → PDF `…/schulferienplanung/schulferien-kanton-bern-d.pdf` | Page 200 "Schulferienplanung". PDF 200, 2 pages, text layer, "1. Juni 2026 … 2026/27 bis 2031/32" | "2026/27 Herbstfe
+   run3-a.md:176:   urls: ["https://www.akvb-gemeinden.bkd.be.ch/content/dam/akvb-gemeinden_bkd/dokumente/de/startseite/organisation-finanzierung/schulorganisation/schulferienplanung/schulferien-kanton-bern-d.pdf"]
+##### fr-tax-instructions
+  URL https://www.fr.ch/document/57721
+   key=/document/57721
+   run3-d.md:67: | G2 | VERIFIED | `/document/57721` → `/sites/default/files/2026-05/instructions-generales-concernant-la-declaration-d-impot_0.pdf` | 200 application/pdf, 324,278 B, 50 
+   run3-d.md:90:   fetch_config: {urls: [https://www.fr.ch/document/57721], language: fr}
+   run3-d.md:109: | Tax: /scc/impots/personnes-physiques/guide-pour-la-declaration-dimpot | Wrong: 404 | /document/57721 |
+##### ge-ocv-fees
+  URL https://www.ge.ch/document/24460/telecharger
+   key=/document/24460/telecharger
+   run3-d.md:243: | G4 | VERIFIED (fetched now; g5 had inferred it) | `/organisation/office-cantonal-vehicules-ocv`; `/immatriculer-vehicule-obtenir-carte-grise`; fee extract `/document/24460/telecharger` | 200 (333 words); 200 (728 words); PDF 200, 701,323 B, 2 pages, text layer | "a) véhicules automobiles légers 80 francs 
+   run3-d.md:264:   fetch_config: {urls: [https://www.ge.ch/document/24460/telecharger], language: fr}
+##### gl-pdfs
+  URL https://www.gl.ch/public/upload/assets/59619/01%20Wegleitung%202025.pdf?fp=1
+   key=01 Wegleitung 2025.pdf
+   run3-b.md:180: | G2 | VERIFIED | https://www.gl.ch/public/upload/assets/59619/01%20Wegleitung%202025.pdf?fp=1 | PDF 36 pages, text | | Found only by WebSearch: not linked from /steuern.html/507 and no Steuerbuch in the sitemap. 
+   run3-b.md:193:   fetch_config: {urls: ["https://www.gl.ch/public/upload/assets/59619/01%20Wegleitung%202025.pdf?fp=1", "https://www.glarus-nord.ch/public/upload/assets/35598/Ferienpl%C3%A4ne_2025-2028.pdf?fp=5"]}
+  URL https://www.glarus-nord.ch/public/upload/assets/35598/Ferienpl%C3%A4ne_2025-2028.pdf?fp=5
+   key=Ferienpläne_2025-2028.pdf
+   run3-b.md:181: | G3 | VERIFIED | Glarus Nord PDF …/35598/Ferienpl%C3%A4ne_2025-2028.pdf (1 page, text); BiG IV B/1/3 Art. 91 | 200 | "Das Departement setzt die Ferientermine und die Brückentage fest." / "Her
+   run3-b.md:193:   fetch_config: {urls: ["https://www.gl.ch/public/upload/assets/59619/01%20Wegleitung%202025.pdf?fp=1", "https://www.glarus-nord.ch/public/upload/assets/35598/Ferienpl%C3%A4ne_2025-2028.pdf?fp=5"]}
+##### gr_schulferien
+  URL https://www.gr.ch/DE/institutionen/verwaltung/ekud/avs/Volksschule/SB_Ferienplaene_2026_2027_de.pdf
+   key=SB_Ferienplaene_2026_2027_de.pdf
+   run3-e.md:142: | G3 school holidays | VERIFIED | https://www.gr.ch/DE/institutionen/verwaltung/ekud/avs/Volksschule/SB_Ferienplaene_2026_2027_de.pdf | 200 · 77 KB · 8 pp · text layer · about 172 rows | *"132 Chur 17.08.26 … 10.10.26 25.10.26 … 23.12.26 05.01.27"*. *
+   run3-e.md:193: fetch_config: {language: de, urls: ["https://www.gr.ch/DE/institutionen/verwaltung/ekud/avs/Volksschule/SB_Ferienplaene_2026_2027_de.pdf"]}
+##### gr_stv_wegleitung
+  URL https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/steuererklaerung/einkommens_und_vermoegenssteuer/WegleitungenMerkbltter/Wegleitung%202025%20Prim%c3%a4rsteuerpflichtige.pdf
+   key=Wegleitung 2025 Primärsteuerpflichtige.pdf
+   run3-e.md:185:     - https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/steuererklaerung/einkommens_und_vermoegenssteuer/WegleitungenMerkbltter/Wegleitung%202025%20Prim%c3%a4rsteuerpflichtige.pdf
+  URL https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/dokumentation/praxis/PraxisEinkommenVermgen/010-01.pdf
+   key=010-01.pdf
+   run3-e.md:186:     - https://www.gr.ch/DE/institutionen/verwaltung/dfg/stv/dokumentation/praxis/PraxisEinkommenVermgen/010-01.pdf
+##### ju-court-tariff
+  URL https://www.jura.ch/Htdocs/Files/v/ff78dbf9136f8cab273ea6f4352309fbc0f1d77137ab65c0610a20db98ee89c8.pdf/avances_emoluments_debours_juin-2016.pdf?download=1
+   key=avances_emoluments_debours_juin-2016.pdf
+   run3-d.md:282: | C2 | VERIFIED | TC circulars page `…/Tribunal-cantonal/Circulaires/Circulaires-du-Tribunal-cantonal-et-de-ses-sections.html` → PDF "Tarif des avances, émoluments et débours" (`/Htdocs/Files/v/ff78dbf9…/avances_emoluments_debours_juin-2016.pdf?download=1`). Resident page `/fr/Autorites/JUST/Domaines-du-droit/Droit-civil/Domaine-civil.html`. Ordinance 
+   run3-d.md:309:   fetch_config: {urls: ["https://www.jura.ch/Htdocs/Files/v/ff78dbf9136f8cab273ea6f4352309fbc0f1d77137ab65c0610a20db98ee89c8.pdf/avances_emoluments_debours_juin-2016.pdf?download=1"], language: fr}
+##### ju-tax-guide
+  URL https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf/Guide-general-2025.pdf?download=1
+   key=Guide-general-2025.pdf
+   run3-d.md:287: | G2 | VERIFIED | `/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html` → `…/Guide-general-2025.pdf?download=1` | Page: 200, 717 words. PDF: 200, 1,549,163 B, 56 pages, 155,405 chars | "Revenu réalisé Fr. 15'000.- ./. déduction
+   run3-d.md:315:   fetch_config: {urls: ["https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf/Guide-general-2025.pdf?download=1"], language: fr}
+##### lu-schulferien
+  URL https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/ferienplan_gemeinden_sj26_27.pdf
+   key=ferienplan_gemeinden_sj26_27.pdf
+   run3-b.md:22: | G3 | VERIFIED | https://volksschulbildung.lu.ch/syst_schulen/ss_schulsystem/ss_syst_ferien + ferienplan_gemeinden_sj26_27.pdf (6 pages, text) + feriendaten_volksschulen_kt_luzern.pdf (2 pages, text) | 200 each | "Adligenswil 17.08.2026 03.07.2
+   run3-b.md:41:   fetch_config: {urls: [https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/ferienplan_gemeinden_sj26_27.pdf, https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/ferienda
+  URL https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/feriendaten_volksschulen_kt_luzern.pdf
+   key=feriendaten_volksschulen_kt_luzern.pdf
+   run3-b.md:22: | G3 | VERIFIED | https://volksschulbildung.lu.ch/syst_schulen/ss_schulsystem/ss_syst_ferien + ferienplan_gemeinden_sj26_27.pdf (6 pages, text) + feriendaten_volksschulen_kt_luzern.pdf (2 pages, text) | 200 each | "Adligenswil 17.08.2026 03.07.2027 26.09.2026 – 18.10.2026 …" | **Communes set the
+   run3-b.md:41:   fetch_config: {urls: [https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/ferienplan_gemeinden_sj26_27.pdf, https://volksschulbildung.lu.ch/-/media/Volksschulbildung/Dokumente/syst_schulen/ss_schulsystem/schulferien/feriendaten_volksschulen_kt_luzern.pdf]}
+##### lugano_legislazione
+  URL https://www.lugano.ch/law/16176713/2-6-1-Ordinanza-sulla-custodia-dei-cani-e-sulle-aree-di-svago-del-13-gennaio-2010
+   key=/law/16176713/2-6-1-Ordinanza-sulla-custodia-dei-cani-e-sulle-aree-di-svago-del-13-gennaio-2010
+   run3-e.md:104:     - https://www.lugano.ch/law/16176713/2-6-1-Ordinanza-sulla-custodia-dei-cani-e-sulle-aree-di-svago-del-13-gennaio-2010
+  URL https://www.lugano.ch/law/16176717/4-1-Regolamento-sulla-raccolta-dei-rifiuti-del-13-maggio-2019
+   key=/law/16176717/4-1-Regolamento-sulla-raccolta-dei-rifiuti-del-13-maggio-2019
+   run3-e.md:105:     - https://www.lugano.ch/law/16176717/4-1-Regolamento-sulla-raccolta-dei-rifiuti-del-13-maggio-2019
+  URL https://www.lugano.ch/law/16371927/4-1-1-Ordinanza-municipale-sulla-gestione-dei-rifiuti-del-17-ottobre-2019
+   key=/law/16371927/4-1-1-Ordinanza-municipale-sulla-gestione-dei-rifiuti-del-17-ottobre-2019
+   run3-e.md:106:     - https://www.lugano.ch/law/16371927/4-1-1-Ordinanza-municipale-sulla-gestione-dei-rifiuti-del-17-ottobre-2019
+  URL https://www.lugano.ch/law/16597411/4-1-2-Ordinanza-municipale-sulla-tassa-sul-sacco-per-l-anno-2026-del-23-ottobre-2025
+   key=/law/16597411/4-1-2-Ordinanza-municipale-sulla-tassa-sul-sacco-per-l-anno-2026-del-23-ottobre-2025
+   run3-e.md:107:     - https://www.lugano.ch/law/16597411/4-1-2-Ordinanza-municipale-sulla-tassa-sul-sacco-per-l-anno-2026-del-23-ottobre-2025
+  URL https://www.lugano.ch/law/17057218/2-2-1-Ordinanza-municipale-concernente-le-agevolazioni-e-le-tariffe-di-parcheggio-del-25-agosto-2022
+   key=/law/17057218/2-2-1-Ordinanza-municipale-concernente-le-agevolazioni-e-le-tariffe-di-parcheggio-del-25-agosto-2022
+   run3-e.md:108:     - https://www.lugano.ch/law/17057218/2-2-1-Ordinanza-municipale-concernente-le-agevolazioni-e-le-tariffe-di-parcheggio-del-25-agosto-2022
+  URL https://www.lugano.ch/law/16595053/2-2-3-Ordinanza-municipale-sull-utilizzo-delle-aree-di-parcheggio-pubblico-di-Cornaredo-del-9-febbraio-2017
+   key=/law/16595053/2-2-3-Ordinanza-municipale-sull-utilizzo-delle-aree-di-parcheggio-pubblico-di-Cornaredo-del-9-febbraio-2017
+   run3-e.md:109:     - https://www.lugano.ch/law/16595053/2-2-3-Ordinanza-municipale-sull-utilizzo-delle-aree-di-parcheggio-pubblico-di-Cornaredo-del-9-febbraio-2017
+##### ne-tax-instructions
+  URL https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf
+   key=SCCO_I754_InstructionsGenerales_PP.pdf
+   run3-d.md:184: | G2 | VERIFIED | `/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf` (from `/themes/impots/documents-et-liens-utiles`) | PDF: 200, 2,717,944 B, 57 pages, text layer | "Montant à r
+   run3-d.md:209:   fetch_config: {urls: [https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf], language: fr}
+##### nw-pdfs
+  URL https://www.nw.ch/_doc/456520
+   key=/_doc/456520
+   run3-b.md:150: | G3 | VERIFIED | /biddirektionssekrdienste/520 + /_doc/456520 (plan 2026/27 to 2031/32, 1 page, text) | 200 | "Gemäss Bildungsgesetz (NG 311.1) Art. 8 Abs. 2 legt die Bildungsdirektion den Beginn und
+   run3-b.md:165:   fetch_config: {urls: [https://www.nw.ch/_doc/456520, https://www.steuern-nw.ch/app/uploads/2024/01/Wegleitung_2025_natuerliche-Personen.pdf]}
+  URL https://www.steuern-nw.ch/app/uploads/2024/01/Wegleitung_2025_natuerliche-Personen.pdf
+   key=Wegleitung_2025_natuerliche-Personen.pdf
+   run3-b.md:149: | G2 | VERIFIED | www.steuern-nw.ch (WordPress/Yoast; 121-URL sitemap): Wegleitung_2025_natuerliche-Personen.pdf (40 pages, text); "Weisungen & Richtlinien NP" (16 PDFs, StP-NW numbered) | 200 | "Wegleitung 2025 Natürliche
+   run3-b.md:165:   fetch_config: {urls: [https://www.nw.ch/_doc/456520, https://www.steuern-nw.ch/app/uploads/2024/01/Wegleitung_2025_natuerliche-Personen.pdf]}
+##### ow-pdfs
+  URL https://www.ow.ch/_doc/447067
+   key=/_doc/447067
+   run3-b.md:121: | G2 | VERIFIED | /publikationen/40733 → /_doc/447067 (Wegleitung 2025, 47 pages, text); practice manual list /publikationen/147 (~16 PDFs, e.g. "DA 01 2025 Krankheitskosten…"); Weisungen `_r
+   run3-b.md:131:   fetch_config: {urls: [https://www.ow.ch/_doc/447067, https://www.ow.ch/_doc/454867, https://www.ow.ch/_doc/447907]}
+  URL https://www.ow.ch/_doc/454867
+   key=/_doc/454867
+   run3-b.md:122: | G3 | VERIFIED | /dienstleistungen/5276 + /_doc/454867 (1 page, text) | 200 | "Herbstferien FR, 25. September 2026* SO, 11. Oktober 2026" | Canton sets them for "Volksschule (ohne Engelberg), 
+   run3-b.md:131:   fetch_config: {urls: [https://www.ow.ch/_doc/447067, https://www.ow.ch/_doc/454867, https://www.ow.ch/_doc/447907]}
+  URL https://www.ow.ch/_doc/447907
+   key=/_doc/447907
+   run3-b.md:131:   fetch_config: {urls: [https://www.ow.ch/_doc/447067, https://www.ow.ch/_doc/454867, https://www.ow.ch/_doc/447907]}
+##### sg_gerichte_kostenmerkblatt
+  URL https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Merkblatt%20zu%20den%20Kosten%20und%20dem%20Verfahren%20vor%20Handelsgericht.pdf
+   key=Merkblatt zu den Kosten und dem Verfahren vor Handelsgericht.pdf
+   run3-c.md:25: | C2 fees | VERIFIED | Page: /recht/gerichte/informationen---formulare/merkblaetter.html, which links "Merkblatt zu den Kosten und dem Verfahren vor Handelsgericht.pdf". Law: sGS **941.12** Gerichtskostenverordnung | Page 200 with 10 cost-sheet PDF link
+   run3-c.md:93:   urls: ["https://www.sg.ch/content/dam/sgch/recht/gerichte/merkbl%C3%A4tter-zum-verfahren/Merkblatt%20zu%20den%20Kosten%20und%20dem%20Verfahren%20vor%20Handelsgericht.pdf"]
+##### sg_steuerbuch
+  URL https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/003_1.pdf.ocFile/003_1.pdf
+   key=003_1.pdf
+   run3-c.md:83:   urls: ["https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-1-12-stg/003_1.pdf.ocFile/003_1.pdf"]
+##### sh_ferien
+  URL https://sh.ch/CMS/get/file/c5d7c8e8-2819-4ae1-a1c6-9861471b0182
+   key=/CMS/get/file/c5d7c8e8-2819-4ae1-a1c6-9861471b0182
+   run3-c.md:360: | G3 holidays | VERIFIED | https://schule.sh.ch/CMS/Webseite/Schulportal-Kanton-Schaffhausen/Schulorganisation/Schuljahresplanung-1280144-DE.html and PDF sh.ch/CMS/get/file/c5d7c8e8-2819-4ae1-a1c6-9861471b0182 | 200 "Schulferien". PDF 1 page, text layer | "Herbstferien: 40. bis und mit 42. Kalenderwoche Weih
+   run3-c.md:403:   urls: ["https://sh.ch/CMS/get/file/c5d7c8e8-2819-4ae1-a1c6-9861471b0182"]
+##### so_schulferien
+  URL https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2025-2026.pdf
+   key=Schulferienplan_2025-2026.pdf
+   run3-a.md:401:   urls: ["https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2025-2026.pdf",
+  URL https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2026_2027.pdf
+   key=Schulferienplan_2026_2027.pdf
+   run3-a.md:402:          "https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2026_2027.pdf",
+  URL https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2027_2028.pdf
+   key=Schulferienplan_2027_2028.pdf
+   run3-a.md:403:          "https://so.ch/fileadmin/internet/dbk/dbk-vsa/Schulsystem/Ferienplan/Schulferienplan_2027_2028.pdf"]
+##### stadt_bern_sssb_hunde_abfall_parkieren
+  URL https://stadtrecht.bern.ch/lex-559_61.pdf
+   key=lex-559_61.pdf
+   run3-a.md:575:   urls: ["https://stadtrecht.bern.ch/lex-559_61.pdf", "https://stadtrecht.bern.ch/lex-822_1.pdf", "https://stadtrecht.bern.ch/lex-822_111.pdf",
+  URL https://stadtrecht.bern.ch/lex-822_1.pdf
+   key=lex-822_1.pdf
+   run3-a.md:575:   urls: ["https://stadtrecht.bern.ch/lex-559_61.pdf", "https://stadtrecht.bern.ch/lex-822_1.pdf", "https://stadtrecht.bern.ch/lex-822_111.pdf",
+  URL https://stadtrecht.bern.ch/lex-822_111.pdf
+   key=lex-822_111.pdf
+   run3-a.md:575:   urls: ["https://stadtrecht.bern.ch/lex-559_61.pdf", "https://stadtrecht.bern.ch/lex-822_1.pdf", "https://stadtrecht.bern.ch/lex-822_111.pdf",
+  URL https://stadtrecht.bern.ch/lex-761_232.pdf
+   key=lex-761_232.pdf
+   run3-a.md:576:          "https://stadtrecht.bern.ch/lex-761_232.pdf", "https://stadtrecht.bern.ch/lex-761_212.pdf"]
+  URL https://stadtrecht.bern.ch/lex-761_212.pdf
+   key=lex-761_212.pdf
+   run3-a.md:576:          "https://stadtrecht.bern.ch/lex-761_232.pdf", "https://stadtrecht.bern.ch/lex-761_212.pdf"]
+##### stadt_schaffhausen_rs
+  URL https://www.stadt-schaffhausen.ch/_doc/3720785
+   key=/_doc/3720785
+   run3-c.md:425: hausen - Rechtssammlung", 46.9 KB, 275 links. **i-web** table `icms-dt` (id `icmsTable-gesetzessammlungList`) with a `data-entities` JSON of **215 rows**. Fields: `title` (→ /_rte/information/<id>), `_nummer`, `_dokumentList` (→ /_doc/<id>), `_rechtsgueltigkeit`. 214 rows have a PDF; all 215 have a validity date | Dog tax 353.2 (valid 01.01.2018), /_doc/3720785, PDF 2 pages, text layer: "a) Fr. 160.-- für den ersten Hund b) Fr. 200.-- für jeden weiteren Hund" | **Dogs, waste and parking are all 
+   run3-c.md:435:   urls: ["https://www.stadt-schaffhausen.ch/_doc/3720785", "https://www.stadt-schaffhausen.ch/_doc/4688455"]
+  URL https://www.stadt-schaffhausen.ch/_doc/4688455
+   key=/_doc/4688455
+   run3-c.md:425: mation/<id>), `_nummer`, `_dokumentList` (→ /_doc/<id>), `_rechtsgueltigkeit`. 214 rows have a PDF; all 215 have a validity date | Dog tax 353.2 (valid 01.01.2018), /_doc/3720785, PDF 2 pages, text layer: "a) Fr. 160.-- für den ersten Hund b) Fr. 200.-- für jeden weiteren Hund" | **Dogs, waste and parking are all present:** Abfallverordnung 740.1 (/_doc/4688455, 9 pages, text layer), Parkgebühren 400.41 (/_doc/3720833, not opened), Parkplatzverordnung, and an ordinance on overnight parking. Dest
+   run3-c.md:435:   urls: ["https://www.stadt-schaffhausen.ch/_doc/3720785", "https://www.stadt-schaffhausen.ch/_doc/4688455"]
+##### stadt_thun_abfall_parkieren
+  URL https://www.thun.ch/_doc/4917697
+   key=/_doc/4917697
+   run3-a.md:588:   urls: ["https://www.thun.ch/_doc/4917697", "https://www.thun.ch/_doc/5450779", "https://www.thun.ch/_doc/4355560",
+  URL https://www.thun.ch/_doc/5450779
+   key=/_doc/5450779
+   run3-a.md:588:   urls: ["https://www.thun.ch/_doc/4917697", "https://www.thun.ch/_doc/5450779", "https://www.thun.ch/_doc/4355560",
+  URL https://www.thun.ch/_doc/4355560
+   key=/_doc/4355560
+   run3-a.md:588:   urls: ["https://www.thun.ch/_doc/4917697", "https://www.thun.ch/_doc/5450779", "https://www.thun.ch/_doc/4355560",
+  URL https://www.thun.ch/_doc/4355563
+   key=/_doc/4355563
+   run3-a.md:589:          "https://www.thun.ch/_doc/4355563", "https://www.thun.ch/_doc/4351168", "https://www.thun.ch/_doc/4355737"]
+  URL https://www.thun.ch/_doc/4351168
+   key=/_doc/4351168
+   run3-a.md:589:          "https://www.thun.ch/_doc/4355563", "https://www.thun.ch/_doc/4351168", "https://www.thun.ch/_doc/4355737"]
+  URL https://www.thun.ch/_doc/4355737
+   key=/_doc/4355737
+   run3-a.md:589:          "https://www.thun.ch/_doc/4355563", "https://www.thun.ch/_doc/4351168", "https://www.thun.ch/_doc/4355737"]
+##### stadt_zuerich_as_hunde_abfall_parkieren
+  URL https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/554/510/554.510%20Vollzugsvorschriften%20zum%20Hundegesetz_17_V4.pdf
+   key=554.510 Vollzugsvorschriften zum Hundegesetz_17_V4.pdf
+   run3-a.md:558:     - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/554/510/554.510%20Vollzugsvorschriften%20zum%20Hundegesetz_17_V4.pdf
+  URL https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/712/110/712.110%20Verordnung%20Abfallbewirtschaftung%20%28VAZ%29%202022_V8.pdf
+   key=712.110 Verordnung Abfallbewirtschaftung (VAZ) 2022_V8.pdf
+   run3-a.md:559:     - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/712/110/712.110%20Verordnung%20Abfallbewirtschaftung%20%28VAZ%29%202022_V8.pdf
+  URL https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/310/551.310-pkv-2011-inkl-anhang-pkv-2025-v3.pdf
+   key=551.310-pkv-2011-inkl-anhang-pkv-2025-v3.pdf
+   run3-a.md:560:     - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/310/551.310-pkv-2011-inkl-anhang-pkv-2025-v3.pdf
+  URL https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/311/551.311_Geb%C3%BChrenordnung%20Parkkarten%20Blaue%20Zonen%20V1.pdf
+   key=551.311_Gebührenordnung Parkkarten Blaue Zonen V1.pdf
+   run3-a.md:561:     - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/311/551.311_Geb%C3%BChrenordnung%20Parkkarten%20Blaue%20Zonen%20V1.pdf
+  URL https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/330/551.330_Parkierungs-%20und%20Parkuhrkontrollgeb%C3%BChren17_V3.pdf
+   key=551.330_Parkierungs- und Parkuhrkontrollgebühren17_V3.pdf
+   run3-a.md:562:     - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/551/330/551.330_Parkierungs-%20und%20Parkuhrkontrollgeb%C3%BChren17_V3.pdf
+  URL https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/741/500/741.500_Parkplatzverordnung_16_V4.pdf
+   key=741.500_Parkplatzverordnung_16_V4.pdf
+   run3-a.md:563:     - https://www.stadt-zuerich.ch/dam/web/de/politik-verwaltung/politik-recht/amtliche-sammlung/741/500/741.500_Parkplatzverordnung_16_V4.pdf
+##### tg_ferienplan
+  URL https://av.tg.ch/public/upload/assets/179040/Ferienplan_SJ_2026_2027.pdf?fp=1
+   key=Ferienplan_SJ_2026_2027.pdf
+   run3-c.md:119: | G3 holidays | VERIFIED | av.tg.ch/themen/ferienplan.html/13415, with PDFs Ferienplan_SJ_2026_2027.pdf and the 10-year plan 2023–2033 | 200. Both PDFs are 1 page with a text layer | "Herbstferien Mo, 05.10.2026 – So, 18.10.20
+   run3-c.md:183:   urls: ["https://av.tg.ch/public/upload/assets/179040/Ferienplan_SJ_2026_2027.pdf?fp=1", "https://av.tg.ch/public/upload/assets/8713/10_Jahresplan_Schulferien_Volksschule_2023_-_2033.pdf?fp=4"]
+  URL https://av.tg.ch/public/upload/assets/8713/10_Jahresplan_Schulferien_Volksschule_2023_-_2033.pdf?fp=4
+   key=10_Jahresplan_Schulferien_Volksschule_2023_-_2033.pdf
+   run3-c.md:183:   urls: ["https://av.tg.ch/public/upload/assets/179040/Ferienplan_SJ_2026_2027.pdf?fp=1", "https://av.tg.ch/public/upload/assets/8713/10_Jahresplan_Schulferien_Volksschule_2023_-_2033.pdf?fp=4"]
+##### tg_gerichte_merkblaetter
+  URL https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2
+   key=Eheprobleme - wie weiter.pdf
+   run3-c.md:193:   urls: ["https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2", "https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1", "https://b
+  URL https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1
+   key=Unentgeltliche Rechtspflege.pdf
+   run3-c.md:193:   urls: ["https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2", "https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1", "https://bezirksgericht.tg.ch/public/upload/assets/99108/Merkblatt%20Rechts%C3%B6ffnung.pdf?fp=1"]
+  URL https://bezirksgericht.tg.ch/public/upload/assets/99108/Merkblatt%20Rechts%C3%B6ffnung.pdf?fp=1
+   key=Merkblatt Rechtsöffnung.pdf
+   run3-c.md:193:   urls: ["https://bezirksgericht.tg.ch/public/upload/assets/37839/Eheprobleme%20-%20wie%20weiter.pdf?fp=2", "https://bezirksgericht.tg.ch/public/upload/assets/37840/Unentgeltliche%20Rechtspflege.pdf?fp=1", "https://bezirksgericht.tg.ch/public/upload/assets/99108/Merkblatt%20Rechts%C3%B6ffnung.pdf?fp=1"]
+##### ti_calendario_scolastico
+  URL https://m4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2026_2027.pdf
+   key=Calendario_scolastico_2026_2027.pdf
+   run3-e.md:77:     - https://m4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2026_2027.pdf   # fetched, text layer
+  URL https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2027-2028.pdf
+   key=Calendario_scolastico_2027-2028.pdf
+   run3-e.md:78:     - https://www4.ti.ch/fileadmin/DECS/calendario_scolastico/Calendario_scolastico_2027-2028.pdf # from the page link, not fetched
+##### ti_dc_istruzioni_pf
+  URL https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf
+   key=Istruzioni_PF_2025.pdf
+   run3-e.md:30: | G2 tax guide | VERIFIED | https://www4.ti.ch/dfe/dc/dichiarazione/istruzioni-pf/istr-pf-attuale, PDF `/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf` | page 200 · "2025 - DC (DFE)" · 317 words. PDF 200 · **43.7 MB, 56 pages, text layer** | *"…per la compilazione della dichiar
+   run3-e.md:93: fetch_config: {language: it, urls: ["https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf"]}  # 43.7 MB
+##### ur-pdfs
+  URL https://www.ur.ch/_doc/437558
+   key=/_doc/437558
+   run3-b.md:59: | G2 | VERIFIED | /_rte/dienst/3869 → /_doc/437558 (np_wegltgsteuern2025.pdf) | PDF with text, 24 pages, 661 KB | Contents list: "Merkblatt über den privaten Gebäudeunterhalt…" | No Steuer
+   run3-b.md:72:   fetch_config: {urls: [https://www.ur.ch/_doc/437558, https://www.ur.ch/_doc/449362, https://www.ur.ch/_doc/408844, https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf]}
+  URL https://www.ur.ch/_doc/449362
+   key=/_doc/449362
+   run3-b.md:60: | G3 | VERIFIED | /_rte/dienst/3125 + /_doc/449362 (per commune, 2 pages, text) + /_doc/408844 (framework plan) | 200 | "Herbstferien SA, 03.10.2026 – SO, 18.10.2026" | **The Erziehungsrat
+   run3-b.md:72:   fetch_config: {urls: [https://www.ur.ch/_doc/437558, https://www.ur.ch/_doc/449362, https://www.ur.ch/_doc/408844, https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf]}
+  URL https://www.ur.ch/_doc/408844
+   key=/_doc/408844
+   run3-b.md:60: | G3 | VERIFIED | /_rte/dienst/3125 + /_doc/449362 (per commune, 2 pages, text) + /_doc/408844 (framework plan) | 200 | "Herbstferien SA, 03.10.2026 – SO, 18.10.2026" | **The Erziehungsrat sets a framework plan; the schools set thei
+   run3-b.md:72:   fetch_config: {urls: [https://www.ur.ch/_doc/437558, https://www.ur.ch/_doc/449362, https://www.ur.ch/_doc/408844, https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf]}
+  URL https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf
+   key=Tarifordnung_2026.pdf
+   run3-b.md:61: | G4 | VERIFIED | /verkehr/4372 (Amt für Strassen- und Schiffsverkehr), /verkehr/4378; fees /_rtr/publikation_4903 → Tarifordnung_2026.pdf | 21 pages, text | "Führerausweis im Kreditkartenformat (FAK) erstmalig Ausweis 60.--" | Tax law 50.1413 |
+   run3-b.md:72:   fetch_config: {urls: [https://www.ur.ch/_doc/437558, https://www.ur.ch/_doc/449362, https://www.ur.ch/_doc/408844, https://www.ur.ch/_docn/437621/Tarifordnung_2026.pdf]}
+##### vd-tax-instructions
+  URL https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf
+   key=21001_2025.pdf
+   run3-d.md:126: | G2 | VERIFIED | `/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf` (listed on `/etat-droit-finances/impots/formulaires-directives-et-baremes`) | PDF: 200, 4,121,012 B, 68 pages, 229,072 chars. List pag
+   run3-d.md:147:   fetch_config: {urls: [https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf], language: fr}
+   run3-d.md:167: | Tax: `…/instructions-g-et-annexes` | Wrong: 404 | 21001_2025.pdf |
+##### zg-pdfs
+  URL https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/Schulferien%20202627-203031.pdf
+   key=Schulferien 202627-203031.pdf
+   run3-b.md:224:   fetch_config: {urls: ["https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/Schulferien%20202627-203031.pdf", "https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/Infoblatt%20Hundereglemente%20Januar%202026.pdf"]}
+  URL https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/Infoblatt%20Hundereglemente%20Januar%202026.pdf
+   key=Infoblatt Hundereglemente Januar 2026.pdf
+   run3-b.md:224:   fetch_config: {urls: ["https://cdn.zg.ch/dam/jcr:f4773ecc-3b24-4ed1-86aa-a1a5e891811a/Schulferien%20202627-203031.pdf", "https://cdn.zg.ch/dam/jcr:f9793485-4f58-4f82-9db4-a13b6cb095c1/Infoblatt%20Hundereglemente%20Januar%202026.pdf"]}
