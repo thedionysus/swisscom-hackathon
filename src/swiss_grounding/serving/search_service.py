@@ -1,7 +1,7 @@
-"""swiss_search: places → candidates → groups → reranker → relevance → status → citations."""
+"""swiss_search: places → translation → candidates → groups → reranker → relevance → status → citations."""
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from datetime import date
 
 import numpy as np
@@ -13,6 +13,7 @@ from swiss_grounding.serving.coverage import coverage_rows
 from swiss_grounding.serving.groups import aligned_versions, collapse
 from swiss_grounding.serving.language import detect_language
 from swiss_grounding.serving.models import (
+    Candidate,
     Citation,
     GroupHit,
     PlaceResult,
@@ -27,6 +28,12 @@ from swiss_grounding.serving.relevance import Relevance, feature_vector
 from swiss_grounding.serving.reranker import Reranker, passage_text
 from swiss_grounding.serving.scope import scope_statement
 from swiss_grounding.serving.status import decide, pre_search, uncovered_levels
+from swiss_grounding.serving.translation import (
+    NoTranslator,
+    Translator,
+    fill_translations,
+    translate_many,
+)
 
 Embedded = tuple[np.ndarray, dict[int, float] | None]
 EmbedFn = Callable[[Sequence[str]], list[Embedded]]
@@ -93,6 +100,11 @@ class SearchService:
     local_quota: int
     ef_search: int
     today: Callable[[], date] = date.today
+    # ADR 0018: the question is translated into `query_langs` (its own language skipped) before the
+    # search, and cited passages back into the question's language after it.
+    translator: Translator = field(default_factory=NoTranslator)
+    query_langs: tuple[str, ...] = ()
+    translate_citations: bool = True
 
     def search(self, request: SearchRequest) -> SearchResponse:
         if not request.question.strip():
@@ -108,11 +120,15 @@ class SearchService:
         return SearchResponse(status, places, scope=scope_statement() if needs_scope else "")
 
     def _embed(self, request: SearchRequest) -> _Query:
+        lang = detect_language(request.question)
+        translations, detected = fill_translations(self.translator, request.question, lang, self.query_langs,
+                                                   have=request.translations)
+        request = replace(request, translations=translations)
         langs = list(request.translations)
         embedded = self.embed([request.question, *(request.translations[lang] for lang in langs)])
         vec, sparse = embedded[0]
         tvecs = {lang: embedded[i + 1][0] for i, lang in enumerate(langs)}
-        return _Query(request, detect_language(request.question), vec, sparse, tvecs)
+        return _Query(request, lang or detected, vec, sparse, tvecs)
 
     def _scope_path(self, o: PlaceOutcome) -> tuple[tuple[str, ...], tuple[str, ...]]:
         """The path searched (cut at the last covered level) and its local part (everything below CH)."""
@@ -133,7 +149,8 @@ class SearchService:
             versions = aligned_versions(conn, keys, q.request.as_of)
             coverage = coverage_rows(conn, self.tree, path) if path else ()
         scored = self._score(collapse(cands, versions, q.lang), q, path, cache)
-        status, message = decide(o, scored, threshold=self.relevance.threshold, tree=self.tree)
+        status, message = decide(o, scored, threshold=self.relevance.threshold, tree=self.tree,
+                                 question=q.request.question)
         citations = ()
         if status == "results":
             queries = [q.request.question, *q.request.translations.values()]
@@ -143,7 +160,7 @@ class SearchService:
                 # apply to one place and would mislead a user elsewhere (ADR 0013).
                 relevant = [s for s in relevant if s.group.representative.extent_id == "CH"]
             keep = distinct_citations(relevant, q.lang)[: q.request.limit]
-            citations = tuple(self._cite(s, queries) for s in keep)
+            citations = self._translate_citations(tuple(self._cite(s, queries) for s in keep), q)
         loc = o.resolved.location if o.resolved else None
         return PlaceResult(o.text, status, loc.id if loc else None, loc.label("de") if loc else None,
                            message, citations, coverage, uncovered_levels(o))
@@ -152,17 +169,30 @@ class SearchService:
         """0 for the place's own extent, rising towards CH; None when the extent is off the path."""
         return len(path) - 1 - path.index(extent) if extent in path else None
 
-    def _rerank(self, question: str, groups: Sequence[GroupHit], cache: RerankCache) -> list[float]:
+    def _query_for(self, q: _Query, language: str) -> str:
+        """The question as the reranker should read it against a passage in `language`: the
+        translation into that language when there is one, else the question as asked. The
+        cross-encoder scores the same article in another language as if it were irrelevant
+        (docs/RESEARCH.md H1), so a passage is scored in its own language wherever possible."""
+        if language == q.lang:
+            return q.request.question
+        return q.request.translations.get(language, q.request.question)
+
+    def _rerank(self, q: _Query, groups: Sequence[GroupHit], cache: RerankCache) -> list[float]:
         """Reranker scores of the groups' representatives, scoring only those not already cached."""
         reps = [g.representative for g in groups]
         missing = [r for r in reps if (r.chunk_id, r.language) not in cache]
-        fresh = self.reranker.score(question, [passage_text(r.breadcrumb, r.text) for r in missing])
-        cache.update({(r.chunk_id, r.language): v for r, v in zip(missing, fresh, strict=True)})
+        by_query: dict[str, list[Candidate]] = {}
+        for r in missing:
+            by_query.setdefault(self._query_for(q, r.language), []).append(r)
+        for text, batch in by_query.items():
+            fresh = self.reranker.score(text, [passage_text(r.breadcrumb, r.text) for r in batch])
+            cache.update({(r.chunk_id, r.language): v for r, v in zip(batch, fresh, strict=True)})
         return [cache[(r.chunk_id, r.language)] for r in reps]
 
     def _score(self, groups: list[GroupHit], q: _Query, path: Sequence[str],
                cache: RerankCache) -> list[ScoredGroup]:
-        scores = self._rerank(q.request.question, groups, cache)
+        scores = self._rerank(q, groups, cache)
         today = q.request.as_of or self.today()
         out = []
         for g, score in zip(groups, scores, strict=True):
@@ -173,12 +203,12 @@ class SearchService:
 
     def scored_for_eval(self, request: SearchRequest) -> list[tuple[tuple[float, ...], str]]:
         """(features, citation key) of every scored group, for every place of the request; evals only."""
-        out = []
+        outcomes = [o for o in place_outcomes(request.question, request.locations, self.resolver, self.tree)
+                    if pre_search(o) is None]
+        if not outcomes:
+            return []
         q = self._embed(request)
-        for outcome in place_outcomes(request.question, request.locations, self.resolver, self.tree):
-            if pre_search(outcome) is None:
-                out.extend(self._eval_rows(outcome, q, request))
-        return out
+        return [row for o in outcomes for row in self._eval_rows(o, q, request)]
 
     def _eval_rows(self, outcome: PlaceOutcome, q: _Query, request: SearchRequest):
         path, local = self._scope_path(outcome)
@@ -190,8 +220,7 @@ class SearchService:
             versions = aligned_versions(conn, list(dict.fromkeys((c.translation_group_id, c.align_key)
                                                                  for c in cands)), request.as_of)
         groups = collapse(cands, versions, q.lang)
-        reps = [g.representative for g in groups]
-        scores = self.reranker.score(request.question, [passage_text(r.breadcrumb, r.text) for r in reps])
+        scores = self._rerank(q, groups, {})
         today = request.as_of or self.today()
         rows = []
         for g, score in zip(groups, scores, strict=True):
@@ -200,6 +229,24 @@ class SearchService:
                                today=today)
             rows.append((x, f"{rep.url}#{rep.anchor}" if rep.anchor else rep.url))
         return rows
+
+    def _translate_citations(self, citations: tuple[Citation, ...], q: _Query) -> tuple[Citation, ...]:
+        """Passages published in another language, translated into the question's language; one
+        request per source language, in parallel. A failed translation leaves the citation as it is."""
+        if not self.translate_citations or q.lang is None or isinstance(self.translator, NoTranslator):
+            return citations
+        by_language: dict[str, list[int]] = {}
+        for i, c in enumerate(citations):
+            if c.language != q.lang:
+                by_language.setdefault(c.language, []).append(i)
+        jobs = [([citations[i].passage for i in indexes], q.lang, language)
+                for language, indexes in by_language.items()]
+        translated: dict[int, str] = {}
+        for indexes, out in zip(by_language.values(), translate_many(self.translator, jobs), strict=True):
+            if out is not None and len(out.texts) == len(indexes):
+                translated.update(zip(indexes, out.texts, strict=True))
+        return tuple(replace(c, translated_passage=translated[i], translation_language=q.lang)
+                     if i in translated else c for i, c in enumerate(citations))
 
     def _cite(self, s: ScoredGroup, queries: Sequence[str]) -> Citation:
         g, rep = s.group, s.group.representative

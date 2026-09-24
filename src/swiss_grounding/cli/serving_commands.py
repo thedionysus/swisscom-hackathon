@@ -34,6 +34,7 @@ from swiss_grounding.serving.dump import (
     verify_parts,
 )
 from swiss_grounding.serving.models import SearchRequest
+from swiss_grounding.serving.secrets import SECRETS_ASSET, merge_env, parse_env, shared_env_text
 
 serving_app = typer.Typer(help="Serving: schema, calendars, latency stats.")
 
@@ -169,15 +170,59 @@ def _gh_download(settings, pattern: str) -> None:
           "--pattern", pattern, "--dir", str(dump_dir()), "--skip-existing"])
 
 
-def _run(cmd: list[str]) -> None:
+def _run(cmd: list[str], what: str = "download the prebuilt database") -> None:
     try:
         subprocess.run(cmd, check=True)
     except FileNotFoundError as exc:
         raise typer.BadParameter(f"{cmd[0]} is not installed; see the README's setup section") from exc
     except subprocess.CalledProcessError as exc:
         raise typer.BadParameter(
-            "could not download the prebuilt database: run `gh auth login` with an account that has "
+            f"could not {what}: run `gh auth login` with an account that has "
             "access to thedionysus/swisscom-hackathon") from exc
+
+
+def install_shared_key(settings, env_path: Path) -> bool:
+    """Download the shared translation key from the release and write it into `.env` (ADR 0018).
+
+    The asset is optional: a release without it leaves `.env` alone and translation off. The
+    download always replaces an earlier copy, so a rotated key reaches every machine on the next
+    `setup`. Returns whether a key was installed."""
+    asset = dump_dir() / SECRETS_ASSET
+    asset.unlink(missing_ok=True)
+    result = subprocess.run(["gh", "release", "download", settings.dump_release_tag, "--repo",
+                             settings.dump_release_repo, "--pattern", SECRETS_ASSET, "--dir", str(dump_dir())],
+                            capture_output=True, text=True, check=False)
+    if result.returncode != 0 or not asset.exists():
+        typer.echo("no shared translation key on the release; translation stays off "
+                   "(set SUPERTEXT_API_KEY in .env yourself, or ask the team to run `dump publish-key`)")
+        return False
+    shared = parse_env(asset.read_text(encoding="utf-8"))
+    asset.unlink()                                 # the key lives in .env only
+    if not shared:
+        typer.echo(f"{SECRETS_ASSET} on the release holds no SUPERTEXT_API_KEY; translation stays off")
+        return False
+    current = env_path.read_text(encoding="utf-8") if env_path.exists() else ""
+    env_path.write_text(merge_env(current, shared), encoding="utf-8")
+    typer.echo(f"shared translation key written to {env_path.name}")
+    return True
+
+
+@dump_app.command("publish-key")
+def publish_key_cmd() -> None:
+    """Upload the SUPERTEXT_API_KEY from your .env to the private release, for everyone's `setup`."""
+    settings = load_settings()
+    if not settings.supertext_api_key:
+        raise typer.BadParameter("SUPERTEXT_API_KEY is not set in .env; nothing to publish")
+    dump_dir().mkdir(parents=True, exist_ok=True)
+    asset = dump_dir() / SECRETS_ASSET
+    asset.write_text(shared_env_text({"SUPERTEXT_API_KEY": settings.supertext_api_key}), encoding="utf-8")
+    try:
+        _run(["gh", "release", "upload", settings.dump_release_tag, str(asset), "--repo",
+              settings.dump_release_repo, "--clobber"], what="upload the translation key")
+    finally:
+        asset.unlink(missing_ok=True)
+    typer.echo(f"{SECRETS_ASSET} published to release {settings.dump_release_tag} of {settings.dump_release_repo}; "
+               "collaborators get it on their next `swiss-grounding setup`")
 
 
 def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do not pre-download models")) -> None:
@@ -202,6 +247,7 @@ def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do 
     _compose("exec", "-T", "db", "rm", "-f", "/tmp/corpus.dump")
     apply_serving_schema(settings.database_url)
     typer.echo(f"database restored and indexes rebuilt in {time.perf_counter() - started:.0f}s")
+    install_shared_key(settings, repo_root() / ".env")
     if not skip_models:
         from swiss_grounding.app import build_query_provider, build_reranker
         from swiss_grounding.serving.reranker import detect_device

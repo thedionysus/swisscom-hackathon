@@ -23,6 +23,7 @@ from swiss_grounding.serving.reranker import (
     detect_device,
 )
 from swiss_grounding.serving.search_service import SearchService, query_embedder
+from swiss_grounding.serving.translation import NoTranslator, SupertextTranslator, Translator
 
 FAKE_QUERY_DIM = 1024  # the corpus tables are vector(1024) even in tests
 log = logging.getLogger(__name__)
@@ -71,6 +72,15 @@ def relevance_path(settings: Settings, reranker_name: str) -> Path:
     return Path(settings.relevance_model_path).with_suffix(f".{slug}.json")
 
 
+def build_translator(settings: Settings) -> Translator:
+    """Supertext when a key is configured (ADR 0018); otherwise nothing is translated."""
+    if not settings.supertext_api_key:
+        log.info("SUPERTEXT_API_KEY not set: questions and cited passages are not translated")
+        return NoTranslator()
+    return SupertextTranslator(settings.supertext_api_key, base_url=settings.supertext_base_url,
+                               timeout_seconds=settings.supertext_timeout_seconds)
+
+
 def build_search_service(settings: Settings, today: Callable[[], date] = date.today) -> SearchService:
     with connect(settings.database_url) as conn:
         tree = load_location_tree(conn)
@@ -85,4 +95,5 @@ def build_search_service(settings: Settings, today: Callable[[], date] = date.to
         embed=query_embedder(build_query_provider(settings)), reranker=reranker,
         relevance=load_relevance(relevance_path(settings, reranker.name), reranker.name),
         index=settings.serving_index, rerank_candidates=candidates, local_quota=settings.local_candidate_quota,
-        ef_search=settings.hnsw_ef_search, today=today)
+        ef_search=settings.hnsw_ef_search, today=today, translator=build_translator(settings),
+        query_langs=settings.translate_query_languages, translate_citations=settings.translate_citations)

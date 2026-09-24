@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: accepted, amended by 0018
 date: 2026-09-23
 supersedes: 0004-the-calling-model-supplies-the-english-query
 ---

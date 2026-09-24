@@ -122,13 +122,15 @@ def build_server(settings: Settings) -> FastMCP:
         """Find passages in official Swiss sources that answer a question, for up to three places.
 
         question: the user's question exactly as they wrote it, in any language (German, French,
-        Italian, Romansh, English). Every language store is searched with it; do not translate first.
+        Italian, Romansh, English). Every language store is searched with it, and the server may
+        translate it into the other languages itself; do not translate the question.
         locations: every place the user names, one entry each (max 3), e.g. ["Lausanne", "Bern"].
         Add the country when the user names one ("Konstanz, Deutschland"). Leave empty when the user
         names no place: national questions are answered without one, and the server asks for a place
         only when the answer depends on it. Results come back grouped per place, never merged.
         translations: optional, the same question in other languages, keyed de/fr/it/en/rm
-        ({"fr": "...", "it": "..."}); improves keyword matching in those stores. Never required.
+        ({"fr": "...", "it": "..."}); still useful, and a language you send always wins over the
+        server's own translation. Never required.
         as_of: optional ISO date (YYYY-MM-DD) for the rules in force on that day (default: today).
 
         status per place and overall: results (cite the passages), needs_location (ask the user for
@@ -136,7 +138,9 @@ def build_server(settings: Settings) -> FastMCP:
         suggest other sources), no_evidence (say the indexed sources hold no answer; `scope` says what
         is covered), error (retry once). Each citation has a supporting `passage`, its `url`,
         `publisher`, `extent_label`, `tier` (0 = the asked place, rising toward federal), `relevance`
-        (0-1), and dates (`valid_from`, `modified_at`, `fetched_at`). `uncovered_levels` lists cantonal or
+        (0-1), and dates (`valid_from`, `modified_at`, `fetched_at`). A passage published in another
+        language than the question may carry `translated_passage` (in `translation_language`, the
+        question's language): answer from it, but cite `url` and quote `passage`. `uncovered_levels` lists cantonal or
         municipal rules of a place that this server does not cover: say so. Not covered at all: computed
         amounts (tax bills, pensions), the commercial register, statistics, geodata, weather."""
         notes = []

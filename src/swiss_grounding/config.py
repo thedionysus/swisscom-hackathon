@@ -3,7 +3,10 @@ from typing import Annotated, Literal
 from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
+from swiss_grounding.serving.models import LANGS as SUPPORTED_LANGUAGES
+
 DEFAULT_CORPUS_INDEXES = ("bge-m3",)
+DEFAULT_TRANSLATE_QUERY_LANGUAGES = ("de", "fr", "it", "en")
 
 
 class Settings(BaseSettings):
@@ -74,6 +77,19 @@ class Settings(BaseSettings):
     local_candidate_quota: int = 10
     hnsw_ef_search: int = 100
     relevance_model_path: str = "evals/relevance_model.json"
+    # Translation (ADR 0018). With SUPERTEXT_API_KEY set, the server translates the question into the
+    # other language stores before searching and cited passages back into the question's language.
+    # Without the key nothing is translated and the server behaves as before.
+    supertext_api_key: str | None = None
+    supertext_base_url: str = "https://api.supertext.com/v1"
+    supertext_timeout_seconds: float = 8.0
+    # Stores the question is translated into (TRANSLATE_QUERY_LANGUAGES, comma-separated); its own
+    # language is always skipped. Romansh is off by default: measured 2026-09-24, the reranker scores
+    # weak Romansh passages 0.95 against a Romansh query (0.00 against the German question), which
+    # pushed the right German page out of the top five. The Romansh store is still searched by the
+    # multilingual embedding, and a Romansh question is translated into the other four.
+    translate_query_languages: Annotated[tuple[str, ...], NoDecode] = DEFAULT_TRANSLATE_QUERY_LANGUAGES
+    translate_citations: bool = True
     transport_base_url: str = "https://transport.opendata.ch/v1"
     reference_rate_url: str = "https://www.bwo.admin.ch/de/referenzzinssatz"
     lookup_timeout_seconds: float = 8.0
@@ -81,19 +97,9 @@ class Settings(BaseSettings):
     dump_release_repo: str = "thedionysus/swisscom-hackathon"
     dump_release_tag: str = "corpus-latest"
 
-    # Swiss Parliament tools from the zbern.ch MCP server (ADR 0018). Off unless ZBERN_MCP_URL is set.
-    zbern_mcp_url: str | None = None
-    zbern_mcp_token: SecretStr | None = None
-    zbern_mcp_prefix: str = "zbern_"
-    # zbern tool names (without the prefix) not to serve, comma-separated, e.g. `query,list_tables`.
-    zbern_mcp_exclude: Annotated[tuple[str, ...], NoDecode] = ()
-    zbern_mcp_timeout_seconds: float = 60.0
-    # How often the zbern tool list and instructions are re-read, so changes there show up without a restart.
-    zbern_mcp_refresh_seconds: float = 300.0
-
-    @field_validator("corpus_indexes", "zbern_mcp_exclude", mode="before")
+    @field_validator("corpus_indexes", "translate_query_languages", mode="before")
     @classmethod
-    def _split_indexes(cls, value: object) -> object:
+    def _split_csv(cls, value: object) -> object:
         """`bge-m3, openai-3l` -> ("bge-m3", "openai-3l"): blanks dropped, duplicates removed, order kept."""
         parts = value.split(",") if isinstance(value, str) else value
         if not isinstance(parts, (list, tuple)):
@@ -111,6 +117,14 @@ class Settings(BaseSettings):
             raise ValueError(f"CORPUS_INDEXES: unknown index {', '.join(unknown)}; known: {sorted(INDEXES)}")
         if "openai-3l" in self.corpus_indexes and not self.openai_api_key:
             raise ValueError("OPENAI_API_KEY is required when CORPUS_INDEXES includes openai-3l")
+        return self
+
+    @model_validator(mode="after")
+    def _translate_languages_are_known(self) -> "Settings":
+        unknown = [lang for lang in self.translate_query_languages if lang not in SUPPORTED_LANGUAGES]
+        if unknown:
+            raise ValueError(f"TRANSLATE_QUERY_LANGUAGES: unknown language {', '.join(unknown)}; "
+                             f"known: {', '.join(SUPPORTED_LANGUAGES)}")
         return self
 
     @model_validator(mode="after")
