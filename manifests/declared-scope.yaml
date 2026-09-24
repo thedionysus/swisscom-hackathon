@@ -3929,3 +3929,31 @@ sources:
       breadcrumbs: {id_path: "@id", title_path: title}
       modified_path: modified
       max_records: 2000
+
+  # Plone REST behind www.baselland.ch, which answers our client with a Cloudflare 403 (Run 3 decision 2026-09-23:
+  # use this API). Its robots.txt answers with a login redirect ending in 403: under RFC 9309 that means
+  # "unavailable", so crawling is allowed (#57). Checked 2026-09-24: the courts section lists 189 items; content
+  # blocks carry their text in text.data. Files (PDF forms) are not read yet.
+  # CAVEAT (citation URL): documents cite their page on www.baselland.ch by the same path, as Run 3 inferred from
+  # matching URLs. Cloudflare blocks our client, so the mapping is not machine-checked.
+  - id: bl_gerichte
+    name: "Gerichte des Kantons Basel-Landschaft"
+    publisher: "Gerichte Basel-Landschaft"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BL
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://bl-api.webcloud7.ch/politik-und-behorden/gerichte/@search?path.query=/politik-und-behorden/gerichte&b_size={size}&fullobjects=1"
+      paging: {style: next, size: 100, next_path: batching.next}
+      records_path: items
+      id_template: "{UID}"
+      title_template: "{_parent}: {title}"
+      html_path: text.data
+      url_template: "{parent[@id]}#{id}"
+      url_replace: ["https://bl-api.webcloud7.ch/", "https://www.baselland.ch/"]
+      breadcrumbs: {id_path: "@id", title_path: title}
+      modified_path: modified
+      max_records: 1000
