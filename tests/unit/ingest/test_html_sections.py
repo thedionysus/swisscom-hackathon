@@ -16,6 +16,13 @@ def test_title_and_language():
     assert page.language == "de"
 
 
+
+def test_language_with_underscore_or_charset_suffix():
+    for lang in ("fr_CH", "fr_ch.utf8", "fr-CH"):
+        page = html_to_page(f'<html lang="{lang}"><body><h1>Accueil</h1><p>Texte.</p></body></html>',
+                            url="https://www.neyruz.ch/", default_language="de")
+        assert page.language == "fr"
+
 def test_sections_follow_headings_with_paths_and_anchors():
     page = html_to_page(HTML, url="https://www.zh.ch/x", default_language="de")
     paths = [s.heading_path for s in page.sections]
