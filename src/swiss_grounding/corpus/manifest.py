@@ -63,7 +63,7 @@ def _check_delay_seconds(source_id: str, config: dict[str, Any]) -> None:
 def _check_site_adaptations(source_id: str, config: dict[str, Any]) -> None:
     """Optional per-site keys of the html connector: fail at load time, not mid-crawl."""
     _check_delay_seconds(source_id, config)
-    for key in ("pdf_link_patterns", "sitemap_include"):
+    for key in ("pdf_link_patterns", "sitemap_include", "deny_patterns"):
         for pattern in _string_list(source_id, config, key):
             try:
                 re.compile(pattern)
