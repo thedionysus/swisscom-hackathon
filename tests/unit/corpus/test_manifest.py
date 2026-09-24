@@ -119,7 +119,7 @@ def test_accepts_sources_with_disjoint_prefixes(tmp_path):
 SITE_CONFIG = ('config: {start_urls: ["https://www.bern.ch/"], allow_prefixes: ["https://www.bern.ch/"], '
                'language_links_selector: "nav#language a[href]", content_selector: "#content", '
                'pdf_link_patterns: ["^https://www\\\\.bern\\\\.ch/p/"], sitemap_urls: ["https://www.bern.ch/sitemap.xml.gz"], '
-               'sitemap_include: ["/themen/"]}')
+               'sitemap_include: ["/themen/"], deny_patterns: ["/archiv/"]}')
 BERN_CONFIG = 'config: {start_urls: ["https://www.bern.ch/"], allow_prefixes: ["https://www.bern.ch/"]}'
 
 
@@ -153,6 +153,7 @@ def test_rejects_invalid_delay_seconds(tmp_path, bad_value):
     ('"#content"', '"##"', "content_selector"),
     ('["https://www.bern.ch/sitemap.xml.gz"]', '["/sitemap.xml"]', "sitemap_urls"),
     ('["/themen/"]', '"/themen/"', "sitemap_include"),
+    ('["/archiv/"]', '["(archiv"]', "deny_patterns"),
 ])
 def test_rejects_invalid_site_adaptation_keys(tmp_path, old, new, message):
     path = tmp_path / "m.yaml"
