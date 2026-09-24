@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 
-from pydantic import field_validator, model_validator
+from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 DEFAULT_CORPUS_INDEXES = ("bge-m3",)
@@ -81,7 +81,17 @@ class Settings(BaseSettings):
     dump_release_repo: str = "thedionysus/swisscom-hackathon"
     dump_release_tag: str = "corpus-latest"
 
-    @field_validator("corpus_indexes", mode="before")
+    # Swiss Parliament tools from the zbern.ch MCP server (ADR 0018). Off unless ZBERN_MCP_URL is set.
+    zbern_mcp_url: str | None = None
+    zbern_mcp_token: SecretStr | None = None
+    zbern_mcp_prefix: str = "parl_"
+    # zbern tool names (without the prefix) not to serve, comma-separated, e.g. `query,list_tables`.
+    zbern_mcp_exclude: Annotated[tuple[str, ...], NoDecode] = ()
+    zbern_mcp_timeout_seconds: float = 60.0
+    # How often the zbern tool list and instructions are re-read, so changes there show up without a restart.
+    zbern_mcp_refresh_seconds: float = 300.0
+
+    @field_validator("corpus_indexes", "zbern_mcp_exclude", mode="before")
     @classmethod
     def _split_indexes(cls, value: object) -> object:
         """`bge-m3, openai-3l` -> ("bge-m3", "openai-3l"): blanks dropped, duplicates removed, order kept."""

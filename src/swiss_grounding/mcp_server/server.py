@@ -27,6 +27,7 @@ from swiss_grounding.db.connection import connect
 from swiss_grounding.lookups.connections import find_connections
 from swiss_grounding.lookups.premium import cheapest_premiums
 from swiss_grounding.lookups.reference_rate import reference_rate
+from swiss_grounding.mcp_server import zbern
 from swiss_grounding.serving.call_log import CallRecord, record_call
 from swiss_grounding.serving.documents import get_document
 from swiss_grounding.serving.models import LANGS, MAX_LIMIT, MAX_LOCATIONS, NOTICE, SearchRequest
@@ -237,4 +238,8 @@ def build_server(settings: Settings) -> FastMCP:
                 return reference_rate(conn, client, settings.reference_rate_url)
         return await timed("swiss_reference_rate", run)
 
+    parliament = zbern.from_settings(settings)
+    if parliament is not None:
+        parliament.prime()
+        zbern.attach(mcp, parliament, INSTRUCTIONS)
     return mcp
