@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from swiss_grounding.serving.models import LANGS as SUPPORTED_LANGUAGES
 
 DEFAULT_CORPUS_INDEXES = ("bge-m3",)
+ZBERN_HOSTED_URL = "https://mcp.zbern.ch/mcp"
 ZBERN_DEFAULT_EXCLUDE = ("query", "list_tables", "describe_table", "get_reference")
 DEFAULT_TRANSLATE_QUERY_LANGUAGES = ("de", "fr", "it", "en")
 
@@ -98,8 +99,9 @@ class Settings(BaseSettings):
     dump_release_repo: str = "thedionysus/swisscom-hackathon"
     dump_release_tag: str = "corpus-latest"
 
-    # Swiss Parliament tools from the zbern.ch MCP server. Off unless ZBERN_MCP_URL is set.
-    zbern_mcp_url: str | None = None
+    # Swiss Parliament tools from the hosted zbern.ch MCP server. On once ZBERN_MCP_TOKEN is present (`setup`
+    # installs it from the private release); set ZBERN_MCP_URL empty to turn the tools off.
+    zbern_mcp_url: str | None = ZBERN_HOSTED_URL
     zbern_mcp_token: SecretStr | None = None
     zbern_mcp_prefix: str = "zbern_"
     # zbern tool names (without the prefix) not to serve, comma-separated. The raw-SQL tools are off by
