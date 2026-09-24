@@ -29,6 +29,9 @@ embed = [
     "flagembedding>=1.3",
     "sentence-transformers>=3.0",
 ]
+eval = [
+    "scikit-learn>=1.5",
+]
 
 [project.scripts]
 swiss-grounding = "swiss_grounding.cli.main:app"
@@ -47,6 +50,7 @@ packages = ["src/swiss_grounding"]
 testpaths = ["tests"]
 markers = ["integration: needs DATABASE_URL and a running PostgreSQL"]
 asyncio_mode = "auto"
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100

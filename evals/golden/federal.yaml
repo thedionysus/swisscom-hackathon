@@ -1,0 +1,106 @@
+version: 2026-09-24.1
+probes:
+  - id: g-fed-marriage-age-de
+    question: Ab welchem Alter darf man in der Schweiz heiraten?
+    language: de
+    area: law
+    level: federal
+    split: dev
+    note: >-
+      Verified in corpus: fedlex ZGB (SR 210) Art. 94 (de), "Die Ehe kann von zwei Personen eingegangen
+      werden, die das 18. Altersjahr zurückgelegt haben und urteilsfähig sind."
+    expect: {status: results, sources: ["233_245_233/20260701/de#art_94"], key_fact: "Marriage requires both spouses to be 18 and capable of judgement (Art. 94 ZGB)."}
+  - id: g-fed-ahv-reference-age-de
+    question: Ab welchem Alter erhalte ich eine AHV-Altersrente?
+    language: de
+    area: pensions
+    level: federal
+    split: dev
+    note: >-
+      Verified in corpus: ahv-iv.ch/de .../Altersrenten, "Für Frauen liegt das Referenzalter bei 64 und
+      für Männer bei 65."
+    expect: {status: results, sources: [ahv-iv.ch/de/Sozialversicherungen/Alters-und-Hinterlassenenversicherung-AHV/Altersrenten], key_fact: "The AHV reference age is 64 for women and 65 for men."}
+  - id: g-fed-customs-value-allowance-de
+    question: Bis zu welchem Warenwert muss ich bei der Einreise in die Schweiz keine Mehrwertsteuer zahlen?
+    language: de
+    area: customs
+    level: federal
+    split: holdout
+    note: >-
+      Verified in corpus: bazg.admin.ch, "Ab einem Gesamtwert von CHF 150 bezahlen Sie Mehrwertsteuer"
+      (i.e. goods up to CHF 150 are VAT-free).
+    expect: {status: results, sources: [allgemeine-informationen-zu-freimengen-und-wertfreigrenzen], key_fact: "Goods worth up to CHF 150 can be brought into Switzerland without paying VAT."}
+  - id: g-fed-voting-sundays-de
+    question: Wie oft im Jahr finden eidgenössische Volksabstimmungen statt?
+    language: de
+    area: voting
+    level: federal
+    split: holdout
+    note: >-
+      Verified in corpus: bk.admin.ch/de/volksabstimmungen, "Jährlich sind bis zu vier
+      Abstimmungssonntage vorgesehen."
+    expect: {status: results, sources: ["/de/volksabstimmungen"], key_fact: "Up to four federal voting Sundays are scheduled per year."}
+  - id: g-fed-premium-reduction-fr
+    question: Qui finance la réduction des primes d'assurance-maladie pour les personnes à revenu modeste?
+    language: fr
+    area: health_insurance
+    level: federal
+    split: dev
+    note: >-
+      Verified in corpus: bag.admin.ch/fr, "La réduction des primes est financée conjointement par la
+      Confédération et les cantons," federal subsidy pegged to 7.5% of gross AOS costs.
+    expect: {status: results, sources: [assurance-maladie-reduction-des-primes], key_fact: "Premium reductions for people of modest means are financed jointly by the Confederation and the cantons."}
+  - id: g-fed-marriage-age-it
+    question: A partire da quale età ci si può sposare in Svizzera?
+    language: it
+    area: law
+    level: federal
+    split: holdout
+    note: >-
+      Verified in corpus: fedlex ZGB (SR 210) Art. 94 (it), "Per contrarre matrimonio, gli sposi devono
+      aver compiuto il diciottesimo anno d'età ed essere capaci di discernimento."
+    expect: {status: results, sources: ["233_245_233/20260701/it#art_94"], key_fact: "Marriage requires both spouses to be 18 and capable of judgement (Art. 94 ZGB)."}
+  - id: g-fed-party-register-rm
+    question: Co ha da far in partida per vegnir integrada en il register federal da las partidas?
+    language: rm
+    area: voting
+    level: federal
+    split: dev
+    note: >-
+      Verified in corpus: bk.admin.ch/rm/register-federal-da-las-partidas, "Die Bundeskanzlei führt das
+      Parteienregister des Bundes. Parteien, welche die Voraussetzungen nach Artikel 76a ... erfüllen ...
+      müssen Angaben wie Adresse oder Statuten liefern." (the crawled rm page body carries this German
+      passage alongside the Romansh navigation).
+    expect: {status: results, sources: [register-federal-da-las-partidas], key_fact: "A party meeting Art. 76a of the political rights law must supply details such as its address and statutes to be entered in the federal party register."}
+  - id: g-fed-vote-booklets-rm
+    question: Nua chattain ins las explicaziuns dal Cussegl federal davart ils object da votar dals ultims onns?
+    language: rm
+    area: voting
+    level: federal
+    split: holdout
+    note: >-
+      Verified in corpus: bk.admin.ch/rm/sammlung-der-abstimmungsbuechlein-seit-1978-2 lists the
+      Federal Council's voting explanation booklets ("Explicaziuns dal cussegl federal") back to 1978,
+      as PDFs.
+    expect: {status: results, sources: [sammlung-der-abstimmungsbuechlein-seit-1978], key_fact: "The Federal Council's voting-explanation booklets are archived back to 1978."}
+  - id: g-fed-unemployment-insurance-en
+    question: What does Swiss unemployment insurance (ALV) cover?
+    language: en
+    area: work
+    level: federal
+    split: dev
+    note: >-
+      Verified in corpus: ahv-iv.ch/en, "ALV provides benefits in the event of unemployment,
+      weather-induced losses of working hours, short-time work and the inability of an employer to pay
+      its employees."
+    expect: {status: results, sources: [Unemployment-insurance-ALV], key_fact: "Unemployment insurance (ALV) compensates loss of income from unemployment, weather-related work stoppages, short-time work and employer insolvency."}
+  - id: g-fed-occupational-pension-en
+    question: What is the purpose of the Swiss occupational pension (second pillar)?
+    language: en
+    area: pensions
+    level: federal
+    split: dev
+    note: >-
+      Verified in corpus: ahv-iv.ch/en, "Together with the first pillar, a pension income of around 60
+      per cent of the final salary should be achieved."
+    expect: {status: results, sources: [Occupational-benefit-plan-BV], key_fact: "The occupational pension, together with AHV, is meant to provide around 60% of final salary in retirement."}

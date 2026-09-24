@@ -65,3 +65,26 @@ Decided for serving:
 - `SET LOCAL hnsw.iterative_scan = relaxed_order`.
 - The language filter prunes partitions.
 - When a place is resolved, candidates are drawn per jurisdiction level: at least 10 of the top 30 come from the resolved canton or municipality, so federal law cannot crowd out local pages (audit weakness "shared 50-candidate pool").
+
+## H3. First checks on the encoded corpus (2026-09-24)
+
+Measured on the corpus mid-run: about 149,000 chunks embedded with bge-m3 dense and sparse (de 50k, fr 52k, it 32k, en 12k, rm 2.8k); descriptions about 5% done; the encoding pipeline was running on the same machine. The questions were 16 challenge-style probes (samples, practice cases, and one question per topic area), run through `SearchService` with bge-reranker-v2-m3 on MPS.
+
+**The reranker alone mis-ordered real pages.** For the Vaud question ("échanger mon permis étranger … canton de Vaud"), bge-m3 retrieval ranked the correct vd.ch chunk ("délai de 12 mois dès votre arrivée") first. The reranker scored it 0.29 (0.37 with markdown stripped) and a wrong page ("Arrivée d'un autre canton") 0.45–0.46. mmarco-mMiniLMv2 made the same mistake. Changes:
+- Markdown is stripped before reranking.
+- Until the logistic model is fitted, relevance = 0.5 × reranker + 0.5 × 1/retrieval rank.
+- Reranker scores below 0.20 are kept as they are, so "nothing relevant" (Konstanz: ≈ 0.00) still abstains.
+- Provisional threshold: 0.20.
+- After the change, the Vaud page ranks first (0.69).
+
+**Duplicates filled result slots.** ch.ch serves many pages at two URLs with identical text. HTML sections in different languages have different position keys, so one page appeared as three citations (it/en/rm). Citations are now de-duplicated by normalised text and by translation group, preferring the question's language.
+
+**Remaining gaps (data, not ranking):**
+- There is no Scuol school-holiday calendar in the corpus. Graubünden publishes one schedule for the whole canton; gr.ch's school-organisation pages need adding to the manifest. The Romansh question still cites a sitemap page at 0.37.
+- For "Kündigungsfrist Mietwohnung", Art. 266c OR ranks third, behind a ch.ch voting page and a BWO page.
+
+**Cross-language local pages:** a French question about Bern gets federal French pages but no bern.ch (German) page above the threshold.
+
+**Latency on MPS, with the pipeline sharing the GPU:** 2.2–5 s per single-place search; 5.7 s for two places; 12 s for the first call (warm-up).
+
+The threshold, the blend weight and the per-reranker behaviour are provisional until the golden set is labelled (Tasks 21–22).
