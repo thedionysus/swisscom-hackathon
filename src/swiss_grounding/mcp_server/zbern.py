@@ -2,7 +2,7 @@
 
 The zbern server is a separate MCP server with its own data (Federal Parliament: members, business items,
 debates, roll-call votes; federal popular votes). This module connects to it as an MCP client and re-exports
-its tools under a prefix (`parl_` by default), so a client sees one server. Nothing about the zbern tools is
+its tools under a prefix (`zbern_` by default), so a client sees one server. Nothing about the zbern tools is
 hard-coded here: names, descriptions, input schemas and the server's instructions are discovered from the
 remote server and refreshed periodically, so the zbern side can add, change or remove tools without a change
 in this repository. Calls are passed through unchanged and the remote result is returned verbatim.
@@ -65,7 +65,7 @@ def http_transport(url: str, token: str | None, timeout_seconds: float) -> Trans
 class ZbernTools:
     """Discovers the zbern tools, lists them under a prefix and passes calls through."""
 
-    def __init__(self, transport: Transport, *, prefix: str = "parl_", exclude: tuple[str, ...] = (),
+    def __init__(self, transport: Transport, *, prefix: str = "zbern_", exclude: tuple[str, ...] = (),
                  refresh_seconds: float = 300.0, timeout_seconds: float = 60.0,
                  discovery_timeout_seconds: float = 10.0, clock: Callable[[], float] = monotonic,
                  on_call: Callable[[CallRecord], None] | None = None):

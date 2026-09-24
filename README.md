@@ -96,7 +96,7 @@ text is stored and can be requested through `swiss_get_document`.
 Questions about the Federal Parliament and federal popular votes (members, business items, debates,
 roll-call votes, vote results down to municipality, upcoming votes) are answered by the zbern.ch MCP
 server, a separate server with its own database. Set `ZBERN_MCP_URL` and our server lists its tools
-beside the six above, prefixed `parl_`, and forwards calls to it (ADR 0018):
+beside the six above, prefixed `zbern_`, and forwards calls to it (ADR 0018):
 
 ```bash
 ZBERN_MCP_URL=https://mcp.zbern.ch/mcp      # or a local run of the zbern-mcp repository
@@ -106,7 +106,7 @@ ZBERN_MCP_EXCLUDE=                          # optional, zbern tool names not to 
 
 The zbern tools, their descriptions and the zbern instructions are discovered from that server and
 re-read every five minutes, so they follow its changes without a change here. If it cannot be reached,
-our own tools keep working and a `parl_*` call answers `source_unavailable`.
+our own tools keep working and a `zbern_*` call answers `source_unavailable`.
 
 ## How it ranks and when it abstains
 

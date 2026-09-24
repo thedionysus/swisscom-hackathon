@@ -92,8 +92,8 @@ async def test_remote_tools_are_served_with_a_prefix_beside_ours():
     local = await served(local_server(), zbern.ZbernTools(memory_transport(fake_zbern())))
     async with create_connected_server_and_client_session(local._mcp_server) as client:
         tools = {t.name: t for t in (await client.list_tools()).tools}
-    assert set(tools) == {"swiss_scope", "parl_search_person", "parl_query"}
-    person = tools["parl_search_person"]
+    assert set(tools) == {"swiss_scope", "zbern_search_person", "zbern_query"}
+    person = tools["zbern_search_person"]
     assert person.description.startswith(zbern.DESCRIPTION_TAG)
     assert "Find members of parliament" in person.description
     assert set(person.inputSchema["properties"]) == {"name", "language"}
@@ -102,7 +102,7 @@ async def test_remote_tools_are_served_with_a_prefix_beside_ours():
 async def test_a_call_reaches_the_remote_tool_with_its_own_name_and_arguments():
     local = await served(local_server(), zbern.ZbernTools(memory_transport(fake_zbern())))
     await list_names(local)
-    result, body = await call(local, "parl_search_person", {"name": "Jositsch", "language": "fr"})
+    result, body = await call(local, "zbern_search_person", {"name": "Jositsch", "language": "fr"})
     assert not result.isError
     assert body == {"status": "results", "name": "Jositsch", "language": "fr"}
 
@@ -116,14 +116,14 @@ async def test_our_own_tools_still_answer():
 async def test_excluded_tools_are_not_served():
     tools = zbern.ZbernTools(memory_transport(fake_zbern()), exclude=("query",))
     local = await served(local_server(), tools)
-    assert set(await list_names(local)) == {"swiss_scope", "parl_search_person"}
-    _, body = await call(local, "parl_query", {"sql": "select 1"})
+    assert set(await list_names(local)) == {"swiss_scope", "zbern_search_person"}
+    _, body = await call(local, "zbern_query", {"sql": "select 1"})
     assert body["status"] == "invalid_request"
 
 
 async def test_a_custom_prefix_is_used():
-    local = await served(local_server(), zbern.ZbernTools(memory_transport(fake_zbern()), prefix="zbern_"))
-    assert "zbern_search_person" in await list_names(local)
+    local = await served(local_server(), zbern.ZbernTools(memory_transport(fake_zbern()), prefix="parl_"))
+    assert "parl_search_person" in await list_names(local)
 
 
 async def test_instructions_carry_the_routing_hint_and_the_remote_instructions():
@@ -132,13 +132,13 @@ async def test_instructions_carry_the_routing_hint_and_the_remote_instructions()
     local = await served(local_server(), tools)
     text = local._mcp_server.instructions
     assert text.startswith("LOCAL INSTRUCTIONS")
-    assert "`parl_*` tools" in text and REMOTE_INSTRUCTIONS in text
+    assert "`zbern_*` tools" in text and REMOTE_INSTRUCTIONS in text
 
 
 async def test_an_unreachable_server_leaves_our_tools_working():
     local = await served(local_server(), zbern.ZbernTools(down_transport()))
     assert await list_names(local) == ["swiss_scope"]
-    assert "`parl_*` tools" in local._mcp_server.instructions   # the routing hint, without remote text
+    assert "`zbern_*` tools" in local._mcp_server.instructions   # the routing hint, without remote text
     _, body = await call(local, "swiss_scope", {})
     assert body["status"] == "results"
 
@@ -148,10 +148,10 @@ async def test_known_tools_survive_an_outage_and_calls_say_the_source_is_unavail
     current = {"transport": remote}
     tools = zbern.ZbernTools(lambda: current["transport"](), refresh_seconds=0)
     local = await served(local_server(), tools)
-    assert "parl_search_person" in await list_names(local)
+    assert "zbern_search_person" in await list_names(local)
     current["transport"] = down_transport()
-    assert "parl_search_person" in await list_names(local)
-    result, body = await call(local, "parl_search_person", {"name": "x"})
+    assert "zbern_search_person" in await list_names(local)
+    result, body = await call(local, "zbern_search_person", {"name": "x"})
     assert not result.isError
     assert body == {"status": "source_unavailable", "message": zbern.UNAVAILABLE}
 
@@ -160,7 +160,7 @@ async def test_changes_on_the_zbern_side_show_up_after_the_refresh_period():
     remote, clock = fake_zbern(), Clock()
     tools = zbern.ZbernTools(memory_transport(remote), refresh_seconds=300, clock=clock)
     local = await served(local_server(), tools)
-    assert "parl_get_upcoming_votes" not in await list_names(local)
+    assert "zbern_get_upcoming_votes" not in await list_names(local)
 
     @remote.tool()
     def get_upcoming_votes() -> str:
@@ -168,10 +168,10 @@ async def test_changes_on_the_zbern_side_show_up_after_the_refresh_period():
         return json.dumps({"status": "results", "votes": []})
 
     clock.now = 299
-    assert "parl_get_upcoming_votes" not in await list_names(local)
+    assert "zbern_get_upcoming_votes" not in await list_names(local)
     clock.now = 300
-    assert "parl_get_upcoming_votes" in await list_names(local)
-    _, body = await call(local, "parl_get_upcoming_votes", {})
+    assert "zbern_get_upcoming_votes" in await list_names(local)
+    _, body = await call(local, "zbern_get_upcoming_votes", {})
     assert body == {"status": "results", "votes": []}
 
 
@@ -187,7 +187,7 @@ async def test_a_new_tool_is_found_on_first_call_even_before_the_period_ends():
         return json.dumps({"status": "results"})
 
     clock.now = 400   # a client that cached an old list calls the new tool after the period
-    _, body = await call(local, "parl_get_coverage", {})
+    _, body = await call(local, "zbern_get_coverage", {})
     assert body == {"status": "results"}
 
 
@@ -196,12 +196,12 @@ async def test_calls_are_logged_with_their_status():
     tools = zbern.ZbernTools(memory_transport(fake_zbern()), on_call=records.append)
     local = await served(local_server(), tools)
     await list_names(local)
-    await call(local, "parl_search_person", {"name": "x"})
+    await call(local, "zbern_search_person", {"name": "x"})
     tools._transport = down_transport()
-    await call(local, "parl_search_person", {"name": "x"})
+    await call(local, "zbern_search_person", {"name": "x"})
     assert [(r.tool, r.status, r.error) for r in records] == [
-        ("parl_search_person", "results", None),
-        ("parl_search_person", "source_unavailable", "ConnectionError"),
+        ("zbern_search_person", "results", None),
+        ("zbern_search_person", "source_unavailable", "ConnectionError"),
     ]
 
 
@@ -209,7 +209,7 @@ async def test_prime_works_from_inside_a_running_event_loop():
     tools = zbern.ZbernTools(memory_transport(fake_zbern()))
     tools.prime()
     assert tools.remote_instructions == REMOTE_INSTRUCTIONS
-    assert "parl_search_person" in {t.name for t in await tools.list_tools()}
+    assert "zbern_search_person" in {t.name for t in await tools.list_tools()}
 
 
 def test_off_without_a_url():
@@ -225,7 +225,7 @@ def test_settings_from_env(monkeypatch):
     assert s.zbern_mcp_exclude == ("query", "list_tables")
     assert "secret-token" not in repr(s)
     tools = zbern.from_settings(s)
-    assert tools is not None and tools.prefix == "parl_"
+    assert tools is not None and tools.prefix == "zbern_"
 
 
 @pytest.mark.parametrize("token, expected", [("t0k3n", "Bearer t0k3n"), (None, None)])
@@ -259,6 +259,6 @@ async def test_http_transport_sends_the_bearer_token(token, expected):
             await anyio.sleep(0.01)
         tools = zbern.ZbernTools(zbern.http_transport(f"http://127.0.0.1:{port}/mcp", token, 10))
         assert await tools.refresh()
-        assert [t.name for t in await tools.list_tools()] == ["parl_ping"]
+        assert [t.name for t in await tools.list_tools()] == ["zbern_ping"]
         server.should_exit = True
     assert seen and all(h == expected for h in seen)
