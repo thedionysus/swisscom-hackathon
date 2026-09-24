@@ -46,11 +46,15 @@ create table if not exists corpus.source (
                 ('federal_law','cantonal_law','municipal_law','official_info','institutional')),
   level       text not null check (level in ('federal','cantonal','municipal')),
   extent_id   text not null references public.location(id),
-  connector   text not null check (connector in ('fedlex','html')),
+  connector   text not null check (connector in ('fedlex','html','json')),
   tier        integer not null,
   languages   text[] not null,
   config      jsonb not null default '{}'
 );
+-- #55 added the json connector. A database created before that keeps the old check, so replace it here;
+-- both statements are idempotent, like the rest of this file.
+alter table corpus.source drop constraint if exists source_connector_check;
+alter table corpus.source add constraint source_connector_check check (connector in ('fedlex','html','json'));
 
 create table if not exists corpus.translation_group (
   id                   text primary key,
