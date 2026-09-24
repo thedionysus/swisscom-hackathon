@@ -1,4 +1,5 @@
 import importlib
+import pathlib
 import subprocess
 
 import pytest
@@ -81,3 +82,62 @@ def test_cli_help_works_even_when_repo_root_would_fail(monkeypatch):
         assert result.exit_code == 0
     finally:
         importlib.reload(main)
+
+
+class _Settings:
+    dump_release_tag = "corpus-latest"
+    dump_release_repo = "thedionysus/swisscom-hackathon"
+    supertext_api_key = "k-123"
+
+
+def test_publish_key_uploads_the_key_from_env_and_removes_the_temp_file(tmp_path, monkeypatch):
+    seen = {}
+
+    def fake_run(cmd, **kwargs):
+        seen["cmd"] = cmd
+        seen["content"] = pathlib.Path(cmd[4]).read_text(encoding="utf-8")
+
+    monkeypatch.setattr(serving_commands, "load_settings", lambda: _Settings())
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands.subprocess, "run", fake_run)
+    serving_commands.publish_key_cmd()
+    assert seen["cmd"][:3] == ["gh", "release", "upload"] and "--clobber" in seen["cmd"]
+    assert seen["content"] == "SUPERTEXT_API_KEY=k-123\n"
+    assert not (tmp_path / "supertext.env").exists()
+
+
+def test_publish_key_refuses_without_a_key(monkeypatch):
+    class NoKey(_Settings):
+        supertext_api_key = None
+    monkeypatch.setattr(serving_commands, "load_settings", lambda: NoKey())
+    with pytest.raises(typer.BadParameter, match="SUPERTEXT_API_KEY"):
+        serving_commands.publish_key_cmd()
+
+
+def test_install_shared_key_writes_the_downloaded_key_into_env(tmp_path, monkeypatch):
+    class Done:
+        returncode = 0
+
+    def fake_run(cmd, **kwargs):
+        (tmp_path / "supertext.env").write_text("SUPERTEXT_API_KEY=k-123\n")
+        return Done()
+
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands.subprocess, "run", fake_run)
+    env = tmp_path / ".env"
+    env.write_text("DATABASE_URL=x\n# SUPERTEXT_API_KEY=\n")
+    assert serving_commands.install_shared_key(_Settings(), env) is True
+    assert env.read_text() == "DATABASE_URL=x\nSUPERTEXT_API_KEY=k-123\n"
+    assert not (tmp_path / "supertext.env").exists()
+
+
+def test_install_shared_key_is_optional(tmp_path, monkeypatch):
+    class Failed:
+        returncode = 1
+
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands.subprocess, "run", lambda cmd, **kw: Failed())
+    env = tmp_path / ".env"
+    env.write_text("DATABASE_URL=x\n")
+    assert serving_commands.install_shared_key(_Settings(), env) is False
+    assert env.read_text() == "DATABASE_URL=x\n"
