@@ -1875,3 +1875,1985 @@ sources:
       content_selector: "#block-fo-content"
       max_pages: 300
       max_pdfs: 0
+
+  # ==========================================================================================================
+  # Fribourg communes (2026-09-24). The 119 communes of the canton's official list (fr.ch/document/580206,
+  # "Liste des communes 2026"); websites from Wikidata P856; population from the canton's statistics table
+  # te008 (fr.ch/document/533566). Each start URL was checked with the corpus code: status, same site, robots.txt,
+  # parse. 116 communes have an entry; not added: Broc (pages parse to 7 words), Villorsonnens (Wikidata's site is
+  # a Plesk default page), Villaz (Wikidata's domain does not resolve; villaz.ch answers 500).
+  # Tier 2 until #59 widens the served scope. Per-commune evidence: docs/sources/fribourg_communes_2026-09-24.csv.
+  # 22 of these sites are hosted by Innovative Web AG (195.65.10.20-26); their firewall throttled 10 parallel
+  # requests to different communes, so fetch them with few workers.
+  # ==========================================================================================================
+  # Fribourg commune, BFS 2196, population 39599 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 5 start URLs pass (status, same site, robots, parse). CMS: Drupal 11 (https://www.drupal.org).
+  - id: fribourg_city
+    name: "Ville de Fribourg / Stadt Freiburg"
+    publisher: "Ville de Fribourg / Stadt Freiburg"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2196
+    connector: html
+    tier: 2
+    languages: [fr, de]
+    config:
+      start_urls: ["https://www.ville-fribourg.ch/", "https://www.ville-fribourg.ch/dechets", "https://www.ville-fribourg.ch/controle-habitants", "https://www.ville-fribourg.ch/impots-taxes", "https://www.ville-fribourg.ch/ecole-formation/vacances-scolaires"]
+      allow_prefixes: ["https://www.ville-fribourg.ch/"]
+      max_pages: 600
+      max_pdfs: 60
+
+  # Fribourg commune, BFS 2125, population 27276 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: bulle_commune
+    name: "Commune de Bulle"
+    publisher: "Commune de Bulle"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2125
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.bulle.ch/", "https://www.bulle.ch/collectedesdechets", "https://www.bulle.ch/departements", "https://www.bulle.ch/chiens/13901", "https://www.bulle.ch/impotstaxes/13910", "https://www.bulle.ch/reglements", "https://www.bulle.ch/ecole", "https://www.bulle.ch/eaux", "https://www.bulle.ch/constructions", "https://www.bulle.ch/votations"]
+      allow_prefixes: ["https://www.bulle.ch/"]
+      max_pages: 500
+      max_pdfs: 40
+
+  # Fribourg commune, BFS 2228, population 12644 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 10 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.1.2.
+  - id: villars_sur_glane_commune
+    name: "Commune de Villars-sur-Glâne"
+    publisher: "Commune de Villars-sur-Glâne"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2228
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.villars-sur-glane.ch/", "https://www.villars-sur-glane.ch/cat_sev/controle-habitants/", "https://www.villars-sur-glane.ch/prestations/chiens/", "https://www.villars-sur-glane.ch/prestations/fiscalites/", "https://www.villars-sur-glane.ch/cat_doc/reglements/", "https://www.villars-sur-glane.ch/prestations/elections-et-votations/"]
+      allow_prefixes: ["https://www.villars-sur-glane.ch/"]
+      max_pages: 300
+      max_pdfs: 40
+
+  # Fribourg commune, BFS 2054, population 10812 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: estavayer_commune
+    name: "Commune d'Estavayer"
+    publisher: "Commune d'Estavayer"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2054
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.estavayer.ch/", "https://www.estavayer.ch/services-techniques-et-infrastructures/routes-et-voirie", "https://www.estavayer.ch/administration/controle-des-habitants", "https://www.estavayer.ch/administration/controle-des-habitants/chiens", "https://www.estavayer.ch/administration/impots-taxes-communales", "https://www.estavayer.ch/administration/reglements-tarifs", "https://www.estavayer.ch/ecole-enfance", "https://www.estavayer.ch/article/vuissens-eau-potable", "https://www.estavayer.ch/services-techniques-et-infrastructures/constructions", "https://www.estavayer.ch/autorites-administration/votations-elections"]
+      allow_prefixes: ["https://www.estavayer.ch/"]
+      max_pages: 300
+      max_pdfs: 40
+
+  # Fribourg commune, BFS 2206, population 9566 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: marly_commune
+    name: "Commune de Marly"
+    publisher: "Commune de Marly"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2206
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.marly.ch/", "https://www.marly.ch/gestion-des-dechets", "https://www.marly.ch/controle-des-habitants", "https://www.marly.ch/finances-et-impots", "https://www.marly.ch/commune/reglements-communaux", "https://www.marly.ch/aes", "https://www.marly.ch/finances-et-impots/impots-et-taxes", "https://www.marly.ch/technique/eau-potable", "https://www.marly.ch/technique/police-des-constructions", "https://www.marly.ch/commune/elections-et-votations"]
+      allow_prefixes: ["https://www.marly.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2275, population 9525 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: murten_morat_commune
+    name: "Gemeinde Murten / Morat"
+    publisher: "Gemeinde Murten / Morat"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2275
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.murten-morat.ch/", "https://www.murten-morat.ch/abfallentsorgung/41501", "https://www.murten-morat.ch/zuzugumzugwegzug", "https://www.murten-morat.ch/finanzen/24313", "https://www.murten-morat.ch/reglemente", "https://www.murten-morat.ch/schule", "https://www.murten-morat.ch/dienstleistungen/12261", "https://www.murten-morat.ch/abstimmungen"]
+      allow_prefixes: ["https://www.murten-morat.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2293, population 9333 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 8 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: dudingen_commune
+    name: "Gemeinde Düdingen"
+    publisher: "Gemeinde Düdingen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2293
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.duedingen.ch/", "https://www.duedingen.ch/abfall", "https://www.duedingen.ch/gemeindeinzahlen", "https://www.duedingen.ch/asb", "https://www.duedingen.ch/abwasser", "https://www.duedingen.ch/abstimmungen"]
+      allow_prefixes: ["https://www.duedingen.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2325, population 8931 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: chatel_saint_denis_commune
+    name: "Commune de Châtel-Saint-Denis"
+    publisher: "Commune de Châtel-Saint-Denis"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2325
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.chatel-st-denis.ch/", "https://www.chatel-st-denis.ch/fr/vivre-a-chatel-st-denis/dechets/dechetterie", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/administration/services-communaux/services-techniques", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/administration/services-communaux/controle-des-habitants/nouveau-proprietaire-de-chien", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/administration/services-communaux/service-des-finances/impots-communaux", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/administration/reglements", "https://www.chatel-st-denis.ch/fr/vivre-a-chatel-st-denis/enfance-ecoles-formation-1/guichet-familles-2", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/administration/services-communaux/service-des-finances/taxes-communales", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/administration/services-communaux/services-techniques/service-technique-1/police-des-constructions", "https://www.chatel-st-denis.ch/fr/administration-et-autorites/votations-et-elections/liens"]
+      allow_prefixes: ["https://www.chatel-st-denis.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2236, population 8719 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 6 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: gibloux_commune
+    name: "Commune de Gibloux"
+    publisher: "Commune de Gibloux"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2236
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://commune-gibloux.ch/", "https://commune-gibloux.ch/service-technique/gestion-des-dechets", "https://commune-gibloux.ch/administration-autorites/administration-communale", "https://commune-gibloux.ch/finances-impots", "https://commune-gibloux.ch/ecole-formation", "https://commune-gibloux.ch/service-technique/constructions-et-amenagement-du-territoire"]
+      allow_prefixes: ["https://commune-gibloux.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2306, population 8030 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: tafers_commune
+    name: "Gemeinde Tafers"
+    publisher: "Gemeinde Tafers"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2306
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.tafers.ch/", "https://www.tafers.ch/recycling/7409", "https://www.tafers.ch/departemente", "https://www.tafers.ch/steuern/26185", "https://www.tafers.ch/reglemente", "https://www.tafers.ch/betreuung", "https://www.tafers.ch/wasser", "https://www.tafers.ch/baugesuche", "https://www.tafers.ch/wahlen-2026"]
+      allow_prefixes: ["https://www.tafers.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2053, population 6287 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: belmont_broye_commune
+    name: "Commune de Belmont-Broye"
+    publisher: "Commune de Belmont-Broye"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2053
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://belmont-broye.ch/", "https://belmont-broye.ch/dechetterie/", "https://belmont-broye.ch/edemenagement/", "https://belmont-broye.ch/finances-impots/", "https://belmont-broye.ch/reglements/", "https://belmont-broye.ch/ecole-petite-enfance/", "https://belmont-broye.ch/eau/", "https://belmont-broye.ch/constructions-et-amenagement/"]
+      allow_prefixes: ["https://belmont-broye.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2096, population 6276 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: romont_fr_commune
+    name: "Commune de Romont"
+    publisher: "Commune de Romont"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2096
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.romont.ch/", "https://www.romont.ch/voirie/14004", "https://www.romont.ch/departemente", "https://www.romont.ch/impots", "https://www.romont.ch/reglement", "https://www.romont.ch/ecoles", "https://www.romont.ch/abstimmungen"]
+      allow_prefixes: ["https://www.romont.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2309, population 5848 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 8 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.3.1; features: e_font_icon_svg, additional_custo.
+  - id: wunnewil_flamatt_commune
+    name: "Gemeinde Wünnewil-Flamatt"
+    publisher: "Gemeinde Wünnewil-Flamatt"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2309
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://wuennewil-flamatt.ch/", "https://wuennewil-flamatt.ch/verwaltung/abfallbeseitigung/", "https://wuennewil-flamatt.ch/gemeinde/gemeindepartnerschaft/", "https://wuennewil-flamatt.ch/verwaltung/publikationen-reglemente/", "https://wuennewil-flamatt.ch/bildung-soziales/schulen-kindergarten/", "https://wuennewil-flamatt.ch/leben-freizeit/umwelt/wasserversorgung/", "https://wuennewil-flamatt.ch/politik/wahlen-abstimmungen/"]
+      allow_prefixes: ["https://wuennewil-flamatt.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2254, population 5847 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.4; features: additional_custom_breakpoints; se.
+  - id: courtepin_commune
+    name: "Commune de Courtepin"
+    publisher: "Commune de Courtepin"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2254
+    connector: html
+    tier: 2
+    languages: [fr, de]
+    config:
+      start_urls: ["https://courtepin.ch/", "https://courtepin.ch/gestion-des-dechets/", "https://courtepin.ch/arrivees-departs/", "https://courtepin.ch/gestion-des-chiens/", "https://courtepin.ch/impots/", "https://courtepin.ch/reglements/", "https://courtepin.ch/accueil-extrascolaire/", "https://courtepin.ch/taxes/", "https://courtepin.ch/eau-potable/", "https://courtepin.ch/police-des-constructions/", "https://courtepin.ch/votations-elections/"]
+      allow_prefixes: ["https://courtepin.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2265, population 5546 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 4 of 6 start URLs pass (status, same site, robots, parse). CMS: Drupal 8 (https://www.drupal.org).
+  - id: kerzers_commune
+    name: "Gemeinde Kerzers"
+    publisher: "Gemeinde Kerzers"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2265
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.kerzers.ch/", "https://www.kerzers.ch/leben-kerzers/umwelt/entsorgung", "https://www.kerzers.ch/verwaltung/reglemente", "https://www.kerzers.ch/leben-kerzers/bildung/kantonsschulen"]
+      allow_prefixes: ["https://www.kerzers.ch/"]
+      max_pages: 200
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2262, population 4710 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 8 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: gurmels_commune
+    name: "Gemeinde Gurmels"
+    publisher: "Gemeinde Gurmels"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2262
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.gurmels.ch/", "https://www.gurmels.ch/abwasser", "https://www.gurmels.ch/steuerfuss", "https://www.gurmels.ch/wasser", "https://www.gurmels.ch/abstimmungen"]
+      allow_prefixes: ["https://www.gurmels.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2284, population 4551 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: mont_vully_commune
+    name: "Commune de Mont-Vully"
+    publisher: "Commune de Mont-Vully"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2284
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://mont-vully.ch/", "https://mont-vully.ch/services-techniques/service-de-voirie-et-routes", "https://mont-vully.ch/administration-autorites/controle-des-habitants", "https://mont-vully.ch/finances-impots", "https://mont-vully.ch/administration-autorites/reglements-communaux", "https://mont-vully.ch/enseignement-formation/ecole-maternelle", "https://mont-vully.ch/finances-impots/taxes-communales", "https://mont-vully.ch/services-techniques/service-des-constructions"]
+      allow_prefixes: ["https://mont-vully.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2305, population 4303 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 3 of 6 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: schmitten_fr_commune
+    name: "Gemeinde Schmitten"
+    publisher: "Gemeinde Schmitten"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2305
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.schmitten.ch/", "https://www.schmitten.ch/wasser", "https://www.schmitten.ch/abstimmungen"]
+      allow_prefixes: ["https://www.schmitten.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2102, population 4073 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: ursy_commune
+    name: "Commune d'Ursy"
+    publisher: "Commune d'Ursy"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2102
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.ursy.ch/", "https://www.ursy.ch/technique-securite/dechetterie", "https://www.ursy.ch/autorites/controle-des-habitants", "https://www.ursy.ch/vie-locale/chiens", "https://www.ursy.ch/finances/impots", "https://www.ursy.ch/reglements", "https://www.ursy.ch/ecole", "https://www.ursy.ch/finances/taxes", "https://www.ursy.ch/technique-securite/eau-step", "https://www.ursy.ch/technique-securite/construction-urbanisme", "https://www.ursy.ch/autorites/votations-et-elections"]
+      allow_prefixes: ["https://www.ursy.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2198, population 3989 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: granges_paccot_commune
+    name: "Commune de Granges-Paccot"
+    publisher: "Commune de Granges-Paccot"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2198
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://granges-paccot.ch/", "https://granges-paccot.ch/gestion-des-dechets/", "https://granges-paccot.ch/controle-des-habitants/", "https://granges-paccot.ch/taxes-impots/", "https://granges-paccot.ch/reglements/", "https://granges-paccot.ch/ecoles/", "https://granges-paccot.ch/eau-potable/", "https://granges-paccot.ch/construction/", "https://granges-paccot.ch/votations/"]
+      allow_prefixes: ["https://granges-paccot.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2299, population 3729 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 7 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: plaffeien_commune
+    name: "Gemeinde Plaffeien"
+    publisher: "Gemeinde Plaffeien"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2299
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.plaffeien.ch/", "https://www.plaffeien.ch/steuerfuss", "https://www.plaffeien.ch/reglemente", "https://www.plaffeien.ch/primarschule", "https://www.plaffeien.ch/umweltwasser", "https://www.plaffeien.ch/gesamterneuerungswahl-2026"]
+      allow_prefixes: ["https://www.plaffeien.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2321, population 3690 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 6 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.0.4.
+  - id: attalens_commune
+    name: "Commune d'Attalens"
+    publisher: "Commune d'Attalens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2321
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.attalens.ch/", "https://www.attalens.ch/voirie/", "https://www.attalens.ch/controle-des-habitants/", "https://www.attalens.ch/2023/10/02/informations-pour-les-futur-e-s-detenteur-trice-s-de-chiens-nouvelle-legislation-des-2024/", "https://www.attalens.ch/reglements-et-formulaires/", "https://www.attalens.ch/ecoles/"]
+      allow_prefixes: ["https://www.attalens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2197, population 3507 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: givisiez_commune
+    name: "Commune de Givisiez"
+    publisher: "Commune de Givisiez"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2197
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.givisiez.ch/", "https://www.givisiez.ch/amenagement-environnement/gestion-des-dechets", "https://www.givisiez.ch/controle-des-habitants", "https://www.givisiez.ch/services-generaux/impots", "https://www.givisiez.ch/reglements", "https://www.givisiez.ch/services-generaux/eau"]
+      allow_prefixes: ["https://www.givisiez.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2175, population 3488 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: belfaux_commune
+    name: "Commune de Belfaux"
+    publisher: "Commune de Belfaux"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2175
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.belfaux.ch/", "https://www.belfaux.ch/organisation/dechets-et-dechetterie/usine-dincineration.html", "https://www.belfaux.ch/guichet-virtuel/e-demenagement.html", "https://www.belfaux.ch/organisation/finances/finances-et-impots.html", "https://www.belfaux.ch/documents-et-reglements/taxe-non-pompier.html", "https://www.belfaux.ch/organisation/accueil-extrascolaire-aes.html", "https://www.belfaux.ch/organisation/finances/taux-dimpots-et-taxes.html", "https://www.belfaux.ch/organisation/eaux/eaux-usees.html", "https://www.belfaux.ch/organisation/amenagement-du-territoire/constructions-permis-de-construire.html"]
+      allow_prefixes: ["https://www.belfaux.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2295, population 3336 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 7 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: bosingen_commune
+    name: "Gemeinde Bösingen"
+    publisher: "Gemeinde Bösingen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2295
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.boesingen.ch/", "https://www.boesingen.ch/memoabfall", "https://www.boesingen.ch/finanzensteuern/3244", "https://www.boesingen.ch/verwaltungabwasser", "https://www.boesingen.ch/abstimmungen"]
+      allow_prefixes: ["https://www.boesingen.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2220, population 3326 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: le_mouret_commune
+    name: "Commune de Le Mouret"
+    publisher: "Commune de Le Mouret"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2220
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://le-mouret.ch/", "https://le-mouret.ch/environnement-constructions/dechets/energie", "https://le-mouret.ch/administration-autorites/controle-de-lhabitant", "https://le-mouret.ch/environnement-constructions/default-446ab8a8aea9968f39044329538a00d1", "https://le-mouret.ch/aide-a-la-declaration-dimpot", "https://le-mouret.ch/administration-autorites/reglements-formulaires", "https://le-mouret.ch/cercle-scolaire-du-mouret/petite-enfance", "https://le-mouret.ch/finances-impots/taxes-et-impots", "https://le-mouret.ch/environnement-constructions/eau-potable", "https://le-mouret.ch/environnement-constructions/foret"]
+      allow_prefixes: ["https://le-mouret.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2183, population 3120 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: corminboeuf_commune
+    name: "Commune de Corminboeuf"
+    publisher: "Commune de Corminboeuf"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2183
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://corminboeuf.ch/", "https://corminboeuf.ch/environnement/gestion-des-dechets", "https://corminboeuf.ch/administration/controle-des-habitants", "https://corminboeuf.ch/impots-communaux", "https://corminboeuf.ch/administration/reglements-communaux", "https://corminboeuf.ch/enfance-jeunesse/medecine-scolaire", "https://corminboeuf.ch/finances/taxes-communales", "https://corminboeuf.ch/environnement/eaux", "https://corminboeuf.ch/construction-mobilite/mobilite", "https://corminboeuf.ch/administration/votations-et-elections"]
+      allow_prefixes: ["https://corminboeuf.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2029, population 3105 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 10 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: montagny_fr_commune
+    name: "Commune de Montagny"
+    publisher: "Commune de Montagny"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2029
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.montagny-fr.ch/", "https://www.montagny-fr.ch/voirie/35659", "https://www.montagny-fr.ch/departemente", "https://www.montagny-fr.ch/annonce-chien/95476", "https://www.montagny-fr.ch/Financesetimpots/34871", "https://www.montagny-fr.ch/reglement/478618", "https://www.montagny-fr.ch/reglementstarifs", "https://www.montagny-fr.ch/amenagementduterritoire/34580", "https://www.montagny-fr.ch/informationsgenerales/informationen"]
+      allow_prefixes: ["https://www.montagny-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2148, population 2924 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: riaz_commune
+    name: "Commune de Riaz"
+    publisher: "Commune de Riaz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2148
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://riaz.ch/", "https://riaz.ch/vie-pratique/gestion-des-dechets/", "https://riaz.ch/autorites-administration/administration-communale/controle-des-habitants/", "https://riaz.ch/autorites-administration/administration-communale/controle-des-habitants/chiens/", "https://riaz.ch/informations-officielles/fiscalite/", "https://riaz.ch/informations-officielles/reglements/", "https://riaz.ch/vie-pratique/ecoles/", "https://riaz.ch/vie-pratique/eau-epuration/", "https://riaz.ch/vie-pratique/constructions-amenagement-du-territoire/", "https://riaz.ch/informations-officielles/votations-et-elections/"]
+      allow_prefixes: ["https://riaz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2239, population 2898 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: grolley_ponthaux_commune
+    name: "Commune de Grolley-Ponthaux"
+    publisher: "Commune de Grolley-Ponthaux"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2239
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.grolley-ponthaux.ch/", "https://www.grolley-ponthaux.ch/gestion-dechets", "https://www.grolley-ponthaux.ch/controle-des-habitants/22631", "https://www.grolley-ponthaux.ch/frimpots", "https://www.grolley-ponthaux.ch/legislation-grolley/21468", "https://www.grolley-ponthaux.ch/autorite", "https://www.grolley-ponthaux.ch/taxes", "https://www.grolley-ponthaux.ch/eaux/23321", "https://www.grolley-ponthaux.ch/services-construction/23395", "https://www.grolley-ponthaux.ch/votations-elections"]
+      allow_prefixes: ["https://www.grolley-ponthaux.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2211, population 2874 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: neyruz_fr_commune
+    name: "Commune de Neyruz"
+    publisher: "Commune de Neyruz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2211
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.neyruz.ch/", "https://www.neyruz.ch/vivre-a-neyruz/dechets-voirie", "https://www.neyruz.ch/vivre-a-neyruz/controle-des-habitants", "https://www.neyruz.ch/administration/reglements-communaux", "https://www.neyruz.ch/vivre-a-neyruz/ecole/generalites", "https://www.neyruz.ch/administration/taxe-non-pompier", "https://www.neyruz.ch/territoire/eaux", "https://www.neyruz.ch/territoire/service-des-constructions", "https://www.neyruz.ch/politique/elections-communales"]
+      allow_prefixes: ["https://www.neyruz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2163, population 2725 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 6 start URLs pass (status, same site, robots, parse). CMS: All in One SEO (AIOSEO) 4.9.7.2.
+  - id: val_de_charmey_commune
+    name: "Commune de Val-de-Charmey"
+    publisher: "Commune de Val-de-Charmey"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2163
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://val-de-charmey.ch/", "https://val-de-charmey.ch/administration/voirie/", "https://val-de-charmey.ch/economie/impots-et-taxes/", "https://val-de-charmey.ch/download/reglements-et-lois/", "https://val-de-charmey.ch/vie-pratique/ecoles-formation/", "https://val-de-charmey.ch/vie-politique/votations-et-elections/"]
+      allow_prefixes: ["https://val-de-charmey.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2099, population 2711 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: siviriez_commune
+    name: "Commune de Siviriez"
+    publisher: "Commune de Siviriez"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2099
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.siviriez.ch/", "https://www.siviriez.ch/constructions-amenagement-du-territoire-et-energie/dechetteries", "https://www.siviriez.ch/autorites-administration/controle-de-lhabitant", "https://www.siviriez.ch/securite-economie/ordre-public", "https://www.siviriez.ch/finances-impots", "https://www.siviriez.ch/autorites-administration/reglements-formulaires", "https://www.siviriez.ch/ecole-enfance", "https://www.siviriez.ch/finances-impots/taxes-communales", "https://www.siviriez.ch/constructions-amenagement-du-territoire-et-energie/eaux", "https://www.siviriez.ch/environnement-construction/energie-1", "https://www.siviriez.ch/autorites-administration/votations-elections"]
+      allow_prefixes: ["https://www.siviriez.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2233, population 2674 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: hauterive_fr_commune
+    name: "Commune de Hauterive"
+    publisher: "Commune de Hauterive"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2233
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://hauterivefr.ch/", "https://hauterivefr.ch/service-technique/gestion-des-dechets", "https://hauterivefr.ch/administration/controle-des-habitants", "https://hauterivefr.ch/impots-et-taxes", "https://hauterivefr.ch/administration/reglements-et-formulaires", "https://hauterivefr.ch/ecole-primaire", "https://hauterivefr.ch/impots-et-taxes/taxes-communales"]
+      allow_prefixes: ["https://hauterivefr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2097, population 2638 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.1.2.
+  - id: rue_commune
+    name: "Commune de Rue"
+    publisher: "Commune de Rue"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2097
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://rue.ch/", "https://rue.ch/dechetterie-2025/", "https://rue.ch/commune/informations/controle-des-habitants/", "https://rue.ch/avis-aux-detenteurs-de-chiens/", "https://rue.ch/plantes-invasives-reglementation-2/", "https://rue.ch/ecoles/", "https://rue.ch/taxes-communales/", "https://rue.ch/taxes-communales/eau-usees/", "https://rue.ch/commune/informations/liens-et-formulaires/"]
+      allow_prefixes: ["https://rue.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2160, population 2580 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: Divi Community Child Theme v.1.1.
+  - id: vuadens_commune
+    name: "Commune de Vuadens"
+    publisher: "Commune de Vuadens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2160
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.vuadens.ch/", "https://www.vuadens.ch/vie-locale-et-economie/gestion-des-dechets/", "https://www.vuadens.ch/guichet-virtuel/", "https://www.vuadens.ch/commune/administration-communale/taxes-et-impots/", "https://www.vuadens.ch/commune/reglements/", "https://www.vuadens.ch/services/aes/", "https://www.vuadens.ch/vie-locale-et-economie/eau-potable/", "https://www.vuadens.ch/vie-locale-et-economie/amenagement-du-territoire-et-constructions/", "https://www.vuadens.ch/2024/04/09/votation-du-09-06-2024/"]
+      allow_prefixes: ["https://www.vuadens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2055, population 2545 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 10 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: cheyres_chables_commune
+    name: "Commune de Cheyres-Châbles"
+    publisher: "Commune de Cheyres-Châbles"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2055
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.cheyres-chables.ch/", "https://www.cheyres-chables.ch/dechetterie/43699", "https://www.cheyres-chables.ch/controle-habitants/39634", "https://www.cheyres-chables.ch/chiens/111535", "https://www.cheyres-chables.ch/finance-service/112189", "https://www.cheyres-chables.ch/reglements", "https://www.cheyres-chables.ch/eau-potable/42256", "https://www.cheyres-chables.ch/constructions/39643", "https://www.cheyres-chables.ch/votations-et-elections"]
+      allow_prefixes: ["https://www.cheyres-chables.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2238, population 2489 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: bois_d_amont_commune
+    name: "Commune de Bois-d'Amont"
+    publisher: "Commune de Bois-d'Amont"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2238
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.bois-damont.ch/", "https://www.bois-damont.ch/dechets/", "https://www.bois-damont.ch/administration/controle-des-habitants/", "https://www.bois-damont.ch/justice-et-police/detention-de-chiens/", "https://www.bois-damont.ch/administration/impots-et-taxes/", "https://www.bois-damont.ch/administration/reglements-communaux/", "https://www.bois-damont.ch/ecoles-et-formations/", "https://www.bois-damont.ch/environnement/eaux/", "https://www.bois-damont.ch/amenagement-du-territoire/constructions/", "https://www.bois-damont.ch/administration/votation-election/"]
+      allow_prefixes: ["https://www.bois-damont.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2237, population 2487 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: prez_commune
+    name: "Commune de Prez"
+    publisher: "Commune de Prez"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2237
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://prez.ch/", "https://prez.ch/environnement-construction/gestion-des-dechets", "https://prez.ch/autorites-administration/controle-des-habitants", "https://prez.ch/finances-impots/impots-communaux", "https://prez.ch/autorites-administration/reglements-communaux", "https://prez.ch/ecole-formation/petite-enfance", "https://prez.ch/environnement-construction/eaux", "https://prez.ch/environnement-construction/edilite", "https://prez.ch/autorites-administration/votations-et-elections"]
+      allow_prefixes: ["https://prez.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2308, population 2417 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: ueberstorf_commune
+    name: "Gemeinde Ueberstorf"
+    publisher: "Gemeinde Ueberstorf"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2308
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.ueberstorf.ch/", "https://www.ueberstorf.ch/abfallsammlungen", "https://www.ueberstorf.ch/hunde", "https://www.ueberstorf.ch/steuerfuss", "https://www.ueberstorf.ch/reglemente", "https://www.ueberstorf.ch/gymnasium", "https://www.ueberstorf.ch/abwasser", "https://www.ueberstorf.ch/abstimmungen/informationen"]
+      allow_prefixes: ["https://www.ueberstorf.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2113, population 2410 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: vuisternens_devant_romont_commune
+    name: "Commune de Vuisternens-devant-Romont"
+    publisher: "Commune de Vuisternens-devant-Romont"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2113
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://vuisternens.ch/", "https://vuisternens.ch/technique-securite/dechetterie", "https://vuisternens.ch/autorites-secretariat/controle-des-habitants", "https://vuisternens.ch/autorites-secretariat/controle-des-habitants/chiens", "https://vuisternens.ch/finances-impots/taxes", "https://vuisternens.ch/autorites-secretariat/reglements-communaux", "https://vuisternens.ch/enseignement-formation/ecole-maternelle", "https://vuisternens.ch/enseignement-formation/taxes-et-subventions", "https://vuisternens.ch/technique-securite/eaux-step", "https://vuisternens.ch/technique-securite/construction-et-urbanisme", "https://vuisternens.ch/autorites-secretariat/elections-votations"]
+      allow_prefixes: ["https://vuisternens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2272, population 2393 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: WordPress 6.5.12.
+  - id: misery_courtion_commune
+    name: "Commune de Misery-Courtion"
+    publisher: "Commune de Misery-Courtion"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2272
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.miserycourtion.ch/", "https://www.miserycourtion.ch/services/edilite-et-gestion-des-dechets/edilite/", "https://www.miserycourtion.ch/population/arrivees-et-departs/", "https://www.miserycourtion.ch/population/amicus/", "https://www.miserycourtion.ch/commune/fiscalite/", "https://www.miserycourtion.ch/commune/reglements/", "https://www.miserycourtion.ch/education-sante-social/ecoles/contacts-et-informations-generales/", "https://www.miserycourtion.ch/services/eaux-usees/", "https://www.miserycourtion.ch/amenagement/constructions/"]
+      allow_prefixes: ["https://www.miserycourtion.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2135, population 2353 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: gruyeres_commune
+    name: "Commune de Gruyères"
+    publisher: "Commune de Gruyères"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2135
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.gruyeres.ch/", "https://www.gruyeres.ch/collecte", "https://www.gruyeres.ch/departemente", "https://www.gruyeres.ch/frimpots", "https://www.gruyeres.ch/reglemente", "https://www.gruyeres.ch/ecoles", "https://www.gruyeres.ch/votations"]
+      allow_prefixes: ["https://www.gruyeres.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2234, population 2239 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 11 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: la_brillaz_commune
+    name: "Commune de La Brillaz"
+    publisher: "Commune de La Brillaz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2234
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://labrillaz.ch/", "https://labrillaz.ch/services-techniques-environnement-constructions/dechets/", "https://labrillaz.ch/administration/registre-des-habitants/", "https://labrillaz.ch/finances-impots/budgets-comptes/", "https://labrillaz.ch/administration/reglements-avenants/", "https://labrillaz.ch/ecoles-enfance/famiya/", "https://labrillaz.ch/finances-impots/fiscalites-taxes/", "https://labrillaz.ch/services-techniques-environnement-constructions/eaux/", "https://labrillaz.ch/autorite/elections-votations/"]
+      allow_prefixes: ["https://labrillaz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2041, population 2106 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: saint_aubin_fr_commune
+    name: "Commune de Saint-Aubin"
+    publisher: "Commune de Saint-Aubin"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2041
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://saint-aubin.ch/", "https://saint-aubin.ch/services-techniques/dechetterie", "https://saint-aubin.ch/administration-et-autorites/controle-des-habitants-guichet-virtuel", "https://saint-aubin.ch/je-veux-me-divertir", "https://saint-aubin.ch/finances-et-impots/easygovswiss", "https://saint-aubin.ch/menu/commission-comunnales/reglements-communaux", "https://saint-aubin.ch/ecoles-formation-education/gyb", "https://saint-aubin.ch/finances-et-impots/taxes-et-emoluments", "https://saint-aubin.ch/environnement-et-constructions/energie", "https://saint-aubin.ch/administration-et-autorites/votations-/-elections"]
+      allow_prefixes: ["https://saint-aubin.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2208, population 2094 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: matran_commune
+    name: "Commune de Matran"
+    publisher: "Commune de Matran"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2208
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://matran.ch/", "https://matran.ch/service-technique/dechets", "https://matran.ch/controle-des-habitants", "https://matran.ch/impots-taxes-et-economie", "https://matran.ch/administration-et-autorites/reglements-communaux", "https://matran.ch/ecole-et-formation", "https://matran.ch/impots-taxes-et-economie/impots", "https://matran.ch/service-technique/eau-potable-eaux-usees", "https://matran.ch/service-technique/constructions", "https://matran.ch/administration-et-autorites/elections-et-votations"]
+      allow_prefixes: ["https://matran.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2140, population 2093 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: marsens_commune
+    name: "Commune de Marsens"
+    publisher: "Commune de Marsens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2140
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.marsens.ch/fr/", "https://www.marsens.ch/fr/amenagement-et-constructions/dechets", "https://www.marsens.ch/fr/finances-et-impots/taxes", "https://www.marsens.ch/fr/autorite-_-administration/reglements-et-formulaires", "https://www.marsens.ch/fr/ecoles-et-petite-enfance/petite-enfance", "https://www.marsens.ch/fr/amenagement-et-constructions/eaux", "https://www.marsens.ch/fr/amenagement-et-constructions/routes", "https://www.marsens.ch/fr/autorite-_-administration/votations-et-elections"]
+      allow_prefixes: ["https://www.marsens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2149, population 2083 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: la_roche_commune
+    name: "Commune de La Roche"
+    publisher: "Commune de La Roche"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2149
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.la-roche.ch/", "https://www.la-roche.ch/voirie/25519", "https://www.la-roche.ch/controledeshabitants/39376", "https://www.la-roche.ch/financeetimpots/26041", "https://www.la-roche.ch/reglementscommunaux/292021", "https://www.la-roche.ch/cerclescolaire/67918", "https://www.la-roche.ch/prestations/67933", "https://www.la-roche.ch/abstimmungen"]
+      allow_prefixes: ["https://www.la-roche.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2011, population 2067 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: cugy_fr_commune
+    name: "Commune de Cugy"
+    publisher: "Commune de Cugy"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2011
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://cugy-fr.ch/", "https://cugy-fr.ch/environnement-construction-mobilite/dechetterie", "https://cugy-fr.ch/guichet-virtuel-1/attestation-de-domicile-1", "https://cugy-fr.ch/finances-impots", "https://cugy-fr.ch/administration-autorites-poste/reglements", "https://cugy-fr.ch/ecole-petite-enfance", "https://cugy-fr.ch/finances-impots/impots-taxes", "https://cugy-fr.ch/environnement-construction-mobilite/eau-epuration", "https://cugy-fr.ch/environnement-construction-mobilite", "https://cugy-fr.ch/administration-autorites-poste/elections-et-votations"]
+      allow_prefixes: ["https://cugy-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2122, population 2050 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: pont_en_ogoz_commune
+    name: "Commune de Pont-en-Ogoz"
+    publisher: "Commune de Pont-en-Ogoz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2122
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.pont-en-ogoz.ch/fr/", "https://www.pont-en-ogoz.ch/fr/administration--gestion-des-dechets.html", "https://www.pont-en-ogoz.ch/fr/administration--controle-des-habitants.html", "https://www.pont-en-ogoz.ch/fr/administration-impot-et-taxes.html", "https://www.pont-en-ogoz.ch/fr/administration--reglements-communaux.html", "https://www.pont-en-ogoz.ch/fr/educationenfance--ecoles-et-creches.html", "https://www.pont-en-ogoz.ch/fr/administration--constructions.html", "https://www.pont-en-ogoz.ch/fr/politique-votations.html"]
+      allow_prefixes: ["https://www.pont-en-ogoz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2174, population 1970 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 10 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: avry_commune
+    name: "Commune d'Avry"
+    publisher: "Commune d'Avry"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2174
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.avry.ch/", "https://www.avry.ch/documents-officiels", "https://www.avry.ch/fiscalite-finances/79816", "https://www.avry.ch/actualites/2967787", "https://www.avry.ch/votationselections"]
+      allow_prefixes: ["https://www.avry.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2121, population 1772 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.1.3; features: e_font_icon_svg, additional_custo.
+  - id: haut_intyamon_commune
+    name: "Commune de Haut-Intyamon"
+    publisher: "Commune de Haut-Intyamon"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2121
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://haut-intyamon.ch/", "https://haut-intyamon.ch/services-techniques/gestion-des-dechets/", "https://haut-intyamon.ch/administration/controle-de-lhabitant/", "https://haut-intyamon.ch/politique/reglements/", "https://haut-intyamon.ch/enfance-formation/ecole/", "https://haut-intyamon.ch/services-techniques/eau-epuration/", "https://haut-intyamon.ch/services-techniques/constructions-amenagements/", "https://haut-intyamon.ch/politique/votations-elections/"]
+      allow_prefixes: ["https://haut-intyamon.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2162, population 1759 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: Joomla! - Open Source Content Management.
+  - id: bas_intyamon_commune
+    name: "Commune de Bas-Intyamon"
+    publisher: "Commune de Bas-Intyamon"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2162
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.bas-intyamon.ch/", "https://www.bas-intyamon.ch/services-communaux/dechets", "https://www.bas-intyamon.ch/services-communaux/controle-des-habitants", "https://www.bas-intyamon.ch/habiter-bas-intyamon/impots-et-taxes", "https://www.bas-intyamon.ch/administration-et-autorites/reglements-communaux", "https://www.bas-intyamon.ch/famille-et-enseignement/accueil-extrascolaire", "https://www.bas-intyamon.ch/services-communaux/demande-de-permis-de-construire", "https://www.bas-intyamon.ch/administration-et-autorites/votations-et-elections"]
+      allow_prefixes: ["https://www.bas-intyamon.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2294, population 1718 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 3 of 9 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: giffers_commune
+    name: "Gemeinde Giffers"
+    publisher: "Gemeinde Giffers"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2294
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.giffers.ch/", "https://www.giffers.ch/wasser", "https://www.giffers.ch/abstimmungen"]
+      allow_prefixes: ["https://www.giffers.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2323, population 1661 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: WordPress 6.9.9.
+  - id: bossonnens_commune
+    name: "Commune de Bossonnens"
+    publisher: "Commune de Bossonnens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2323
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.bossonnens.ch/", "https://www.bossonnens.ch/voirie/", "https://www.bossonnens.ch/controle-des-habitants/", "https://www.bossonnens.ch/reglements-et-formulaires/", "https://www.bossonnens.ch/accueil-extra-scolaire/", "https://www.bossonnens.ch/2023/05/30/diminution-de-la-taxe-sur-lepuration/", "https://www.bossonnens.ch/permis-de-construire/"]
+      allow_prefixes: ["https://www.bossonnens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2226, population 1643 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: WebMaker 5.0 - https://www.webmaker.ch.
+  - id: treyvaux_commune
+    name: "Commune de Treyvaux"
+    publisher: "Commune de Treyvaux"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2226
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.treyvaux.ch/", "https://www.treyvaux.ch/La-commune/Dechetterie", "https://www.treyvaux.ch/Vie-privee/Arrivee-et-depart", "https://www.treyvaux.ch/Etat-et-politique/Impots-sur-les-chiens", "https://www.treyvaux.ch/Etat-et-politique/Impots-communaux", "https://www.treyvaux.ch/Dossiers/Reglements-communaux", "https://www.treyvaux.ch/Ecoles/Avant-lecole-0-4-ans", "https://www.treyvaux.ch/Commune/Eau-potable-eaux-claires-et-eaux-usees", "https://www.treyvaux.ch/Etat-et-politique/Elections-communales"]
+      allow_prefixes: ["https://www.treyvaux.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2186, population 1605 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 11 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.1.2 [i-web].
+  - id: cottens_fr_commune
+    name: "Commune de Cottens"
+    publisher: "Commune de Cottens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2186
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://cottens-fr.ch/", "https://cottens-fr.ch/service-technique/gestion-des-dechets/", "https://cottens-fr.ch/controle-de-lhabitant/", "https://cottens-fr.ch/controle-de-lhabitant/proprietaires-de-chiens/", "https://cottens-fr.ch/finances/impots/", "https://cottens-fr.ch/reglements/", "https://cottens-fr.ch/ecole-formation/", "https://cottens-fr.ch/finances/taxes/", "https://cottens-fr.ch/service-technique/eau-epuration/", "https://cottens-fr.ch/service-technique/permis-de-construire/"]
+      allow_prefixes: ["https://cottens-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2336, population 1591 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.1.2.
+  - id: semsales_commune
+    name: "Commune de Semsales"
+    publisher: "Commune de Semsales"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2336
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.semsales.ch/", "https://www.semsales.ch/dechetterie/", "https://www.semsales.ch/contrdes-habitants/", "https://www.semsales.ch/detenteur-de-chien/", "https://www.semsales.ch/taxes-et-impcommunaux/", "https://www.semsales.ch/reglements-communaux/", "https://www.semsales.ch/ecole/", "https://www.semsales.ch/votation-federale-24-novembre-2024/"]
+      allow_prefixes: ["https://www.semsales.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2050, population 1587 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: les_montets_commune
+    name: "Commune de Les Montets"
+    publisher: "Commune de Les Montets"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2050
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://les-montets.ch/", "https://les-montets.ch/constructions-environnement/dechetterie", "https://les-montets.ch/administration-autorites/controle-des-habitants", "https://les-montets.ch/finances-impots/impots-et-taxes", "https://les-montets.ch/administration-autorites/reglements-communaux", "https://les-montets.ch/ecoles-petite-enfance", "https://les-montets.ch/constructions-environnement/eau-potable", "https://les-montets.ch/constructions-environnement/energie", "https://les-montets.ch/administration-autorites/elections-et-votations"]
+      allow_prefixes: ["https://les-montets.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2235, population 1481 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: la_sonnaz_commune
+    name: "Commune de La Sonnaz"
+    publisher: "Commune de La Sonnaz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2235
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://lasonnaz.ch/", "https://lasonnaz.ch/gestion-des-dechets/", "https://lasonnaz.ch/edemenagement/", "https://lasonnaz.ch/taxes-impots/", "https://lasonnaz.ch/reglements/", "https://lasonnaz.ch/cercle-scolaire/", "https://lasonnaz.ch/eaux/", "https://lasonnaz.ch/construction/", "https://lasonnaz.ch/votations-elections/"]
+      allow_prefixes: ["https://lasonnaz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2152, population 1478 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 11 start URLs pass (status, same site, robots, parse). CMS: Thème commune Sâles v.1.0.0 [i-web].
+  - id: sales_commune
+    name: "Commune de Sâles"
+    publisher: "Commune de Sâles"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2152
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://commune-sales.ch/", "https://commune-sales.ch/services/gestion-des-dechets/", "https://commune-sales.ch/demarches-administratives/arrivees-et-departs/", "https://commune-sales.ch/commune/taxes-et-impots/", "https://commune-sales.ch/commune/reglements-communaux/", "https://commune-sales.ch/ecole-et-formation/accueil-extrascolaire/", "https://commune-sales.ch/commune/taxes-et-impots/#newtab", "https://commune-sales.ch/territoire-amenagement-et-constructions/eau-et-epuration/", "https://commune-sales.ch/territoire-amenagement-et-constructions/constructions/", "https://commune-sales.ch/politique/votations-et-elections/"]
+      allow_prefixes: ["https://commune-sales.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2333, population 1462 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.1.2.
+  - id: remaufens_commune
+    name: "Commune de Remaufens"
+    publisher: "Commune de Remaufens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2333
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://remaufens.ch/", "http://remaufens.ch/decheterie/", "http://remaufens.ch/controle-des-habitants/", "https://remaufens.ch/taxes-et-impots-communaux/", "https://remaufens.ch/reglements/", "https://remaufens.ch/cercle-scolaire/", "http://remaufens.ch/constructions/"]
+      allow_prefixes: ["https://remaufens.ch/", "http://remaufens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2145, population 1457 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: IceCube2.Net.
+  - id: le_paquier_fr_commune
+    name: "Commune de Le Pâquier"
+    publisher: "Commune de Le Pâquier"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2145
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.lepaquier.ch/", "https://www.lepaquier.ch/fr/Administration/Dechets/Dechetterie.html", "https://www.lepaquier.ch/fr/Guichet-virtuel/eDemenagement/eDemenagement.html", "https://www.lepaquier.ch/fr/Administration/Finances/Impots-et-taxes/Impots-et-taxes.html", "https://www.lepaquier.ch/fr/Administration/Administration-communale/Reglements-communaux/Reglements-et-directives.html", "https://www.lepaquier.ch/fr/Vivre/Ecoles/Presentation/Presentation.html", "https://www.lepaquier.ch/fr/Administration/Eau-potable/Qualite-de-l-eau.html", "https://www.lepaquier.ch/fr/Administration/Services-techniques/Constructions/Permis-de-construire.html"]
+      allow_prefixes: ["https://www.lepaquier.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2250, population 1431 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 7 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: courgevaux_commune
+    name: "Commune de Courgevaux"
+    publisher: "Commune de Courgevaux"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2250
+    connector: html
+    tier: 2
+    languages: [fr, de]
+    config:
+      start_urls: ["https://courgevaux.ch/index.php/fr/", "https://courgevaux.ch/index.php/fr/les-themes/dechets/taxes", "https://courgevaux.ch/index.php/fr/les-themes/demenagement/depart", "https://courgevaux.ch/index.php/fr/les-themes/affaires-canines/impots-sur-les-chiens", "https://courgevaux.ch/index.php/fr/les-themes/travail-et-impots/impots", "https://courgevaux.ch/index.php/fr/politique/reglements"]
+      allow_prefixes: ["https://courgevaux.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2296, population 1413 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 9 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: heitenried_commune
+    name: "Gemeinde Heitenried"
+    publisher: "Gemeinde Heitenried"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2296
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.heitenried.ch/", "https://www.heitenried.ch/hunde", "https://www.heitenried.ch/steuerfuss", "https://www.heitenried.ch/schulen/5851", "https://www.heitenried.ch/geb-hren", "https://www.heitenried.ch/wasser", "https://www.heitenried.ch/abstimmungen"]
+      allow_prefixes: ["https://www.heitenried.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2304, population 1389 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: st_ursen_commune
+    name: "Gemeinde St. Ursen"
+    publisher: "Gemeinde St. Ursen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2304
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.stursen.ch/", "https://www.stursen.ch/abfalldaten", "https://www.stursen.ch/steuerfuss", "https://www.stursen.ch/reglementeerlasse", "https://www.stursen.ch/schulen", "https://www.stursen.ch/wasser", "https://www.stursen.ch/baugesuche/42303", "https://www.stursen.ch/abstimmungen"]
+      allow_prefixes: ["https://www.stursen.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2307, population 1374 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: tentlingen_commune
+    name: "Gemeinde Tentlingen"
+    publisher: "Gemeinde Tentlingen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2307
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.tentlingen.ch/", "https://www.tentlingen.ch/abfallkalender.html", "https://www.tentlingen.ch/hunde-richtlinien.html", "https://www.tentlingen.ch/steuern-gebuehren.html", "https://www.tentlingen.ch/reglemente.html", "https://www.tentlingen.ch/musikschule.html", "https://www.tentlingen.ch/wasserversorgung.html"]
+      allow_prefixes: ["https://www.tentlingen.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2051, population 1349 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: delley_portalban_commune
+    name: "Commune de Delley-Portalban"
+    publisher: "Commune de Delley-Portalban"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2051
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.delley-portalban.ch/", "https://www.delley-portalban.ch/environnement-construction/dechetterie", "https://www.delley-portalban.ch/impot", "https://www.delley-portalban.ch/administration/reglements-et-formulaires", "https://www.delley-portalban.ch/education/ecoles-aisdpg", "https://www.delley-portalban.ch/visitez-le-port/tarifs", "https://www.delley-portalban.ch/environnement-construction", "https://www.delley-portalban.ch/votations-et-elections"]
+      allow_prefixes: ["https://www.delley-portalban.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2338, population 1323 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: WordPress 6.9.9.
+  - id: la_verrerie_commune
+    name: "Commune de La Verrerie"
+    publisher: "Commune de La Verrerie"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2338
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://la-verrerie.ch/", "https://la-verrerie.ch/dechetterie/", "https://la-verrerie.ch/controle-des-habitants/", "https://la-verrerie.ch/documents/reglement-sur-les-chiens/", "https://la-verrerie.ch/impots-et-taxes/", "https://la-verrerie.ch/category/legislation/", "https://la-verrerie.ch/cercle-scolaire/", "https://la-verrerie.ch/documents/reglement-sur-les-emoluments-administratifs-et-contributions-de-remplacement-en-matiere-damenagement-du-territoire-et-de-constructions/", "https://la-verrerie.ch/eaux-2/", "https://la-verrerie.ch/construction/", "https://la-verrerie.ch/votations-et-elections/"]
+      allow_prefixes: ["https://la-verrerie.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2056, population 1295 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: FM Child v.1.0.0 [i-web].
+  - id: fetigny_menieres_commune
+    name: "Commune de Fétigny-Ménières"
+    publisher: "Commune de Fétigny-Ménières"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2056
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://fetigny-menieres.ch/", "https://fetigny-menieres.ch/administration-services/administration-services-dechetteries/", "https://fetigny-menieres.ch/administration-services/administration-services-impots-et-taxes/", "https://fetigny-menieres.ch/vie-politique/vie-politique-reglements/", "https://fetigny-menieres.ch/ecoles-petite-enfance/", "https://fetigny-menieres.ch/entreprendre-construire/entreprendre-construire-amenagement-et-constructions/", "https://fetigny-menieres.ch/vie-politique/vie-politique-votations-et-elections/"]
+      allow_prefixes: ["https://fetigny-menieres.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2276, population 1285 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 4 of 5 start URLs pass (status, same site, robots, parse). CMS: Weblication® CMS.
+  - id: ried_bei_kerzers_commune
+    name: "Gemeinde Ried bei Kerzers"
+    publisher: "Gemeinde Ried bei Kerzers"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2276
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.ried.ch/", "https://www.ried.ch/de/aktuelles/meldungen/eUmzugCH.php", "https://www.ried.ch/de/verwaltung/Reglemente.php", "https://www.ried.ch/de/politik-und-verwaltung/politik/abstimmungen-wahlen.php"]
+      allow_prefixes: ["https://www.ried.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2044, population 1259 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 9 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: surpierre_commune
+    name: "Commune de Surpierre"
+    publisher: "Commune de Surpierre"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2044
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://surpierre-fr.ch/", "https://surpierre-fr.ch/service-communaux/dechetteries/", "https://surpierre-fr.ch/service-communaux/impots-taxes/", "https://surpierre-fr.ch/service-communaux/eau-epuration/", "https://surpierre-fr.ch/service-communaux/amenagement-du-territoire/constructions/", "https://surpierre-fr.ch/service-communaux/controle-des-habitants/votations-elections/"]
+      allow_prefixes: ["https://surpierre-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2025, population 1239 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: lully_fr_commune
+    name: "Commune de Lully"
+    publisher: "Commune de Lully"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2025
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.lully-fr.ch/", "https://www.lully-fr.ch/services/dechetterie", "https://www.lully-fr.ch/administration/controle-des-habitants", "https://www.lully-fr.ch/article/annoncer-son-chien-a-la-commune", "https://www.lully-fr.ch/administration/finances-impots", "https://www.lully-fr.ch/administration/reglements-et-formulaires", "https://www.lully-fr.ch/education-sante-social/ecoles", "https://www.lully-fr.ch/administration/finances-impots/taxes", "https://www.lully-fr.ch/services/constructions"]
+      allow_prefixes: ["https://www.lully-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2337, population 1221 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: le_flon_commune
+    name: "Commune de Le Flon"
+    publisher: "Commune de Le Flon"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2337
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://leflon.ch/", "https://leflon.ch/environnement-et-technique/dechetterie", "https://leflon.ch/controle-des-habitants", "https://leflon.ch/controle-des-habitants/chiens", "https://leflon.ch/finances-et-impots", "https://leflon.ch/administration/reglements-communaux", "https://leflon.ch/ecoles/aes", "https://leflon.ch/finances-et-impots/impots-et-taxes", "https://leflon.ch/environnement-et-technique/eau-potable", "https://leflon.ch/administration/elections-et-votations"]
+      allow_prefixes: ["https://leflon.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2087, population 1217 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 2 of 2 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: mezieres_fr_commune
+    name: "Commune de Mézières"
+    publisher: "Commune de Mézières"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2087
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.mezieres-fr.ch/", "https://www.mezieres-fr.ch/Vie-politique-et-reglements"]
+      allow_prefixes: ["https://www.mezieres-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2301, population 1161 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 7 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: rechthalten_commune
+    name: "Gemeinde Rechthalten"
+    publisher: "Gemeinde Rechthalten"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2301
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.rechthalten.ch/", "https://www.rechthalten.ch/anlaesseaktuelles/7672399", "https://www.rechthalten.ch/steuerfussfs", "https://www.rechthalten.ch/schulen/1211", "https://www.rechthalten.ch/abstimmungen"]
+      allow_prefixes: ["https://www.rechthalten.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2022, population 1156 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: gletterens_commune
+    name: "Commune de Gletterens"
+    publisher: "Commune de Gletterens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2022
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://gletterens.ch/", "https://gletterens.ch/dechetterie", "https://gletterens.ch/controle-des-habitants", "https://gletterens.ch/chiens", "https://gletterens.ch/impots", "https://gletterens.ch/reglements-communaux", "https://gletterens.ch/aisdpg", "https://gletterens.ch/taxes", "https://gletterens.ch/eau-step", "https://gletterens.ch/construction-urbanisme", "https://gletterens.ch/votations-elections"]
+      allow_prefixes: ["https://gletterens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2153, population 1125 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: sorens_commune
+    name: "Commune de Sorens"
+    publisher: "Commune de Sorens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2153
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.sorens.ch/", "https://www.sorens.ch/economie-environnement/decheterie", "https://www.sorens.ch/administration/annonce-darrivee", "https://www.sorens.ch/impots-taxes/taxes-communales", "https://www.sorens.ch/administration/reglements-et-formulaires", "https://www.sorens.ch/education/ecole-primaire", "https://www.sorens.ch/impots-taxes/impots-communaux", "https://www.sorens.ch/economie-environnement/eau-et-epuration", "https://www.sorens.ch/economie-environnement/constructions-amenagement-du-territoire", "https://www.sorens.ch/administration/votations-et-elections"]
+      allow_prefixes: ["https://www.sorens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2257, population 1120 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: cressier_fr_commune
+    name: "Commune de Cressier"
+    publisher: "Commune de Cressier"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2257
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.cressier.ch/", "https://www.cressier.ch/technique-et-securite/dechets", "https://www.cressier.ch/administration/controle-des-habitants", "https://www.cressier.ch/finances/fiscalite", "https://www.cressier.ch/administration/reglements-communaux", "https://www.cressier.ch/enseignement-et-formation/ecole-primaire", "https://www.cressier.ch/finances/taxes-et-frais-administratifs", "https://www.cressier.ch/technique-et-securite/distribution-eau-potable", "https://www.cressier.ch/technique-et-securite/constructions-et-mise-a-lenquete", "https://www.cressier.ch/administration/votations-et-elections"]
+      allow_prefixes: ["https://www.cressier.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2155, population 1115 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 5 start URLs pass (status, same site, robots, parse). CMS: WordPress 6.8.10.
+  - id: vaulruz_commune
+    name: "Commune de Vaulruz"
+    publisher: "Commune de Vaulruz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2155
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.vaulruz.ch/", "https://www.vaulruz.ch/services/gestion-des-dechets-2/", "https://www.vaulruz.ch/services/controle-des-habitants/", "https://www.vaulruz.ch/commune/reglements-communaux/", "https://www.vaulruz.ch/education/aes/"]
+      allow_prefixes: ["https://www.vaulruz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2115, population 1112 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 6 start URLs pass (status, same site, robots, parse). CMS: Joomla! - Open Source Content Management.
+  - id: torny_commune
+    name: "Commune de Torny"
+    publisher: "Commune de Torny"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2115
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://torny.ch/", "https://torny.ch/index.php/services/elimination-des-dechets", "https://torny.ch/index.php/contact/controle-des-habitants", "https://torny.ch/index.php/administration/les-impots", "https://torny.ch/index.php/administration/reglements-communaux", "https://torny.ch/index.php/services/eau-potable"]
+      allow_prefixes: ["https://torny.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2300, population 1099 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 3 of 6 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: plasselb_commune
+    name: "Gemeinde Plasselb"
+    publisher: "Gemeinde Plasselb"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2300
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.plasselb.ch/", "https://www.plasselb.ch/wasserversorgung", "https://www.plasselb.ch/abstimmungen"]
+      allow_prefixes: ["https://www.plasselb.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2303, population 1062 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 1 of 1 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: st_silvester_commune
+    name: "Gemeinde St. Silvester"
+    publisher: "Gemeinde St. Silvester"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2303
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.stsilvester.ch/"]
+      allow_prefixes: ["https://www.stsilvester.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2335, population 1059 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: WordPress 6.8.10.
+  - id: saint_martin_fr_commune
+    name: "Commune de Saint-Martin"
+    publisher: "Commune de Saint-Martin"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2335
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.saint-martin-fr.ch/", "https://www.saint-martin-fr.ch/dechets/", "https://www.saint-martin-fr.ch/controle-des-habitants/", "https://www.saint-martin-fr.ch/taux-dimpots-et-taxes-communales/", "https://www.saint-martin-fr.ch/reglements-communaux/", "https://www.saint-martin-fr.ch/aes/", "https://www.saint-martin-fr.ch/eau/", "https://www.saint-martin-fr.ch/constructions/"]
+      allow_prefixes: ["https://www.saint-martin-fr.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2129, population 1037 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 9 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.1.2.
+  - id: corbieres_commune
+    name: "Commune de Corbières"
+    publisher: "Commune de Corbières"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2129
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://corbieres.ch/", "https://corbieres.ch/gestion-des-dechets/", "https://corbieres.ch/impots-communaux/", "https://corbieres.ch/reglements-communaux/", "https://corbieres.ch/ecole-obligatoire/", "https://corbieres.ch/taxes-communales/", "https://corbieres.ch/constructions-et-permis/"]
+      allow_prefixes: ["https://corbieres.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2274, population 1020 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 6 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: muntelier_commune
+    name: "Gemeinde Muntelier"
+    publisher: "Gemeinde Muntelier"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2274
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.muntelier.ch/", "https://muntelier.ch/Infos/Abfallentsorgung/", "https://muntelier.ch/Verwaltung/Finanzen/Steuern/", "https://muntelier.ch/Verwaltung/Reglemente/", "https://muntelier.ch/Bildung-Soziales/Schulen/", "https://muntelier.ch/Politik/Abstimmungen-Wahlen/"]
+      allow_prefixes: ["https://www.muntelier.ch/", "https://muntelier.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2328, population 1012 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 4 of 7 start URLs pass (status, same site, robots, parse). CMS: WordPress 6.9.9.
+  - id: granges_veveyse_commune
+    name: "Commune de Granges"
+    publisher: "Commune de Granges"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2328
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.granges-veveyse.ch/", "https://www.granges-veveyse.ch/controle-des-habitants/", "https://www.granges-veveyse.ch/reglements/", "https://www.granges-veveyse.ch/constructions/"]
+      allow_prefixes: ["https://www.granges-veveyse.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2134, population 925 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: Joomla! - Open Source Content Management.
+  - id: grandvillard_commune
+    name: "Commune de Grandvillard"
+    publisher: "Commune de Grandvillard"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2134
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.grandvillard.ch/", "https://www.grandvillard.ch/administration-et-autorites/controle-des-habitants", "https://www.grandvillard.ch/administration-et-autorites/taxes-et-impots", "https://www.grandvillard.ch/administration-et-autorites/reglements-communaux", "https://www.grandvillard.ch/ecole-et-formation/aes", "https://www.grandvillard.ch/administration-et-autorites/amenagement-constructions", "https://www.grandvillard.ch/administration-et-autorites/votations-elections"]
+      allow_prefixes: ["https://www.grandvillard.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2063, population 910 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 10 of 10 start URLs pass (status, same site, robots, parse). CMS: WebForge 312.
+  - id: billens_hennens_commune
+    name: "Commune de Billens-Hennens"
+    publisher: "Commune de Billens-Hennens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2063
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.billens-hennens.ch/", "https://www.billens-hennens.ch/dechets-encombrants-fr1563.html", "https://www.billens-hennens.ch/annonces-de-demenagement-fr4622.html", "https://www.billens-hennens.ch/chiens-et-chats-animaux-disparus-fr3864.html", "https://www.billens-hennens.ch/impots-fr102.html", "https://www.billens-hennens.ch/reglements-communaux-fr99.html", "https://www.billens-hennens.ch/accueil-extrascolaire-aes-fr4950.html", "https://www.billens-hennens.ch/taxe-de-base-fr133.html", "https://www.billens-hennens.ch/analyse-de-l-eau-potable-fr103.html", "https://www.billens-hennens.ch/votations-elections-fr5275.html"]
+      allow_prefixes: ["https://www.billens-hennens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2177, population 908 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 2 of 5 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: chenens_commune
+    name: "Commune de Chénens"
+    publisher: "Commune de Chénens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2177
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://chenens.ch/", "https://chenens.ch/reglements"]
+      allow_prefixes: ["https://chenens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2068, population 852 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: Lauyan TOWeb 10.0.5.926.
+  - id: chatonnaye_commune
+    name: "Commune de Châtonnaye"
+    publisher: "Commune de Châtonnaye"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2068
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.chatonnaye.ch/", "https://www.chatonnaye.ch/dechetterie-intercommunale-adresse-chemin-de-la-chaussy-5-a-chatonnaye-cliquez-pour-suivre-le-lien.html", "https://www.chatonnaye.ch/demenagement.html", "https://www.chatonnaye.ch/impot.html", "https://www.chatonnaye.ch/reglements-communaux.html", "https://www.chatonnaye.ch/cercle-scolaire.html", "https://www.chatonnaye.ch/amenagement-du-territoire-constructions.html", "https://www.chatonnaye.ch/elections-votations.html"]
+      allow_prefixes: ["https://www.chatonnaye.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2173, population 837 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: WordPress 7.0.4.
+  - id: autigny_commune
+    name: "Commune d'Autigny"
+    publisher: "Commune d'Autigny"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2173
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.autigny.ch/", "https://www.autigny.ch/urbanisme/environnement/dechets/", "https://www.autigny.ch/administration/controle-des-habitants/arrivee-dans-la-commune/", "https://www.autigny.ch/administration/finance/impots-et-taxes/", "https://www.autigny.ch/administration/autorite/reglements-communaux/", "https://www.autigny.ch/education-sante/ecoles-et-petite-enfance/creches/", "https://www.autigny.ch/urbanisme/environnement/eau-potable/", "https://www.autigny.ch/urbanisme/constructions/mise-a-lenquete-en-cours/"]
+      allow_prefixes: ["https://www.autigny.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2131, population 823 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: echarlens_commune
+    name: "Commune d'Echarlens"
+    publisher: "Commune d'Echarlens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2131
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://echarlens.ch/", "https://echarlens.ch/dechets/", "https://echarlens.ch/emmenager/", "https://echarlens.ch/enfance/", "https://echarlens.ch/eau-epuration/", "https://echarlens.ch/construction/", "https://echarlens.ch/events/election-du-conseil-communal-du-8-mars-2026/"]
+      allow_prefixes: ["https://echarlens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2143, population 790 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 1 of 1 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: morlon_commune
+    name: "Commune de Morlon"
+    publisher: "Commune de Morlon"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2143
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://morlon.ch/"]
+      allow_prefixes: ["https://morlon.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2137, population 750 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: Joomla! - Open Source Content Management.
+  - id: hauteville_commune
+    name: "Commune de Hauteville"
+    publisher: "Commune de Hauteville"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2137
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.hauteville.ch/", "https://www.hauteville.ch/administration/services-communaux/dechetterie", "https://www.hauteville.ch/administration/impots-et-taxes", "https://www.hauteville.ch/administration/reglements-communaux", "https://www.hauteville.ch/ecoles/petite-enfance", "https://www.hauteville.ch/administration/services-communaux/eau-potable-et-eaux-usees", "https://www.hauteville.ch/administration/amenagement-et-construction/permis-de-construire"]
+      allow_prefixes: ["https://www.hauteville.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2123, population 748 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: botterens_commune
+    name: "Commune de Botterens"
+    publisher: "Commune de Botterens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2123
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.botterens.ch/", "https://www.botterens.ch/vivre/dechets/", "https://www.botterens.ch/administration/taxes-et-impots/", "https://www.botterens.ch/administration/reglements-communaux/", "https://www.botterens.ch/vivre/cercle-scolaire-broc-botterens/", "https://www.botterens.ch/vivre/eau-potable/", "https://www.botterens.ch/economie/constructions/", "https://www.botterens.ch/resultats-des-elections-et-votations/"]
+      allow_prefixes: ["https://www.botterens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2292, population 738 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 6 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: brunisried_commune
+    name: "Gemeinde Brünisried"
+    publisher: "Gemeinde Brünisried"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2292
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.bruenisried.ch/", "https://www.bruenisried.ch/abfall.php", "https://www.bruenisried.ch/steuern.php", "https://www.bruenisried.ch/formulare.php", "https://www.bruenisried.ch/trinkwasser.php"]
+      allow_prefixes: ["https://www.bruenisried.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2266, population 698 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 6 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: kleinbosingen_commune
+    name: "Gemeinde Kleinbösingen"
+    publisher: "Gemeinde Kleinbösingen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2266
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.kleinboesingen.ch/", "https://www.kleinboesingen.ch/entsorgung-abfall.html", "https://www.kleinboesingen.ch/steuern.html", "https://www.kleinboesingen.ch/reglemente.html", "https://www.kleinboesingen.ch/schulen.html", "https://www.kleinboesingen.ch/protokolle-gvb.html"]
+      allow_prefixes: ["https://www.kleinboesingen.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2138, population 659 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 1 of 1 start URLs pass (status, same site, robots, parse). CMS: BaseKit.
+  - id: jaun_commune
+    name: "Gemeinde Jaun"
+    publisher: "Gemeinde Jaun"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2138
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.jaun.ch/"]
+      allow_prefixes: ["https://www.jaun.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2147, population 649 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 9 start URLs pass (status, same site, robots, parse). CMS: Concrete CMS.
+  - id: pont_la_ville_commune
+    name: "Commune de Pont-la-Ville"
+    publisher: "Commune de Pont-la-Ville"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2147
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.pont-la-ville.ch/v2/", "https://www.pont-la-ville.ch/v2/index.php/service-technique/edilite-et-voirie", "https://www.pont-la-ville.ch/v2/index.php/autorites-et-administration/controle-des-habitants", "https://www.pont-la-ville.ch/v2/index.php/vivre-pont-la-ville/detention-de-chien", "https://www.pont-la-ville.ch/v2/index.php/autorites-et-administration/reglements-communaux", "https://www.pont-la-ville.ch/v2/index.php/vivre-pont-la-ville/enfance-et-jeunesse/ecole-obligatoire", "https://www.pont-la-ville.ch/v2/index.php/autorites-et-administration/finances-et-impots/impots-et-taxes", "https://www.pont-la-ville.ch/v2/index.php/autorites-et-administration/votations-et-elections"]
+      allow_prefixes: ["https://www.pont-la-ville.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2086, population 605 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 7 start URLs pass (status, same site, robots, parse). CMS: Wix.com Website Builder.
+  - id: massonnens_commune
+    name: "Commune de Massonnens"
+    publisher: "Commune de Massonnens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2086
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.massonnens.ch/", "https://www.massonnens.ch/d%C3%A9chets", "https://www.massonnens.ch/impots", "https://www.massonnens.ch/%C3%A9coleprimaire", "https://www.massonnens.ch/taxes", "https://www.massonnens.ch/eaux", "https://www.massonnens.ch/constructions"]
+      allow_prefixes: ["https://www.massonnens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2271, population 586 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 5 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: meyriez_commune
+    name: "Gemeinde Meyriez"
+    publisher: "Gemeinde Meyriez"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2271
+    connector: html
+    tier: 2
+    languages: [de, fr]
+    config:
+      start_urls: ["https://www.merlach.ch/", "https://www.merlach.ch/de/verwaltung/entsorgung.html/203", "https://www.merlach.ch/de/verwaltung/dokumente-und-reglemente/reglemente-und-verordnungen.html/161", "https://www.merlach.ch/de/leben/schulen.html/195", "https://www.merlach.ch/de/verwaltung/abteilungen/bauwesen/baugesuchspublikationen.html/241"]
+      allow_prefixes: ["https://www.merlach.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2008, population 549 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 3 of 3 start URLs pass (status, same site, robots, parse). CMS: unknown.
+  - id: chatillon_fr_commune
+    name: "Commune de Châtillon"
+    publisher: "Commune de Châtillon"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2008
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.chatillon-broye.ch/", "https://www.chatillon-broye.ch/dechetterie", "https://www.chatillon-broye.ch/ecole"]
+      allow_prefixes: ["https://www.chatillon-broye.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2045, population 537 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: Joomla! - Open Source Content Management.
+  - id: vallon_commune
+    name: "Commune de Vallon"
+    publisher: "Commune de Vallon"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2045
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.vallon.ch/fr/", "https://www.vallon.ch/fr/services/services-techniques/dechetterie-step-agmv", "https://www.vallon.ch/fr/la-commune/informations-generales/controle-des-habitants", "https://www.vallon.ch/fr/la-commune/informations-generales/reglements-communaux", "https://www.vallon.ch/fr/services/ecoles-et-formation", "https://www.vallon.ch/fr/la-commune/informations-generales/taxes-diverses", "https://www.vallon.ch/fr/services/services-techniques/eaux", "https://www.vallon.ch/fr/services/services-techniques/constructions-enquetes", "https://www.vallon.ch/fr/la-commune/politique/votations-et-elections"]
+      allow_prefixes: ["https://www.vallon.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2130, population 508 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: cresuz_commune
+    name: "Commune de Crésuz"
+    publisher: "Commune de Crésuz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2130
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.cresuz.ch/", "https://www.cresuz.ch/techniques/gestion-des-dechets", "https://www.cresuz.ch/autorites-administration/controle-des-habitants", "https://www.cresuz.ch/impots-communaux", "https://www.cresuz.ch/reglements-communaux", "https://www.cresuz.ch/ecole-formation/petite-enfance", "https://www.cresuz.ch/finances-impots/taxes-communales", "https://www.cresuz.ch/techniques/constructions"]
+      allow_prefixes: ["https://www.cresuz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2035, population 493 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: nuvilly_commune
+    name: "Commune de Nuvilly"
+    publisher: "Commune de Nuvilly"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2035
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://nuvilly.ch/", "https://nuvilly.ch/construction-environnement/gestion-des-dechets", "https://nuvilly.ch/administration-autorite/controle-des-habitants", "https://nuvilly.ch/impots-taxes", "https://nuvilly.ch/administration-autorite/reglements-communaux", "https://nuvilly.ch/formation-ecole", "https://nuvilly.ch/finance-impot/impots-communaux/taxes-communales", "https://nuvilly.ch/construction-environnement/eau", "https://nuvilly.ch/construction-environnement"]
+      allow_prefixes: ["https://nuvilly.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2258, population 435 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: fraschels_commune
+    name: "Gemeinde Fräschels"
+    publisher: "Gemeinde Fräschels"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2258
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.fraeschels.ch/", "https://www.fraeschels.ch/gemeinde/abfallentsorgung", "https://www.fraeschels.ch/verwaltung/einwohnerkontrolle", "https://www.fraeschels.ch/service/reglemente", "https://www.fraeschels.ch/gemeinde/schule", "https://www.fraeschels.ch/politik/wahlen-abstimmungen/stimmabgabe", "https://www.fraeschels.ch/gemeinde/wasser/abwasser", "https://www.fraeschels.ch/politik/wahlen-abstimmungen"]
+      allow_prefixes: ["https://www.fraeschels.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2067, population 362 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 6 of 7 start URLs pass (status, same site, robots, parse). CMS: Wix.com Website Builder.
+  - id: le_chatelard_commune
+    name: "Commune de Le Châtelard"
+    publisher: "Commune de Le Châtelard"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2067
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.le-chatelard.ch/", "https://www.le-chatelard.ch/gestion-des-dechets", "https://www.le-chatelard.ch/controle-des-habitants", "https://www.le-chatelard.ch/reglements", "https://www.le-chatelard.ch/ecole", "https://www.le-chatelard.ch/constructions"]
+      allow_prefixes: ["https://www.le-chatelard.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2128, population 354 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 9 of 9 start URLs pass (status, same site, robots, parse). CMS: Elementor 4.2.3; features: e_font_icon_svg, additional_custo.
+  - id: chatel_sur_montsalvens_commune
+    name: "Commune de Châtel-sur-Montsalvens"
+    publisher: "Commune de Châtel-sur-Montsalvens"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2128
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://chatel-montsalvens.ch/", "https://chatel-montsalvens.ch/gestion-des-dechets/", "https://chatel-montsalvens.ch/controle-habitant/", "https://chatel-montsalvens.ch/finance-impots/", "https://chatel-montsalvens.ch/reglements-avenants/", "https://chatel-montsalvens.ch/cercle-scolaire/", "https://chatel-montsalvens.ch/eau-epuration/", "https://chatel-montsalvens.ch/constructions/", "https://chatel-montsalvens.ch/votations-et-elections/"]
+      allow_prefixes: ["https://chatel-montsalvens.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2043, population 324 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 11 of 11 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: sevaz_commune
+    name: "Commune de Sévaz"
+    publisher: "Commune de Sévaz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2043
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://sevaz.ch/", "https://sevaz.ch/contact/dechetterie", "https://sevaz.ch/administration-et-autorites/controle-des-habitants", "https://sevaz.ch/jai-un-chien", "https://sevaz.ch/finance-et-impots/impots-communaux", "https://sevaz.ch/administration-et-autorites/reglements-communaux", "https://sevaz.ch/ecole-sante-et-social/gyb-payerne", "https://sevaz.ch/finance-et-impots/taxes-et-emoluments", "https://sevaz.ch/contact/eau-potable", "https://sevaz.ch/environnement-et-construction/energies", "https://sevaz.ch/votations-et-elections"]
+      allow_prefixes: ["https://sevaz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2194, population 242 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 9 start URLs pass (status, same site, robots, parse). CMS: [i-web].
+  - id: ferpicloz_commune
+    name: "Commune de Ferpicloz"
+    publisher: "Commune de Ferpicloz"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2194
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.ferpicloz.ch/", "https://www.ferpicloz.ch/dechetterie", "https://www.ferpicloz.ch/servicescommunaux/42610", "https://www.ferpicloz.ch/taxes-et-impots", "https://www.ferpicloz.ch/reglements", "https://www.ferpicloz.ch/cole-primaire", "https://www.ferpicloz.ch/prestations-communales/117067", "https://www.ferpicloz.ch/prestations-communales/117079"]
+      allow_prefixes: ["https://www.ferpicloz.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2079, population 214 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 3 of 3 start URLs pass (status, same site, robots, parse). CMS: Infomaniak Site Creator.
+  - id: grangettes_commune
+    name: "Commune de Grangettes"
+    publisher: "Commune de Grangettes"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2079
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://grangettes-pres-romont.ch/", "https://grangettes-pres-romont.ch/controle-des-habitants", "https://grangettes-pres-romont.ch/reglements-taxes-impots"]
+      allow_prefixes: ["https://grangettes-pres-romont.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2261, population 179 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 8 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: greng_commune
+    name: "Gemeinde Greng"
+    publisher: "Gemeinde Greng"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2261
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://www.greng.ch/de/startseite", "https://www.greng.ch/de/informationen/abfallentsorgung", "https://www.greng.ch/de/hundedatenbank", "https://www.greng.ch/de/gemeinde/finanzen/steuern", "https://www.greng.ch/de/verwaltung/online-schalter/reglemente", "https://www.greng.ch/de/informationen/schulen-kinderbetreuung", "https://www.greng.ch/de/informationen/trinkwasser", "https://www.greng.ch/de/behoerde/abstimmungenwahlen"]
+      allow_prefixes: ["https://www.greng.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2216, population 148 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 7 of 8 start URLs pass (status, same site, robots, parse). CMS: TYPO3 CMS.
+  - id: pierrafortscha_commune
+    name: "Commune de Pierrafortscha"
+    publisher: "Commune de Pierrafortscha"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2216
+    connector: html
+    tier: 2
+    languages: [fr, de]
+    config:
+      start_urls: ["https://www.pierrafortscha.ch/", "https://www.pierrafortscha.ch/environnement/gestion-des-dechets", "https://www.pierrafortscha.ch/a-propos/controle-des-habitants", "https://www.pierrafortscha.ch/finances/impots-communaux", "https://www.pierrafortscha.ch/reglements-communaux", "https://www.pierrafortscha.ch/accueil-extrascolaire", "https://www.pierrafortscha.ch/environnement/eaux"]
+      allow_prefixes: ["https://www.pierrafortscha.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2038, population 108 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 4 of 5 start URLs pass (status, same site, robots, parse). CMS: Wix.com Website Builder.
+  - id: prevondavaux_commune
+    name: "Commune de Prévondavaux"
+    publisher: "Commune de Prévondavaux"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2038
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.prevondavaux.ch/", "https://www.prevondavaux.ch/copie-de-carte-d-identit%C3%A9", "https://www.prevondavaux.ch/r%C3%A8glements-communaux", "https://www.prevondavaux.ch/elections-votations"]
+      allow_prefixes: ["https://www.prevondavaux.ch/"]
+      max_pages: 120
+      max_pdfs: 20
+
+  # Fribourg commune, BFS 2230, population 71 (te008). Website from Wikidata P856;
+  # checked 2026-09-24 with the corpus code: 5 of 8 start URLs pass (status, same site, robots, parse). CMS: WordPress 4.9.33.
+  - id: villarsel_sur_marly_commune
+    name: "Commune de Villarsel-sur-Marly"
+    publisher: "Commune de Villarsel-sur-Marly"
+    authority: official_info
+    level: municipal
+    extent_id: CH-FR-2230
+    connector: html
+    tier: 2
+    languages: [fr]
+    config:
+      start_urls: ["https://www.villarsel-sur-marly.ch/", "https://www.villarsel-sur-marly.ch/administration/prestations-communales/annonce-depart/", "https://www.villarsel-sur-marly.ch/administration/reglements-communaux/", "https://www.villarsel-sur-marly.ch/administration/eau/", "https://www.villarsel-sur-marly.ch/autorites/votations/"]
+      allow_prefixes: ["https://www.villarsel-sur-marly.ch/"]
+      max_pages: 120
+      max_pdfs: 20
