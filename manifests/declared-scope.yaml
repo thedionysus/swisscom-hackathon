@@ -3,6 +3,8 @@
 # crawls tiers 1..N. The Run 3 entries at the end come from docs/sources/verification_2026-09-23/run3/ on
 # branch sources/run3-discovery (corpus_pipeline/manifest_candidates.yaml).
 # A `# CAVEAT (...)` comment above an entry flags a known issue (personal data, volume) that was accepted.
+# `connector: json` entries read records from a JSON/REST API; their config keys are documented in
+# src/swiss_grounding/corpus/connectors/json_api.py.
 # Optional per-site keys: language_links_selector, content_selector, pdf_link_patterns,
 # sitemap_urls/sitemap_include. Start URLs verified live on 2026-09-23 with the corpus user agent.
 version: 1
