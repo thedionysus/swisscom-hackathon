@@ -39,21 +39,27 @@ def _normalised(text: str) -> str:
     return " ".join(WORDS.findall(text.lower()))
 
 
-def distinct_citations(scored: Sequence[ScoredGroup]) -> list[ScoredGroup]:
+def distinct_citations(scored: Sequence[ScoredGroup], question_lang: str | None) -> list[ScoredGroup]:
     """Drop repeats before citing: the same text published under another URL (ch.ch serves many
-    pages at two addresses), and another language version of a page already cited (HTML sections
-    do not align across languages, so their chunks form separate groups)."""
+    pages at two addresses), and other language versions of a page (HTML sections do not align
+    across languages, so their chunks form separate groups). Of a page's language versions the one
+    in the question's language is kept, at its own rank."""
+    preferred = {s.group.representative.translation_group_id for s in scored
+                 if s.group.representative.language == question_lang}
     seen_text: set[str] = set()
     cited_language: dict[str, str] = {}
-    kept = []
+    kept: list[ScoredGroup] = []
     for s in scored:
         rep = s.group.representative
+        group = rep.translation_group_id
+        if group in preferred and rep.language != question_lang:
+            continue
         text = _normalised(rep.text)
-        language = cited_language.get(rep.translation_group_id)
+        language = cited_language.get(group)
         if text in seen_text or (language is not None and language != rep.language):
             continue
         seen_text.add(text)
-        cited_language[rep.translation_group_id] = rep.language
+        cited_language[group] = rep.language
         kept.append(s)
     return kept
 
@@ -136,7 +142,7 @@ class SearchService:
                 # A placeless answer cites federal evidence only: cantonal and municipal passages
                 # apply to one place and would mislead a user elsewhere (ADR 0013).
                 relevant = [s for s in relevant if s.group.representative.extent_id == "CH"]
-            keep = distinct_citations(relevant)[: q.request.limit]
+            keep = distinct_citations(relevant, q.lang)[: q.request.limit]
             citations = tuple(self._cite(s, queries) for s in keep)
         loc = o.resolved.location if o.resolved else None
         return PlaceResult(o.text, status, loc.id if loc else None, loc.label("de") if loc else None,
