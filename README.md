@@ -88,8 +88,9 @@ then open a new session and run `/mcp` to confirm the six tools are listed.
 | `swiss_connections(origin, destination, date, time, limit)` | Next public transport connections between two Swiss stops (live timetable). |
 | `swiss_reference_rate()` | The current Swiss mortgage reference interest rate for rents (BWO), with its effective date. |
 
-Chunks are retrieved on their English translation; the original German, French, Italian or Romansh
-text is stored and can be requested through `swiss_get_document`.
+Every language store (German, French, Italian, Romansh, English) is searched directly; the server
+translates nothing at query time. A translation the client passes in `translations` is used for
+that language's store. `swiss_get_document` reads any language version of a document.
 
 ## How it ranks and when it abstains
 

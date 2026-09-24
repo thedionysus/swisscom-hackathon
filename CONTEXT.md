@@ -106,7 +106,7 @@ _Avoid_: Error, no results
 ### Languages and versions
 
 **Language store**:
-The part of the index holding every chunk written in one language: German, French, Italian or English. A chunk lives in the store of the language it was published in, and is never translated into another store.
+The part of the index holding every chunk written in one language: German, French, Italian, Romansh or English. A chunk lives in the store of the language it was published in, and is never translated into another store.
 _Avoid_: Language index, language collection
 
 **Language version**:
