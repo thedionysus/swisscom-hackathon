@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     # Workers for HNSW index builds. 0 = serial: parallel builds need more /dev/shm than Docker's 64 MB default.
     corpus_index_parallel_workers: int = 0
     respect_robots: bool = True
+    # Opt-in, default off (brief p. 9, #55): a json source that names a `robots_exception_reason` is
+    # fetched even where robots.txt disallows its documented API. Every such fetch is logged.
+    robots_api_exceptions: bool = False
     # Browser-style prefix, the conventional honest-bot form: ch.ch serves a 404 shell to user
     # agents without one. Used for every corpus HTTP client.
     corpus_user_agent: str = (

@@ -214,3 +214,9 @@ def test_accepts_a_json_source(tmp_path):
 def test_rejects_invalid_json_config(tmp_path, old, new, message):
     with pytest.raises(ValueError, match=re.escape(message)):
         load_manifest(_json_manifest(tmp_path, old, new))
+
+
+def test_rejects_an_empty_robots_exception_reason(tmp_path):
+    line = '      text_template: "Herbstferien {herbstferien_start} bis {herbstferien_ende}"\n'
+    with pytest.raises(ValueError, match="robots_exception_reason"):
+        load_manifest(_json_manifest(tmp_path, line, line + '      robots_exception_reason: " "\n'))

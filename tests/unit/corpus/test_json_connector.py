@@ -158,3 +158,22 @@ def test_dig_render_and_parse_date():
     assert parse_date("05.01.2023") == date(2023, 1, 5)
     assert parse_date("31.02.2023") is None
     assert parse_date("soon") is None
+
+
+def test_a_disallowed_api_is_fetched_only_with_the_switch_and_a_reason(caplog):
+    robots = "User-agent: *\nDisallow: /api/\n"
+    pages = {k.replace("data.x.ch/records", "data.x.ch/api/records"): v for k, v in PAGES.items()}
+    reason = {"url": "https://data.x.ch/api/records?limit={size}&offset={offset}",
+              "robots_exception_reason": "documented open-data API"}
+
+    def run(switch, **config):
+        connector = JsonConnector(_client(pages, robots=robots), CrawlPolicy(True, 0), sleep=lambda _: None,
+                                  robots_api_exceptions=switch)
+        return connector.run(_spec(**config), known={})
+
+    assert run(False, **reason).documents == ()
+    assert run(True, url=reason["url"]).documents == ()
+    with caplog.at_level("WARNING"):
+        assert len(run(True, **reason).documents) == 3
+    assert "ROBOTS_API_EXCEPTIONS" in caplog.text
+    assert "documented open-data API" in caplog.text
