@@ -473,6 +473,9 @@ sources:
       sitemap_urls: ["https://www.geneve.ch/sitemap.xml"]
       sitemap_include: ["/themes/.+/.+"]
       max_pages: 900
+      # Checked 2026-09-24: at the default 0.5 s pace 634 of ~900 pages answered HTTP 500; a re-run at 2 s
+      # added 432 pages with 80 failures, so the site errors under load.
+      delay_seconds: 2
       max_pdfs: 40
   - id: lugano_city
     name: Città di Lugano
