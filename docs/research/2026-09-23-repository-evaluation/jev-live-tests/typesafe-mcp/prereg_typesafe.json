@@ -1,0 +1,23 @@
+{
+  "written": "2026-09-23, after the MCP handshake (no provider call) and before any Jev call through evaluate; the municipal gold labels are the sealed labels_A/B.json (sha256 in jev-test/muni/results/seal.json)",
+  "binary": "itsmostafa/typesafe-mcp release v0.4.4, evaluate-darwin-arm64.tar.gz, sha256 c3fa4ff1... checked against the release's SHA256SUMS.txt; run as `evaluate mcp` with a clean env: TYPESAFE_API_KEY = the user's Vercel AI Gateway key, TYPESAFE_BASE_URL = local logging proxy -> https://ai-gateway.vercel.sh/typesafe; model passed per call: typesafe-ai/jev",
+  "E1_equivalence": {
+    "chunks": "first chunk in jev-test/muni/chunks.json order of each kind: French agreed-content, German agreed-content, agreed-junk",
+    "calls": "each chunk once through evaluate (state = {passage: {page_title, heading, text}} and the 11 M1 questions, exactly as run_muni.py) and once directly to the same Vercel route (same body)",
+    "metrics": "max |dp| evaluate vs direct-now (wrapper effect); max |dp| direct-now vs the earlier M1 answers (model drift or nondeterminism)"
+  },
+  "E2_items_batch": {
+    "call": "one evaluate call with items = all 75 chunks (id -> {passage: {...}}), no state, the 11 M1 questions verbatim",
+    "ops_metrics": "HTTP requests seen by the proxy, peak concurrency, status counts, re-sends of the same body and the wait before each, items in errors, wall time, median upstream latency of 200s",
+    "quality_metrics": "max and mean |dp| vs the M1 answers; M1's rules R1/R2 re-scored on E2 answers with the same gold (descriptive: tells whether the {item: ...} wrapping changes topic quality)"
+  },
+  "E3_guidance_design": {
+    "rationale": "the server instructions say: one narrow judgment per question, name the condition to test, include a no-match option in a choice when nothing may fit",
+    "call": "one evaluate call with items = all 75 chunks, no state, one choice question",
+    "question": {"type": "choice", "instructions": "Which of the listed topics does the passage's own content in `item.passage` concern? Pick the single best match.", "criteria": "the 10 categories as '<label>: <description>' verbatim from registry/categories.py (same text as M1) plus none_of_these: 'The passage's own content concerns none of these topics'"},
+    "decision_rule": "predicted = {choice} unless choice is none_of_these (then no topic); no confidence threshold",
+    "scoring": "same gold pairs and exclusions as score_muni.py; precision and recall overall, random/targeted, German/French; exploratory: agreed-content vs agreed-junk chunks, and how many agreed-junk chunks get none_of_these; compared with E2 (same {item: ...} wrapping) and M1",
+    "descriptive_only": "the same metrics when predictions with choice confidence < 0.3 and < 0.5 are dropped"
+  },
+  "not_tested": "multi-topic tagging (no gold chunk has two topics); dates; score type; min_confidence (not in the v0.4.4 tool schema)"
+}

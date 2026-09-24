@@ -1,0 +1,8 @@
+{
+ "sealed_at": "2026-09-23T12:05:05+0200",
+ "sha256": {
+  "labels_A.json": "faf33f34054418c6e511bfcc907c8f24d5dd7d200ed5d239c51e162cdd37ff3b",
+  "labels_B.json": "fa2494813cfcaf588f674c37f446663f729957387981bbfd2102b1cb96c7e008",
+  "prereg.json": "d4cf18d9f218b8434c7e131be039b57a914f6e7adaff5e36cca28cf4b2adc6d0"
+ }
+}

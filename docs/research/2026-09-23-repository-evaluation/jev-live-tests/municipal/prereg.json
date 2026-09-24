@@ -1,0 +1,27 @@
+{
+  "written": "2026-09-23, before any Jev call on the municipal/cantonal data and before either label file existed",
+  "data": {
+    "chunks": "muni/chunks.json: 75 sections from our HtmlCrawlFetcher (stadt_zuerich, ge_ville, zh_ch; 25 pages each, robots-respecting), 60 random (seed 20260923) + 15 targeted (text hits keywords of >= 2 categories); text truncated at 1500 chars (our chunk cap)",
+    "laws": "muni/bs_laws.json: 12 Basel-Stadt laws from the official portal API; gold = API field `enactment`"
+  },
+  "gold": {
+    "labellers": "two independent sub-agents (fresh context, blind to each other and to Jev), same written guide; categories from registry/categories.py, junk definition verbatim from ingest/llm.py:55-57",
+    "topic_gold": "per (chunk, category): positive if BOTH labellers put it in primary; negative if NEITHER put it in primary or acceptable; otherwise ambiguous and excluded",
+    "junk_gold": "per chunk: junk flag where both labellers agree; otherwise excluded",
+    "agreement": "report Cohen's kappa for junk and for per-(chunk, category) primary labels"
+  },
+  "requests": {
+    "M1+M2": "one request per chunk, 11 noul questions: the 10 topic questions worded exactly as in the federal test T1, plus jev-mcp's substance question (src/index.ts:285-288); state = {passage: {page_title, heading, text}} in the original language",
+    "M3": "one request per law; extract-style choice among regex date candidates (jev-mcp wording, src/index.ts:1030-1036); field description fixed below"
+  },
+  "decision_rules_fixed_in_advance": {
+    "topics_R1": "predicted = {top category} if its probability >= 0.10, else none (the rule that scored best on federal law)",
+    "topics_R2": "predicted = every category with probability >= 0.5 x top, if top >= 0.10, else none (multi-label variant)",
+    "topics_sweep": "fixed thresholds 0.3 / 0.5 reported descriptively only",
+    "junk": "predicted junk if substance < 0.3 (jev-mcp's hard-coded skip threshold)",
+    "dates": "correct if the picked candidate's ISO date equals gold; if gold is not among candidates, correct only if none_of_them",
+    "date_field_description": "The date on which this enactment, as originally adopted, took effect ('wirksam' / 'in Kraft'); not the date of decision or publication, and not the date of a later amendment"
+  },
+  "report": "overall and split by random vs targeted, by language (de/fr), and for chunks with >= 2 gold primary categories; the costly error for junk is content wrongly flagged as junk",
+  "human_spot_check": "10 chunks drawn with seed 424242 after scoring, shown to the user with both labellers' labels and Jev's output"
+}

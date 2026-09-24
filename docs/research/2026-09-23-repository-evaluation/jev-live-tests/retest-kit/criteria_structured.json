@@ -1,0 +1,238 @@
+{
+ "animals": {
+  "what": "Animals and pets",
+  "examples": [
+   "Dog keeping and dog tax",
+   "leash rules",
+   "animal welfare",
+   "livestock",
+   "hunting and fishing"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "building": {
+  "what": "Building and land use",
+  "examples": [
+   "Building permits",
+   "zoning",
+   "spatial planning",
+   "renovation",
+   "land register"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "business": {
+  "what": "Business and consumers",
+  "examples": [
+   "Starting a company",
+   "commercial register",
+   "trades licences",
+   "consumer rights",
+   "contracts of sale"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "education": {
+  "what": "Education and schools",
+  "examples": [
+   "Compulsory school",
+   "school holidays",
+   "vocational training",
+   "universities",
+   "scholarships"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "environment": {
+  "what": "Environment, energy and nature",
+  "examples": [
+   "Environmental protection",
+   "noise",
+   "water",
+   "forests",
+   "nature protection",
+   "energy"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "family": {
+  "what": "Family and civil status",
+  "examples": [
+   "Marriage",
+   "partnership",
+   "divorce",
+   "children",
+   "child support",
+   "names",
+   "inheritance",
+   "death"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "health": {
+  "what": "Health and health insurance",
+  "examples": [
+   "Compulsory health insurance",
+   "premiums and subsidies",
+   "doctors",
+   "hospitals",
+   "medicines",
+   "vaccinations",
+   "emergencies"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "housing": {
+  "what": "Housing and renting",
+  "examples": [
+   "Renting",
+   "rent increases",
+   "deposits",
+   "tenancy disputes",
+   "home ownership"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "justice": {
+  "what": "Justice, courts and criminal law",
+  "examples": [
+   "Criminal law",
+   "fines",
+   "legal proceedings",
+   "debt collection",
+   "legal aid"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "municipal_services": {
+  "what": "Municipal services and administration",
+  "examples": [
+   "Opening hours",
+   "registration office",
+   "public holidays",
+   "municipal fees",
+   "documents and certificates"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "none_of_these": {
+  "what": "The passage's own content concerns none of these topics",
+  "examples": [
+   "page furniture: navigation, a cookie notice, contact details or other page furniture with no substantive content",
+   "a passage whose subject is not among the listed topics"
+  ]
+ },
+ "outdoors": {
+  "what": "Leisure, sport and outdoors",
+  "examples": [
+   "Hiking trails",
+   "mountains",
+   "sport",
+   "culture",
+   "public spaces and parks"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "politics": {
+  "what": "Politics and voting",
+  "examples": [
+   "Elections",
+   "popular votes",
+   "initiatives",
+   "political rights",
+   "authorities and their powers"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "residence": {
+  "what": "Residence, migration and citizenship",
+  "examples": [
+   "Permits",
+   "foreign nationals",
+   "asylum",
+   "naturalisation",
+   "registering a move"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "safety": {
+  "what": "Public safety, police and civil protection",
+  "examples": [
+   "Police",
+   "fire",
+   "civil protection",
+   "military service",
+   "weapons",
+   "public order",
+   "noise rules"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "social_security": {
+  "what": "Social security and pensions",
+  "examples": [
+   "AHV/IV",
+   "pension funds",
+   "family allowances",
+   "social assistance",
+   "disability"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "taxes": {
+  "what": "Taxes",
+  "examples": [
+   "Income",
+   "wealth",
+   "municipal and church tax",
+   "VAT",
+   "tax returns",
+   "deductions"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "transport": {
+  "what": "Transport, vehicles and parking",
+  "examples": [
+   "Road traffic rules",
+   "driving licences",
+   "vehicles",
+   "parking and blue zones",
+   "public transport",
+   "cycling"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "travel": {
+  "what": "Travel, customs and borders",
+  "examples": [
+   "Customs allowances",
+   "importing goods",
+   "identity documents",
+   "travelling abroad"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "waste": {
+  "what": "Waste and recycling",
+  "examples": [
+   "Collection days",
+   "fees",
+   "bulky and special waste",
+   "recycling points"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ },
+ "work": {
+  "what": "Work and employment",
+  "examples": [
+   "Employment contracts",
+   "notice and termination",
+   "working hours",
+   "holidays",
+   "wages",
+   "unemployment"
+  ],
+  "not_for": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic."
+ }
+}

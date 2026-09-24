@@ -1,0 +1,15 @@
+{
+  "written": "2026-09-24, before any E4 call. Gold: the sealed labels_A/B.json of the municipal test (hashes in jev-test/muni/results/seal.json).",
+  "question": "Does Winnow's 'structured' criteria format (GhalebDweikat/winnow, sidecar/src/winnow/questions.py:43-70: criteria values as {what, not_for, examples}) improve the E3 topic question on our 75 municipal chunks?",
+  "design": {
+    "bodies": "E3's logged request bodies (typesafe-test/proxy_log.jsonl), byte-identical in model, state and instructions; only questions.topic.criteria changes",
+    "criteria_rule": "mechanical, from the E3 texts, not tuned to E3's errors: for each of the ten categories {what: <label>, examples: <description split at commas>, not_for: SHARED_NOT_FOR}; none_of_these: {what: 'The passage's own content concerns none of these topics', examples: ['page furniture: navigation, a cookie notice, contact details or other page furniture with no substantive content', 'a passage whose subject is not among the listed topics']}",
+    "SHARED_NOT_FOR": "A topic the passage only mentions in passing; page furniture (navigation, a cookie notice, contact details or other page furniture with no substantive content) has no topic.",
+    "why_shared_not_for_is_fair": "it restates two rules both labellers were given (LABELLING rules: passing mentions do not count; a junk chunk has no primary categories), using the production boilerplate wording (corpus/describe.py:60-61)",
+    "fallback": "if the API rejects object-valued choice criteria (HTTP 4xx), encode each as one string 'What: … Examples: … Not for: …' and record that change here before re-running"
+  },
+  "transport": "direct POST to Vercel's TypeSafe-compatible route, one at a time, 1 s apart, honouring retry-after",
+  "decision_rule": "same as E3: predicted = {choice} unless none_of_these",
+  "compare": "E4 vs E3 on the same gold: precision/recall with Wilson CIs, false topics on agreed junk, per-chunk sign test; AUC over (chunk, topic) pairs using each design's topic probabilities (also M1's noul probabilities), following Winnow's lesson that calibration alone can mislead",
+  "caveat": "in-sample like E3: the author of the criteria had seen E3's errors; the mechanical rule limits, but does not remove, that bias"
+}
