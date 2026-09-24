@@ -1,0 +1,143 @@
+version: 2026-09-24.1
+probes:
+  - id: g-sample-karton
+    question: Wann wird bei uns das nächste Mal Karton abgeholt?
+    language: de
+    area: waste
+    level: municipal
+    split: dev
+    note: >-
+      Challenge sample 1 / practice missing_location. Asking for the municipality is correct. Relies on
+      the rule of Task 10: no place and nothing federal answers, so the server asks, even though only
+      Zürich has calendar documents.
+    expect: {status: needs_location}
+  - id: g-sample-vaud-licence
+    question: Échanger mon permis de conduire étranger dans le canton de Vaud, et en combien de temps?
+    language: fr
+    area: driving
+    level: cantonal
+    split: dev
+    note: >-
+      Challenge sample 2. Cantonal procedure page. Verified in corpus: the vd.ch page states the 12-month
+      deadline verbatim ("vous disposez d'un délai de 12 mois dès votre arrivée pour échanger votre permis
+      étranger").
+    expect: {status: results, sources: [echanger-un-permis-etranger], key_fact: "Le permis étranger doit être échangé dans les 12 mois suivant l'arrivée en Suisse."}
+  - id: g-sample-lugano-premium
+    question: Premio mensile più basso, adulto 30 anni, Lugano, franchigia 2500?
+    language: it
+    area: health_insurance
+    level: federal
+    split: dev
+    tool: swiss_premium
+    note: Challenge sample 3. Lookup, not retrieval; not run by eval golden.
+    expect: {status: results, sources: [opendata.swiss], key_fact: "Cheapest 2026 premium for premium region TI-1, adult, deductible 2500."}
+  - id: g-sample-scuol-holidays
+    question: Cura èn las vacanzas d'atun 2026 per la scola da Scuol?
+    language: rm
+    area: school_holidays
+    level: municipal
+    split: dev
+    note: >-
+      Challenge sample 4 / practice romansh_locality, adapted. Data gap: the corpus has no Scuol
+      school-holiday calendar (checked `d.url ilike '%scuol%'` and full-text search for
+      vacanz/ferias/Ferien on Scuol documents — no hits). The declared scope names Scuol as a covered
+      municipality, but no ingested page carries its holiday dates, so the server can only answer
+      no_evidence, not results.
+    expect: {status: no_evidence}
+  - id: g-sample-konstanz-with-place
+    question: Wie hoch ist der Rundfunkbeitrag nach meinem Umzug nach Konstanz?
+    locations: [Konstanz]
+    language: de
+    area: none
+    level: none
+    split: dev
+    note: Challenge sample 5 / practice cross_border, as a client that passes the place.
+    expect: {status: outside_scope}
+  - id: g-sample-konstanz-no-place
+    question: Wie hoch ist der Rundfunkbeitrag nach meinem Umzug nach Konstanz?
+    language: de
+    area: none
+    level: none
+    split: holdout
+    note: >-
+      Known risk (ADR 0013, no foreign-place list): a client that does not pass the place leaves the
+      server only the question text, where "Konstanz" is not a Swiss name and no country is named. Kept
+      to measure it.
+    expect: {status: outside_scope}
+  - id: g-practice-geneva-holidays
+    question: Quelles sont les dates des vacances scolaires 2026 à Genève?
+    language: fr
+    area: school_holidays
+    level: cantonal
+    split: dev
+    note: >-
+      Practice enough_context. Do not ask back. Verified in corpus: ge.ch/vacances-scolaires-jours-feries
+      lists the school holiday dates fixed through 2030, decided by the Conseil d'État.
+    expect: {status: results, sources: [vacances-scolaires-jours-feries], key_fact: "The 2026 school holiday dates of the canton of Geneva are fixed by the Conseil d'État and published through 2030."}
+  - id: g-practice-paired-registration
+    question: Comment m'annoncer à la commune après un déménagement?
+    locations: [Lausanne, Bern]
+    language: fr
+    area: moving
+    level: municipal
+    split: dev
+    note: >-
+      Practice paired_jurisdiction. Two separate answers. Verified in corpus: Lausanne's
+      arrivee-inscription-suisse.html states a 14-day filing deadline ("Délai d'annonce: 14 jours"); Bern's
+      Einwohnerdienste/EMF page lists Anmeldung/Adressänderung as services handled at that office (exact
+      day count not machine-verified for Bern, so the key fact is phrased generically enough to hold for
+      both cities).
+    expect: {status: results, place_statuses: [results, results], sources: [arrivee-inscription-suisse, einwohnerdienste-migration-und-fremdenpolizei-emf], key_fact: "Registration with the residents' office within the local deadline, per city."}
+  - id: g-practice-citation-licence
+    question: Welche Quelle belegt die Frist von 12 Monaten für den Umtausch des ausländischen Führerausweises?
+    language: de
+    area: driving
+    level: cantonal
+    split: dev
+    note: >-
+      Practice citation_support, adapted. Checked whether VZV Art. 44 (SR 741.51) is in the corpus:
+      `select distinct url from corpus.document where url ilike '%741.51%'` returns nothing, and the
+      manifest lists 741.51 among the fedlex sr_numbers, so this is a data gap (VZV was never
+      ingested despite being configured). Fell back to zh.ch, which states the fact directly:
+      "Wenn Sie in die Schweiz ziehen, müssen Sie Ihren Führerausweis in einen Schweizer Führerausweis
+      umtauschen. Sie haben ab Einreisedatum 12 Monate Zeit."
+    expect: {status: results, sources: [auslaendischer-fuehrerausweis], key_fact: "12 months from the date of entry to exchange a foreign driving licence for a Swiss one."}
+  - id: g-practice-reference-rate
+    question: Wie hoch ist der aktuelle Referenzzinssatz für Mieten?
+    language: de
+    area: housing
+    level: federal
+    split: dev
+    tool: swiss_reference_rate
+    note: Practice rate_freshness and source_failure (mocked outage in Task 18 tests). Lookup, not retrieval.
+    expect: {status: results, sources: [bwo.admin.ch], key_fact: "Current reference rate and its effective date."}
+  - id: g-national-notice-period
+    question: Wie lange ist die Kündigungsfrist für eine Mietwohnung?
+    language: de
+    area: law
+    level: federal
+    split: dev
+    note: >-
+      National question; asking for a place would be wrong. Verified in corpus: fedlex OR Art. 266c (de)
+      states three months to the next customary local term.
+    expect: {status: results, sources: [art_266_c], key_fact: "Three months to a customary local term (Art. 266c OR)."}
+  - id: g-basel-dog-tax
+    question: Wie hoch ist die Hundesteuer?
+    locations: [Basel]
+    language: de
+    area: none
+    level: municipal
+    split: dev
+    note: Swiss place outside the declared scope; no federal dog tax exists.
+    expect: {status: outside_scope}
+  - id: g-register-lookup
+    question: Ist die Muster AG im Handelsregister eingetragen?
+    language: de
+    area: companies
+    level: none
+    split: dev
+    note: >-
+      Out-of-scope topic (ADR 0015: looking up a specific company is not covered, only general information
+      on how the register works). Expected no_evidence with the scope statement, which names the
+      commercial register.
+    expect: {status: no_evidence}

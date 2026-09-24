@@ -1,0 +1,72 @@
+version: 2026-09-24.1
+probes:
+  - id: g-cant-zh-control-drive
+    question: Brauche ich eine Kontrollfahrt, um meinen ausländischen Führerausweis im Kanton Zürich umzutauschen?
+    language: de
+    area: driving
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus: zh.ch/.../auslaendischer-fuehrerausweis.html, "Je nachdem, aus welchem Land Ihr
+      Führerausweis ist, müssen Sie eine Kontrollfahrt machen," with a list of countries exempted from it.
+    expect: {status: results, sources: [auslaendischer-fuehrerausweis], key_fact: "Whether a control drive is required depends on which country issued the foreign licence; some countries are exempt."}
+  - id: g-cant-be-withholding-tax
+    question: Wie melde ich mich im Kanton Bern für die Quellensteuer an?
+    language: de
+    area: taxes
+    level: cantonal
+    split: dev
+    note: >-
+      Data gap: be.ch has almost no substantive crawled content. `select distinct url from
+      corpus.document where url ilike '%//www.be.ch%' and status='current'` returns mostly an
+      e-services directory (query-string variants of e-services.html) and Leichte-Sprache PDFs; no page
+      about withholding-tax registration was found. Expected status reflects what the server can
+      actually answer, not what a resident would hope for.
+    expect: {status: no_evidence}
+  - id: g-cant-ti-boat-licence
+    question: Come si converte una patente nautica estera nel Cantone Ticino?
+    language: it
+    area: transport
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: www4.ti.ch/.../patente-nautica/conversione-del-permesso-estero, "Chiunque ha il
+      domicilio in Svizzera e desidera navigare sulle acque svizzere deve essere titolare di una licenza
+      di condurre natanti svizzera," with the conversion procedure (verifica requisiti, formulario,
+      spedizione).
+    expect: {status: results, sources: [conversione-del-permesso-estero], key_fact: "A foreign boat licence must be converted to a Swiss one to navigate Swiss waters; the canton runs the conversion procedure."}
+  - id: g-cant-gr-tax-extension
+    question: Wie beantrage ich im Kanton Graubünden eine Fristerstreckung für die Steuererklärung?
+    language: de
+    area: taxes
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: gr.ch .../steuererklaerung/.../fristerstreckung.aspx, "Zum
+      Fristerstreckungsgesuch für die Einreichung der Steuererklärung für Einkommen und Vermögen auf dem
+      ePortal."
+    expect: {status: results, sources: [einkommens_und_vermoegenssteuer/Seiten/fristerstreckung], key_fact: "Filing-deadline extensions for the income and wealth tax return are requested through the canton's ePortal."}
+  - id: g-cant-vd-control-drive-experience
+    question: Muss ich nach 5 Jahren in der Schweiz noch eine Kontrollfahrt machen, wenn ich meinen ausländischen Führerausweis in Vaud umtausche?
+    language: fr
+    area: driving
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus, same page used for g-sample-vaud-licence: "Si vous demandez l'échange de votre
+      permis étranger après 5 ans de résidence en Suisse: Une course de contrôle sera exigée si vous
+      n'avez pas conduit régulièrement de véhicule."
+    expect: {status: results, sources: [echanger-un-permis-etranger], key_fact: "After 5 years of residence, a control drive is required only if the person has not driven regularly since arriving."}
+  - id: g-cant-ge-premium-reduction-canton
+    question: Qui décide, à Genève, du montant de la réduction de prime d'assurance-maladie?
+    language: fr
+    area: health_insurance
+    level: cantonal
+    split: dev
+    note: >-
+      Data gap: no ge.ch page on cantonal premium-reduction administration was found in the corpus
+      (`d.url ilike '%ge.ch%'` search turned up vacances-scolaires and démarches listings, not a
+      réduction-des-primes page). The federal bag.admin.ch page (g-fed-premium-reduction-fr) states that
+      cantons set the amount, but that is federal-level evidence, not a Geneva-specific page, so a
+      cantonal-scoped question about how Geneva runs it has no cantonal source in the corpus.
+    expect: {status: no_evidence}
