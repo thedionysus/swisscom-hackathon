@@ -59,6 +59,18 @@ def test_ocr_fills_text_and_marks_document(corpus_db, tmp_path):
     assert report == {"done": 1, "failed": 0, "skipped": 0}
 
 
+def test_nul_bytes_in_transcription_are_stripped(corpus_db, tmp_path):
+    """PostgreSQL rejects NUL (0x00) in text; a scanned page's transcription can carry one."""
+    with connect(corpus_db) as conn:
+        _seed(conn, tmp_path)
+        tasks = build_ocr_tasks(conn, model="gpt-5-mini", limit=None)
+    report = run_ocr(corpus_db, SyncRunner(FakeLLM(lambda t: {"text": "AHV\x00-Rente"}), workers=1), tasks,
+                     model="gpt-5-mini", batch=False)
+    with connect(corpus_db) as conn:
+        assert conn.execute("select text from corpus.chunk").fetchone()["text"] == "AHV-Rente"
+    assert report == {"done": 1, "failed": 0, "skipped": 0}
+
+
 def test_empty_transcription_is_quarantined(corpus_db, tmp_path):
     with connect(corpus_db) as conn:
         _seed(conn, tmp_path)
