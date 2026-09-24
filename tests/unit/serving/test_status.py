@@ -17,8 +17,8 @@ TREE = LocationTree.from_locations([
 ])
 
 
-def scored(extent="CH", relevance=0.9, group="g"):
-    [g] = collapse([replace(cand("de", group=group), extent_id=extent)], {}, "de")
+def scored(extent="CH", relevance=0.9, group="g", text="text de"):
+    [g] = collapse([replace(cand("de", group=group), extent_id=extent, text=text)], {}, "de")
     return ScoredGroup(g, relevance, relevance, 0)
 
 
@@ -88,3 +88,23 @@ def test_swiss_place_outside_scope_with_nothing_relevant_is_outside_scope():
     outcome = PlaceOutcome("resolved", "Basel", resolved=basel, covered=("federal",))
     status, message = decide(outcome, [scored(relevance=0.01)], threshold=0.1, tree=TREE)
     assert status == "outside_scope" and "Basel" in message
+
+
+def test_placeless_question_with_pages_from_two_places_and_a_deferring_federal_page_asks():
+    groups = [scored("CH", group="ch", text="Die Hundesteuer legt jede Gemeinde fest."),
+              scored("CH-ZH-261", group="zh"), scored("CH-BE-351", group="be")]
+    status, message = decide(PlaceOutcome("none"), groups, threshold=0.1, tree=TREE,
+                             question="Wie hoch ist die Hundesteuer?")
+    assert status == "needs_location" and "municipality" in message
+
+
+def test_placeless_question_answered_by_a_federal_page_is_not_asked_back():
+    groups = [scored("CH", group="ch", text="Referenzalter 65."), scored("CH-ZH", group="zh"),
+              scored("CH-BE-351", group="be")]
+    status, _ = decide(PlaceOutcome("none"), groups, threshold=0.1, tree=TREE,
+                       question="Ab welchem Alter erhalte ich eine AHV-Altersrente?")
+    assert status == "results"
+
+
+def test_pre_search_never_gates_on_the_question():
+    assert pre_search(PlaceOutcome("none")) is None
