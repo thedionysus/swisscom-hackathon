@@ -56,17 +56,15 @@ probes:
     expect: {status: results, place_statuses: [results, results], sources: [art_266_c], key_fact: "Three months to a customary local term (Art. 266c OR), the same nationwide."}
   - id: g-scope-multiplace-waste-de
     question: Wie entsorge ich Karton, in Chur wie auch in der Stadt Zürich?
-    locations: [Chur, Zürich]
+    locations: [Chur, Stadt Zürich]
     language: de
     area: waste
     level: municipal
     split: dev
     note: >-
-      Two declared cities, each with its own municipal waste page (chur.ch/abfallarten for Chur; no
-      cardboard-specific Zürich waste page was found in the corpus, so Zürich should come back
-      no_evidence while Chur comes back results — a mixed place_statuses outcome, not a single merged
-      status).
-    expect: {status: results, place_statuses: [results, no_evidence], sources: [chur.ch/abfallarten], key_fact: "Karton is its own waste category in Chur; no equivalent page was found for Zürich."}
+      Two declared cities, each with its own municipal cardboard page (chur.ch/abfallarten;
+      stadt-zuerich.ch .../entsorgung/.../karton). Answered separately per place.
+    expect: {status: results, place_statuses: [results, results], sources: [chur.ch/abfallarten, stadt-zuerich.ch/de/umwelt-und-energie/entsorgung], key_fact: "Chur and the city of Zürich each describe how cardboard is collected."}
   - id: g-scope-outside-basel-notice-de
     question: Gilt die dreimonatige Kündigungsfrist für Mietwohnungen auch in Winterthur?
     locations: [Winterthur]
