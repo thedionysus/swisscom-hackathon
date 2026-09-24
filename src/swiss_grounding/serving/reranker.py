@@ -28,9 +28,16 @@ def choose_model(setting: str, *, gpu_model: str, cpu_model: str, device: str) -
     return cpu_model if device == "cpu" else gpu_model
 
 
+MARKDOWN = re.compile(r"[*_#`]+")
+SPACES = re.compile(r"[ \t]{2,}")
+
+
 def passage_text(breadcrumb: Sequence[str], text: str) -> str:
+    """Breadcrumb and text as the reranker reads them. Markdown emphasis is stripped: on real pages
+    ("**12** **mois**") it lowered the score of the right passage (docs/RESEARCH.md §H3)."""
     crumb = BREADCRUMB_SEPARATOR.join(breadcrumb)
-    return f"{crumb}\n{text}" if crumb else text
+    body = SPACES.sub(" ", MARKDOWN.sub("", text)).strip()
+    return f"{crumb}\n{body}" if crumb else body
 
 
 class CrossEncoderReranker:
