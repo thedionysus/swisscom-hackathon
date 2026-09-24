@@ -3,7 +3,9 @@ import hashlib
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-PART_BYTES = 1_900 * 1024 * 1024        # under GitHub's 2 GiB per release asset
+# 150 MiB parts: far under GitHub's 2 GiB per release asset, and small enough that a dropped connection
+# (observed twice on 2026-09-24 with a single 855 MB part) costs one part's re-upload, not the whole dump.
+PART_BYTES = 150 * 1024 * 1024
 MANIFEST_NAME = "corpus.manifest.json"
 CHUNK = 1024 * 1024
 # Table data left out of the default dump: legacy public-schema tables, the OpenAI vectors (optional asset),

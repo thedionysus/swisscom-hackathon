@@ -91,7 +91,8 @@ this database, and record the measurements in the README's evaluation section (T
 and 12):
 
 1. `dump export` on the machine that ran encoding; note the size of each `corpus.dump.part*` file
-   (must be under 2 GiB — GitHub's per-file release limit).
+   (150 MiB each by default, well under GitHub's 2 GiB per-file release limit; small parts mean a
+   dropped connection only re-uploads one part).
 2. Publish the release with `gh release create`/`gh release upload` as above.
 3. On a separate machine (or `docker compose down -v` on the same one to get a genuinely empty
    volume), run `uv run swiss-grounding setup` from a clean checkout and time it end to end.
