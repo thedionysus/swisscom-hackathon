@@ -3859,3 +3859,71 @@ sources:
       allow_prefixes: ["https://www.villarsel-sur-marly.ch/"]
       max_pages: 120
       max_pdfs: 20
+
+  # ---------------- JSON/REST sources (connector: json, #55) ----------------
+
+  # Opendatasoft dataset, CC BY 4.0. Checked 2026-09-24: 90 records (school years 2025/2026 and 2026/2027),
+  # no empty fields, the id below is unique. The old ApiFetcher read it with 0 errors on 2026-09-23.
+  - id: sz_schulferien
+    name: "Ferienplan der Schulen im Kanton Schwyz"
+    publisher: "Kanton Schwyz"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-SZ
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://data.sz.ch/api/explore/v2.1/catalog/datasets/ferienplan-kanton-schwyz/records?limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{schuljahr}-{schulart}-{name_schule}"
+      title_template: "Schulferien {schuljahr}: {name_schule} ({schulart})"
+      text_template: "Ferienplan im Schuljahr {schuljahr} für {name_schule} ({schulart}, Bezirk {bezirk}, Kanton Schwyz). Schuljahresbeginn: {start_schuljahr}. Herbstferien: {herbstferien_start} bis {herbstferien_ende}. Weihnachtsferien: {weihnachtsferien_start} bis {weihnachtsferien_ende}. Sportferien: {sportferien_start} bis {sportferien_ende}. Frühlingsferien: {fruehlingsferien_start} bis {fruehlingsferien_ende}. Schuljahresende: {ende_schuljahr}."
+      cite_url: "https://data.sz.ch/explore/assets/ferienplan-kanton-schwyz/"
+
+  # Opendatasoft dataset 13350. Checked 2026-09-24: 58 records (holidays and school-free days per school year),
+  # no empty fields, the id below is unique. www.baselland.ch itself answers a Cloudflare 403.
+  - id: bl_schulferien
+    name: "Schulferien und schulfreie Tage im Kanton Basel-Landschaft"
+    publisher: "Kanton Basel-Landschaft"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BL
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://data.bl.ch/api/explore/v2.1/catalog/datasets/13350/records?limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{schuljahr}-{name}"
+      title_template: "{name} {schuljahr} (Schulen im Kanton Basel-Landschaft)"
+      text_template: "{name} im Schuljahr {schuljahr} an den Schulen des Kantons Basel-Landschaft: vom {startdatum} bis {enddatum}."
+      cite_url: "https://data.bl.ch/explore/assets/13350/"
+
+  # Plone REST behind wissen.zg.ch (an Angular app). Checked 2026-09-24: @search with fullobjects returns all
+  # 1,343 items of the book, 100 per page with a working batching.next; paragraphs carry the text in text.data,
+  # chapters name the levels. The public page sits at the same path on wissen.zg.ch (HTTP 200 checked).
+  # Table blocks (62) are not read yet.
+  - id: zg_steuerbuch
+    name: "Steuerbuch des Kantons Zug"
+    publisher: "Kantonale Steuerverwaltung Zug"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-ZG
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://wissen-backend.webcloud7.ch/steuerbuch/@search?path.query=/steuerbuch&b_size={size}&fullobjects=1"
+      paging: {style: next, size: 100, next_path: batching.next}
+      records_path: items
+      id_template: "{UID}"
+      title_template: "{_parent}: {title}"
+      html_path: text.data
+      url_template: "{@id}"
+      url_replace: ["https://wissen-backend.webcloud7.ch/", "https://wissen.zg.ch/"]
+      breadcrumbs: {id_path: "@id", title_path: title}
+      modified_path: modified
+      max_records: 2000
