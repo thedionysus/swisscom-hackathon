@@ -139,6 +139,9 @@ def _check_json_config(source_id: str, config: dict[str, Any]) -> None:
     crumbs = config.get("breadcrumbs")
     if crumbs is not None and (not isinstance(crumbs, dict) or set(crumbs) - {"id_path", "title_path"}):
         raise ValueError(f"source {source_id}: config.breadcrumbs takes only id_path and title_path")
+    reason = config.get("robots_exception_reason")
+    if reason is not None and (not isinstance(reason, str) or not reason.strip()):
+        raise ValueError(f"source {source_id}: config.robots_exception_reason must be a non-empty explanation")
 
 
 class Manifest(BaseModel):

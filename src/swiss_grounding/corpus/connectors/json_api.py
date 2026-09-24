@@ -24,8 +24,11 @@ templates that turn a record into a document. Its manifest `config` keys:
   breadcrumb is the titles of the records whose `id_path` URL is a path prefix of its own, and the
   templates can use `{_parent}`: the nearest of those titles that differs from the record's own.
 - `max_records` (default 5000) and `delay_seconds` (as for html sources).
+- `robots_exception_reason`: why this documented API may be fetched although robots.txt disallows it.
+  It takes effect only when the operator sets `ROBOTS_API_EXCEPTIONS=true` (default false).
 
-robots.txt is honoured exactly as in the html connector (`RESPECT_ROBOTS`, `load_robots`). A record
+robots.txt is honoured exactly as in the html connector (`RESPECT_ROBOTS`, `load_robots`), apart from the
+opt-in exception above, which is logged for every request it lets through. A record
 that disappears is never reported as gone: an API page can shift, and a record that leaves a date window
 is not withdrawn. This connector hands over no PDFs.
 """
@@ -149,9 +152,10 @@ def _cite_url(cfg: Mapping, record_id: str) -> str:
 
 class JsonConnector:
     def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep,
-                 throttle: HostThrottle | None = None):
+                 throttle: HostThrottle | None = None, robots_api_exceptions: bool = False):
         self._http = http
         self._policy = policy
+        self._robots_api_exceptions = robots_api_exceptions
         self._sleep = sleep
         self._throttle = throttle or SHARED_THROTTLE
         self._robots: dict[str, tuple[Protego, str | None]] = {}
@@ -161,8 +165,8 @@ class JsonConnector:
         delay = max(self._delays.get(_root(url), self._policy.delay_seconds), min_delay)
         self._throttle.wait(url, delay, self._sleep)
 
-    def _refusal(self, url: str, min_delay: float) -> str | None:
-        """Why robots.txt forbids `url`, or None when it may be fetched."""
+    def _refusal(self, url: str, min_delay: float, exception_reason: str | None = None) -> str | None:
+        """Why robots.txt forbids `url`, or None when it may be fetched (including under an exception)."""
         if not self._policy.respect_robots:
             return None
         root = _root(url)
@@ -177,10 +181,14 @@ class JsonConnector:
         parser, problem = self._robots[root]
         if parser.can_fetch(url, ROBOTS_USER_AGENT):
             return None
-        return f"robots.txt {problem}: host disallowed" if problem else "disallowed by robots.txt"
+        refusal = f"robots.txt {problem}: host disallowed" if problem else "disallowed by robots.txt"
+        if self._robots_api_exceptions and exception_reason:
+            logger.warning("ROBOTS_API_EXCEPTIONS: fetching %s although %s; reason: %s", url, refusal, exception_reason)
+            return None
+        return refusal
 
-    def _get_json(self, url: str, min_delay: float) -> tuple[Any, str | None]:
-        refused = self._refusal(url, min_delay)
+    def _get_json(self, url: str, min_delay: float, exception_reason: str | None = None) -> tuple[Any, str | None]:
+        refused = self._refusal(url, min_delay, exception_reason)
         if refused:
             return None, refused
         try:
@@ -210,7 +218,7 @@ class JsonConnector:
         index, requested = 0, set()
         while budget > 0 and url not in requested:
             requested.add(url)
-            data, problem = self._get_json(url, min_delay)
+            data, problem = self._get_json(url, min_delay, cfg.get("robots_exception_reason"))
             if problem:
                 errors.append((url, problem))
                 return
