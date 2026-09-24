@@ -63,13 +63,15 @@ Settings are described in the README's Configuration section.
 
    ```bash
    uv run swiss-grounding corpus check-manifest manifests/declared-scope.yaml
-   uv run swiss-grounding corpus fetch --manifest manifests/declared-scope.yaml --tier 1
+   uv run swiss-grounding corpus fetch --manifest manifests/declared-scope.yaml --tier 3
    uv run swiss-grounding corpus status
    ```
 
    `check-manifest` validates the file, requests every start URL and SR number, and reports robots.txt
    verdicts and language alternates. `fetch` costs nothing but takes hours: some sites ask for 10
-   seconds between requests.
+   seconds between requests. `--tier 3` fetches every tier: 1 (the declared scope), 2 (other cantons
+   and cities) and 3 (bulk and gazette collections); the manifest header says which is which. The
+   default, `--tier 1`, skips the Run 3 sources.
 
 6. **Import the Zürich waste calendar.**
 
