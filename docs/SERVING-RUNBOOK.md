@@ -102,5 +102,5 @@ provisional abstention threshold and local quota (checks 5–6), Fedlex anchor s
 detection accuracy (checks 7–8), how often each model passes a location for the Konstanz-style
 question (check 9), the dump rehearsal above (checks 10, 12), the CPU-only reranker path (check
 11), and the ADR 0016 thresholds on holdout (check 13). Run them in the order given in
-`task-28.md`, record failures and the fix in `docs/RESEARCH.md` (section H3), and re-run before
+Task 28 of `docs/superpowers/plans/2026-09-23-serving-track.md`, record failures and the fix in `docs/RESEARCH.md` (section H3), and re-run before
 submitting.
