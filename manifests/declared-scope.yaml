@@ -579,6 +579,8 @@ sources:
 
   # Run 3: gr_justiz_guidance (html_crawl, https://www.justiz-gr.ch)
   # agent recommends the 305-URL sitemap as seed (run3-e.md:149) but its URL is not recorded; link-following only
+  # Checked 2026-09-24: the first start URL (Obergericht Dienstleistungen/Themen) answers HTTP 500 on repeat;
+  # the other three start URLs answer 200 and parse.
   - id: gr_justiz_guidance
     name: "Justiz Graubünden – Dienstleistungen, Schlichtung, Betreibung und Konkurs"
     publisher: "Justiz Graubünden"
@@ -888,6 +890,9 @@ sources:
     tier: 2
     languages: ["fr"]
     config:
+      # Checked 2026-09-24: www.fr.ch has no <main>; without this the page parses to 3 words ("Travail et
+      # entreprises"). #main holds the article (school holidays: 2,319 words in 42 sections).
+      content_selector: "#main"
       start_urls: ["https://www.fr.ch/vie-quotidienne/animaux-de-compagnie/chiens"]
       allow_prefixes: ["https://www.fr.ch/vie-quotidienne/animaux-de-compagnie/chiens"]
       max_pages: 25
@@ -905,6 +910,9 @@ sources:
     tier: 2
     languages: ["fr"]
     config:
+      # Checked 2026-09-24: www.fr.ch has no <main>; without this the page parses to 3 words ("Travail et
+      # entreprises"). #main holds the article (school holidays: 2,319 words in 42 sections).
+      content_selector: "#main"
       start_urls: ["https://www.fr.ch/etat-et-droit/justice"]
       allow_prefixes: ["https://www.fr.ch/etat-et-droit/poursuites-et-faillites/procedure-de-", "https://www.fr.ch/etat-et-droit/justice"]
       max_pages: 230
@@ -937,6 +945,9 @@ sources:
     tier: 2
     languages: ["fr"]
     config:
+      # Checked 2026-09-24: www.fr.ch has no <main>; without this the page parses to 3 words ("Travail et
+      # entreprises"). #main holds the article (school holidays: 2,319 words in 42 sections).
+      content_selector: "#main"
       start_urls: ["https://www.fr.ch/dfac/vacances-scolaires"]
       allow_prefixes: ["https://www.fr.ch/dfac/vacances-scolaires"]
       max_pages: 10
@@ -954,6 +965,9 @@ sources:
     tier: 2
     languages: ["fr"]
     config:
+      # Checked 2026-09-24: www.fr.ch has no <main>; without this the page parses to 3 words ("Travail et
+      # entreprises"). #main holds the article (school holidays: 2,319 words in 42 sections).
+      content_selector: "#main"
       start_urls: ["https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers"]
       allow_prefixes: ["https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers"]
       pdf_allow_prefixes: ["https://www.fr.ch/document/57721"]
@@ -1285,6 +1299,8 @@ sources:
 
   # Run 3: neuchatel_ville_reglementation
   # UNVERIFIED WORKAROUND: the unprefixed page declares itself the 'de' hreflang alternate although it is French (<html lang=fr>), so the parser marks it German, does not emit it and drops its 79 PDF links (html_page.py:52-58, html.py:318-322; offline). Starting at the site's own 'fr' alternate avoids that only if /fr/... serves the page without redirecting (not saved, not checked). max_pages 1 keeps the crawl on the current list; the former-commune lists hold ABROGE texts. The dog arrêté 12.21 is scanned (9/9 pages need OCR, offline parse_pdf) and is OCR'd by corpus run (pdf.py:75-82, ocr.py)
+  # Checked 2026-09-24: /fr/votre-commune/reglementation redirects to the unprefixed page, which the parser still
+  # reads as German (emit=False), so this source yields nothing until #56 (page language vs language links).
   - id: neuchatel_ville_reglementation
     name: "Ville de Neuchâtel – Réglementation communale"
     publisher: "Ville de Neuchâtel"
@@ -1803,8 +1819,9 @@ sources:
     tier: 3
     languages: ["fr"]
     config:
-      start_urls: ["https://www.faovd.ch/rubrique/communes/"]
-      allow_prefixes: ["https://www.faovd.ch/rubrique/communes/"]
+      # Checked 2026-09-24: /rubrique/communes/ redirects to /rubrique/communes, so both drop the slash.
+      start_urls: ["https://www.faovd.ch/rubrique/communes"]
+      allow_prefixes: ["https://www.faovd.ch/rubrique/communes"]
       pdf_allow_prefixes: ["https://www.faovd.ch/autres/"]
       max_pages: 5
       max_pdfs: 20
@@ -1828,3 +1845,28 @@ sources:
       pdf_allow_prefixes: ["https://www.schulen-aargau.ch/media/schulen-aargau/schulorganisation/ressourcen-planung/stunden-ferienplanung/bksvs-kantonal-einheitlicher-ferienplan"]
       max_pages: 2
       max_pdfs: 1
+
+  # Fribourg official gazette. robots.txt allows `*` (our user agent is not named) and names 23 AI crawlers
+  # (ClaudeBot, GPTBot, ...) that it blocks; a permission request to the publisher is pending. Our user agent
+  # is never spoofed. A rubric page holds every notice of its rubric; sub-rubric pages repeat 84-89% of it,
+  # so they are denied. Rubrics 15 (property transfers), 20 (court notices) and 21 (building-permit
+  # applications) carry personal data and are denied. abl.fr.ch is left out: it shows the same notices in
+  # their original language under a German menu. Html-connector limits: one section per rubric page, every
+  # title is "Articles", no per-notice split or commune narrowing (Run 3 proposes a gazette-html connector).
+  # The year page lists the newest issue first; each new year needs a new start URL and prefix.
+  - id: fr_feuille_officielle
+    name: "Feuille officielle du canton de Fribourg (2026)"
+    publisher: "État de Fribourg"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-FR
+    connector: html
+    tier: 3
+    languages: ["fr"]
+    config:
+      start_urls: ["https://fo.fr.ch/archive/2026"]
+      allow_prefixes: ["https://fo.fr.ch/archive/2026"]
+      deny_patterns: ["^https://fo\\.fr\\.ch/archive/\\d{4}/\\d+/(15|20|21)(/|$)", "^https://fo\\.fr\\.ch/archive/\\d{4}/\\d+/\\d+/"]
+      content_selector: "#block-fo-content"
+      max_pages: 300
+      max_pdfs: 0
