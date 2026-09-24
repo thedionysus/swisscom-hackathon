@@ -47,10 +47,13 @@ UNAVAILABLE = ("The Swiss Parliament source (zbern.ch) cannot be reached right n
 def instructions_section(prefix: str, remote: str | None) -> str:
     """Routing hint plus the zbern server's own instructions, appended to ours."""
     head = (
-        f"Swiss federal Parliament and federal popular votes are answered by the `{prefix}*` tools (served by "
-        f"zbern.ch): members of parliament, business items (motions, postulates, interpellations, bills), debate "
-        f"transcripts, roll-call votes, popular vote results and upcoming votes. Use them for those questions even "
-        f"where `swiss_scope` does not list them; use the `swiss_*` tools for law, public services and lookups."
+        f"The `{prefix}*` tools (served by zbern.ch) hold the data of the Swiss federal Parliament and of federal "
+        f"popular votes: members of parliament, business items (motions, postulates, interpellations, bills), "
+        f"debate transcripts, roll-call votes, vote results down to municipality, and the dates and ballot items "
+        f"of upcoming votes. Use them for those questions even where `swiss_scope` does not list them. Everything "
+        f"else stays with the `swiss_*` tools, including the official information pages about votes (the Federal "
+        f"Chancellery's voting explanations and booklets, how and when to vote, ch.ch): search those with "
+        f"`swiss_search` before concluding that a question is not covered."
     )
     return f"{head}\n\n{remote.strip()}" if remote and remote.strip() else head
 

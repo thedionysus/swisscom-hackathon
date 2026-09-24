@@ -78,7 +78,8 @@ Connect an MCP client with the config in `evals/judge/mcp.json`:
 ```
 
 For Claude Code: `claude mcp add swiss-grounding --scope user -- uv --directory "$(pwd)" run swiss-grounding serve`,
-then open a new session and run `/mcp` to confirm the six tools are listed.
+then open a new session and run `/mcp` to confirm the tools are listed: the six `swiss_*` tools, plus
+the `zbern_*` parliament tools once `setup` has installed the zbern token (see below).
 
 ## Tools
 
@@ -90,6 +91,7 @@ then open a new session and run `/mcp` to confirm the six tools are listed.
 | `swiss_premium(municipality, age, deductible, accident, model, year, limit)` | Cheapest monthly basic health-insurance premiums (BAG data) for a Swiss municipality, age and deductible. |
 | `swiss_connections(origin, destination, date, time, limit)` | Next public transport connections between two Swiss stops (live timetable). |
 | `swiss_reference_rate()` | The current Swiss mortgage reference interest rate for rents (BWO), with its effective date. |
+| `zbern_*` (eleven tools, e.g. `zbern_search_person`, `zbern_get_business`, `zbern_get_vote_results`, `zbern_get_upcoming_votes`) | Swiss Parliament and federal popular votes, forwarded to the zbern.ch server and discovered from it at start; see "Swiss Parliament tools" below. |
 
 Chunks are retrieved on their English translation; the original German, French, Italian or Romansh
 text is stored and can be requested through `swiss_get_document`.
@@ -278,7 +280,8 @@ The Docker database must be running whenever you chat.
     claude mcp add swiss-grounding --scope user -- \
       uv --directory "/absolute/path/to/swisscom-hackathon" run swiss-grounding serve --transport stdio
 
-Open a new session, run `/mcp` to confirm six tools are listed, and ask a question.
+Open a new session, run `/mcp` to confirm the `swiss_*` tools (and, with the zbern token installed, the
+`zbern_*` tools) are listed, and ask a question.
 
 **Claude Desktop**
 

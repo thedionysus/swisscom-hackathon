@@ -134,6 +134,10 @@ async def test_instructions_carry_the_routing_hint_and_the_remote_instructions()
     text = local._mcp_server.instructions
     assert text.startswith("LOCAL INSTRUCTIONS")
     assert "`zbern_*` tools" in text and REMOTE_INSTRUCTIONS in text
+    # Official vote information pages are in our corpus: the hint must keep them with swiss_search, or the
+    # model answers a booklets question with zbern_get_upcoming_votes and never searches (holdout probe).
+    routing = text.split(REMOTE_INSTRUCTIONS)[0]
+    assert "voting explanations" in routing and "`swiss_search`" in routing
 
 
 async def test_an_unreachable_server_leaves_our_tools_working():
