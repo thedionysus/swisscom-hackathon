@@ -1,4 +1,5 @@
 import httpx
+import pytest
 
 from swiss_grounding.corpus.connectors.html import CrawlPolicy, HtmlConnector
 from swiss_grounding.corpus.connectors.politeness import HostThrottle
@@ -259,10 +260,12 @@ def test_alternate_language_outside_spec_languages_is_not_queued():
 
 # --- robots.txt failure modes ----------------------------------------------------------------
 
-def test_robots_403_disallows_the_whole_host():
-    result = HtmlConnector(_client(robots_response=lambda r: httpx.Response(403)),
+@pytest.mark.parametrize("status", [401, 403, 404])
+def test_robots_4xx_means_unavailable_so_the_host_is_allowed(status):
+    """RFC 9309 2.3.1.3: a 4xx robots.txt (a login wall's 401/403 too) allows everything."""
+    result = HtmlConnector(_client(robots_response=lambda r: httpx.Response(status)),
                            CrawlPolicy(True, 0)).run(_spec(), known={})
-    assert result.documents == ()
+    assert {d.url for d in result.documents} == set(PAGES)
 
 
 def test_robots_503_disallows_the_whole_host():
