@@ -2,6 +2,7 @@
 # tier 2 = other cantons and cities; tier 3 = bulk or gazette collections (opt-in). `corpus fetch --tier N`
 # crawls tiers 1..N. The Run 3 entries at the end come from docs/sources/verification_2026-09-23/run3/ on
 # branch sources/run3-discovery (corpus_pipeline/manifest_candidates.yaml).
+# A `# CAVEAT (...)` comment above an entry flags a known issue (personal data, volume) that was accepted.
 # Optional per-site keys: language_links_selector, content_selector, pdf_link_patterns,
 # sitemap_urls/sitemap_include. Start URLs verified live on 2026-09-23 with the corpus user agent.
 version: 1
@@ -1754,6 +1755,7 @@ sources:
 
   # Run 3: ju_journal_officiel
   # gazette (tier 3, opt-in): 33 weekly PDFs linked from the 2026 page (offline); notices can carry personal data; each new year needs a new start URL
+  # CAVEAT (personal data): official notices can name private persons. Kept in on purpose (authoritative, the canton's own gazette); flagged so serving can decide how to show them.
   - id: ju_journal_officiel
     name: "Canton du Jura – Journal officiel (2026)"
     publisher: "République et Canton du Jura"
@@ -1772,6 +1774,7 @@ sources:
 
   # Run 3: tg_rechtsprechung_sitemap
   # court decisions (tier 3, bulk): 6,350 sitemap URLs (run3-c/sitemaps); per-source max_pages replaces the old 200-page cap (html.py:236). opencaselaw's TG Obergericht feed is stale (consolidated_report.md:236)
+  # CAVEAT (volume and cost): up to 6,500 court decisions, about half of all Run 3 pages. Kept in; decide after the crawl and `corpus estimate` whether describing all of them is worth the cost.
   - id: tg_rechtsprechung
     name: "Rechtsprechung der Thurgauer Gerichte"
     publisher: "Gerichte des Kantons Thurgau"
