@@ -1849,11 +1849,13 @@ sources:
   # Fribourg official gazette. robots.txt allows `*` (our user agent is not named) and names 23 AI crawlers
   # (ClaudeBot, GPTBot, ...) that it blocks; a permission request to the publisher is pending. Our user agent
   # is never spoofed. A rubric page holds every notice of its rubric; sub-rubric pages repeat 84-89% of it,
-  # so they are denied. Rubrics 15 (property transfers), 20 (court notices) and 21 (building-permit
-  # applications) carry personal data and are denied. abl.fr.ch is left out: it shows the same notices in
+  # so they are denied. abl.fr.ch is left out: it shows the same notices in
   # their original language under a German menu. Html-connector limits: one section per rubric page, every
   # title is "Articles", no per-notice split or commune narrowing (Run 3 proposes a gazette-html connector).
   # The year page lists the newest issue first; each new year needs a new start URL and prefix.
+  # CAVEAT (personal data): rubrics 15 (property transfers), 20 (court notices) and 21 (building-permit
+  # applications) name private persons. Kept in on purpose (the canton's own gazette); flagged so serving
+  # can decide how to show them.
   - id: fr_feuille_officielle
     name: "Feuille officielle du canton de Fribourg (2026)"
     publisher: "État de Fribourg"
@@ -1866,7 +1868,7 @@ sources:
     config:
       start_urls: ["https://fo.fr.ch/archive/2026"]
       allow_prefixes: ["https://fo.fr.ch/archive/2026"]
-      deny_patterns: ["^https://fo\\.fr\\.ch/archive/\\d{4}/\\d+/(15|20|21)(/|$)", "^https://fo\\.fr\\.ch/archive/\\d{4}/\\d+/\\d+/"]
+      deny_patterns: ["^https://fo\\.fr\\.ch/archive/\\d{4}/\\d+/\\d+/"]
       content_selector: "#block-fo-content"
       max_pages: 300
       max_pdfs: 0
