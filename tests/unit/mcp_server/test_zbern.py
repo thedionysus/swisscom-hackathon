@@ -213,8 +213,20 @@ async def test_prime_works_from_inside_a_running_event_loop():
     assert "zbern_search_person" in {t.name for t in await tools.list_tools()}
 
 
-def test_off_without_a_url():
-    assert zbern.from_settings(Settings(database_url="postgresql://u:p@h:1/db", _env_file=None)) is None
+def test_the_hosted_endpoint_is_the_default_and_the_token_switches_it_on(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    off = Settings(_env_file=None)
+    assert off.zbern_mcp_url == "https://mcp.zbern.ch/mcp"
+    assert zbern.from_settings(off) is None                 # no token yet: `setup` installs it
+    monkeypatch.setenv("ZBERN_MCP_TOKEN", "secret-token")
+    assert zbern.from_settings(Settings(_env_file=None)) is not None
+
+
+def test_an_empty_url_turns_the_zbern_tools_off_even_with_a_token(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.setenv("ZBERN_MCP_TOKEN", "secret-token")
+    monkeypatch.setenv("ZBERN_MCP_URL", "")
+    assert zbern.from_settings(Settings(_env_file=None)) is None
 
 
 def test_settings_from_env(monkeypatch):

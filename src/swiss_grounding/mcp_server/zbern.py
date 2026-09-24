@@ -7,7 +7,8 @@ hard-coded here: names, descriptions, input schemas and the server's instruction
 remote server and refreshed periodically, so the zbern side can add, change or remove tools without a change
 in this repository. Calls are passed through unchanged and the remote result is returned verbatim.
 
-Disabled unless ZBERN_MCP_URL is set. When the zbern server is unreachable our own tools keep working: its tools
+The hosted zbern server needs a bearer token, so the tools are served once ZBERN_MCP_TOKEN is present (`setup`
+installs it) and ZBERN_MCP_URL is not empty. When the zbern server is unreachable our own tools keep working: its tools
 are listed from the last successful discovery (none if there never was one) and a call answers
 `source_unavailable`.
 """
@@ -213,9 +214,13 @@ def attach(mcp: FastMCP, zbern: ZbernTools, base_instructions: str | None) -> No
 
 
 def from_settings(settings: Settings) -> ZbernTools | None:
+    """The zbern tools for these settings, or None when they stay off (no URL, or no token for the server)."""
     if not settings.zbern_mcp_url:
         return None
-    token = settings.zbern_mcp_token.get_secret_value() if settings.zbern_mcp_token else None
+    if settings.zbern_mcp_token is None:
+        log.info("zbern tools stay off: ZBERN_MCP_TOKEN is not set (run `swiss-grounding setup` to install it)")
+        return None
+    token = settings.zbern_mcp_token.get_secret_value()
     return ZbernTools(
         http_transport(settings.zbern_mcp_url, token, settings.zbern_mcp_timeout_seconds),
         prefix=settings.zbern_mcp_prefix, exclude=settings.zbern_mcp_exclude,

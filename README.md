@@ -57,8 +57,9 @@ uv run swiss-grounding serve             # starts the MCP server over stdio
 
 `setup` needs no API key: the prebuilt database already carries the bge-m3 index and the
 descriptions it depends on (ADR 0017). It prints how long the restore and index rebuild took.
-It also installs the team's shared translation key into `.env` when one is published on the
-release (see "Translation at question time"); without one, translation simply stays off.
+It also installs the team's shared keys into `.env` when they are published on the release: the
+translation key (see "Translation at question time") and the zbern.ch token (see "Swiss Parliament
+tools"); without them, translation and the parliament tools simply stay off.
 
 After `setup` has run once, set `HF_HUB_OFFLINE=1` in `.env` to stop the model libraries from
 checking the Hugging Face Hub for updates at every start.
@@ -93,16 +94,18 @@ then open a new session and run `/mcp` to confirm the six tools are listed.
 Chunks are retrieved on their English translation; the original German, French, Italian or Romansh
 text is stored and can be requested through `swiss_get_document`.
 
-### Swiss Parliament tools (optional, from zbern.ch)
+### Swiss Parliament tools (from zbern.ch)
 
 Questions about the Federal Parliament and federal popular votes (members, business items, debates,
-roll-call votes, vote results down to municipality, upcoming votes) are answered by the zbern.ch MCP
-server, a separate server with its own database. Set `ZBERN_MCP_URL` and our server lists its tools
-beside the six above, prefixed `zbern_`, and forwards calls to it (ADR 0018):
+roll-call votes, vote results down to municipality, upcoming votes) are answered by the hosted
+zbern.ch MCP server (`https://mcp.zbern.ch/mcp`), a separate server with its own database. Our server
+lists its tools beside the six above, prefixed `zbern_`, and forwards calls to it. The endpoint needs
+a bearer token, `ZBERN_MCP_TOKEN`, which `setup` installs from the private release like the
+translation key; the tools are on as soon as it is present.
 
 ```bash
-ZBERN_MCP_URL=https://mcp.zbern.ch/mcp      # or a local run of the zbern-mcp repository
-ZBERN_MCP_TOKEN=...                         # bearer token for the hosted endpoint; never commit it
+ZBERN_MCP_TOKEN=...                         # written by `swiss-grounding setup`; never commit it
+ZBERN_MCP_URL=https://mcp.zbern.ch/mcp      # the default; set it empty to turn the zbern tools off
 ZBERN_MCP_EXCLUDE=query,list_tables,describe_table,get_reference   # the default: raw SQL stays off
 ```
 
@@ -218,9 +221,9 @@ the key in `.env`:
     SUPERTEXT_API_KEY=...
 
 The key is shared through the private release, never through git: a team member with the key in
-their own `.env` runs `uv run swiss-grounding dump publish-key`, which uploads it as the asset
-`supertext.env` next to the corpus dump. Everyone else receives it on their next
-`uv run swiss-grounding setup`, which writes it into their `.env`. Anyone with access to the
+their own `.env` runs `uv run swiss-grounding dump publish-key`, which uploads it (together with
+`ZBERN_MCP_TOKEN`, when set) as the asset `supertext.env` next to the corpus dump. Everyone else
+receives both on their next `uv run swiss-grounding setup`, which writes them into their `.env`. Anyone with access to the
 repository can read it, so keep a dedicated key for this project and rotate it from the Supertext
 cockpit when the evaluation is over.
 

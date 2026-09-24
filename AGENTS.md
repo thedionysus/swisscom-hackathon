@@ -21,11 +21,13 @@ The pipeline runs with **OpenAI or Anthropic**. The choice is one setting, not a
 
 Anthropic calls run synchronously. OpenAI calls use the Batch API unless `--sync` is passed.
 
-## The serving key is separate
+## The serving keys are separate
 
 `SUPERTEXT_API_KEY` is used by the running server only (ADR 0018): it translates each question into the other
 language stores and the cited passages back. It never touches the corpus pipeline. Leave it unset to run the
 server and the evals for free; set it before a golden run only when the run is meant to measure translation.
+`ZBERN_MCP_TOKEN` likewise serves only the running server: with it present the server also lists the zbern.ch
+parliament tools (`zbern_*`). Both come from the private release through `swiss-grounding setup`.
 
 ## Which work the key pays for is configuration
 
