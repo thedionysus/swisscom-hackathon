@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from swiss_grounding.locations.models import Level, Location
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.serving.models import PlaceResult, ScoredGroup
+from swiss_grounding.serving.place_dependent import answer_depends_on_place
 from swiss_grounding.serving.places import PlaceOutcome
 
 FOREIGN = ("{place!r} is outside Switzerland. This server covers Swiss public sources only; "
@@ -12,7 +13,7 @@ UNRESOLVED = ("{place!r} is not a Swiss municipality this server recognises, so 
               "Switzerland: look for the answer in other sources. If it is a Swiss place, check the spelling "
               "or give the postal code and search again.")
 AMBIGUOUS = "{place!r} matches several Swiss places ({options}). Ask the user which one they mean."
-NEEDS_PLACE = ("The answer depends on the place (matching local rules found for: {options}). "
+NEEDS_PLACE = ("The answer depends on the place: {reason}. "
                "Ask the user for their municipality, then search again.")
 NO_EVIDENCE = "No passage in the indexed sources answers this question{where}."
 OUT_OF_SCOPE_PLACE = ("{place!r} is in Switzerland, but its {levels} rules are outside this server's declared "
@@ -44,7 +45,7 @@ def uncovered_levels(outcome: PlaceOutcome) -> tuple[str, ...]:
 
 
 def pre_search(outcome: PlaceOutcome) -> PlaceResult | None:
-    """Steps 1 of ADR 0013 and the ambiguity rule: statuses decided before any search."""
+    """Step 1 of ADR 0013 and the ambiguity rule: statuses decided before any search."""
     if outcome.kind == "foreign":
         return PlaceResult(outcome.text, "outside_scope", message=FOREIGN.format(place=outcome.text))
     if outcome.kind == "unresolved":
@@ -57,7 +58,7 @@ def pre_search(outcome: PlaceOutcome) -> PlaceResult | None:
 
 
 def decide(outcome: PlaceOutcome, scored: Sequence[ScoredGroup], *, threshold: float,
-           tree: LocationTree) -> tuple[str, str]:
+           tree: LocationTree, question: str = "") -> tuple[str, str]:
     """Steps 2, 3 and 5 of ADR 0013, after the search."""
     relevant = [s for s in scored if s.relevance >= threshold]
     uncovered = " and ".join(uncovered_levels(outcome))
@@ -66,12 +67,12 @@ def decide(outcome: PlaceOutcome, scored: Sequence[ScoredGroup], *, threshold: f
             return "outside_scope", OUT_OF_SCOPE_PLACE.format(place=outcome.text, levels=uncovered)
         where = f" for {outcome.text}" if outcome.text else ""
         return "no_evidence", NO_EVIDENCE.format(where=where)
-    extents = [s.group.representative.extent_id for s in relevant]
-    # No place given and nothing federal answers: the answer depends on the place, even when only one
-    # place's documents matched (answering from Zürich's calendar to a placeless question is a guess).
-    if outcome.kind == "none" and "CH" not in extents:
-        options = ", ".join(sorted({tree.get(e).label("de") for e in extents}))
-        return "needs_location", NEEDS_PLACE.format(options=options)
+    # No place given: the evidence says whether the answer depends on the place (ADR 0013 step 2,
+    # amended 2026-09-24): several places hold their own page and no federal passage answers by itself.
+    if outcome.kind == "none":
+        reason = answer_depends_on_place(question, relevant, tree)
+        if reason is not None:
+            return "needs_location", NEEDS_PLACE.format(reason=reason)
     if uncovered:
         return "results", UNCOVERED_NOTE.format(levels=uncovered, place=outcome.text)
     return "results", ""
