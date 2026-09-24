@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     # Estimated input tokens per Batch API file; raise them to the account's enqueued-token limit (runbook).
     corpus_chat_tokens_per_file: int = 2_000_000
     corpus_embed_tokens_per_file: int = 2_000_000
+    # Direct calls run beside the Batch API while describing (0 = batches only). Direct calls are limited
+    # per minute, separately from the Batch queue, so both together roughly double throughput at low
+    # usage tiers; they cost twice the batch price. Size to the account's tokens-per-minute limit.
+    corpus_direct_workers: int = 0
     # Workers for HNSW index builds. 0 = serial: parallel builds need more /dev/shm than Docker's 64 MB default.
     corpus_index_parallel_workers: int = 0
     respect_robots: bool = True

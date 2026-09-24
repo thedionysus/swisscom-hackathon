@@ -77,7 +77,7 @@ def _descriptions(reply: dict, languages: tuple[str, ...]) -> dict[str, str]:
         text = given.get(lang)
         if not isinstance(text, str) or not text.strip():
             raise ValueError(f"description missing for {lang}")
-        out[lang] = text.strip()[:MAX_DESCRIPTION_CHARS]
+        out[lang] = text.replace("\x00", "").strip()[:MAX_DESCRIPTION_CHARS]  # PostgreSQL rejects NUL
     return out
 
 
@@ -243,9 +243,11 @@ def estimate_describe(tasks: Sequence[LlmTask], model: str, batch: bool = True) 
 # --- ingesting outcomes -----------------------------------------------------------------------------
 
 def _spend(conn: psycopg.Connection, model: str, outcome: LlmOutcome, batch: bool) -> None:
+    """A direct call is priced at the sync rate even in a batch run (HybridRunner)."""
     if outcome.input_tokens or outcome.output_tokens:
         record_spend(conn, kind=LEDGER_KIND, model=model,
-                     usd=cost_usd(model, outcome.input_tokens, outcome.output_tokens, batch=batch),
+                     usd=cost_usd(model, outcome.input_tokens, outcome.output_tokens,
+                                  batch=batch and not outcome.sync),
                      input_tokens=outcome.input_tokens, output_tokens=outcome.output_tokens, estimated=False)
 
 

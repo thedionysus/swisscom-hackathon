@@ -267,6 +267,19 @@ def test_replayed_outcomes_are_skipped_without_spend(corpus_db):
     assert descriptions == {"Kündigungsschutz bei Krankheit", "Protection contre le licenciement"}
 
 
+def test_a_direct_call_outcome_is_priced_at_the_sync_rate_in_a_batch_run(corpus_db):
+    """Batch and direct calls run side by side (HybridRunner); each outcome is priced by its own path."""
+    from swiss_grounding.corpus.budget import cost_usd
+    with connect(corpus_db) as conn:
+        _seed(conn)
+        [doc_task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    outcome = LlmOutcome(doc_task.custom_id, _responder(doc_task), 900, 100, sync=True)
+    run_doc_descriptions(corpus_db, _ScriptedRunner([outcome]), [doc_task], model="gpt-5-mini", batch=True)
+    with connect(corpus_db) as conn:
+        usd = conn.execute("select usd from corpus.llm_spend").fetchone()["usd"]
+    assert float(usd) == pytest.approx(cost_usd("gpt-5-mini", 900, 100, batch=False))
+
+
 def test_estimate_uses_batch_price_by_default(corpus_db):
     with connect(corpus_db) as conn:
         _seed(conn)

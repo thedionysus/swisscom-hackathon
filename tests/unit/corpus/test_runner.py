@@ -5,7 +5,14 @@ import pytest
 from openai import APIConnectionError
 
 from swiss_grounding.corpus.providers import FakeLLM, ReplyError, Usage
-from swiss_grounding.corpus.runner import BatchRunner, LlmTask, SyncRunner, parse_batch_line
+from swiss_grounding.corpus.runner import (
+    BATCH_TOKEN_HEADROOM,
+    BatchRunner,
+    LlmTask,
+    SyncRunner,
+    parse_batch_line,
+)
+from swiss_grounding.corpus.tokens import count_tokens
 
 
 def test_sync_runner_returns_one_outcome_per_task():
@@ -128,19 +135,44 @@ def test_submit_sequentially_splits_on_max_bytes(tmp_path):
     assert sum(len(f) for f in client.submitted) == 4
 
 
+def _chat_line(custom_id: str, text: str) -> dict:
+    return {"custom_id": custom_id, "method": "POST", "url": "/v1/chat/completions",
+            "body": {"model": "gpt-5-nano",
+                     "messages": [{"role": "system", "content": ""}, {"role": "user", "content": text}]}}
+
+
 def test_submit_sequentially_splits_on_max_tokens_per_file(tmp_path):
-    """A line's estimated input tokens (system + user text) also forces a new file, so a run
-    never enqueues more than one file's worth of tokens at a time against the org's queue limit."""
+    """A line's input tokens (system + user text) also force a new file, so a run never enqueues more
+    than one file's worth of tokens at a time against the org's queue limit."""
+    text = "Die Arbeitgeberin darf nach Ablauf der Probezeit nicht kündigen. " * 10
+    per_line = count_tokens(text)
     client = FakeOpenAI()
-    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=100, max_bytes=10**9, max_tokens_per_file=100,
-                         poll_seconds=0, record=lambda *a: None)
-    lines = [{"custom_id": str(i), "method": "POST", "url": "/v1/chat/completions",
-              "body": {"model": "gpt-5-nano",
-                       "messages": [{"role": "system", "content": ""}, {"role": "user", "content": "x" * 150}]}}
-             for i in range(3)]
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=100, max_bytes=10**9,
+                         max_tokens_per_file=int(per_line * 2.5), poll_seconds=0, record=lambda *a: None)
+    lines = [_chat_line(str(i), text) for i in range(3)]
     batch_ids = [bid for bid, _ in runner.submit_sequentially(lines, kind="describe", endpoint="/v1/chat/completions")]
     assert len(batch_ids) == 2
     assert [len(f) for f in client.submitted] == [2, 1]
+
+
+def test_files_are_filled_by_real_token_counts_not_a_character_estimate(tmp_path):
+    """Measured on chunk prompts, characters / 3 overstates tokens by about 45%, which left every file
+    a third empty. The split counts tokens with the model's tokenizer and keeps 5% headroom."""
+    text = "Die Arbeitgeberin darf nach Ablauf der Probezeit nicht kündigen. " * 10
+    per_line = count_tokens(text)
+    assert per_line < len(text) / 3 * 0.8          # the old estimate would split these apart
+    limit = int(per_line * 3 / BATCH_TOKEN_HEADROOM) + 1
+    client = FakeOpenAI()
+    runner = BatchRunner(client, work_dir=tmp_path, max_per_file=100, max_bytes=10**9, max_tokens_per_file=limit,
+                         poll_seconds=0, record=lambda *a: None)
+    lines = [_chat_line(str(i), text) for i in range(4)]
+    list(runner.submit_sequentially(lines, kind="describe", endpoint="/v1/chat/completions"))
+    assert [len(f) for f in client.submitted] == [3, 1]
+
+
+def test_count_tokens_uses_the_gpt5_tokenizer():
+    assert count_tokens("") == 0
+    assert 0 < count_tokens("Kündigungsschutz bei Krankheit") < len("Kündigungsschutz bei Krankheit") / 3
 
 
 def test_resume_collects_already_submitted_batches(tmp_path):
@@ -279,3 +311,10 @@ def test_a_before_submit_refusal_on_file_two_stops_submission(tmp_path):
     assert len(client.submitted) == 1
     assert sorted(o.custom_id for o in out) == ["0", "1"]
     assert checked == [2.0, 2.0]
+
+
+def test_sync_runner_marks_its_outcomes_as_direct_calls():
+    """Direct calls cost twice the batch price; the flag lets ingestion price each outcome by its path."""
+    [out] = SyncRunner(FakeLLM(lambda t: {}), workers=1).run([LlmTask("a", "m", "s", "u")])
+    assert out.sync is True
+    assert parse_batch_line(json.dumps({"custom_id": "a", "response": None, "error": {"message": "x"}})).sync is False
