@@ -108,7 +108,7 @@ class Citation:
     modified_at: date | None
     fetched_at: datetime
     extraction: str
-    # The passage in the question's language when it was published in another one (ADR 0018).
+    # The passage in the question's language when it was published in another one.
     # `passage` stays the published text, which is what a citation must be checkable against.
     translated_passage: str | None = None
     translation_language: str | None = None
@@ -131,7 +131,7 @@ class PlaceResult:
     citations: tuple[Citation, ...] = ()
     coverage: tuple[CoverageRow, ...] = ()
     uncovered_levels: tuple[str, ...] = ()
-    """Levels of the place outside the declared scope ("cantonal", "municipal"); ADR 0013 step 3."""
+    """Levels of the place outside the declared scope ("cantonal", "municipal")."""
 
 
 @dataclass(frozen=True)

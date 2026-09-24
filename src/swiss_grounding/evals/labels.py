@@ -1,4 +1,4 @@
-"""Relevance labels: a model judges (question, passage) pairs; a human checks a sample (ADR 0016)."""
+"""Relevance labels: a model judges (question, passage) pairs; a human checks a sample."""
 import random
 from collections.abc import Callable, Mapping, Sequence
 

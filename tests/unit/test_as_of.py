@@ -1,4 +1,4 @@
-"""Refusing an `as_of` the index cannot answer for (D2).
+"""Refusing an `as_of` the index cannot answer for.
 
 The index holds current consolidations only, so `as_of` can subtract and never reach
 back. Asking what the law said in 2020 against an index whose oldest version entered

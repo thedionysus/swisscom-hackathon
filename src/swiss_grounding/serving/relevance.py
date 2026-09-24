@@ -1,4 +1,4 @@
-"""Relevance probability (ADR 0012): reranker score until fitted, then a logistic model."""
+"""Relevance probability: reranker score until fitted, then a logistic model."""
 import json
 import math
 from collections.abc import Sequence
@@ -12,9 +12,9 @@ FEATURES: tuple[str, ...] = (
     "rerank_logit", "same_language", "rrf_reciprocal", "corroboration", "corroboration_na",
     "independent", "tier", "tier_na", "is_law", "age_years",
 )
-# Until the logistic model is fitted (Task 22), relevance blends the reranker with the retrieval rank:
+# Until `eval fit` writes a fitted model, relevance blends the reranker with the retrieval rank:
 # on the encoded corpus the reranker alone demoted the right Vaud passage (0.29) below wrong pages
-# (0.45) that bge-m3 retrieval ranked lower (docs/RESEARCH.md §H3). A passage the reranker scores
+# (0.45) that bge-m3 retrieval ranked lower (docs/EVALUATION.md). A passage the reranker scores
 # below RERANK_GATE keeps its reranker score, so a question with nothing relevant (Konstanz: ~0.00)
 # still ends below the threshold.
 PROVISIONAL_THRESHOLD = 0.20

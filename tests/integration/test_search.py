@@ -91,7 +91,7 @@ def test_search_uses_document_status_not_the_chunk_copy(url):
 
 
 def test_as_of_does_not_admit_a_document_that_records_no_valid_from(url):
-    """The D2 defect: `d.valid_from is null or ...` let an undated document satisfy every
+    """The old defect: `d.valid_from is null or ...` let an undated document satisfy every
     `as_of`. A question about what applied in 2000 came back holding undated web pages,
     presented as the answer, with the acts that do carry dates filtered out around them.
 
@@ -137,7 +137,7 @@ def test_earliest_indexed_version_is_none_when_nothing_records_a_date(url):
 
 
 def test_every_hit_carries_a_distance_including_the_lexical_only_ones(url):
-    """Task 9: the tier is decided by the chunk's cosine distance, so a hit that only the
+    """The tier is decided by the chunk's cosine distance, so a hit that only the
     lexical arm retrieved still needs one. A one-word question (`websearch_to_tsquery`
     ANDs its terms, so a sentence matches nothing here) with a tiny `top_n` makes the two
     arms disagree, and at least one hit reaches the caller without a dense rank."""
@@ -180,7 +180,7 @@ def test_distances_for_omits_an_id_it_finds_no_row_for(url):
         assert distances_for(conn, vector, [10**9]) == {}
 
 
-# --- the two arms are asked different things (ADR 0004, Task 10) ------------------------
+# --- the two arms are asked different things --------------------------------------------
 #
 # `hybrid_search` now takes the verbatim question *and* the English text to embed. The
 # dense arm is English-only because the index is (`db/schema.sql` builds `tsv` from

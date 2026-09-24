@@ -1,10 +1,10 @@
-"""Topic is a hard filter on retrieval, and an on-topic empty result (ADR 0003).
+"""Topic is a hard filter on retrieval, and an on-topic empty result.
 
 These run against a dedicated fixture rather than the live corpus on purpose. The live
-index still carries its pre-Task-5 tags -- 563 fedlex chunks assert `dogs, hiking,
+index still carries its old per-document tags -- 563 fedlex chunks assert `dogs, hiking,
 safety, transport, waste` simultaneously -- so a hard topic filter would appear to
 filter almost nothing there, and a test written against it would assert today's bad
-tags rather than the behaviour this task builds. `tests/fixtures/topic_filter.json`
+tags rather than the behaviour under test. `tests/fixtures/topic_filter.json`
 states that behaviour instead: one extent path carrying documents on two different
 topics, one document carrying no topic at all, and no document anywhere carrying
 `schools`.
@@ -82,7 +82,7 @@ def test_no_evidence_when_nothing_on_the_path_carries_the_topic(core):
 
 
 def test_the_two_no_evidence_causes_do_not_share_a_message(core):
-    """ADR 0001 governs a place with no documents; ADR 0003 governs a place with
+    """One cause is a place with no documents; the other is a place with
     documents but none on topic. A calling model must be able to act differently on
     each -- ask about another place versus ask about another subject -- so neither
     message may be reachable for the other cause."""
@@ -101,7 +101,7 @@ def test_the_two_no_evidence_causes_do_not_share_a_message(core):
 
 
 def test_caller_supplied_topics_win_over_the_soft_category_hint(core):
-    """ADR 0004: the caller supplies the topic. `topics` is the new, explicit field;
+    """The caller supplies the topic. `topics` is the new, explicit field;
     `categories` is the older hint the same caller may still be sending. When both
     arrive, the explicit one decides what is filtered on."""
     resp = core.query(QueryRequest(question="When is cardboard collected?", location="8003",
@@ -136,7 +136,7 @@ def test_a_question_the_classifier_declines_still_returns_everything_on_the_path
     `resolve_topics` substitute some default, and this question returns nothing while
     every other test here -- all of which state a topic -- stays green.
 
-    No stub and no real embedder are needed: FakeEmbedder at dim 8 puts the plan's own
+    No stub and no real embedder are needed: FakeEmbedder at dim 8 puts this
     question below TOPIC_FLOOR, so the classifier genuinely declines. The
     `categories_used` assertion is a precondition rather than decoration -- if the
     classifier ever starts having an opinion about this question, this test must fail
@@ -179,7 +179,7 @@ def test_no_topics_retrieves_every_topic_and_the_untagged_chunk(core):
 
 
 def test_any_topic_filter_hides_the_chunk_that_carries_no_topic(core):
-    """The cost of a hard filter, accepted deliberately (CONTEXT.md, *Topic*): a chunk
+    """The cost of a hard filter, accepted deliberately: a chunk
     the re-tagging pass named no topic for does not carry this one either, so it is not
     evidence. This is why `()` may not be spelled as an empty array in the SQL."""
     with connect(core.database_url) as conn:

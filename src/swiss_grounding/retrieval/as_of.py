@@ -1,4 +1,4 @@
-"""Which `as_of` dates this index can answer for, and how it refuses the rest (D2).
+"""Which `as_of` dates this index can answer for, and how it refuses the rest.
 
 Ingestion fetches the version of an act that is in force *now* and nothing else, so the
 index holds current consolidations with no version history behind them. `valid_from`

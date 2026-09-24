@@ -31,7 +31,7 @@ def _current(conn: psycopg.Connection, url: str) -> dict | None:
 def _insert_document(conn: psycopg.Connection, doc: EnrichedDocument, chunks: tuple[ChunkDraft, ...],
                      chash: str, version: int) -> int:
     """Insert the document row. Its categories are the roll-up of the chunks being written with it,
-    never a judgement of its own: ADR 0003 decides topic per chunk, and deriving the document's
+    never a judgement of its own: topic is decided per chunk, and deriving the document's
     from those same chunks is what stops the two disagreeing."""
     f = doc.fetched
     row = conn.execute(
@@ -57,7 +57,7 @@ def _insert_chunks(conn: psycopg.Connection, document_id: int, doc: EnrichedDocu
                    chunks: tuple[ChunkDraft, ...], embedder: Embedder) -> dict[str, int]:
     """Insert chunks; returns chunk_hash -> chunk id.
 
-    What is embedded is the generated context and the chunk text together (ADR 0005), matching
+    What is embedded is the generated context and the chunk text together, matching
     the `tsv` column `db/schema.sql` generates from the same two columns, so both indexes see the
     same thing. `text_en` and `text_original` are stored exactly as chunked, because those two
     are all a citation may quote.

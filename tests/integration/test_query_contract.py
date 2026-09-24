@@ -1,4 +1,4 @@
-"""What text actually reaches the embedder, end to end through `QueryCore` (ADR 0004).
+"""What text actually reaches the embedder, end to end through `QueryCore`.
 
 `tests/unit/test_query_text.py` pins how the three text fields compose. This pins that
 the composed string is the one the running query uses -- the join could be perfect and
@@ -104,7 +104,7 @@ def test_the_running_query_embeds_the_english_question_and_the_topic(make_core):
 
 def test_the_verbatim_question_is_never_embedded_when_english_was_supplied(make_core):
     """Neither by the dense arm nor by the topic classifier. This is the whole point of
-    ADR 0004: the English index is never asked to match a German vector when the caller
+    the contract: the English index is never asked to match a German vector when the caller
     has already paid for the translation."""
     embedder = RecordingEmbedder()
     make_core(embedder).query(QueryRequest(
@@ -115,7 +115,7 @@ def test_the_verbatim_question_is_never_embedded_when_english_was_supplied(make_
 
 
 def test_an_un_updated_client_still_searches_on_the_verbatim_question(make_core):
-    """Step 4's degrade path, and the response says it degraded."""
+    """The degrade path for a client that sends no English, and the response says it degraded."""
     embedder = RecordingEmbedder()
     resp = make_core(embedder).query(QueryRequest(
         question=QUESTION_DE, location="8003", topics=("waste",),

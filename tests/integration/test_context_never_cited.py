@@ -1,9 +1,9 @@
-"""Generated context steers retrieval and never reaches a citation (ADR 0005).
+"""Generated context steers retrieval and never reaches a citation.
 
 This is the guard on the whole design. A wrong description only misfiles a chunk; a description
-that reaches a citation is generated prose presented to a caller as sourced evidence. The ADR
-is explicit: "Citations must draw only on `text_original` and `text_en`. A future change that
-quotes the indexed text would leak generated prose into an answer presented as sourced."
+that reaches a citation is generated prose presented to a caller as sourced evidence. The rule
+is explicit: citations must draw only on `text_original` and `text_en`. A future change that
+quotes the indexed text would leak generated prose into an answer presented as sourced.
 
 The tests below come in pairs, and both halves matter. The behavioural half runs a real search
 and asserts the snippet is the chunk's own text, character for character. The structural half

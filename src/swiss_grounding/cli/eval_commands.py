@@ -177,7 +177,7 @@ def golden_cmd(
     split: str = typer.Option("dev", "--split", help="dev, holdout or all"),
     record: bool = typer.Option(False, "--record", help="write the report to evals/golden/runs/"),
 ) -> None:
-    """Run the golden set; print per-probe results and the summary against ADR 0016 thresholds."""
+    """Run the golden set; print per-probe results and the summary against the pass thresholds."""
     import json
     from dataclasses import asdict
 
@@ -271,7 +271,7 @@ def label_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend", help=
 
 @eval_app.command("label-check")
 def label_check_cmd() -> None:
-    """Agreement between the model judge and the human-checked sample; must be ≥ 0.85 (ADR 0016)."""
+    """Agreement between the model judge and the human-checked sample; must be ≥ 0.85."""
     import csv
     import json
 
@@ -291,7 +291,7 @@ def label_check_cmd() -> None:
 def generate_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend",
                                                      help="required: calls gpt-5-mini"),
                  per_stratum: int = typer.Option(35, "--per-stratum")) -> None:
-    """gpt-5-mini writes one question per sampled chunk; used for recall@5 only (ADR 0016)."""
+    """gpt-5-mini writes one question per sampled chunk; used for recall@5 only."""
     import json
 
     from swiss_grounding.corpus.budget import ensure_within, record_spend

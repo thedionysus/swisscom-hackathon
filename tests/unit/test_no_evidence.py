@@ -1,4 +1,4 @@
-"""The causes of an empty result, told apart (ADR 0001, ADR 0003, D2).
+"""The causes of an empty result, told apart.
 
 A calling model has to act differently on each: an uncovered extent means ask about a
 different place, an `as_of` wipeout means move or drop the date, an uncovered topic means

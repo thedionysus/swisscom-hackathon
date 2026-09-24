@@ -141,7 +141,7 @@ class BatchRunner:
     called by `collect()` only once every one of that batch's result lines has been pulled from the
     generator by the caller — callers must have committed the outcome of each yielded line (or at
     least be certain they will) before asking for the next one, since `mark_done` is the signal that
-    this batch no longer counts as "in flight" for `budget.ensure_within` (A3). `resume(batch_ids)`
+    this batch no longer counts as "in flight" for `budget.ensure_within`. `resume(batch_ids)`
     re-attaches to batches already submitted by an earlier, interrupted run. `before_submit(file_usd)`
     runs before each file of `run()`/`submit_sequentially()` is submitted; raising stops the run there.
 
@@ -210,12 +210,12 @@ class BatchRunner:
         return lines
 
     def done(self, batch_id: str) -> None:
-        """Mark a fetched batch done (A3): it no longer counts as in flight for `ensure_within`."""
+        """Mark a fetched batch done: it no longer counts as in flight for `ensure_within`."""
         self._mark_done(batch_id, self._batch_status.get(batch_id, "unknown"))
 
     def collect(self, batch_id: str) -> Iterator[str]:
         """Wait for one batch and yield its raw result lines (successes and errors), then mark
-        it done (A3) so a later `ensure_within` no longer counts it as in flight. See the class
+        it done so a later `ensure_within` no longer counts it as in flight. See the class
         docstring for the commit-before-advancing contract this implies for callers."""
         yield from self.fetch(batch_id)
         self.done(batch_id)
@@ -224,7 +224,7 @@ class BatchRunner:
         return FileBudget(self._max, self._max_bytes, self._max_tokens * BATCH_TOKEN_HEADROOM)
 
     def _group_lines(self, lines: Sequence[dict]) -> list[list[dict]]:
-        """A4 plus the enqueued-token-limit fix: a new file starts when adding a line would pass
+        """Split lines into files: a new file starts when adding a line would pass
         `max_bytes`, `max_per_file`, or `max_tokens_per_file` (less BATCH_TOKEN_HEADROOM)."""
         groups: list[list[dict]] = []
         current: list[dict] = []

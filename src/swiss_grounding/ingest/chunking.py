@@ -52,7 +52,7 @@ def chunk_sections(
     the document is missing an article.
 
     The drafts come back with no `context_en` and no `topics`. Both are decided per chunk by
-    `ingest/context.py`, which is where the model calls of ADR 0005 live; splitting text is pure
+    `ingest/context.py`, which is where the per-chunk model calls live; splitting text is pure
     and stays that way, so it can be tested without a model and run without spending anything.
     """
     if len(original) != len(english):

@@ -1,4 +1,4 @@
-"""Fit the logistic relevance model (sigmoid, not isotonic: < 1,000 pairs; RESEARCH §H1)."""
+"""Fit the logistic relevance model (sigmoid, not isotonic: < 1,000 pairs)."""
 import json
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime

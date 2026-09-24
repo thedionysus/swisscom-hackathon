@@ -1,4 +1,4 @@
-"""Split, checksum and reassemble the prebuilt database dump (ADR 0017)."""
+"""Split, checksum and reassemble the prebuilt database dump."""
 import hashlib
 from collections.abc import Mapping, Sequence
 from pathlib import Path

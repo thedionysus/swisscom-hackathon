@@ -61,7 +61,7 @@ def test_corpus_settings_defaults(monkeypatch):
     assert s.data_dir == "data"
     # Parallel HNSW builds need more /dev/shm than Docker's 64 MB default; serial is safe everywhere.
     assert s.corpus_index_parallel_workers == 0
-    # ch.ch serves a 404 shell to user agents without a browser-style prefix (A11).
+    # ch.ch serves a 404 shell to user agents without a browser-style prefix.
     assert s.corpus_user_agent == ("Mozilla/5.0 (compatible; swiss-grounding/0.2; "
                                    "+https://github.com/thedionysus/swisscom-hackathon)")
 

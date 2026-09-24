@@ -48,7 +48,7 @@ class FakeEmbeddings:
 
 
 class OpenAIEmbeddings:
-    """Synchronous OpenAI embeddings, for `--sync` and small runs. Large runs use the Batch API (Task 17)."""
+    """Synchronous OpenAI embeddings, for `--sync` and small runs. Large runs use the Batch API."""
     dim = 3072
 
     def __init__(self, api_key: str, model: str = "text-embedding-3-large"):
@@ -65,7 +65,7 @@ class OpenAIEmbeddings:
 
 BGE_M3_VOCAB = 250002
 MAX_SPARSE_TERMS = 1000     # pgvector's HNSW limit on non-zero entries of a sparsevec
-BGE_MAX_TOKENS = 2048       # RAG review E4: breadcrumb + description + a long paragraph exceeds 1,024
+BGE_MAX_TOKENS = 2048       # breadcrumb + description + a long paragraph exceeds 1,024
 
 
 def top_sparse(weights: dict, limit: int = MAX_SPARSE_TERMS) -> dict[int, float]:
@@ -78,7 +78,7 @@ class LocalBgeM3:
     """bge-m3 on this machine: Apple GPU when available, else CPU.
 
     With FlagEmbedding installed it returns the dense vector and bge-m3's learned sparse vector from the
-    same forward pass (RAG review E1); without it, it falls back to sentence-transformers, dense only.
+    same forward pass; without it, it falls back to sentence-transformers, dense only.
     """
     dim = 1024
 
@@ -188,7 +188,7 @@ class OpenAILLM:
 
 
 class AnthropicLLM:
-    """Synchronous fallback on Claude. The Batch path is OpenAI-only (ADR 0006: OpenAI is the main provider)."""
+    """Synchronous fallback on Claude. The Batch path is OpenAI-only (OpenAI is the main provider)."""
 
     def __init__(self, api_key: str, model: str):
         from anthropic import Anthropic

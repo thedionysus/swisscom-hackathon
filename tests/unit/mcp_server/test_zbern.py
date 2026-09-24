@@ -1,4 +1,4 @@
-"""The zbern.ch parliament tools served beside our own (ADR 0018), against in-memory fake servers."""
+"""The zbern.ch parliament tools served beside our own, against in-memory fake servers."""
 import json
 from contextlib import asynccontextmanager
 from functools import partial

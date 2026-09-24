@@ -1,5 +1,5 @@
-"""Quotas for the golden set (Task 25). This is the first batch of ~40 probes; the quotas below check
-this batch only. They grow towards the plan's ~150-probe targets (evals/golden/*.yaml quotas table) in
+"""Quotas for the golden set. This is the first batch of ~40 probes; the quotas below check
+this batch only. They grow towards ~150-probe targets in
 later batches, so these thresholds are intentionally looser than the final ones."""
 from collections import Counter
 

@@ -1,4 +1,4 @@
-"""Backfilling stored chunks with generated context and per-chunk topics (ADR 0005, ADR 0003).
+"""Backfilling stored chunks with generated context and per-chunk topics.
 
 The backfill spends real money on the live index -- one description call per chunk -- so these
 tests are as much about what is *not* called and what survives a failure as about the text
@@ -34,7 +34,7 @@ from swiss_grounding.retrieval.embedder import FakeEmbedder
 pytestmark = pytest.mark.integration
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "zurich_hiking.json"
 DIM = 8
-# What Fedlex's five declared categories wrote onto all 563 of its chunks: the defect of ADR 0003.
+# What Fedlex's five declared categories wrote onto all 563 of its chunks: one tag set for all.
 STALE_TOPICS = ["hiking", "waste", "dogs", "safety", "transport"]
 
 

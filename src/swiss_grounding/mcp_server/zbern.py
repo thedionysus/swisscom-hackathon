@@ -1,4 +1,4 @@
-"""Swiss Parliament tools from the zbern.ch MCP server, served beside our own tools (ADR 0018).
+"""Swiss Parliament tools from the zbern.ch MCP server, served beside our own tools.
 
 The zbern server is a separate MCP server with its own data (Federal Parliament: members, business items,
 debates, roll-call votes; federal popular votes). This module connects to it as an MCP client and re-exports

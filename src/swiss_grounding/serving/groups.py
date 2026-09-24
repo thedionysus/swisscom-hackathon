@@ -69,7 +69,7 @@ def _corroboration(rep: Candidate, others: Sequence[Candidate],
 def collapse(candidates: Sequence[Candidate], versions: Mapping[Key, Sequence[Candidate]],
              question_lang: str | None) -> list[GroupHit]:
     """Group candidates by (translation_group_id, align_key), in first-seen order, and score
-    each group once through its representative version (ADR 0012)."""
+    each group once through its representative version."""
     order: list[Key] = []
     by_key: dict[Key, list[Candidate]] = {}
     for c in candidates:

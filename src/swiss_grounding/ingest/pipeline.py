@@ -46,7 +46,7 @@ def run_ingest(conn: psycopg.Connection, source: Source, fetcher: Fetcher, llm: 
                tree: LocationTree, run_id: str, limits: ChunkLimits = DEFAULT_LIMITS) -> IngestReport:
     """Run one source through fetch → enrich → chunk → describe → persist.
 
-    Failures are per document. `describe_chunks` is where the model calls of ADR 0005 are made and
+    Failures are per document. `describe_chunks` is where the per-chunk model calls are made and
     where page furniture is dropped, so a document that was nothing but furniture arrives at
     `persist_document` with no chunks and is recorded as skipped, not as a failure.
     """

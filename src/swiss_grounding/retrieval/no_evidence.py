@@ -1,18 +1,17 @@
 """Why `swiss_search` found nothing, told apart so a calling model can act on it.
 
 `search.FILTER` has three arms, and an empty result means one or more of them emptied it.
-Each arm comes from a different decision, and they compose (ADR 0003's consequences say
-so explicitly):
+Each arm comes from a different decision, and they compose:
 
-- **The extent arm** (ADR 0001). Nothing on the extent path could be retrieved, whatever
+- **The extent arm**. Nothing on the extent path could be retrieved, whatever
   the topic and whatever the date. Neither other arm got the chance to exclude anything,
   so naming one would misdirect the caller into rephrasing a topic, or moving a date,
   that was never the problem. The useful next move is a different place.
-- **The `as_of` arm** (D2). On-topic evidence *is* indexed on the path, and the date
+- **The `as_of` arm**. On-topic evidence *is* indexed on the path, and the date
   excluded all of it -- most often because the index holds current consolidations only
   and a document recording no `valid_from` cannot be shown to have been in force on any
   date. The useful next move is a different `as_of`, or none.
-- **The topic arm** (ADR 0003). In-force evidence is indexed on the path and no chunk
+- **The topic arm**. In-force evidence is indexed on the path and no chunk
   carries the question's topic. The useful next move is a different topic -- and
   explicitly *not* answering from the on-path evidence that is there.
 
@@ -39,8 +38,8 @@ from typing import Literal
 from swiss_grounding.retrieval.as_of import reachable_from
 from swiss_grounding.retrieval.search import PathEvidence
 
-# Named for the arm of `search.FILTER` each one reports, in the project's own vocabulary
-# (CONTEXT.md fixes *extent* and *topic*, and warns off "region" and "subject area").
+# Named for the arm of `search.FILTER` each one reports, in the project's own vocabulary:
+# *extent* and *topic*, never "region" or "subject area".
 Cause = Literal["extent", "as_of", "topic", "as_of_and_topic"]
 
 # Kept as the opening clause of the extent message rather than reworded, because it is

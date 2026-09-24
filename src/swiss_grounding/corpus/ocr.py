@@ -1,4 +1,4 @@
-"""OCR of scanned PDF pages (Task 16).
+"""OCR of scanned PDF pages.
 
 Chunks with `needs_ocr = true` and no text get one vision task per page image. The transcription is
 written into `chunk.text`; `chunk_hash` stays the image digest (it identifies the source page, not the

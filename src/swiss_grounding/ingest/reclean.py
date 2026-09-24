@@ -31,8 +31,9 @@ a re-fetch would end in a skipped document rather than re-inserting what this dr
 reason has changed from unsafe to merely unnecessary. Clearing them would buy a re-crawl and a
 model call per surviving chunk, and buy nothing else.
 
-This command is what ADR 0005 leaves behind for chunks already in the index. Once the backfill
-of Task 6 has run and ingestion excludes boilerplate on the way in, it has nothing left to do.
+This command is the cleanup for chunks indexed before boilerplate was excluded at ingestion.
+Once the `recontext` backfill has run and ingestion excludes boilerplate on the way in, it has
+nothing left to do.
 """
 from collections import Counter
 from collections.abc import Collection, Mapping, Sequence
@@ -128,7 +129,7 @@ def delete_documents(conn: psycopg.Connection, document_ids: Sequence[int]) -> N
 def reclean_all(conn: psycopg.Connection, dry_run: bool = False) -> RecleanReport:
     """Delete every boilerplate chunk (`is_boilerplate`) and any document left with none.
 
-    Heading-based rules only, per ADR 0005: boilerplate must be excluded at ingestion, not
+    Heading-based rules only: boilerplate must be excluded at ingestion, not
     at ranking, because neither topic nor similarity can separate it from content.
 
     With `dry_run=True`, the report is computed exactly as normal but no statement that

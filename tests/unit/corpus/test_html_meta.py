@@ -41,7 +41,7 @@ def test_work_key_is_shared_by_language_versions():
     assert work_key("https://x.ch/a", {}) == "html:https://x.ch/a"
 
 
-# --- A11: language alternates beyond hreflang --------------------------------------------------
+# --- language alternates beyond hreflang -------------------------------------------------------
 
 FIXTURES = Path(__file__).parents[2] / "fixtures" / "corpus"
 CHCH_DE_URL = "https://www.ch.ch/de/gesundheit/krankenkasse/kosten-fur-krankenkasse/"

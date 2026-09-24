@@ -89,7 +89,7 @@ def test_known_page_gone_is_reported():
 
 
 def test_work_key_only_shared_between_symmetric_alternates():
-    """A1: fr alternate points every German page at the same French homepage, which lists only
+    """The fr alternate points every German page at the same French homepage, which lists only
     one of them back. The two German pages must not be grouped into one translation group, while
     the genuinely symmetric de/fr pair still is."""
     pages = {
@@ -115,7 +115,7 @@ def test_work_key_only_shared_between_symmetric_alternates():
 
 
 def test_work_key_falls_back_when_symmetric_component_shares_a_language():
-    """A1: even a genuinely mutual pair falls back to per-page keys if both members are the
+    """Even a genuinely mutual pair falls back to per-page keys if both members are the
     same language (never a real translation group)."""
     pages = {
         "https://www.z.ch/de/a": """<html lang="de"><head>
@@ -455,7 +455,7 @@ def test_connector_uses_the_hosts_crawl_delay_for_its_own_throttling():
 
 
 def test_config_delay_seconds_raises_the_hosts_minimum_delay():
-    """A per-source `delay_seconds` (A11 site adaptation) must reach HostThrottle.wait, even
+    """A per-source `delay_seconds` (a site adaptation) must reach HostThrottle.wait, even
     without a robots.txt Crawl-delay and above the policy's own smaller default."""
     waits: list[float] = []
 

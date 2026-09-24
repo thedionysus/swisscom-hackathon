@@ -7,7 +7,7 @@ twice the batch price; each outcome carries `sync` so ingestion prices it by its
 
 Both paths take tasks from one shared pool, so no task is sent twice. Outcomes are handed to the caller
 on its own thread, one at a time, because the run_* functions commit each outcome before asking for the
-next; a batch is marked done only once its last outcome has been handed over (BatchRunner's A3 contract).
+next; a batch is marked done only once its last outcome has been handed over (as BatchRunner requires).
 """
 import queue
 import threading

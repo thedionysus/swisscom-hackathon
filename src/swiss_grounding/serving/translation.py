@@ -1,4 +1,4 @@
-"""Query and passage translation through Supertext (ADR 0018).
+"""Query and passage translation through Supertext.
 
 The server translates the question into the other language stores before searching, and the cited
 passages back into the question's language after. A translator never raises into a search: every
@@ -47,7 +47,7 @@ class Translator(Protocol):
 
 
 class NoTranslator:
-    """Configured when no key is present: the server behaves as before ADR 0018."""
+    """Configured when no key is present: nothing is translated."""
     name = "none"
 
     def translate(self, texts: Sequence[str], *, target: str, source: str | None) -> Translation | None:
@@ -168,7 +168,7 @@ def _error_detail(response: httpx.Response) -> str:
 def safe_translate(translator: Translator, texts: Sequence[str], *, target: str,
                    source: str | None) -> Translation | None:
     """`translator.translate`, with any exception logged and answered as None: a translation
-    problem never becomes an error status (ADR 0018)."""
+    problem never becomes an error status."""
     try:
         return translator.translate(texts, target=target, source=source)
     except Exception as exc:  # noqa: BLE001 - the translator is a plugin; nothing it raises may escape

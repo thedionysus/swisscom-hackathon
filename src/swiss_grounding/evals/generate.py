@@ -1,4 +1,4 @@
-"""Generated questions (ADR 0016): one per sampled chunk, answerable by that chunk. Recall only."""
+"""Generated questions: one per sampled chunk, answerable by that chunk. Recall only."""
 from collections.abc import Callable, Mapping, Sequence
 
 from swiss_grounding.corpus.budget import cost_usd

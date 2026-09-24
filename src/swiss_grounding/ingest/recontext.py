@@ -1,4 +1,4 @@
-"""Re-enrich stored chunks from text already in the database (ADR 0005, ADR 0003).
+"""Re-enrich stored chunks from text already in the database.
 
 A sibling of `reclean` and `renarrow`: it reads the English text already stored, so it never
 re-fetches and never re-translates, which is what makes the redesign affordable while translation
@@ -293,7 +293,7 @@ def _drafts(rows: Sequence[dict[str, Any]]) -> tuple[_StoredChunk, ...]:
     more than one chunk, which is exactly how they are found again. Two genuinely distinct
     sections that happen to hold the same original text are read the same way, and are then
     described from their English alone -- the conservative reading, and the one that cannot put a
-    chunk beside a passage it does not correspond to (see ADR 0005 and `ChunkDraft`).
+    chunk beside a passage it does not correspond to (see `ChunkDraft`).
     """
     repeated = {text for text, count in Counter(r["text_original"] for r in rows).items() if count > 1}
     return tuple(
@@ -373,7 +373,7 @@ def _roll_up(conn: psycopg.Connection, document: _StoredDocument,
              kept: Sequence[ChunkDraft]) -> None:
     """Rewrite the document's topics as the roll-up of every chunk it still has.
 
-    ADR 0003 makes a document's categories derived, never decided, so leaving the old union of
+    A document's categories are derived, never decided, so leaving the old union of
     five behind would let the document disagree with every chunk under it. This runs whenever the
     document ends the run fully described -- by this run or by an earlier one that got part of the
     way -- and reads the ids back from the chunks themselves, so a document finished by a resumed
@@ -382,7 +382,7 @@ def _roll_up(conn: psycopg.Connection, document: _StoredDocument,
     A chunk described earlier in another run contributes an id but no confidence: `chunk.categories`
     keeps ids alone, by design, so the number the model gave it is gone. Such an id is rolled up at
     `RECOVERED_CONFIDENCE` rather than invented at full strength. Nothing reads these confidences as
-    a constraint -- the hard filter of ADR 0003 is `chunk.categories` -- and a `--force` run, which
+    a constraint -- the hard topic filter reads `chunk.categories` -- and a `--force` run, which
     describes every chunk again, restores the real numbers.
     """
     described = {t.id: t for t in document_topics(kept)}
@@ -399,7 +399,7 @@ def _untitled(document: _StoredDocument) -> bool:
 
     A blank title names nothing, and neither does a title that is only the document's own
     identifier: five stored Fedlex acts are titled `SR 455` and one is titled with an empty
-    string, because the SPARQL title binding never bound until Task 4 fixed the query, and no
+    string, because the SPARQL title binding never bound until the query was fixed, and no
     re-ingest repairs a stored title (`persist` compares a content hash that excludes it).
 
     Every chunk's context quotes that title -- directly for a templated source, through the
@@ -516,7 +516,7 @@ def _finish(conn: psycopg.Connection, document: _StoredDocument, kept: Sequence[
 
     Leaving it has a cost, and it is the smaller one: `retrieval/coverage.py` counts documents, so
     a document with no chunks keeps reporting coverage it can no longer serve -- the silent
-    under-coverage failure class of `CONTEXT.md`. That is a visible, reversible wrong number.
+    under-coverage failure class. That is a visible, reversible wrong number.
     `--delete-emptied` erases them once an operator has read the list. What it must not also do is
     keep asserting topics: the roll-up runs on it like any other document, and over no chunks it
     writes no topics.
