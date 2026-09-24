@@ -8,6 +8,12 @@ from typer.testing import CliRunner
 from swiss_grounding.cli import main, serving_commands
 
 
+def test_serving_init_is_registered():
+    result = CliRunner().invoke(main.app, ["serving", "--help"])
+    assert result.exit_code == 0
+    assert "init" in result.output
+
+
 def test_repo_root_has_docker_compose_file():
     root = serving_commands.repo_root()
     assert (root / "docker-compose.yml").exists()
