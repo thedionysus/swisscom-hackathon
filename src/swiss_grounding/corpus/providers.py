@@ -153,9 +153,10 @@ class FakeLLM:
 
 
 class OpenAILLM:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, max_retries: int = 2):
+        """`max_retries` also covers 429s: the client waits as the rate-limit headers ask."""
         from openai import OpenAI
-        self._client = OpenAI(api_key=api_key)
+        self._client = OpenAI(api_key=api_key, max_retries=max_retries)
 
     @staticmethod
     def chat_body(task: LlmTask) -> dict:

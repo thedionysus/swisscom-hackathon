@@ -50,3 +50,26 @@ def test_an_unconfigured_index_is_refused_with_the_configured_list():
         cc._require_configured(_settings(), "openai-3l")
     assert exc.value.exit_code == 2
     cc._require_configured(_settings(), "bge-m3")
+
+
+def test_describe_runs_batches_and_direct_calls_side_by_side_when_direct_workers_are_set(monkeypatch):
+    from swiss_grounding.corpus.hybrid_runner import HybridRunner
+    from swiss_grounding.corpus.runner import BatchRunner, SyncRunner
+    monkeypatch.setattr(cc, "_openai_client", lambda settings: object())
+    hybrid = _settings(corpus_llm_provider="openai", openai_api_key="k", corpus_direct_workers=12)
+    batch_only = _settings(corpus_llm_provider="openai", openai_api_key="k", corpus_direct_workers=0)
+    assert isinstance(cc._describe_runner(hybrid, sync=False), HybridRunner)
+    assert isinstance(cc._describe_runner(batch_only, sync=False), BatchRunner)
+    assert isinstance(cc._describe_runner(hybrid, sync=True), SyncRunner)
+
+
+def test_side_by_side_describe_is_estimated_at_the_direct_call_price():
+    """The cap must hold even if every task ends up on the dearer path."""
+    hybrid = _settings(corpus_llm_provider="openai", openai_api_key="k", corpus_direct_workers=12)
+    batch_only = _settings(corpus_llm_provider="openai", openai_api_key="k", corpus_direct_workers=0)
+    assert cc._estimate_at_batch_price(hybrid, sync=False) is False
+    assert cc._estimate_at_batch_price(batch_only, sync=False) is True
+
+
+def test_direct_workers_are_off_by_default():
+    assert Settings.model_fields["corpus_direct_workers"].default == 0

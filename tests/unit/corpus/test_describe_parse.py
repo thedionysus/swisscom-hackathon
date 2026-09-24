@@ -52,3 +52,9 @@ def test_estimate_counts_languages_from_the_custom_id():
     three = LlmTask(custom_id="chunk|g_1|current|de=1,fr=2,it=3|art_1|x", model="gpt-5-mini", system="s", user="u")
     difference = estimate_describe([three], "gpt-5-mini") - estimate_describe([one], "gpt-5-mini")
     assert difference == pytest.approx(cost_usd("gpt-5-mini", 0, 2 * ESTIMATE_TOKENS_PER_LANGUAGE))
+
+
+def test_nul_bytes_are_stripped_from_descriptions():
+    """PostgreSQL rejects NUL (0x00) in text and jsonb; a model reply can carry one."""
+    descriptions, _ = parse_doc_reply({"descriptions": {"de": "Das\x00 OR."}, "topics": []}, languages=("de",))
+    assert descriptions == {"de": "Das OR."}

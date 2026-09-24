@@ -49,6 +49,7 @@ from swiss_grounding.corpus.embed import (
     resume_embed_batches,
     reuse_embeddings,
 )
+from swiss_grounding.corpus.hybrid_runner import HybridRunner
 from swiss_grounding.corpus.ocr import (
     OCR_OUTPUT_TOKENS,
     OCR_PROMPT_TOKENS,
@@ -74,6 +75,7 @@ corpus_app = typer.Typer(help="Encoding track: fetch, describe, OCR and embed th
 register(corpus_app)
 
 SYNC_WORKERS = 8
+DIRECT_MAX_RETRIES = 8                   # direct calls beside batches run at the per-minute limit; 429s are retried
 LOCAL_EMBED_BATCH = 64
 OPENAI_EMBED_MAX_ITEMS = 2048            # inputs per embeddings request (OpenAI limit)
 OPENAI_EMBED_MAX_TOKENS = 250_000        # estimated tokens per sync embeddings request (limit is 300k)
@@ -213,6 +215,24 @@ def _chat_runner(settings: Settings, sync: bool, kind: str | None = None, kind_c
     if _uses_batch(settings, sync):
         return _batch_runner(settings, settings.corpus_chat_tokens_per_file, kind, kind_cap)
     return SyncRunner(_llm(settings), workers=SYNC_WORKERS)
+
+
+def _side_by_side(settings: Settings, sync: bool) -> bool:
+    return _uses_batch(settings, sync) and settings.corpus_direct_workers > 0
+
+
+def _describe_runner(settings: Settings, sync: bool):
+    """Batches, direct calls, or both side by side (CORPUS_DIRECT_WORKERS > 0 in a batch run)."""
+    if not _side_by_side(settings, sync):
+        return _chat_runner(settings, sync)
+    llm = OpenAILLM(settings.openai_api_key, max_retries=DIRECT_MAX_RETRIES)
+    return HybridRunner(_batch_runner(settings, settings.corpus_chat_tokens_per_file), llm,
+                        workers=settings.corpus_direct_workers)
+
+
+def _estimate_at_batch_price(settings: Settings, sync: bool) -> bool:
+    """Side by side, any task may take the direct path, so the cap is checked at the direct price."""
+    return _uses_batch(settings, sync) and not _side_by_side(settings, sync)
 
 
 class _ResumeRunner:
@@ -475,6 +495,7 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
     priced = _priced_model(settings, task_model)
     run_fn = run_doc_descriptions if what == "docs" else run_chunk_descriptions
     batch = _uses_batch(settings, sync)
+    batch_price = _estimate_at_batch_price(settings, sync)
     if not dry_run:
         _resume_chat(settings, DESCRIBE_KINDS[what], run_fn, priced)
     with connect(settings.database_url) as conn:
@@ -482,18 +503,20 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
             typer.echo(f"marked {mark_repeated_furniture(conn)} repeated furniture chunk(s) as boilerplate")
             conn.commit()
         tasks = (build_doc_tasks if what == "docs" else build_chunk_tasks)(conn, task_model, limit)
-        typer.echo(f"{what}: {len(tasks)} tasks, estimate {usd(estimate_describe(tasks, priced, batch=batch))} "
-                   f"({_price_label(priced, batch)})")
+        typer.echo(f"{what}: {len(tasks)} tasks, estimate {usd(estimate_describe(tasks, priced, batch=batch_price))} "
+                   f"({_price_label(priced, batch_price)})")
         if dry_run or not tasks:
             return empty_report()
-        admitted, estimate = _admit(conn, settings, tasks, lambda ts: estimate_describe(ts, priced, batch=batch),
-                                    fit_budget)
+        admitted, estimate = _admit(conn, settings, tasks,
+                                    lambda ts: estimate_describe(ts, priced, batch=batch_price), fit_budget)
     refused = len(tasks) - len(admitted)
     if refused:
         typer.echo(f"{what}: budget allows {len(admitted)} of {len(tasks)} task(s); {refused} left for later")
     if not admitted:
         return add_reports(empty_report(), {"refused": refused})
-    report = run_fn(settings.database_url, _chat_runner(settings, sync), admitted, model=priced, batch=batch,
+    if _side_by_side(settings, sync):
+        typer.echo(f"{what}: batches and {settings.corpus_direct_workers} direct-call workers side by side")
+    report = run_fn(settings.database_url, _describe_runner(settings, sync), admitted, model=priced, batch=batch,
                     estimated_usd=estimate)
     typer.echo(f"{what}: {report}")
     return add_reports(report, {"refused": refused})
