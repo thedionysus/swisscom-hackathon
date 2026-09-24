@@ -1,27 +1,36 @@
 # Source discovery data
 
+Material for choosing new sources to add to `manifests/declared-scope.yaml` (see
+[`docs/MAINTAINING.md`](../MAINTAINING.md), "Adding a source").
+
 ## `commune_sites.csv`
 
-Every Swiss commune in the location tree mapped to its official website, for registering
-municipal `html_crawl` sources and for extending `official_domains.CITY_DOMAINS`.
+Every Swiss commune in the location tree mapped to its official website, for finding the start URL
+of a new municipal source.
 
-| column | meaning |
+| Column | Meaning |
 |---|---|
-| `extent_id` | node id in the location tree (`CH-<canton>-<BFS>`), joins `location.id` |
-| `bfs` | BFS commune number (Wikidata `P771`), joins `location.bfs_id` |
-| `canton` | parent node, e.g. `CH-ZH` |
-| `label` | German label |
-| `website` | official website (Wikidata `P856`); empty for 7 communes |
+| `extent_id` | Node id in the location tree (`CH-<canton>-<BFS number>`); the manifest's `extent_id` |
+| `bfs` | BFS commune number (Wikidata `P771`) |
+| `canton` | Parent node, for example `CH-ZH` |
+| `label` | German name |
+| `website` | Official website (Wikidata `P856`); empty for 7 communes |
 | `population` | Wikidata `P1082`, for prioritising; may be empty |
 
-Provenance: Wikidata SPARQL, items typed `Q70208` (municipality of Switzerland), fetched
-2026-09-22; 2,173 items, 2,110 join the tree (every commune in the register), 2,103 with a site.
+Provenance: Wikidata SPARQL, items typed `Q70208` (municipality of Switzerland), fetched on
+2026-09-22. 2,110 of them join the location tree, and 2,103 have a website.
 
-Known quirks to handle before registering a site from this list:
+Things to check before adding a site from this list:
 
-- 5 communes live on their canton's domain (`bs.ch`, `zg.ch`, `kanton.baselland.ch`, ...);
-  `classify_domain` files those as the canton.
-- 13 sites are not on `.ch`/`.swiss` and fail the TLD check in `classify_domain`.
+- 5 communes live on their canton's domain (`bs.ch`, `zg.ch`, `kanton.baselland.ch`, ...). Their
+  `allow_prefixes` must not overlap with the canton's source, or the manifest refuses to load.
 - 17 entries are sub-paths (`zurzach.ch/gemeinde`), not bare domains.
-- Sites often link language-neutral paths (`/themes/x`) beside `/fr/themes/x`; allow only one
-  form or the same page is stored twice (#27). See `registry/sources/ge_ville.yaml`.
+- Many sites serve the same page under a language-neutral path (`/themes/x`) and a language path
+  (`/fr/themes/x`). Allow only one of the two forms in `allow_prefixes`, or each page is stored twice.
+
+## `ogd_lists_assessment.md`
+
+An assessment, made on 2026-09-22, of two curated lists of Swiss open government and open legal
+data as candidate sources. It was written against the earlier ingestion pipeline, so its notes on
+fetch strategies and categories predate the manifest; the sources and their formats are still valid
+research for expanding the corpus.
