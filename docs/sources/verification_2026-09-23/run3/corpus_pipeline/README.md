@@ -64,10 +64,11 @@ Run it from a checkout of `main` with this folder copied in.
 | robots.txt for PDFs, Crawl-delay for PDFs, robots groups naming our token | PR #51 (open) |
 | Law-platform registration for the three city law collections marked `municipal_law` | #44 |
 | JSON / REST connector | #55 |
+| School-holiday and road-office start URLs for the declared cantons, plus BE holidays | PR #58 |
 | PDF discovery gaps (fixed PDF lists, links in JSON attributes, page language) | #56 |
 | Smaller fetch fixes (TLS, PDF titles, retries, size cap, validator, sitemap rewrite) | #57 |
 
 **Decided by the user on 2026-09-23:**
-- Gazettes go through the documented Amtsblattportal API.
+- Gazettes go through the documented Amtsblattportal API. Per the challenge brief (p. 9), that is an opt-in operator setting, off by default (#55, #39).
 - Basel-Landschaft goes through `bl-api.webcloud7.ch`.
 - fo.fr.ch must not be left out; ask the publisher. It is not in the candidates.

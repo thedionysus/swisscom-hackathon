@@ -63,7 +63,7 @@ Draft; the key names are suggestions.
     detail_url_template: null              # optional second GET per record (Plone item, sh.ch content, gazette XML)
     detail_html_path: null                 # e.g. "data_post_content": HTML to split into sections
     window: null                           # e.g. {start_offset_days: 14} → fills {start} in url
-    robots: null                           # e.g. {exempt: true, reason: "documented public API; user decision 2026-09-23"}
+    robots_exception_reason: null          # used only when the operator sets ROBOTS_API_EXCEPTIONS=true (default false)
 ```
 
 ### Behaviour
@@ -85,10 +85,13 @@ Draft; the key names are suggestions.
 - **Rolling windows.**
   - A record that drops out of the date window is **not** gone; do not report it in `gone_urls`.
   - Report a record as gone only when the API says so (for example a cancelled state).
-- **robots.txt.**
-  - The default is to check it like the HTML connector.
-  - A documented API that robots.txt disallows needs an explicit per-source exemption with a stated reason. Examples: amtsblattportal.ch serves `Disallow: /`, and bl-api.webcloud7.ch's robots.txt answers 403, which the HTML connector treats as "host blocked".
-  - Record the exemption in the manifest so review can see it.
+- **robots.txt and terms of use.** Updated 2026-09-24 to follow the challenge brief (p. 9): respected by default, as a documented configuration setting, not hardcoded.
+  - Honour `RESPECT_ROBOTS` (`config.py:48`, default `True`), as the HTML connector does.
+  - A documented API that robots.txt disallows is fetched only when an operator setting turns API exceptions on. For example, `ROBOTS_API_EXCEPTIONS=true`, **default false**. The Amtsblattportal (`Disallow: /`) is the case here.
+    - Each such source carries a `robots_exception_reason`.
+    - Log every exception.
+  - Document both settings and their defaults in the README.
+  - **bl-api.webcloud7.ch** answers **403** for robots.txt. RFC 9309 §2.3.1.3 lets a crawler access a host whose robots.txt returns a 4xx. Once 401/403 handling follows the RFC (§3), BL needs no exception.
 - **Plone REST specifics** (BL and ZG).
   - `GET <path>` with `Accept: application/json` returns `items` (the children), `slblocks{…}.text.data` (HTML; order given by `slblocks_layout`) and `modified`.
   - Walk `items`, or use `@search?path.query=<path>&portal_type=…&b_size=…`.
@@ -104,7 +107,7 @@ Draft; the key names are suggestions.
   - a missing or `None` field becomes a per-record error, not an exception;
   - dates parse;
   - the window never produces `gone_urls`;
-  - robots: a disallowed host is refused unless it is exempt, and the exemption is logged.
+  - robots: refused by default. With `ROBOTS_API_EXCEPTIONS=true` it is fetched only for sources that carry a reason, and the exception is logged.
 
 ---
 
@@ -211,6 +214,12 @@ Tracked in #57.
   - ne.ch's index lists `http://ne-prod-admin.ne.ch/sitemap.xml?page=N`, a host that does not resolve. The same paths on `https://www.ne.ch` return 5,000 + 3,518 URLs.
   - Add an optional `sitemap_rewrite: {from, to}`.
   - Unlocks `ne_sitemap_rewrite`. The NE entries already work from their start URLs.
+- [ ] **robots.txt answering 401 or 403.**
+  - `load_robots` treats 401 and 403 like 5xx and disallows the whole host (`corpus/connectors/html.py:59-61`).
+  - RFC 9309 §2.3.1.3: for a 4xx ("unavailable") the crawler "MAY access any resources on the server". Only a 5xx ("unreachable") means "complete disallow" (§2.3.1.4).
+  - This matters for bl-api.webcloud7.ch (403), which the user decided to use for BL.
+  - Follow the RFC, or make it a documented setting.
+- [ ] **README: document the robots.txt setting.** The brief (p. 9) requires the setting and its default in the README. `respect_robots` exists (`config.py:48`, default `True`), but `README.md` on `main` does not mention robots.txt.
 
 ---
 
