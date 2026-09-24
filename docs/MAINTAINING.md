@@ -72,6 +72,9 @@ Settings are described in the README's Configuration section.
    seconds between requests. `--tier 3` fetches every tier: 1 (the declared scope), 2 (other cantons
    and cities) and 3 (bulk and gazette collections); the manifest header says which is which. The
    default, `--tier 1`, skips the Run 3 sources.
+   A `json` source whose manifest entry gives a `robots_exception_reason` is fetched where robots.txt
+   disallows its documented API (Opendatasoft portals disallow `/api/` for every crawler except
+   Googlebot) only with `ROBOTS_API_EXCEPTIONS=true`; the default is false, and each such request is logged.
 
 6. **Import the Zürich waste calendar.**
 
