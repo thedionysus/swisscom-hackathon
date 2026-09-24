@@ -10,6 +10,7 @@ from swiss_grounding.serving.relevance import FEATURES, ProvisionalRelevance
 from swiss_grounding.serving.reranker import OverlapReranker, passage_text
 from swiss_grounding.serving.search_service import SearchService, query_embedder
 from tests.integration.serving.corpus_fixture import EMB, add_doc
+from tests.unit.serving.test_translation import FakeTranslator
 
 pytestmark = pytest.mark.integration
 
@@ -203,3 +204,103 @@ def test_the_question_language_version_is_the_one_cited(serving_db):
     resp = service(serving_db, threshold=0.0).search(SearchRequest(question="Quando sono le prossime elezioni?"))
     urls = [c.url for p in resp.places for c in p.citations if c.url.startswith("https://ch.ch/")]
     assert urls == ["https://ch.ch/it/v"]
+
+
+def translating_service(url, translator, threshold=0.3, **kw):
+    with connect(url) as conn:
+        tree = load_location_tree(conn)
+    return SearchService(database_url=url, tree=tree, resolver=TreeResolver(tree), embed=query_embedder(EMB),
+                         reranker=OverlapReranker(), relevance=ProvisionalRelevance(threshold), index="bge-m3",
+                         rerank_candidates=30, local_quota=10, ef_search=100, today=lambda: date(2026, 9, 24),
+                         translator=translator, query_langs=("de", "fr", "it", "rm", "en"), **kw)
+
+
+def test_server_translation_finds_and_reranks_a_page_published_in_another_language(serving_db):
+    """The French page is the only evidence. Without a translation the overlap reranker scores the
+    German question against it at 0 (no shared words); with the server's French query it is found,
+    reranked in French, cited, and its passage is translated back into the question's language.
+    The questions carry German function words so the language is detected without the service."""
+    with connect(serving_db) as conn:
+        add_doc(conn, group="vd", lang="fr", text="délai de congé habitation trois mois", align="s1",
+                url="https://vd.ch/fr/conge")
+    question = "Wie lange ist die Kündigungsfrist für eine Wohnung?"
+    assert service(serving_db).search(SearchRequest(question=question)).status == "no_evidence"
+    fake = FakeTranslator({(question, "fr"): "délai de congé habitation",
+                           ("délai de congé habitation trois mois", "de"): "Kündigungsfrist Wohnung drei Monate"})
+    resp = translating_service(serving_db, fake).search(SearchRequest(question=question))
+    assert resp.status == "results"
+    [c] = resp.places[0].citations
+    assert c.url == "https://vd.ch/fr/conge" and c.language == "fr"
+    assert c.translated_passage == "Kündigungsfrist Wohnung drei Monate" and c.translation_language == "de"
+
+
+def test_a_passage_in_the_question_language_is_not_translated(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c")
+    fake = FakeTranslator({})
+    resp = translating_service(serving_db, fake).search(SearchRequest(question="Wie lange ist die Kündigungsfrist für eine Wohnung?"))
+    [c] = resp.places[0].citations
+    assert c.translated_passage is None and c.translation_language is None
+    assert not any(target == "de" for _, target, _ in fake.calls)
+
+
+def test_client_translations_win_and_the_question_language_is_never_requested(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c")
+    fake = FakeTranslator({})
+    translating_service(serving_db, fake).search(
+        SearchRequest(question="Wie lange ist die Kündigungsfrist für eine Wohnung?",
+                      translations={"fr": "délai de congé"}))
+    requested = {target for _, target, _ in fake.calls}
+    assert "fr" not in requested and "de" not in requested
+    assert requested == {"it", "rm", "en"}
+
+
+def test_citation_translation_can_be_switched_off(serving_db):
+    with connect(serving_db) as conn:
+        add_doc(conn, group="vd", lang="fr", text="délai de congé habitation trois mois", align="s1")
+    question = "Wie lange ist die Kündigungsfrist für eine Wohnung?"
+    fake = FakeTranslator({(question, "fr"): "délai de congé habitation"})
+    resp = translating_service(serving_db, fake, translate_citations=False).search(SearchRequest(question=question))
+    assert resp.status == "results"
+    [c] = resp.places[0].citations
+    assert c.translated_passage is None
+    assert all(target != "de" for _, target, _ in fake.calls)
+
+
+def test_a_placeless_local_subject_is_asked_back_when_several_places_hold_pages(serving_db):
+    """Dog tax: pages from two cities plus a ch.ch overview that defers to the commune."""
+    with connect(serving_db) as conn:
+        add_doc(conn, group="ch", lang="de", text="Hundesteuer: die Höhe legt jede Gemeinde selbst fest.",
+                authority="official_info")
+        add_doc(conn, group="zh", lang="de", text="Wie hoch ist die Hundesteuer in Zürich? 180 Franken",
+                extent="CH-ZH-261", source="zh")
+        add_doc(conn, group="be", lang="de", text="Wie hoch ist die Hundesteuer in Bern? 150 Franken",
+                extent="CH-BE-351", source="be")
+    resp = service(serving_db).search(SearchRequest(question="Wie hoch ist die Hundesteuer?"))
+    assert resp.status == "needs_location" and "dog tax" in resp.places[0].message
+
+
+def test_a_placeless_federal_answer_is_given_even_when_two_cities_have_pages_on_it(serving_db):
+    """The AHV case: branch offices publish pages, but the federal passage answers by itself."""
+    with connect(serving_db) as conn:
+        add_doc(conn, group="ch", lang="de", text="AHV Altersrente Referenzalter 65 Jahre", authority="official_info")
+        add_doc(conn, group="zh", lang="de", text="AHV Altersrente Zweigstelle Zürich", extent="CH-ZH-261", source="zh")
+        add_doc(conn, group="be", lang="de", text="AHV Altersrente Zweigstelle Bern", extent="CH-BE-351", source="be")
+    resp = service(serving_db).search(SearchRequest(question="AHV Altersrente Referenzalter?"))
+    assert resp.status == "results"
+    assert all(c.extent_id == "CH" for c in resp.places[0].citations)
+
+
+def test_a_translator_that_raises_never_breaks_the_search(serving_db):
+    class Broken:
+        name = "broken"
+
+        def translate(self, texts, *, target, source):
+            raise RuntimeError("boom")
+
+    with connect(serving_db) as conn:
+        add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c")
+    resp = translating_service(serving_db, Broken()).search(
+        SearchRequest(question="Wie lange ist die Kündigungsfrist für eine Wohnung?"))
+    assert resp.status == "results"
