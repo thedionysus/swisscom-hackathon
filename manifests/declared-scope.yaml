@@ -1847,7 +1847,7 @@ sources:
       max_pdfs: 1
 
   # Fribourg official gazette. robots.txt allows `*` (our user agent is not named) and names 23 AI crawlers
-  # (ClaudeBot, GPTBot, ...) that it blocks; a permission request to the publisher is pending. Our user agent
+  # (ClaudeBot, GPTBot, ...) that it blocks; the hackathon organisers gave permission to crawl it. Our user agent
   # is never spoofed. A rubric page holds every notice of its rubric; sub-rubric pages repeat 84-89% of it,
   # so they are denied. abl.fr.ch is left out: it shows the same notices in
   # their original language under a German menu. Html-connector limits: one section per rubric page, every
