@@ -21,6 +21,12 @@ The pipeline runs with **OpenAI or Anthropic**. The choice is one setting, not a
 
 Anthropic calls run synchronously. OpenAI calls use the Batch API unless `--sync` is passed.
 
+## The serving key is separate
+
+`SUPERTEXT_API_KEY` is used by the running server only (ADR 0018): it translates each question into the other
+language stores and the cited passages back. It never touches the corpus pipeline. Leave it unset to run the
+server and the evals for free; set it before a golden run only when the run is meant to measure translation.
+
 ## Which work the key pays for is configuration
 
 `CORPUS_INDEXES` (default `bge-m3`, local). With only local indexes, the key pays for OCR and descriptions; add

@@ -46,7 +46,20 @@ uv run swiss-grounding lookups load-premiums data/premium/Prämien_CH.csv data/p
 `load-premiums` warns about any insurer number the register does not name; with the command above it
 prints no warning. For a later year, take the newest register from the same page.
 
+## 3b. Share the translation key (ADR 0018)
+
+```bash
+uv run swiss-grounding dump publish-key      # uploads SUPERTEXT_API_KEY from your .env as supertext.env on corpus-latest
+```
+
+Every collaborator's next `setup` writes it into their `.env`. To rotate: create a new key in the
+Supertext cockpit, put it in your `.env`, run `publish-key` again, and revoke the old one.
+
 ## 4. Golden set: dev split and labelling
+
+The golden runner sends no client translations, so with `SUPERTEXT_API_KEY` set (ADR 0018) every
+probe spends up to five Supertext requests. Run once without the key for the untranslated baseline
+and once with it; record both. Set `TRANSLATE_CITATIONS=false` to measure query translation alone.
 
 ```bash
 uv run swiss-grounding eval golden --split dev

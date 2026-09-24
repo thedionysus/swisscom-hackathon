@@ -57,6 +57,8 @@ uv run swiss-grounding serve             # starts the MCP server over stdio
 
 `setup` needs no API key: the prebuilt database already carries the bge-m3 index and the
 descriptions it depends on (ADR 0017). It prints how long the restore and index rebuild took.
+It also installs the team's shared translation key into `.env` when one is published on the
+release (see "Translation at question time"); without one, translation simply stays off.
 
 After `setup` has run once, set `HF_HUB_OFFLINE=1` in `.env` to stop the model libraries from
 checking the Hugging Face Hub for updates at every start.
@@ -189,6 +191,27 @@ What to expect:
   an empty credit balance does not stop chat from working.
 - The embedding dimension is fixed when the schema is created. Changing it means
   `docker compose down -v` and starting over.
+
+### Translation at question time (optional key)
+
+The server can translate the question into every other language store before searching and the
+cited passages back into the question's language afterwards (ADR 0018). It uses Supertext. Put
+the key in `.env`:
+
+    SUPERTEXT_API_KEY=...
+
+The key is shared through the private release, never through git: a team member with the key in
+their own `.env` runs `uv run swiss-grounding dump publish-key`, which uploads it as the asset
+`supertext.env` next to the corpus dump. Everyone else receives it on their next
+`uv run swiss-grounding setup`, which writes it into their `.env`. Anyone with access to the
+repository can read it, so keep a dedicated key for this project and rotate it from the Supertext
+cockpit when the evaluation is over.
+
+Nothing else changes: without the key the server searches every store with the question as asked,
+as before. `TRANSLATE_QUERY_LANGUAGES` (default `de,fr,it,en`; Romansh is off because the reranker
+over-scores Romansh pages against a Romansh query) limits the stores translated into; `TRANSLATE_CITATIONS=false` keeps the query translation but stops translating passages.
+Every `swiss_search` then costs up to four Supertext requests before the search plus one per
+source language of the cited passages for each place, so a golden-set run spends credit.
 
 ### Which steps need an API key
 
