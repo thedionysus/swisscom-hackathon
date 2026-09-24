@@ -1,5 +1,5 @@
 -- src/swiss_grounding/corpus/schema.sql
--- The corpus schema (ADR 0010). Idempotent: `corpus init` runs it on every call.
+-- The corpus schema. Idempotent: `corpus init` runs it on every call.
 create extension if not exists vector;
 create extension if not exists unaccent;
 create schema if not exists corpus;
@@ -125,7 +125,7 @@ create table if not exists corpus.emb_bge_m3 (
   language    text not null,
   text_hash   text not null,
   embedding   vector(1024) not null,
-  -- bge-m3's learned sparse (lexical-weight) vector over its multilingual vocabulary (RAG review E1).
+  -- bge-m3's learned sparse (lexical-weight) vector over its multilingual vocabulary.
   -- Null when the dense-only fallback embedded the chunk. At most 1,000 non-zero entries (HNSW limit).
   sparse      sparsevec(250002),
   primary key (chunk_id, language),
@@ -147,7 +147,7 @@ create index if not exists chunk_align_idx on corpus.chunk (translation_group_id
 create index if not exists chunk_extent_idx on corpus.chunk (extent_id, status);
 create index if not exists chunk_document_idx on corpus.chunk (document_id);
 
--- Amendment A7: index the (text_hash, language) lookup used to reuse embeddings across versions.
+-- Index the (text_hash, language) lookup used to reuse embeddings across versions.
 create index if not exists emb_openai_3l_hash_idx on corpus.emb_openai_3l (text_hash, language);
 create index if not exists emb_bge_m3_hash_idx on corpus.emb_bge_m3 (text_hash, language);
 

@@ -18,15 +18,15 @@ NEARNESS_HALF_LIFE_DAYS = 14.0
 # UNCALIBRATED. This is a documented default, not a measured one, and it must not be
 # fitted to the corpus as it stands: that corpus is 71% federal and entirely boilerplate
 # below canton level, so any value tuned against it would encode the gap rather than the
-# behaviour. The measurement to beat is recorded in the Task 9 plan -- on the Dietikon
+# behaviour. The measurement to beat: on the Dietikon
 # forest question a download link sat at distance 0.5115 and the page's only real forest
 # sentence at 0.5257, so distance does not currently separate relevant from irrelevant at
 # all. 0.55 sits just above that pair deliberately: on today's index it admits both, which
-# is the honest outcome when the signal cannot tell them apart. Calibrate after Task 6's
-# contextual backfill makes distance mean something.
+# is the honest outcome when the signal cannot tell them apart. Calibrate after the
+# contextual backfill (`recontext`) makes distance mean something.
 #
 # Because it cannot yet be trusted, it governs *tier eligibility only*. Nothing in this
-# codebase may exclude a chunk on distance (decision D1).
+# codebase may exclude a chunk on distance.
 RELEVANCE_FLOOR = 0.55
 
 
@@ -55,7 +55,7 @@ def hops_to_extent(tree: LocationTree, query_node_id: str, chunk_extent_id: str)
     Named `hops` and not `distance` on purpose. `LocationTree.distance` counts steps up a
     tree; `Hit.distance` is a cosine distance in embedding space. Both reach the reranker,
     they are published side by side on every citation as `tier` and `distance`, and one
-    word for both is how they get confused (`CONTEXT.md`, *Specificity tier*).
+    word for both is how they get confused.
     """
     return tree.distance(query_node_id, chunk_extent_id)
 
@@ -148,7 +148,7 @@ def rerank(
     `score` stays the within-tier ordering key but is no longer published: it moves with
     the question's extent (the same chunk measured 1.1918 at `CH` and 0.8168 at `8003`,
     entirely on the specificity term), so it told a caller nothing it could act on. The
-    tier and the raw distance replace it on `Citation` (decision D1).
+    tier and the raw distance replace it on `Citation`.
 
     Nothing here drops a hit. Every hit in, every hit out.
     """

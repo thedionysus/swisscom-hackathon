@@ -1,8 +1,8 @@
-"""`swiss-grounding corpus ...`: the encoding-track stages as commands (Task 19).
+"""`swiss-grounding corpus ...`: the encoding-track stages as commands.
 
-Every paid command first ingests its own unfinished Batch API jobs (amendment A3), then builds new tasks,
-checks the budget at the price it will actually pay (A9) and only then submits; the Batch path re-checks
-the cap before each further file. With CORPUS_LLM_PROVIDER=fake no OpenAI client is built (A8), nothing
+Every paid command first ingests its own unfinished Batch API jobs, then builds new tasks,
+checks the budget at the price it will actually pay and only then submits; the Batch path re-checks
+the cap before each further file. With CORPUS_LLM_PROVIDER=fake no OpenAI client is built, nothing
 is billed, and nothing is written unless `--allow-fake` is passed or the database is a test database.
 The unpaid commands (init, check-manifest, fetch, status, batches) live in `corpus_source_commands`.
 """
@@ -236,7 +236,7 @@ def _estimate_at_batch_price(settings: Settings, sync: bool) -> bool:
 
 
 class _ResumeRunner:
-    """Feeds already-submitted batches through a run_* function in place of new tasks (A3)."""
+    """Feeds already-submitted batches through a run_* function in place of new tasks."""
 
     def __init__(self, batch_runner: BatchRunner, batch_ids: Sequence[str]):
         self._runner = batch_runner

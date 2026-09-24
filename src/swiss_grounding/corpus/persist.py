@@ -6,7 +6,7 @@ Rules:
 2. Same URL, different hash: the old row is superseded by a new row. Outcome `modified`.
 3. A new dated (`valid_from` set) `current` version retires the `current` and `scheduled` rows of the
    same translation group, language and source that start no later than it. Undated documents
-   (HTML, PDF) are versioned by URL only (amendment A1). Outcome `added`.
+   (HTML, PDF) are versioned by URL only. Outcome `added`.
    A URL already owned by another source is left alone: outcome `duplicate` (first owner wins).
 4. `fetched_at` is when this content was fetched; `last_seen_at` when it was last confirmed.
 5. Chunks carry document status, extent, authority and, for Fedlex, the SR prior topics.
@@ -117,7 +117,7 @@ def _supersede_others(conn, gid: str, language: str, source_id: str, keep_id: in
 
 
 def _retires_group_peers(doc: ParsedDocument) -> bool:
-    """Rule 3 applies only to dated consolidations (amendment A1)."""
+    """Rule 3 applies only to dated consolidations."""
     return doc.status == "current" and doc.valid_from is not None
 
 
@@ -148,7 +148,7 @@ def _insert(conn, doc: ParsedDocument, spec: SourceSpec, gid: str, digest: str, 
 def _reuse_descriptions(conn, doc_id: int) -> None:
     """Copy description, topics and a boilerplate verdict from an earlier version's identical chunk.
 
-    RAG review E3: a chunk whose text did not change between versions keeps what was already paid for.
+    A chunk whose text did not change between versions keeps what was already paid for.
     Identity is (translation group, language, align_key, chunk_hash), so a changed text is described again.
     """
     conn.execute(
@@ -224,7 +224,7 @@ def persist_document(conn: psycopg.Connection, doc: ParsedDocument, spec: Source
 
 
 def promote_due(conn: psycopg.Connection, today: date) -> int:
-    """Make every scheduled version whose `valid_from` has arrived current (amendment A5).
+    """Make every scheduled version whose `valid_from` has arrived current.
 
     Each promoted version retires the older current row of its group/language/source with
     `valid_to = valid_from`. A scheduled version that a current peer with the same or a later

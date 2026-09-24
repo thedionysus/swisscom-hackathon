@@ -100,7 +100,7 @@ class SearchService:
     local_quota: int
     ef_search: int
     today: Callable[[], date] = date.today
-    # ADR 0018: the question is translated into `query_langs` (its own language skipped) before the
+    # The question is translated into `query_langs` (its own language skipped) before the
     # search, and cited passages back into the question's language after it.
     translator: Translator = field(default_factory=NoTranslator)
     query_langs: tuple[str, ...] = ()
@@ -157,7 +157,7 @@ class SearchService:
             relevant = [s for s in scored if s.relevance >= self.relevance.threshold]
             if o.kind == "none":
                 # A placeless answer cites federal evidence only: cantonal and municipal passages
-                # apply to one place and would mislead a user elsewhere (ADR 0013).
+                # apply to one place and would mislead a user elsewhere.
                 relevant = [s for s in relevant if s.group.representative.extent_id == "CH"]
             keep = distinct_citations(relevant, q.lang)[: q.request.limit]
             citations = self._translate_citations(tuple(self._cite(s, queries) for s in keep), q)
@@ -173,7 +173,7 @@ class SearchService:
         """The question as the reranker should read it against a passage in `language`: the
         translation into that language when there is one, else the question as asked. The
         cross-encoder scores the same article in another language as if it were irrelevant
-        (docs/RESEARCH.md H1), so a passage is scored in its own language wherever possible."""
+        (docs/EVALUATION.md), so a passage is scored in its own language wherever possible."""
         if language == q.lang:
             return q.request.question
         return q.request.translations.get(language, q.request.question)

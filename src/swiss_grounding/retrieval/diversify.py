@@ -142,7 +142,7 @@ def diversify(
     scope as the per-series cap -- a past event never counts against it, by design: a question
     about a missed collection must still be able to find that collection. This leaves past
     calendar evidence and an identifier-less event-dated chunk unbounded here; both are
-    deliberate scope cuts documented in this feature's implementation plan, not oversights.
+    deliberate scope cuts, not oversights.
 
     ``upcoming_calendar_cap``'s default of 6 is a judgement call, not derived from a probe: no
     current probe constrains it from below. Concretely, since ``QueryRequest.limit`` defaults

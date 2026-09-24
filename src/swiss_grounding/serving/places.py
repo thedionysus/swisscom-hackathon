@@ -1,4 +1,4 @@
-"""What the question's place is (ADR 0013). No list of foreign places is kept."""
+"""What the question's place is. No list of foreign places is kept."""
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -10,7 +10,7 @@ from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.serving.scope import covered_levels
 
 PlaceKind = Literal["none", "resolved", "ambiguous", "foreign", "unresolved"]
-# Country names only (de/fr/it/en/rm). Complete by construction; no foreign *places* are listed (ADR 0013).
+# Country names only (de/fr/it/en/rm). Complete by construction; no foreign *places* are listed.
 FOREIGN_COUNTRY_WORDS: frozenset[str] = frozenset({
     "deutschland", "germany", "allemagne", "germania",
     "frankreich", "france", "francia", "frantscha",

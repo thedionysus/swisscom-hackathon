@@ -1,6 +1,6 @@
 """Deterministic predicate for boilerplate chunks: page furniture, not content.
 
-Heading-based rules only, per ADR 0005 (`docs/adr/0005-generated-context-steers-retrieval-and-is-never-cited.md`):
+Heading-based rules only:
 neither topic nor similarity can separate a navigation menu or an error page body from real
 content, so it must be excluded at ingestion.
 

@@ -1,4 +1,4 @@
-"""Retrieval and status metrics with the pass thresholds of ADR 0016. Pure functions."""
+"""Retrieval and status metrics with the pass thresholds of the golden set. Pure functions."""
 import math
 from collections.abc import Mapping, Sequence
 

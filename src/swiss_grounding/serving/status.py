@@ -1,4 +1,4 @@
-"""Which status a place gets, in the fixed order of ADR 0013."""
+"""Which status a place gets, in a fixed order."""
 from collections.abc import Sequence
 
 from swiss_grounding.locations.models import Level, Location
@@ -45,7 +45,7 @@ def uncovered_levels(outcome: PlaceOutcome) -> tuple[str, ...]:
 
 
 def pre_search(outcome: PlaceOutcome) -> PlaceResult | None:
-    """Step 1 of ADR 0013 and the ambiguity rule: statuses decided before any search."""
+    """Statuses decided before any search: a foreign, unresolved or ambiguous place."""
     if outcome.kind == "foreign":
         return PlaceResult(outcome.text, "outside_scope", message=FOREIGN.format(place=outcome.text))
     if outcome.kind == "unresolved":
@@ -59,7 +59,7 @@ def pre_search(outcome: PlaceOutcome) -> PlaceResult | None:
 
 def decide(outcome: PlaceOutcome, scored: Sequence[ScoredGroup], *, threshold: float,
            tree: LocationTree, question: str = "") -> tuple[str, str]:
-    """Steps 2, 3 and 5 of ADR 0013, after the search."""
+    """Statuses decided after the search: uncovered levels, no evidence, a place still needed."""
     relevant = [s for s in scored if s.relevance >= threshold]
     uncovered = " and ".join(uncovered_levels(outcome))
     if not relevant:
@@ -67,8 +67,8 @@ def decide(outcome: PlaceOutcome, scored: Sequence[ScoredGroup], *, threshold: f
             return "outside_scope", OUT_OF_SCOPE_PLACE.format(place=outcome.text, levels=uncovered)
         where = f" for {outcome.text}" if outcome.text else ""
         return "no_evidence", NO_EVIDENCE.format(where=where)
-    # No place given: the evidence says whether the answer depends on the place (ADR 0013 step 2,
-    # amended 2026-09-24): several places hold their own page and no federal passage answers by itself.
+    # No place given: the evidence says whether the answer depends on the place:
+    # several places hold their own page and no federal passage answers by itself.
     if outcome.kind == "none":
         reason = answer_depends_on_place(question, relevant, tree)
         if reason is not None:

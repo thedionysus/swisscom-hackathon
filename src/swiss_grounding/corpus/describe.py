@@ -1,4 +1,4 @@
-"""Document and chunk descriptions with topics, one call per translation group (Task 17).
+"""Document and chunk descriptions with topics, one call per translation group.
 
 Documents first: one task per translation group with live documents and no description. Then chunks:
 one task per (translation group, status, align_key) with undescribed chunks, once the group has its
@@ -216,7 +216,7 @@ def _chunk_task(r: dict, model: str) -> LlmTask:
 def mark_repeated_furniture(conn: psycopg.Connection, min_documents: int = 3) -> int:
     """Set status 'boilerplate' on chunks whose exact text recurs in `min_documents`+ live documents of one source.
 
-    RAG review E2: a footer, contact block or cookie notice that survived HTML cleaning is the same chunk on
+    A footer, contact block or cookie notice that survived HTML cleaning is the same chunk on
     every page; finding it by repetition is free, where the model's verdict is paid per copy. Law is exempt:
     identical articles across acts ("Aufgehoben") are rare, legitimate, and carry different breadcrumbs.
     Returns the number of chunks marked. The caller commits.

@@ -1,4 +1,4 @@
-"""The twenty citizen-facing topics (ADR 0007) and the SR-number prior for federal law."""
+"""The twenty citizen-facing topics and the SR-number prior for federal law."""
 from dataclasses import dataclass
 
 

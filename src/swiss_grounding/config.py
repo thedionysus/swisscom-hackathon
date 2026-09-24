@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     fetch_retry_backoff_seconds: float = 0.5
     user_agent: str = "swiss-grounding/0.1 (+https://github.com/thedionysus/swisscom-hackathon)"
 
-    # Encoding track (corpus schema). Keys are needed only while ingesting (ADR 0006).
+    # Encoding track (corpus schema). Keys are needed only while ingesting.
     openai_api_key: str | None = None
     corpus_llm_provider: Literal["openai", "anthropic", "fake"] = "fake"
     corpus_doc_model: str = "gpt-5-mini"
@@ -56,30 +56,30 @@ class Settings(BaseSettings):
     corpus_index_parallel_workers: int = 0
     respect_robots: bool = True
     # Browser-style prefix, the conventional honest-bot form: ch.ch serves a 404 shell to user
-    # agents without one (A11). Used for every corpus HTTP client.
+    # agents without one. Used for every corpus HTTP client.
     corpus_user_agent: str = (
         "Mozilla/5.0 (compatible; swiss-grounding/0.2; +https://github.com/thedionysus/swisscom-hackathon)"
     )
     data_dir: str = "data"
 
-    # Serving track. Keyless by default (ADR 0006): bge-m3 embeds the question locally.
+    # Serving track. Keyless by default: bge-m3 embeds the question locally.
     # Deliberately separate from the legacy EMBEDDING_BACKEND (default "fake"): serving never uses
     # fake query vectors unless a test asks for them with QUERY_EMBEDDER=fake.
     serving_index: Literal["bge-m3", "openai-3l"] = "bge-m3"
     query_embedder: Literal["auto", "fake"] = "auto"
-    # "auto" picks by hardware (ADR 0012): bge-reranker-v2-m3 on MPS/CUDA, the small model on CPU.
+    # "auto" picks by hardware: bge-reranker-v2-m3 on MPS/CUDA, the small model on CPU.
     reranker_model: str = "auto"
     reranker_gpu_model: str = "BAAI/bge-reranker-v2-m3"
     reranker_cpu_model: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
     reranker_max_tokens: int = 512
     rerank_candidates: int = 30
-    # On CPU the reranker is ~10x slower (RESEARCH §H1): fewer, shorter candidates.
+    # On CPU the reranker is ~10x slower (docs/EVALUATION.md): fewer, shorter candidates.
     rerank_candidates_cpu: int = 20
     reranker_max_tokens_cpu: int = 256
     local_candidate_quota: int = 10
     hnsw_ef_search: int = 100
     relevance_model_path: str = "evals/relevance_model.json"
-    # Translation (ADR 0018). With SUPERTEXT_API_KEY set, the server translates the question into the
+    # Translation. With SUPERTEXT_API_KEY set, the server translates the question into the
     # other language stores before searching and cited passages back into the question's language.
     # Without the key nothing is translated and the server behaves as before.
     supertext_api_key: str | None = None
@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     transport_base_url: str = "https://transport.opendata.ch/v1"
     reference_rate_url: str = "https://www.bwo.admin.ch/de/referenzzinssatz"
     lookup_timeout_seconds: float = 8.0
-    # ADR 0017 (amended): the dump is a release asset of our private repository, downloaded with `gh`.
+    # The dump is a release asset of our private repository, downloaded with `gh`.
     dump_release_repo: str = "thedionysus/swisscom-hackathon"
     dump_release_tag: str = "corpus-latest"
 

@@ -1,4 +1,4 @@
-"""Tier ordering and the relevance floor (Task 9, decision D1).
+"""Tier ordering and the relevance floor.
 
 `rerank` orders by `(tier, -score)`. The tier is the integer hop count from the
 question's node up to the chunk's extent -- 0 is the question's own node, rising to the
@@ -11,7 +11,7 @@ Two invariants these tests exist to pin down:
   the result, ordered by score among the other chunks that claimed no tier, so the floor
   can never turn a result into a false `no_evidence`.
 - The tier is a *hard* outer key. A weak local chunk must not leapfrog a strong federal
-  one on score, which is exactly what the pre-Task-9 `-score` ordering allowed.
+  one on score, which is exactly what the old `-score` ordering allowed.
 
 Each ordering test is built so score alone would give the opposite answer, otherwise it
 would be asserting the fixture rather than the behaviour.
@@ -142,7 +142,7 @@ def test_ordering_is_deterministic_when_tier_and_score_tie():
 
 def test_the_floor_ships_uncalibrated_but_present():
     """`RerankWeights()` carries a floor without anyone passing one; the value itself is
-    a documented default, not a measured one (Task 9 Step 3)."""
+    a documented default, not a measured one."""
     assert RerankWeights().relevance_floor == 0.55
 
 

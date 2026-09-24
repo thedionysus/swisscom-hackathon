@@ -5,7 +5,7 @@ check sits relative to location resolution -- is `test_query_core_as_of.py`. Thi
 is only about which date the reranker is handed.
 
 Every request below states `topics` even so, because a request that states none falls
-through to the local classifier (ADR 0004), which needs a real embedder -- and these
+through to the local classifier, which needs a real embedder -- and these
 build QueryCore with `embedder=None` on purpose, having monkeypatched away the only
 thing that used to touch it. The value matches the fixture chunk's own category so the
 hard topic filter is a no-op for what these assert.
@@ -90,7 +90,7 @@ def test_as_of_replaces_today_for_the_reranker(monkeypatch):
     class Cursor:
         def fetchall(self): return []
         # A dated request now asks the index for the earliest version it can answer for
-        # before it searches (D2). 1985 is well before either date under test here, so
+        # before it searches. 1985 is well before either date under test here, so
         # both are answerable and this test still exercises only the clock.
         def fetchone(self): return {"earliest": date(1985, 1, 1)}
 

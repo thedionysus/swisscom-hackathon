@@ -1,4 +1,4 @@
-"""Per-chunk context and topics (ADR 0005, ADR 0003).
+"""Per-chunk context and topics.
 
 Every assertion about cost here is load-bearing: one model call per chunk is paid on every
 future ingest and on the backfill, so the tests count calls as well as check output.
@@ -90,7 +90,7 @@ def describe(chunks, llm, **kwargs):
 
 
 def test_context_is_indexed_but_never_cited():
-    """The indexing half, named as the plan names it. The citation half of the same property is
+    """The indexing half. The citation half of the same property is
     `tests/integration/test_context_never_cited.py`, which needs a database and a real search."""
     joined = indexed_text("From the Animal Welfare Act. Sets penalties", "Anyone who intentionally")
     assert "Animal Welfare Act" in joined      # the embedding and the tsv see it
@@ -182,7 +182,7 @@ def test_a_dropped_chunk_leaves_the_others_ordinals_alone():
     assert [c.ordinal for c in out] == [0, 2]
 
 
-# --- topics are per chunk (ADR 0003) ----------------------------------------------------------
+# --- topics are per chunk ---------------------------------------------------------------------
 
 
 def test_the_models_per_chunk_topics_win_over_the_sources_declared_ones():
@@ -216,7 +216,7 @@ def test_the_fallback_is_not_reached_when_the_model_named_something():
 
 
 def test_a_chunk_of_a_multi_category_source_can_end_with_no_topics_at_all():
-    """Accepted deliberately: under Task 8's hard filter such a chunk is unreachable, and that is
+    """Accepted deliberately: under the hard topic filter such a chunk is unreachable, and that is
     better than reaching it under five topics that are false of it."""
     out = describe((draft(text_en="Definitions apply throughout."),), SilentLLM(),
                    src=source(categories=("dogs", "hiking", "waste")))
@@ -224,7 +224,7 @@ def test_a_chunk_of_a_multi_category_source_can_end_with_no_topics_at_all():
 
 
 def test_open_erz_keeps_the_topic_its_whole_feed_is_about():
-    """The waste calendar is one category by declaration; Task 8's filter makes an untagged
+    """The waste calendar is one category by declaration; the topic filter makes an untagged
     calendar unreachable, which would lose every collection date in the index."""
     out = describe((draft(heading="Waste collection cardboard in 8003 on 2026-09-25",
                           text_en="Collection of cardboard."),), ForbiddenLLM(),
@@ -233,7 +233,7 @@ def test_open_erz_keeps_the_topic_its_whole_feed_is_about():
 
 
 def test_two_chunks_of_one_document_can_carry_different_topics():
-    """The defect ADR 0003 names: one tag set copied onto every chunk of a hundred-article act."""
+    """The old defect: one tag set copied onto every chunk of a hundred-article act."""
     out = describe((draft(heading="Leinenpflicht", text_en="Dogs must be kept on a leash.", ordinal=0),
                     draft(heading="Karton", text_en="Cardboard collection is on Tuesday.", ordinal=1)),
                    FakeLLM(), src=source(categories=()))
@@ -254,7 +254,7 @@ def test_a_document_with_no_chunks_asserts_no_topics():
     assert document_topics(()) == ()
 
 
-# --- templated sources cost nothing (Step 5) ---------------------------------------------------
+# --- templated sources cost nothing ------------------------------------------------------------
 
 
 def test_a_templated_source_is_described_from_its_own_template_with_no_model_call():
@@ -314,7 +314,7 @@ def test_the_source_fallback_is_sorted_the_same_way():
 
 
 def test_the_result_names_the_chunks_it_dropped():
-    """`recontext` (Task 6) has to delete stored chunks that are now judged furniture. Inferring
+    """`recontext` has to delete stored chunks that are now judged furniture. Inferring
     them from gaps in the surviving ordinals is an implicit contract that breaks quietly."""
     llm = CountingLLM(verdict={"Opening hours": True})
     out = described((draft(heading="Art. 1", ordinal=0), draft(heading="Opening hours", ordinal=1),

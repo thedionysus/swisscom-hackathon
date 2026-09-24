@@ -1,7 +1,7 @@
 """Translate a fetched document to English and place it at an extent.
 
 Enrichment used to classify the document as well, once, over a capped excerpt of it, and
-`persist` copied that one tag set onto every chunk. ADR 0003 rejects that granularity --
+`persist` copied that one tag set onto every chunk. That granularity is wrong --
 a hundred-article act is not about one subject -- so the judgement moved to `context.py`, which
 makes it per chunk. The document-level call went with it rather than being kept alongside: it
 answered the same question at a granularity we no longer store, and would be a call per document

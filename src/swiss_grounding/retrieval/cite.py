@@ -22,7 +22,7 @@ def _distance(scored: ScoredHit) -> float | None:
 def build_citation(scored: ScoredHit, tree: LocationTree) -> Citation:
     """The caller-facing record for one ranked hit.
 
-    It publishes `tier` and `distance` rather than `score` (decision D1). Both are
+    It publishes `tier` and `distance` rather than `score`. Both are
     lower-is-better and both may be `None`; `models.Citation` documents what that means.
     """
     c = scored.hit.chunk

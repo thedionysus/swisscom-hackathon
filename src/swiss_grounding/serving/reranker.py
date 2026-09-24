@@ -1,4 +1,4 @@
-"""The cross-encoder that scores (question, passage) pairs (ADR 0012)."""
+"""The cross-encoder that scores (question, passage) pairs."""
 import re
 from collections.abc import Sequence
 from typing import Protocol
@@ -34,7 +34,7 @@ SPACES = re.compile(r"[ \t]{2,}")
 
 def passage_text(breadcrumb: Sequence[str], text: str) -> str:
     """Breadcrumb and text as the reranker reads them. Markdown emphasis is stripped: on real pages
-    ("**12** **mois**") it lowered the score of the right passage (docs/RESEARCH.md §H3)."""
+    ("**12** **mois**") it lowered the score of the right passage (docs/EVALUATION.md)."""
     crumb = BREADCRUMB_SEPARATOR.join(breadcrumb)
     body = SPACES.sub(" ", MARKDOWN.sub("", text)).strip()
     return f"{crumb}\n{body}" if crumb else body

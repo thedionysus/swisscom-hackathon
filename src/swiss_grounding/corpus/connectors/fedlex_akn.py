@@ -9,7 +9,7 @@ CONTAINERS = ("book", "part", "title", "chapter", "section", "subsection", "divi
 LIST_ITEMS = ("item", "point")
 # Marker inserted before each list item so `_render` can split list items onto their own line
 # without relying on literal "\n" characters, which pretty-printed XML also puts between a
-# <num> and its <content> as pure indentation whitespace (amendment A10).
+# <num> and its <content> as pure indentation whitespace.
 _ITEM_MARKER = "\x00"
 # Tags whose start/end is a genuine word boundary: a space is inserted around them so, e.g., a
 # paragraph's <num> and <content> never fuse. Inline markup (<i>, <sup>, ...) used inside running

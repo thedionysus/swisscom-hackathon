@@ -86,7 +86,7 @@ def test_past_event_ranks_below_upcoming_event_all_else_equal():
     ranked = rerank(hits, TREE, QUERY_NODE, ("waste",), RerankWeights(), today=lambda: date(2026, 9, 12))
     ids = [s.hit.chunk.chunk_id for s in ranked]
     assert ids[-1] == 1                                        # penalised, not dropped
-    # Nearer future events now outrank later ones (Task 7 reranker decision), so the
+    # Nearer future events now outrank later ones, so the
     # three non-past hits are no longer tied: event-today (3) > upcoming (2) > non-event (4).
     assert ids[:3] == [3, 2, 4]
     assert ranked[0].score > ranked[1].score > ranked[2].score

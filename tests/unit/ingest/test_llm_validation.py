@@ -148,7 +148,7 @@ def test_an_empty_translation_names_the_call_without_leaking_the_text():
     assert "Tierschutzgesetz" not in message and "Translate the following" not in message
 
 
-# --- describe(): context, topics and a boilerplate verdict in one call (ADR 0005) -------------
+# --- describe(): context, topics and a boilerplate verdict in one call ------------------------
 
 
 def described_with(llm, text_original="Wer vorsätzlich"):
@@ -393,7 +393,7 @@ def test_a_parse_error_names_the_chunk_it_was_about():
 
 
 def test_a_summary_of_a_document_with_no_title_is_refused():
-    """Step 2b exists because one stored Fedlex document has an empty title; a summary built from
+    """`retitle` exists because one stored Fedlex document has an empty title; a summary built from
     nothing would be repeated onto every chunk of it as though it said something."""
     with pytest.raises(EnrichmentError, match="title"):
         anthropic(returns="A summary.").summarise("   ", "Zweck dieses Gesetzes ist es")

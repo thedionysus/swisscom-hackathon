@@ -1,4 +1,4 @@
-"""The declared scope (ADR 0009, amended by ADR 0014 and ADR 0015), quotable by the server."""
+"""The declared scope, quotable by the server."""
 from collections.abc import Sequence
 
 SCOPE_CANTONS: tuple[str, ...] = ("CH-ZH", "CH-BE", "CH-VD", "CH-GE", "CH-TI", "CH-GR")

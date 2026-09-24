@@ -164,7 +164,7 @@ class HtmlConnector:
     def _before(self, url: str, min_delay: float = 0.0) -> None:
         """Per-host politeness, shared with every other connector and thread (see politeness).
 
-        `min_delay` is the source's own `config.delay_seconds` (A11 site adaptation), if any.
+        `min_delay` is the source's own `config.delay_seconds`, if any.
         """
         delay = max(self._delays.get(_robots_root(url), self._policy.delay_seconds), min_delay)
         self._throttle.wait(url, delay, self._sleep)
@@ -200,7 +200,7 @@ class HtmlConnector:
 
     def _seed_from_sitemaps(self, cfg: Mapping, queue: CrawlQueue, limit: int, prefixes: tuple[str, ...],
                             pdf_patterns: tuple[re.Pattern[str], ...], min_delay: float = 0.0) -> list[tuple[str, str]]:
-        """Queue URLs from config.sitemap_urls matching config.sitemap_include (A11), at most
+        """Queue URLs from config.sitemap_urls matching config.sitemap_include, at most
         `limit`. Known or already-queued URLs do not use up the budget: it is for new pages."""
         if not cfg.get("sitemap_urls"):
             return []
@@ -264,7 +264,7 @@ class HtmlConnector:
                 continue
             for alt_lang, href in page.alternates.items():
                 # Language versions jump the queue, ahead of the page's own links (which often
-                # include the language switcher): A1 groups only pages crawled in the same run.
+                # include the language switcher): only pages crawled in the same run are grouped.
                 if alt_lang in spec.languages and self._crawlable(href, prefixes, pdf_patterns):
                     queue.add(href, front=True)
             for link in page.links:
@@ -300,7 +300,7 @@ class HtmlConnector:
 
 
 class _CrawlResults:
-    """What one run collects: emitted documents, their alternates for A1 grouping, PDFs, errors."""
+    """What one run collects: emitted documents, their alternates for grouping, PDFs, errors."""
 
     def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...]):
         self._spec = spec

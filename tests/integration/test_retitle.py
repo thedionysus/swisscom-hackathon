@@ -1,4 +1,4 @@
-"""Repairing the stored titles of Fedlex acts from the SPARQL endpoint (Task 6, step 2b).
+"""Repairing the stored titles of Fedlex acts from the SPARQL endpoint.
 
 The five stored acts are titled `SR 455` and one carries no title at all, and no re-ingest
 repairs that: the fetcher short-circuits on the URL, `persist` compares a content hash that

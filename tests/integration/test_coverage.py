@@ -1,4 +1,4 @@
-"""Coverage signal on search results (ADR 0001): setup mirrors test_probes_structural."""
+"""Coverage signal on search results: setup mirrors test_probes_structural."""
 import os
 from datetime import date
 from pathlib import Path

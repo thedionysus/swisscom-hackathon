@@ -1,4 +1,4 @@
-"""A11 site adaptations: language switchers, the federal Nuxt payload, extensionless PDF links,
+"""Site adaptations: language switchers, the federal Nuxt payload, extensionless PDF links,
 a content selector, and sitemap seeding -- driven by trimmed copies of the live pages."""
 import gzip
 from pathlib import Path
@@ -49,7 +49,7 @@ def _run(client: httpx.Client, spec: SourceSpec):
     return HtmlConnector(client, CrawlPolicy(True, 0)).run(spec, known={})
 
 
-# --- A1 grouping with the new alternate sources ----------------------------------------------
+# --- translation grouping with the new alternate sources -------------------------------------
 
 def test_chch_language_switcher_groups_de_and_fr():
     pages = {CHCH_DE: _fixture("chch_kk_de.html"), CHCH_FR: _fixture("chch_kk_fr.html")}

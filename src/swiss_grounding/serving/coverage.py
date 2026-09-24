@@ -1,4 +1,4 @@
-"""Documents per extent on a resolved path, from the corpus schema (the coverage signal, ADR 0001)."""
+"""Documents per extent on a resolved path, from the corpus schema (the coverage signal)."""
 from collections.abc import Sequence
 
 import psycopg

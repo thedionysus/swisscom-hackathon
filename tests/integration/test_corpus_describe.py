@@ -122,7 +122,7 @@ def test_prompts_name_the_exact_language_keys_and_caps_leave_room(corpus_db):
 
 
 def test_html_chunks_with_empty_topics_build_tasks(corpus_db):
-    """A2: array_agg over empty text[] must not fail."""
+    """An array_agg over an empty text[] must not fail."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 1)
         _describe_groups(conn)
@@ -131,7 +131,7 @@ def test_html_chunks_with_empty_topics_build_tasks(corpus_db):
 
 
 def test_document_prompt_names_the_municipality(corpus_db):
-    """A6: the jurisdiction comes from public.location.names labels (communes carry only 'de')."""
+    """The jurisdiction comes from public.location.names labels (communes carry only 'de')."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 1)
         [task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
@@ -166,7 +166,7 @@ def test_duplicate_same_language_chunks_are_described_one_per_task(corpus_db):
 
 
 def test_repeated_site_furniture_is_marked_before_describing(corpus_db):
-    """RAG review E2: the same chunk on three pages of one site is furniture, found without a model call."""
+    """The same chunk on three pages of one site is furniture, found without a model call."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 3)
         _describe_groups(conn)

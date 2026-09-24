@@ -1,6 +1,6 @@
 """`enrich` translates a document and places it at an extent. It no longer decides its topics.
 
-ADR 0003 moved that judgement to the chunk, and `ingest/context.py` makes it; the tests that
+That judgement moved to the chunk, and `ingest/context.py` makes it; the tests that
 covered `_merge_tags` and the per-document classifier now live in `test_context.py`.
 """
 

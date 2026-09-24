@@ -60,7 +60,7 @@ def test_new_document_writes_chunks_with_prior_topics(corpus_db):
 
 
 def test_new_version_reuses_descriptions_of_unchanged_chunks(corpus_db):
-    """RAG review E3: a refresh pays only for chunks whose text changed."""
+    """A refresh pays only for chunks whose text changed."""
     unchanged = ParsedSection("art_1", ("SR 220 OR", "Art. 1"), "art_1", "Zum Abschlusse eines Vertrages.")
     with connect(corpus_db) as conn:
         upsert_source(conn, SPEC)
@@ -198,7 +198,7 @@ def test_new_consolidation_retires_the_old_one(corpus_db):
 
 
 def test_undated_documents_sharing_a_group_both_stay_current(corpus_db):
-    """Amendment A1: rule 3 applies only to dated consolidations; HTML pages are versioned by URL."""
+    """Rule 3 applies only to dated consolidations; HTML pages are versioned by URL."""
     with connect(corpus_db) as conn:
         upsert_source(conn, HTML_SPEC)
         assert persist_document(conn, _page("https://x/a"), HTML_SPEC, NOW) == "added"
@@ -221,7 +221,7 @@ def test_scheduled_version_coexists_then_takes_over(corpus_db):
 
 
 def test_promote_due_makes_scheduled_versions_current_on_their_date(corpus_db):
-    """Amendment A5: a scheduled consolidation takes over without being re-emitted by the connector."""
+    """A scheduled consolidation takes over without being re-emitted by the connector."""
     with connect(corpus_db) as conn:
         upsert_source(conn, SPEC)
         persist_document(conn, _doc("now"), SPEC, NOW)

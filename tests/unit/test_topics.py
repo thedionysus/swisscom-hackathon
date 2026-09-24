@@ -1,4 +1,4 @@
-"""Local topic classifier: the fallback when the caller supplies no topic (ADR 0004).
+"""Local topic classifier: the fallback when the caller supplies no topic.
 
 Uses the real bge-m3 embedder (already required by the rest of the suite, no API key
 needed) rather than a fake one. A fake bag-of-hashed-tokens embedder would either share
@@ -46,7 +46,7 @@ def test_an_unrelated_question_filters_on_nothing(embedder):
 
 def test_the_floor_no_longer_sits_on_the_cliff(embedder):
     """'Quellensteuer' (withholding tax) is a genuine, unambiguous taxes question that
-    scores 0.4465 for `taxes` against this embedder — below the plan's original
+    scores 0.4465 for `taxes` against this embedder — below the original
     TOPIC_FLOOR of 0.45, which would have silently returned no topics for it. TOPIC_FLOOR
     was moved to 0.42 precisely so a real on-topic question this close to the old edge
     still classifies. This test fails again if TOPIC_FLOOR is moved back to 0.45.
@@ -67,7 +67,7 @@ def test_an_ambiguous_on_topic_question_also_collapses(embedder):
     """'Wo ist das nächste Polizeirevier?' (where is the nearest police station) is a
     real Swiss-admin question, but its best score (0.4606) is spread almost evenly
     across eight of the ten categories. Reporting eight categories under a hard topic
-    filter (Task 8) would exclude every untagged chunk just as one category would, while
+    filter would exclude every untagged chunk just as one category would, while
     giving the caller no way to tell this apart from a confident narrow match — so this
     collapses to no filter too, the same as a genuinely unrelated question.
     """
@@ -82,7 +82,7 @@ def test_empty_question_is_rejected(embedder):
         classify_topics("   ", embedder)
 
 
-# --- resolve_topics: where the topic that actually filters comes from (ADR 0004) -------
+# --- resolve_topics: where the topic that actually filters comes from ------------------
 #
 # Same real embedder as above, deliberately. The point of these is the *order* of the
 # three sources, and a fake embedder would let the classifier rung pass by accident.
@@ -93,16 +93,16 @@ def _request(question: str, **kwargs) -> QueryRequest:
 
 
 def test_caller_topics_outrank_both_the_hint_and_the_classifier(embedder):
-    """ADR 0004 makes the calling model the primary source. It has read the user's
+    """The calling model is the primary source. It has read the user's
     question; the server has only embedded it."""
     request = _request("When is cardboard collected?", topics=("dogs",), categories=("waste",))
     assert resolve_topics(request, embedder) == ("dogs",)
 
 
 def test_the_older_categories_hint_is_read_as_the_topic_when_topics_is_empty(embedder):
-    """A client on the pre-Task-10 contract has no other way to say what the question is
+    """A client on the older contract has no other way to say what the question is
     about. Ignoring it in favour of the classifier would prefer the server's guess to the
-    caller's statement, which is the opposite of what ADR 0004 decided."""
+    caller's statement, which is the opposite of the intended order."""
     request = _request("When is cardboard collected?", categories=("dogs",))
     assert resolve_topics(request, embedder) == ("dogs",)
 
@@ -121,7 +121,7 @@ def test_a_question_the_classifier_declines_resolves_to_no_constraint(embedder):
 
 
 def test_the_applied_filter_is_sorted_and_deduplicated(embedder):
-    """The response reports this tuple back as `categories_used`, and ADR 0004 commits
-    probes to determinism; a caller's argument order must not leak into it."""
+    """The response reports this tuple back as `categories_used`, and probes rely on it
+    being deterministic; a caller's argument order must not leak into it."""
     request = _request("Which rules apply?", topics=("waste", "dogs", "waste"))
     assert resolve_topics(request, embedder) == ("dogs", "waste")

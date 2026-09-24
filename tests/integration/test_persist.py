@@ -59,7 +59,7 @@ def test_first_persist_is_added(url):
         state = conn.execute("select content_hash from fetch_state where url = %s", (URL,)).fetchone()
     assert outcome.change_type == "added" and outcome.document_id is not None
     assert row["status"] == "current" and row["version"] == 1 and row["valid_from"] == date(2022, 1, 1)
-    # rolled up from the chunks, not asserted separately of the document (ADR 0003)
+    # rolled up from the chunks, not asserted separately of the document
     assert row["categories"] == [{"id": "dogs", "confidence": 1.0}]
     assert n_chunks == 2 and change["change_type"] == "added" and len(change["chunks_added"]) == 2
     assert state is not None
@@ -125,7 +125,7 @@ def test_withdrawn_unknown_url_is_false(url):
 
 
 def test_a_documents_categories_are_the_union_of_its_chunks(url):
-    """ADR 0003 decides topic per chunk; the document row must follow the chunks, not lead them."""
+    """Topic is decided per chunk; the document row must follow the chunks, not lead them."""
     doc = enriched(["Zweck.", "Wer ein Tier hält."])
     drafts = chunks_for(doc, topics=())
     chunks = (replace(drafts[0], topics=(CategoryTag("dogs", 0.4),)),
@@ -139,7 +139,7 @@ def test_a_documents_categories_are_the_union_of_its_chunks(url):
 
 
 def test_each_chunk_keeps_its_own_context_and_topics(url):
-    """The defect ADR 0003 names is one tag set copied onto every chunk; this is the opposite."""
+    """The old defect was one tag set copied onto every chunk; this is the opposite."""
     doc = enriched(["Hunde.", "Karton."])
     drafts = chunks_for(doc, topics=())
     chunks = (replace(drafts[0], context_en="About dogs.", topics=(CategoryTag("dogs", 0.9),)),

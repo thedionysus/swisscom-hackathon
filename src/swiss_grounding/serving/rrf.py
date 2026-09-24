@@ -1,4 +1,4 @@
-"""Reciprocal rank fusion and the local-candidate quota (RESEARCH §H2)."""
+"""Reciprocal rank fusion and the local-candidate quota."""
 from collections.abc import Callable, Hashable, Mapping, Sequence
 
 RRF_K = 60

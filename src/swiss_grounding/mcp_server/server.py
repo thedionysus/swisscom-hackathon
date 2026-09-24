@@ -1,5 +1,5 @@
 # src/swiss_grounding/mcp_server/server.py
-"""The MCP server: six read-only tools (ADR 0015).
+"""The MCP server: six read-only tools.
 
 Tools are async and run their blocking work (SQL, torch) in a worker thread, so the event loop keeps
 answering pings and cancellations. One limiter serialises the torch models. The search service loads its

@@ -28,7 +28,7 @@ def _citation(tier: int | None, distance: float | None, event_date: date | None 
 
 
 def test_citation_line_shows_the_tier_and_the_distance():
-    """Task 9: the CLI prints what the citation now carries. `score` is gone, and the two
+    """The CLI prints what the citation now carries. `score` is gone, and the two
     numbers that replace it are both lower-is-better."""
     line = _citation_line(1, _citation(tier=0, distance=0.4321))
     assert "tier 0" in line

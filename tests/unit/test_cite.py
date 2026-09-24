@@ -27,7 +27,7 @@ def test_citation_copies_fields_and_labels_extent():
     assert c.extent_label == "Zurich" and c.extent_id == "CH-ZH"
     assert c.authority == "official_info"
     assert c.snippet_original.startswith("Im Kanton")
-    # Task 9 / decision D1: `score` moved with the question's extent and told a caller
+    # `score` moved with the question's extent and told a caller
     # nothing it could act on, so the citation publishes the tier and the raw distance in
     # its place. Both are lower-is-better.
     assert c.tier == 1

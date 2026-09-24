@@ -42,15 +42,15 @@ def core():
 
 
 def test_neighborhood_question_leads_with_the_nearest_specific_evidence(core):
-    """Task 9 changed what "prefers specific" means, and this test changed with it.
+    """Tier ordering changed what "prefers specific" means, and this test changed with it.
 
     It used to assert that the district chunk (`CH-ZH-261-K3`) led, because specificity
     was a term in a single score and the most specific extent always won it. Ordering is
     now `(tier, -score)`, and a chunk only claims a tier when its cosine distance clears
     `RerankWeights.relevance_floor`. On this fixture the district chunk sits at 0.9197
     against a floor of 0.55 and the city chunk at 0.4969, so the city chunk leads and the
-    district chunk is demoted -- which is the plan's own worked case, "a weak local chunk
-    does not leapfrog but is still returned".
+    district chunk is demoted -- which is the intended case: a weak local chunk
+    does not leapfrog but is still returned.
 
     The sibling-exclusion half is untouched, and the assertions below are deliberately
     stronger than the ones they replace: they pin the *mechanism* (the leader claimed a
@@ -91,7 +91,7 @@ def test_ambiguous_location_message_names_the_cantons(core):
 
 
 # The two tests below state a topic where they previously stated none. Topic is a hard
-# filter now (ADR 0003), so a request carrying none falls through to the local classifier
+# filter now, so a request carrying none falls through to the local classifier
 # — whose floor and margin are calibrated against bge-m3 (`topics.py`) and mean nothing
 # under the 8-dimension FakeEmbedder this suite runs on, where it picks a category out of
 # hash collisions. Both tests are about extent scoping, not about topics, so they pin the
@@ -164,9 +164,9 @@ def test_limit_below_minimum_is_clamped_not_rejected(core):
 
 
 def test_as_of_before_the_earliest_indexed_version_is_refused(core):
-    """D2, end to end. The fixture's oldest `valid_from` is 1987, so 1900 reaches nothing;
-    the old behaviour searched anyway and returned the undated pages that bypassed the
-    date filter as the answer to a question about 1900."""
+    """The `as_of` refusal, end to end. The fixture's oldest `valid_from` is 1987, so 1900
+    reaches nothing; the old behaviour searched anyway and returned the undated pages that
+    bypassed the date filter as the answer to a question about 1900."""
     from datetime import date
 
     resp = core.query(QueryRequest(question="dog leash", location="Zürich",

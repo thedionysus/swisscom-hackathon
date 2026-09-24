@@ -1,4 +1,4 @@
-"""The golden set (ADR 0016): hand-written probes with expected status, source and key fact."""
+"""The golden set: hand-written probes with expected status, source and key fact."""
 from pathlib import Path
 from typing import Literal
 

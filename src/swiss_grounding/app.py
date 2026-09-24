@@ -67,13 +67,13 @@ def build_reranker(settings: Settings, device: str) -> Reranker:
 
 
 def relevance_path(settings: Settings, reranker_name: str) -> Path:
-    """One fitted model per reranker (review finding: the reranker depends on the hardware)."""
+    """One fitted model per reranker: the reranker depends on the hardware."""
     slug = reranker_name.replace("/", "__")
     return Path(settings.relevance_model_path).with_suffix(f".{slug}.json")
 
 
 def build_translator(settings: Settings) -> Translator:
-    """Supertext when a key is configured (ADR 0018); otherwise nothing is translated."""
+    """Supertext when a key is configured; otherwise nothing is translated."""
     if not settings.supertext_api_key:
         log.info("SUPERTEXT_API_KEY not set: questions and cited passages are not translated")
         return NoTranslator()

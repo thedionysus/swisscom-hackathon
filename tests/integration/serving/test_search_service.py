@@ -93,7 +93,7 @@ def test_nothing_relevant_is_no_evidence_with_the_scope_statement(serving_db):
 
 
 def test_placeless_question_cites_only_federal_evidence(serving_db):
-    """ADR 0013: a placeless answer must never mix in a passage that applies to one place only."""
+    """A placeless answer must never mix in a passage that applies to one place only."""
     with connect(serving_db) as conn:
         add_doc(conn, group="or", lang="de", text="Kündigungsfrist Wohnung drei Monate", align="art_266_c",
                 breadcrumb=("SR 220 OR", "Art. 266c"))

@@ -1,6 +1,6 @@
 """Does a placeless question depend on where the asker lives? Decided from the evidence.
 
-ADR 0013 step 2 (amended 2026-09-24): with no place given, the search spans all of Switzerland,
+With no place given, the search spans all of Switzerland,
 and the relevant pages show who publishes the answer. When two or more different places each hold
 their own page on the subject, the subject is set locally (dog tax at Zürich and Bern, cardboard
 collection at Bern, Zürich and Chur). Then the server asks for the municipality unless a federal
@@ -155,7 +155,7 @@ def answer_depends_on_place(question: str, relevant: Sequence[ScoredGroup], tree
     """Why a placeless question must be asked back, or None when the evidence answers it.
 
     No federal passage at all: the local pages are one place's rules, so answering would be a
-    guess (ADR 0013 amendment). Federal passages present: only when several places hold their own
+    guess. Federal passages present: only when several places hold their own
     page on the subject and the federal passage defers, by its wording or by the subject list."""
     extents = [s.group.representative.extent_id for s in relevant]
     places = distinct_places(extents, tree)

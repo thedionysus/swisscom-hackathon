@@ -45,7 +45,7 @@ def test_every_task_gets_exactly_one_outcome_from_either_path(tmp_path):
 
 def test_a_batch_is_marked_done_only_after_its_outcomes_were_handed_over(tmp_path):
     """The caller commits each outcome before asking for the next, so `done` may only be signalled
-    once every line of that batch has been yielded (the A3 contract of BatchRunner.collect)."""
+    once every line of that batch has been yielded (the contract of BatchRunner.collect)."""
     client = FakeOpenAI()
     seen: list[str] = []
     early: list[str] = []
