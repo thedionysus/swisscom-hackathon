@@ -9,6 +9,7 @@ DEDUCTIBLES = {"child": (0, 100, 200, 300, 400, 500, 600),
                "young_adult": (300, 500, 1000, 1500, 2000, 2500),
                "adult": (300, 500, 1000, 1500, 2000, 2500)}
 MODELS = ("any", "standard", "family_doctor", "hmo", "telmed", "other")
+SINGLE_REGION = 0   # BAG's number for the one premium region of a canton not divided into regions
 SQL = ("select p.insurer_name, p.model, p.model_label, p.premium_chf from serving.premium p "
        "where p.year = %(year)s and p.canton = %(canton)s and p.region = %(region)s and p.age_class = %(age)s "
        "and p.accident = %(accident)s and p.deductible = %(deductible)s "
@@ -17,6 +18,18 @@ SQL = ("select p.insurer_name, p.model, p.model_label, p.premium_chf from servin
 
 def _bad(message: str) -> dict:
     return {"status": "invalid_request", "message": message}
+
+
+def _region(conn: psycopg.Connection, year: int, bfs_id: int, canton: str) -> dict | None:
+    """The municipality's premium region. BAG's region list names only the municipalities of cantons
+    divided into regions; a canton it does not list at all has a single region."""
+    listed = conn.execute("select canton, region from serving.premium_region where year = %s and bfs_id = %s",
+                          (year, bfs_id)).fetchone()
+    if listed is not None:
+        return listed
+    divided = conn.execute("select 1 from serving.premium_region where year = %s and canton = %s limit 1",
+                           (year, canton)).fetchone()
+    return None if divided else {"canton": canton, "region": SINGLE_REGION}
 
 
 def cheapest_premiums(conn: psycopg.Connection, tree: LocationTree, *, location_id: str, age: int,
@@ -31,8 +44,7 @@ def cheapest_premiums(conn: psycopg.Connection, tree: LocationTree, *, location_
         loc = tree.get(loc.parent_id)
     if loc.level is not Level.MUNICIPALITY:      # canton bfs ids (1-26) collide with commune numbers
         return _bad("Give a municipality (not a canton): premiums depend on the municipality's premium region.")
-    region = conn.execute("select canton, region from serving.premium_region where year = %s and bfs_id = %s",
-                          (year, loc.bfs_id)).fetchone()
+    region = _region(conn, year, loc.bfs_id, canton=loc.id.split("-")[1])
     if region is None:
         return {"status": "no_evidence", "message": f"No {year} premium region is loaded for {loc.label('de')}."}
     rows = conn.execute(SQL, {"year": year, "canton": region["canton"], "region": region["region"], "age": klass,

@@ -353,7 +353,9 @@ BAG publishes the premiums yearly. For a business year (2026 below), put three f
 1. **The premium table:** `Prämien_CH.csv` from the archive `Archiv_Praemien_2026.zip` on
    https://opendata.swiss/de/dataset/health-insurance-premiums.
 2. **The premium regions:** the XLSX "Anhang der EDI Verordnung über die Prämienregionen" from
-   https://www.bag.admin.ch/de/krankenversicherung-praemienregionen, converted to a semicolon CSV:
+   https://www.bag.admin.ch/de/krankenversicherung-praemienregionen, converted to a semicolon CSV.
+   It lists only the municipalities of cantons divided into premium regions; a canton it does not
+   list has a single region, numbered 0 in the premium table, and `swiss_premium` uses that one.
 
    ```bash
    uv run --with openpyxl python -c "
