@@ -46,7 +46,11 @@ async def tool_loop(question: str, *, client, model: str, tools: list[dict],
         message = response.choices[0].message
         if not message.tool_calls:
             return evidence, message.content or ""
-        messages = [*messages, message.model_dump(exclude_none=True)]
+        assistant_message = {"role": "assistant", "content": message.content or "", "tool_calls": [
+            {"id": c.id, "type": "function",
+             "function": {"name": c.function.name, "arguments": c.function.arguments}}
+            for c in message.tool_calls]}
+        messages = [*messages, assistant_message]
         for call in message.tool_calls:
             text = await call_tool(call.function.name, _arguments(call.function.arguments))
             evidence = [*evidence, text]
@@ -58,16 +62,26 @@ async def _answer(question: str, *, client, model: str, mcp_url: str, system: st
     from mcp import ClientSession
     from mcp.client.streamable_http import streamablehttp_client
 
-    async with streamablehttp_client(mcp_url) as (read, write, _), ClientSession(read, write) as session:
-        await session.initialize()
-        tools = openai_tools((await session.list_tools()).tools)
+    # The MCP HTTP transport keeps its connection alive in a background task and only surfaces a
+    # dead server when this `async with` unwinds, as an anyio BaseExceptionGroup rather than a plain
+    # connection error. `tool_loop` raises a plain RuntimeError (e.g. "no final answer"), which is
+    # not a group, so it passes through this except clause unchanged.
+    try:
+        async with streamablehttp_client(mcp_url) as (read, write, _), ClientSession(read, write) as session:
+            await session.initialize()
+            tools = openai_tools((await session.list_tools()).tools)
 
-        async def call_tool(name: str, args: dict) -> str:
-            result = await session.call_tool(name, args)
-            return "\n".join(c.text for c in result.content if getattr(c, "type", "") == "text")
+            async def call_tool(name: str, args: dict) -> str:
+                result = await session.call_tool(name, args)
+                text = "\n".join(c.text for c in result.content if getattr(c, "type", "") == "text")
+                text = text or "(no text result)"
+                return f"tool error: {text}" if result.isError else text
 
-        return await tool_loop(question, client=client, model=model, tools=tools, call_tool=call_tool,
-                               system=system)
+            return await tool_loop(question, client=client, model=model, tools=tools, call_tool=call_tool,
+                                   system=system)
+    except BaseExceptionGroup as group:
+        raise RuntimeError(f"MCP server at {mcp_url} unreachable: {group.exceptions[0]!r}; "
+                           "start `swiss-grounding serve --transport http`") from None
 
 
 def answer_with_tools(question: str, *, client, model: str, mcp_url: str, system: str) -> tuple[list[str], str]:

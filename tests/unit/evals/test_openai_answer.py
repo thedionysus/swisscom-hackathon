@@ -12,11 +12,6 @@ def _msg(content=None, calls=()):
                                   function=SimpleNamespace(name=n, arguments=json.dumps(a)))
                   for i, (n, a) in enumerate(calls)] or None
     message = SimpleNamespace(content=content, tool_calls=tool_calls)
-    message.model_dump = lambda exclude_none=True: {
-        "role": "assistant", "content": content,
-        **({"tool_calls": [{"id": c.id, "type": "function",
-                            "function": {"name": c.function.name, "arguments": c.function.arguments}}
-                           for c in tool_calls]} if tool_calls else {})}
     return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
@@ -43,8 +38,45 @@ def test_tool_calls_are_run_and_their_results_become_evidence():
                                              call_tool=call_tool, system="sys"))
     assert ran == [("swiss_search", {"question": "Hund anmelden", "locations": ["Bern"]})]
     assert evidence == ["result text https://x"] and answer == "Anmelden bei ... https://x"
-    assert client.bodies[1]["messages"][-1] == {"role": "tool", "tool_call_id": "t0",
-                                                "content": "result text https://x"}
+    sent = client.bodies[1]["messages"]
+    assert sent[-2] == {"role": "assistant", "content": "", "tool_calls": [
+        {"id": "t0", "type": "function",
+         "function": {"name": "swiss_search",
+                      "arguments": json.dumps({"question": "Hund anmelden", "locations": ["Bern"]})}}]}
+    assert sent[-1] == {"role": "tool", "tool_call_id": "t0", "content": "result text https://x"}
+
+
+def test_two_tool_calls_in_one_turn_are_both_run_in_order():
+    client = _Client([_msg(calls=[("swiss_search", {"q": 1}), ("swiss_search", {"q": 2})]),
+                      _msg(content="done")])
+    ran = []
+
+    async def call_tool(name, args):
+        ran.append((name, args))
+        return f"result for {args['q']}"
+    evidence, answer = asyncio.run(tool_loop("q?", client=client, model="m", tools=[],
+                                             call_tool=call_tool, system="sys"))
+    assert ran == [("swiss_search", {"q": 1}), ("swiss_search", {"q": 2})]
+    assert evidence == ["result for 1", "result for 2"]
+    assert answer == "done"
+
+
+def _msg_with_raw_arguments(raw_arguments: str):
+    call = SimpleNamespace(id="t0", type="function",
+                           function=SimpleNamespace(name="swiss_search", arguments=raw_arguments))
+    message = SimpleNamespace(content=None, tool_calls=[call])
+    return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+
+def test_malformed_tool_arguments_call_the_tool_with_empty_dict():
+    client = _Client([_msg_with_raw_arguments("not json"), _msg(content="ok")])
+    seen = []
+
+    async def call_tool(name, args):
+        seen.append(args)
+        return "r"
+    asyncio.run(tool_loop("q", client=client, model="m", tools=[], call_tool=call_tool, system="s"))
+    assert seen == [{}]
 
 
 def test_the_loop_gives_up_after_max_turns():
@@ -71,3 +103,19 @@ def test_mcp_http_url_needs_an_http_config(tmp_path):
     stdio.write_text(json.dumps({"mcpServers": {"swiss-grounding": {"command": "uv"}}}))
     with pytest.raises(ValueError, match="serve --transport http"):
         mcp_http_url(stdio)
+
+
+def test_answer_reports_an_unreachable_mcp_server_clearly(monkeypatch):
+    from contextlib import asynccontextmanager
+
+    from swiss_grounding.evals import openai_answer
+
+    @asynccontextmanager
+    async def broken_client(url, *args, **kwargs):
+        raise ExceptionGroup("connect failed", [ConnectionRefusedError("nope")])
+        yield (None, None, None)  # pragma: no cover - never reached
+
+    monkeypatch.setattr("mcp.client.streamable_http.streamablehttp_client", broken_client)
+    with pytest.raises(RuntimeError, match="MCP server at http://dead/mcp unreachable"):
+        asyncio.run(openai_answer._answer("q", client=object(), model="m", mcp_url="http://dead/mcp",
+                                          system="s"))
