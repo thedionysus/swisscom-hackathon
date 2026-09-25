@@ -1,4 +1,6 @@
+import json
 from datetime import date
+from html import escape as html_escape
 from pathlib import Path
 
 from swiss_grounding.corpus.connectors.html_meta import page_meta, work_key
@@ -132,6 +134,41 @@ def test_nuxt_self_referencing_wrappers_do_not_recurse_forever():
                '[{"groupId":1,"lang":2,"translationPages":3},"g",["Reactive",2],["ShallowRef",4],'
                '["Reactive",3]]</script></body></html>')
     assert page_meta(looping, "https://x.ch/de/a").alternates == {}
+
+
+def _iweb_table(rows) -> str:
+    """i-web's document table (www.thun.ch/reglementeverordnungen): the rows live only in a JSON
+    attribute, each linking its PDF inside an HTML fragment (#56)."""
+    entities = json.dumps({"emptyColumns": [], "data": rows})
+    return f"""<html lang="de"><body><main><h1>Reglemente</h1>
+      <table class="icms-dt" data-entities="{html_escape(entities)}"></table></main></body></html>"""
+
+
+def _iweb_row(doc_id: int, name: str) -> dict:
+    return {"title": f'<a href="/_rte/information/{doc_id + 1}">{name}</a>', "_nummer": "743.1",
+            "_dokumentList": f'<a title="" href="/_doc/{doc_id}" target="_blank">743.1 {name}</a> '
+                             '<span class="icms-document-type-and-size"> ()</span>',
+            "_rechtsgueltigkeit": "01.01.2026"}
+
+
+def test_pdf_links_inside_a_json_attribute_are_found_with_their_text():
+    html = _iweb_table([_iweb_row(6548375, "Konzessionsabgabereglement"), _iweb_row(6558821, "Abfallreglement")])
+    url, patterns = "https://www.thun.ch/reglementeverordnungen", (r"/_doc/\d+",)
+    assert page_meta(html, url, pdf_link_patterns=patterns).pdf_links == ()
+    links = page_meta(html, url, pdf_link_patterns=patterns,
+                      json_link_attributes=[{"selector": "table.icms-dt", "attribute": "data-entities"}]).pdf_links
+    assert links == (("https://www.thun.ch/_doc/6548375", "743.1 Konzessionsabgabereglement"),
+                     ("https://www.thun.ch/_doc/6558821", "743.1 Abfallreglement"))
+
+
+def test_url_strings_inside_a_json_attribute_are_links_and_bad_json_is_ignored():
+    rows = json.dumps([{"titel": "Hundeverordnung", "pdf": "/dam/as/551.100.pdf"},
+                       {"titel": "Extern", "pdf": "https://other.ch/x.pdf", "note": "not a /path with spaces.pdf"}])
+    html = f"""<html><body><stzh-datatable rows="{html_escape(rows)}"></stzh-datatable>
+      <stzh-datatable rows="[not json"></stzh-datatable></body></html>"""
+    links = page_meta(html, "https://www.stadt-zuerich.ch/de/as.html",
+                      json_link_attributes=[{"selector": "stzh-datatable", "attribute": "rows"}]).pdf_links
+    assert [u for u, _ in links] == ["https://www.stadt-zuerich.ch/dam/as/551.100.pdf", "https://other.ch/x.pdf"]
 
 
 def test_switcher_text_counts_only_when_it_is_wholly_a_language():

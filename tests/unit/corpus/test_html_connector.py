@@ -1,3 +1,5 @@
+import json
+from html import escape as html_escape
 from pathlib import Path
 
 import httpx
@@ -641,3 +643,57 @@ def test_page_whose_canonical_holds_other_text_stays_a_document():
 def test_page_is_kept_when_its_canonical_is_not_stored_in_the_same_run(canonical):
     result = _geneva({"https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Les parcs.")})
     assert [d.url for d in result.documents] == ["https://www.g.ch/themes/env"]
+
+
+# --- a fixed list of PDF URLs, and PDF links inside JSON attributes (#56) ------------------------
+
+def _pdf_only_spec(**config):
+    base = {"allow_prefixes": ["https://www.gl.ch/"], "pdf_allow_prefixes": ["https://www.gl.ch/public/"],
+            "pdf_urls": [{"url": "https://www.gl.ch/public/wegleitung.pdf", "title_hint": "Wegleitung 2025"},
+                         {"url": "https://www.gl.ch/public/tarif.pdf"},
+                         {"url": "https://www.gl.ch/intern/liste.pdf"}]}
+    base.update(config)
+    return SourceSpec(id="gl", name="GL", publisher="GL", authority="official_info", level="cantonal",
+                      extent_id="CH-GL", connector="html", tier=2, languages=("de", "fr"), config=base)
+
+
+def test_pdf_urls_are_handed_over_without_a_linking_page():
+    seen: list[str] = []
+    result = HtmlConnector(_client(pages={}, seen=seen), CrawlPolicy(True, 0)).run(_pdf_only_spec(), known={})
+    assert [(p.url, p.title_hint, p.language) for p in result.pdfs] == [
+        ("https://www.gl.ch/public/wegleitung.pdf", "Wegleitung 2025", "de"),
+        ("https://www.gl.ch/public/tarif.pdf", "", "de")]
+    assert result.errors == (("https://www.gl.ch/intern/liste.pdf", "PDF outside pdf_allow_prefixes"),)
+    assert seen == ["https://www.gl.ch/robots.txt"]
+
+
+def test_pdf_urls_obey_robots_and_count_against_max_pdfs():
+    robots = "User-agent: *\nDisallow: /public/wegleitung.pdf\n"
+    result = HtmlConnector(_client(robots, pages={}), CrawlPolicy(True, 0)).run(
+        _pdf_only_spec(max_pdfs=0), known={})
+    assert result.pdfs == ()
+    assert result.skipped == (("https://www.gl.ch/public/wegleitung.pdf", "max_pdfs"),
+                              ("https://www.gl.ch/public/tarif.pdf", "max_pdfs"))
+    result = HtmlConnector(_client(robots, pages={}), CrawlPolicy(True, 0)).run(_pdf_only_spec(), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.gl.ch/public/tarif.pdf"]
+    assert ("https://www.gl.ch/public/wegleitung.pdf", "PDF disallowed by robots.txt") in result.errors
+
+
+def test_pdfs_in_a_json_attribute_are_handed_over_and_a_known_one_is_never_fetched_as_a_page():
+    """i-web tables (#56): the /_doc/<id> links sit only inside data-entities. A /_doc/ URL stored by
+    an earlier run is known, but it is a PDF: the page crawl must not download it again."""
+    entities = json.dumps({"data": [{"_dokumentList": '<a href="/_doc/4351168">743.1 Abfallreglement</a>'}]})
+    pages = {"https://www.thun.ch/reglementeverordnungen": f"""<html lang="de"><body><main><h1>Reglemente</h1>
+      <p>Alle Reglemente.</p><table class="icms-dt" data-entities="{html_escape(entities)}"></table>
+      </main></body></html>"""}
+    spec = SourceSpec(id="thun", name="Thun", publisher="Thun", authority="municipal_law", level="municipal",
+                      extent_id="CH-BE-942", connector="html", tier=2, languages=("de",),
+                      config={"start_urls": ["https://www.thun.ch/reglementeverordnungen"],
+                              "allow_prefixes": ["https://www.thun.ch/"], "pdf_link_patterns": [r"/_doc/\d+"],
+                              "json_link_attributes": [{"selector": "table.icms-dt", "attribute": "data-entities"}]})
+    seen: list[str] = []
+    known = {"https://www.thun.ch/_doc/4355560": KnownState(None, None, "h")}
+    result = HtmlConnector(_client(pages=pages, seen=seen), CrawlPolicy(True, 0)).run(spec, known=known)
+    assert [(p.url, p.title_hint) for p in result.pdfs] == [("https://www.thun.ch/_doc/4351168",
+                                                             "743.1 Abfallreglement")]
+    assert "https://www.thun.ch/_doc/4355560" not in seen

@@ -260,16 +260,21 @@ class HtmlConnector:
         # Pages inside the prefixes that must never be fetched, e.g. a gazette's personal-data rubrics.
         deny = tuple(re.compile(p) for p in cfg.get("deny_patterns", ()))
         min_delay = float(cfg.get("delay_seconds", 0.0))
-        queue = CrawlQueue(cfg["start_urls"], known)
+        queue = CrawlQueue(cfg.get("start_urls", ()), known)
         errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay, deny)
         pdf_prefixes = tuple(cfg.get("pdf_allow_prefixes", prefixes))
         crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)), pdf_prefixes,
                               pdf_allowed=lambda u: self._robots_allow(u, min_delay))
         crawl.errors.extend(errors)
+        for entry in cfg.get("pdf_urls", ()):
+            # PDFs no crawlable page links to (#56). Listed first, so they are the last to lose out to max_pdfs.
+            crawl.add_pdf(entry["url"], entry.get("title_hint", ""), spec.languages[0], listed=True)
         pages = 0
         while pages < max_pages and (item := queue.pop()) is not None:
             url, conditional = item
-            if url in queue.seen or not self._allowed(url, prefixes, min_delay, deny):
+            # A known PDF sits in the revisit queue too; one matched by pdf_link_patterns has no .pdf
+            # suffix to stop it, and it is the PDF connector's to re-check, not a page.
+            if url in queue.seen or _matches(url, pdf_patterns) or not self._allowed(url, prefixes, min_delay, deny):
                 continue
             queue.seen.add(url)
             pages += 1
@@ -364,6 +369,28 @@ class _CrawlResults:
     def skip(self, url: str, reason: str) -> None:
         self.skipped.setdefault(url, reason)
 
+    def add_pdf(self, pdf_url: str, title_hint: str, language: str, listed: bool = False) -> None:
+        """Hand a PDF to the PDF connector once: inside pdf_allow_prefixes, allowed by robots.txt, and
+        within max_pdfs. One outside the prefixes is reported only when the manifest listed it
+        (config.pdf_urls); a link found on a page is simply out of scope."""
+        if pdf_url in self.pdfs or pdf_url in self._pdfs_refused:
+            return
+        if not any(pdf_url.startswith(p) for p in self._pdf_prefixes):
+            if listed:
+                self._pdfs_refused.add(pdf_url)
+                self.errors.append((pdf_url, "PDF outside pdf_allow_prefixes"))
+            return
+        if len(self.pdfs) >= self._max_pdfs:
+            self.skip(pdf_url, "max_pdfs")
+            return
+        # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
+        if not self._pdf_allowed(pdf_url):
+            self._pdfs_refused.add(pdf_url)
+            self.errors.append((pdf_url, "PDF disallowed by robots.txt"))
+            return
+        self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=language, title_hint=title_hint,
+                                           source_id=self._spec.id)
+
     def record(self, final: str, page: CrawledPage, response: httpx.Response) -> None:
         if not page.emit:
             return
@@ -371,19 +398,7 @@ class _CrawlResults:
         self.page_languages[final] = page.language
         self.canonicals[final] = page.canonical
         for pdf_url, text in page.pdf_links:
-            if (pdf_url in self.pdfs or pdf_url in self._pdfs_refused
-                    or not any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
-                continue
-            if len(self.pdfs) >= self._max_pdfs:
-                self.skip(pdf_url, "max_pdfs")
-                continue
-            # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
-            if not self._pdf_allowed(pdf_url):
-                self._pdfs_refused.add(pdf_url)
-                self.errors.append((pdf_url, "PDF disallowed by robots.txt"))
-                continue
-            self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=page.language,
-                                               title_hint=text or page.title_hint, source_id=self._spec.id)
+            self.add_pdf(pdf_url, text or page.title_hint, page.language)
         if page.sections:
             self.pending.append(ParsedDocument(
                 source_id=self._spec.id, url=final, language=page.language, work_key="", title=page.title,

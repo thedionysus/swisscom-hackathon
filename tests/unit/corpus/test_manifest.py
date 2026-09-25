@@ -166,6 +166,38 @@ def test_rejects_invalid_site_adaptation_keys(tmp_path, old, new, message):
         load_manifest(path)
 
 
+PDF_URLS = ('config: {allow_prefixes: ["https://www.bern.ch/"], '
+            'pdf_urls: [{url: "https://www.bern.ch/a.pdf", title_hint: "Tarif"}, {url: "https://www.bern.ch/b.pdf"}], '
+            'json_link_attributes: [{selector: "table.icms-dt", attribute: "data-entities"}]}')
+
+
+def test_accepts_pdf_urls_without_start_urls_and_json_link_attributes(tmp_path):
+    """#56: a source can be a fixed list of PDFs, with no page to start from."""
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, PDF_URLS))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["pdf_urls"][0] == {"url": "https://www.bern.ch/a.pdf", "title_hint": "Tarif"}
+
+
+@pytest.mark.parametrize(("old", "new", "message"), [
+    ('pdf_urls: [{url: "https://www.bern.ch/a.pdf", title_hint: "Tarif"}, {url: "https://www.bern.ch/b.pdf"}], ',
+     "", "start_urls"),
+    ('{url: "https://www.bern.ch/b.pdf"}', '"https://www.bern.ch/b.pdf"', "pdf_urls"),
+    ('{url: "https://www.bern.ch/b.pdf"}', '{url: "/b.pdf"}', "pdf_urls"),
+    ('{url: "https://www.bern.ch/b.pdf"}', '{url: "https://www.bern.ch/b.pdf", title: "B"}', "pdf_urls"),
+    ('title_hint: "Tarif"', "title_hint: 3", "pdf_urls"),
+    ('selector: "table.icms-dt"', 'selector: "table.icms-dt["', "json_link_attributes"),
+    (', attribute: "data-entities"', "", "json_link_attributes"),
+])
+def test_rejects_invalid_pdf_urls_and_json_link_attributes(tmp_path, old, new, message):
+    config = PDF_URLS.replace(old, new)
+    assert config != PDF_URLS
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, config))
+    with pytest.raises(ValueError, match=message):
+        load_manifest(path)
+
+
 JSON_SOURCE = """
   - id: sz_holidays
     name: Schulferien Schwyz
