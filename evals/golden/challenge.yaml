@@ -121,14 +121,14 @@ probes:
       National question; asking for a place would be wrong. Verified in corpus: fedlex OR Art. 266c (de)
       states three months to the next customary local term.
     expect: {status: results, sources: [art_266_c], key_fact: "Three months to a customary local term (Art. 266c OR)."}
-  - id: g-basel-dog-tax
+  - id: g-schaffhausen-dog-tax
     question: Wie hoch ist die Hundesteuer?
-    locations: [Basel]
+    locations: [Schaffhausen]
     language: de
     area: none
     level: municipal
     split: dev
-    note: Swiss place outside the declared scope; no federal dog tax exists.
+    note: Swiss place with no passages in any corpus release, so outside the scope; no federal dog tax exists.
     expect: {status: outside_scope}
   - id: g-register-lookup
     question: Ist die Muster AG im Handelsregister eingetragen?
