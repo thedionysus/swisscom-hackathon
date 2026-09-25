@@ -28,3 +28,5 @@ Slides for the hackathon jury, 16:9 (2560×1440 PNG), plain language. Drop the P
 | 20 | [Keys and what they add](20-keys.png) |  |
 | 21 | [How we know it works](21-how-we-know.png) | yes |
 | 22 | [From clone to running server](22-quick-start.png) |  |
+| 23 | [Where it runs](23-deployment.png) |  |
+| 24 | [One question, end to end](24-end-to-end.png) |  |
