@@ -3957,3 +3957,168 @@ sources:
       breadcrumbs: {id_path: "@id", title_path: title}
       modified_path: modified
       max_records: 1000
+
+  # ---------------- #45: calendars, holidays and rule-bearing geodata (connector: json) ----------------
+  # Endpoints from issue #45, re-tested live on 2026-09-25. A record that leaves a date window is not withdrawn
+  # (json_api.py docstring), so past collection dates stay in the corpus until a refresh policy exists.
+
+  # Opendatasoft dataset 100397 (Generalsekretariat ED, CC BY 4.0). Checked 2026-09-25: 88 records (school holidays
+  # and school-free days from 2025 on), no empty fields.
+  - id: bs_schulferien
+    name: "Schulferien Kanton Basel-Stadt"
+    publisher: "Kanton Basel-Stadt"
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BS
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://data.bs.ch/api/explore/v2.1/catalog/datasets/100397/records?limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{start_date}-{name}"
+      title_template: "{name} {year} (Schulen im Kanton Basel-Stadt)"
+      text_template: "{name} an den Schulen des Kantons Basel-Stadt: vom {start_date} bis {end_date}."
+      cite_url: "https://data.bs.ch/explore/assets/100397/"
+      robots_exception_reason: "Opendatasoft's platform robots.txt disallows /api/ for every crawler except Googlebot; this is the portal's documented public API for the dataset (open data, read-only), used only with ROBOTS_API_EXCEPTIONS=true."
+
+  # Opendatasoft dataset 100096 (Tiefbauamt, CC BY 4.0, 15,925 records in all). `termin>=now()` keeps upcoming dates
+  # only: 445 on 2026-09-25. Extent CH-BS-2701 as in #45.
+  # CAVEAT (zones): the records name the collection zone (A-H), not streets; the zone boundaries are only in geo_shape.
+  - id: bs_abfuhrtermine
+    name: "Abfuhrtermine Stadt Basel"
+    publisher: "Kanton Basel-Stadt, Tiefbauamt"
+    authority: official_info
+    level: municipal
+    extent_id: CH-BS-2701
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://data.bs.ch/api/explore/v2.1/catalog/datasets/100096/records?select=termin,art,wochentag,zone&where=termin%3E%3Dnow()&order_by=termin,zone,art&limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{termin}-{zone}-{art}"
+      title_template: "{art} Zone {zone}, {termin} (Stadt Basel)"
+      text_template: "{art} in der Stadt Basel, Abfuhrzone {zone}: {wochentag}, {termin}."
+      cite_url: "https://data.bs.ch/explore/assets/100096/"
+      robots_exception_reason: "Opendatasoft's platform robots.txt disallows /api/ for every crawler except Googlebot; this is the portal's documented public API for the dataset (open data, read-only), used only with ROBOTS_API_EXCEPTIONS=true."
+
+  # Opendatasoft dataset abfuhrdaten-stadt-stgallen (Entsorgung St.Gallen, CC BY): 71,752 upcoming rows, one per
+  # street and date, so group_by reduces them to one per area, day and collection (1,191 on 2026-09-25). The dataset's
+  # `datum` is one day before `zeit` (datum 2026-10-15, zeit 2026-10-16T07:00+02:00; every datum is a Sunday), so the
+  # day comes from `zeit` in Swiss time. sg_abfuhrgebiete below maps each street to its area.
+  - id: sg_abfuhrdaten
+    name: "Abfuhrdaten Stadt St. Gallen nach Abfuhrgebiet"
+    publisher: "Stadt St. Gallen, Entsorgung St.Gallen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-SG-3203
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/abfuhrdaten-stadt-stgallen/records?group_by=abfuhrgebiet,date_format(zeit,%22dd.MM.yyyy%22)%20as%20tag,date_format(zeit,%22EEEE%22)%20as%20wochentag,sammlung,titel&where=zeit%3E%3Dnow()&order_by=abfuhrgebiet,tag,sammlung&timezone=Europe%2FZurich&limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{abfuhrgebiet}-{tag}-{sammlung}"
+      title_template: "{sammlung} Abfuhrgebiet {abfuhrgebiet}, {tag} (Stadt St. Gallen)"
+      text_template: "{titel} in der Stadt St. Gallen, Abfuhrgebiet {abfuhrgebiet}: {wochentag}, {tag}."
+      cite_url: "https://daten.stadt.sg.ch/explore/assets/abfuhrdaten-stadt-stgallen/"
+      robots_exception_reason: "Opendatasoft's platform robots.txt disallows /api/ for every crawler except Googlebot; this is the portal's documented public API for the dataset (open data, read-only), used only with ROBOTS_API_EXCEPTIONS=true."
+  # The same dataset grouped by street: 726 streets on 2026-09-25, each in exactly one area.
+  - id: sg_abfuhrgebiete
+    name: "Abfuhrgebiete der Strassen in der Stadt St. Gallen"
+    publisher: "Stadt St. Gallen, Entsorgung St.Gallen"
+    authority: official_info
+    level: municipal
+    extent_id: CH-SG-3203
+    connector: json
+    tier: 2
+    languages: ["de"]
+    config:
+      url: "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/abfuhrdaten-stadt-stgallen/records?group_by=strasse,abfuhrgebiet,periode&where=zeit%3E%3Dnow()&order_by=strasse,abfuhrgebiet&limit={size}&offset={offset}"
+      paging: {style: offset, size: 100}
+      records_path: results
+      id_template: "{strasse}-{abfuhrgebiet}"
+      title_template: "{strasse}: Abfuhrgebiet {abfuhrgebiet} (Stadt St. Gallen)"
+      text_template: "{strasse}, Stadt St. Gallen: Abfuhrgebiet {abfuhrgebiet} (Abfuhrdaten {periode})."
+      cite_url: "https://daten.stadt.sg.ch/explore/assets/abfuhrdaten-stadt-stgallen/"
+      robots_exception_reason: "Opendatasoft's platform robots.txt disallows /api/ for every crawler except Googlebot; this is the portal's documented public API for the dataset (open data, read-only), used only with ROBOTS_API_EXCEPTIONS=true."
+
+  # WFS of the Stadt Zürich geoportal, dataset "Hundezonen" ("frei von Nutzungsbeschränkungen", cited page). 728 zones
+  # on 2026-09-25: 652 dog bans, 69 leash zones, 7 off-leash areas. A None field fails a record (json_api.py _Strict), and
+  # `zusatzbedingung` (a time window) is set on 45 leash zones only, so the WFS filter splits the zones into two sources.
+  - id: zh_hundezonen
+    name: "Hundezonen der Stadt Zürich"
+    publisher: "Stadt Zürich, Sicherheitsdepartement"
+    authority: official_info
+    level: municipal
+    extent_id: CH-ZH-261
+    connector: json
+    tier: 1
+    languages: ["de"]
+    config:
+      url: "https://www.ogd.stadt-zuerich.ch/wfs/geoportal/Hundezonen?service=WFS&version=1.1.0&request=GetFeature&typename=hundezone&outputFormat=GeoJSON&FILTER=%3CFilter%3E%3CPropertyIsNull%3E%3CPropertyName%3Ezusatzbedingung%3C%2FPropertyName%3E%3C%2FPropertyIsNull%3E%3C%2FFilter%3E"
+      records_path: features
+      id_template: "{properties[objectid]}"
+      title_template: "{properties[einschraenkungen]}: {properties[zonenname]} (Stadt Zürich)"
+      text_template: "Hundezone der Stadt Zürich «{properties[zonenname]}»: {properties[einschraenkungen]}. Rechtsgrundlage: {properties[gesetzgebung]}."
+      cite_url: "https://www.stadt-zuerich.ch/geodaten/download/Hundezonen"
+  - id: zh_hundezonen_zeitlich
+    name: "Hundezonen der Stadt Zürich mit zeitlicher Leinenpflicht"
+    publisher: "Stadt Zürich, Sicherheitsdepartement"
+    authority: official_info
+    level: municipal
+    extent_id: CH-ZH-261
+    connector: json
+    tier: 1
+    languages: ["de"]
+    config:
+      url: "https://www.ogd.stadt-zuerich.ch/wfs/geoportal/Hundezonen?service=WFS&version=1.1.0&request=GetFeature&typename=hundezone&outputFormat=GeoJSON&FILTER=%3CFilter%3E%3CNot%3E%3CPropertyIsNull%3E%3CPropertyName%3Ezusatzbedingung%3C%2FPropertyName%3E%3C%2FPropertyIsNull%3E%3C%2FNot%3E%3C%2FFilter%3E"
+      records_path: features
+      id_template: "{properties[objectid]}"
+      title_template: "{properties[einschraenkungen]} ({properties[zusatzbedingung]}): {properties[zonenname]} (Stadt Zürich)"
+      text_template: "Hundezone der Stadt Zürich «{properties[zonenname]}»: {properties[einschraenkungen]}, gültig {properties[zusatzbedingung]}. Rechtsgrundlage: {properties[gesetzgebung]}."
+      cite_url: "https://www.stadt-zuerich.ch/geodaten/download/Hundezonen"
+
+  # ArcGIS REST of the Stadt Bern geoportal (robots.txt allows all). 37 areas on 2026-09-25; the licence is not stated.
+  # Each record links the city's dog page, which is the cited page.
+  - id: bern_hunde_leinenpflicht
+    name: "Leinenpflicht-Gebiete der Stadt Bern (Hundeverordnung)"
+    publisher: "Stadt Bern, Polizeiinspektorat"
+    authority: official_info
+    level: municipal
+    extent_id: CH-BE-351
+    connector: json
+    tier: 1
+    languages: ["de"]
+    config:
+      url: "https://map.bern.ch/arcgis/rest/services/Geoportal/Hundeverordnung_Leinenpflicht/MapServer/0/query?where=1%3D1&outFields=*&f=geojson"
+      records_path: features
+      id_template: "{id}"
+      title_template: "Leinenpflicht: {properties[Flaechename]} (Stadt Bern)"
+      text_template: "Leinenpflicht für Hunde in der Stadt Bern, Gebiet «{properties[Flaechename]}»: {properties[Beschrieb]}. Zuständig: {properties[Datenherr_desc]}, {properties[Telefon]}, {properties[Email]}."
+      cite_url: "https://www.bern.ch/themen/umwelt-natur-und-energie/tiere-1/hunde"
+
+  # OpenHolidays API, a non-government open-data project (institutional; licence not stated on
+  # www.openholidaysapi.org). The API takes fixed dates only, so the window below needs a yearly update. The CH-ZH
+  # query includes the City of Zürich's half-day holidays (subdivision CH-ZH-ZH-ZH: Sechseläuten, Knabenschiessen).
+  # Other cantons follow the same pattern with another subdivisionCode.
+  - id: openholidays_zh
+    name: "Feiertage im Kanton Zürich (OpenHolidays API)"
+    publisher: "OpenHolidays API (openholidaysapi.org)"
+    authority: institutional
+    level: cantonal
+    extent_id: CH-ZH
+    connector: json
+    tier: 1
+    languages: ["de"]
+    config:
+      url: "https://openholidaysapi.org/PublicHolidays?countryIsoCode=CH&languageIsoCode=DE&validFrom=2026-01-01&validTo=2027-12-31&subdivisionCode=CH-ZH"
+      records_path: ""
+      id_template: "{id}"
+      title_template: "{name[0][text]} {startDate} (Kanton Zürich)"
+      text_template: "{name[0][text]}: {startDate} bis {endDate}, Kanton Zürich. Art laut OpenHolidays: {type}, {temporalScope}."
+      cite_url: "https://www.openholidaysapi.org/en/"
