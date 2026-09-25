@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
-from swiss_grounding.locations.models import AmbiguousLocation, Location, ResolvedLocation
+from swiss_grounding.locations.models import AmbiguousLocation, Level, Location, ResolvedLocation
 from swiss_grounding.locations.question_scan import resolve_from_question
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.serving.scope import DECLARED, Scope, covered_levels
@@ -72,9 +72,28 @@ def _from_argument(text: str, resolver: Resolver, scope: Scope = DECLARED) -> Pl
     return _from_resolution(text.strip(), resolver.resolve(cleaned), scope)
 
 
-def place_names(tree: LocationTree, extents: Sequence[str]) -> tuple[str, ...]:
-    """Every name and alias of the places at `extents`, in every language the tree has."""
-    return tuple(name for extent in extents for name in tree.get(extent).all_names())
+@dataclass(frozen=True)
+class PlaceText:
+    """How a text names the places the search is restricted to, so the keyword arms leave them out
+    (#32). `mentions` is the text that named the place: the place argument, or the phrase the
+    question scan matched. `names` are every name and alias of the places; they name a place only
+    after a level marker ("Gemeinde Wald") or before the canton's code ("Wald ZH"), since a bare
+    "Wald" may be the forest."""
+    mentions: tuple[str, ...] = ()
+    names: tuple[str, ...] = ()
+    codes: tuple[str, ...] = ()
+
+
+def place_text(tree: LocationTree, o: PlaceOutcome, extents: Sequence[str]) -> PlaceText:
+    """The PlaceText of the places at `extents`; the mentions count when the resolved place is one."""
+    locations = [tree.get(e) for e in extents]
+    mentions: tuple[str, ...] = ()
+    if o.resolved is not None and o.resolved.location.id in extents:
+        mentions = tuple(dict.fromkeys(t for t in (o.text, o.resolved.input_text) if t))
+    names = tuple(name for loc in locations for name in loc.all_names())
+    # A canton's two-letter alias is its code (locations/seed.py).
+    codes = tuple(a for loc in locations if loc.level is Level.CANTON for a in loc.aliases if len(a) == 2)
+    return PlaceText(mentions, names, codes)
 
 
 def place_outcomes(question: str, locations: Sequence[str], resolver: Resolver,

@@ -2,7 +2,7 @@
 import re
 import unicodedata
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 import numpy as np
@@ -13,6 +13,7 @@ from swiss_grounding.corpus.providers import BGE_M3_VOCAB
 from swiss_grounding.locations.markers import MARKERS
 from swiss_grounding.locations.tree import normalize
 from swiss_grounding.serving.models import LANGS, Candidate
+from swiss_grounding.serving.places import PlaceText
 from swiss_grounding.serving.rrf import fuse, select_with_pool
 
 COLUMNS = (
@@ -31,7 +32,7 @@ EMB_TABLE = {"bge-m3": ("corpus.emb_bge_m3", "vector"), "openai-3l": ("corpus.em
 IDENTIFIER = re.compile(r"\b\d{2,}[a-z]?(?:\.\d+)*\b", re.IGNORECASE)
 WORD = re.compile(r"\w")
 # A level marker right before a place name belongs to it: "Kanton Zürich", "canton de Vaud", "city of".
-MARKER = r"(?:(?:" + "|".join(sorted(map(re.escape, MARKERS), key=len, reverse=True)) + r")\s+(?:(?:de|du|di|of)\s+|d')?)?"
+MARKER = r"(?:" + "|".join(sorted(map(re.escape, MARKERS), key=len, reverse=True)) + r")\s+(?:(?:de|du|di|of)\s+|d')?"
 
 
 @dataclass(frozen=True)
@@ -48,8 +49,8 @@ class ArmQuery:
     per_arm: int
     top_n: int
     local_quota: int
-    # The names of the places the extent filter already restricts the search to (#32).
-    place_names: Sequence[str] = ()
+    # How the question names the places the extent filter already restricts the search to (#32).
+    places: PlaceText = field(default_factory=PlaceText)
 
 
 def filters(as_of: date | None, extents: Sequence[str]) -> str:
@@ -99,20 +100,31 @@ def _fold(text: str) -> tuple[str, list[int]]:
     return "".join(folded), index
 
 
-def _place_pattern(names: Sequence[str]) -> re.Pattern | None:
-    """The names as whole words, a level marker before one included ("Kanton Zürich", "canton de
-    Vaud"). Identifiers stay (a postal code is an exact term), and so do two-letter abbreviations,
-    which are ordinary words in prose ("AG", "SO") and which the question scan never reads as places."""
+def _either(names: Sequence[str]) -> str:
+    """The names as one regex alternative, longest first. Identifiers stay (a postal code is an
+    exact term), and so do two-letter abbreviations, which are ordinary words in prose ("AG", "SO")
+    and which the question scan never reads as places."""
     found = {key for key in map(normalize, names) if len(key) > 2 and not IDENTIFIER.fullmatch(key)}
-    if not found:
-        return None
-    alternatives = "|".join(r"\s+".join(map(re.escape, name.split())) for name in sorted(found, key=len, reverse=True))
-    return re.compile(rf"(?<![\w-]){MARKER}(?:{alternatives})(?![\w-])")
+    return "|".join(r"\W+".join(map(re.escape, name.split())) for name in sorted(found, key=len, reverse=True))
 
 
-def without_places(text: str, names: Sequence[str]) -> str:
-    """`text` with every name in `names` left out, ignoring case and accents."""
-    pattern = _place_pattern(names)
+def _place_pattern(places: PlaceText) -> re.Pattern | None:
+    """A mention wherever it occurs, a level marker before it and the canton code after it included;
+    any other name only with a marker before it ("Kanton Zürich") or the code after it ("Wald ZH")."""
+    mention, name = _either(places.mentions), _either(places.names)
+    codes = "|".join(re.escape(c.lower()) for c in places.codes)
+    code = rf"(?:\s+|\s*\(\s*)(?:{codes})\)?" if codes else ""
+    forms = [rf"(?:{MARKER})?(?:{mention})(?:{code})?"] if mention else []
+    if name:
+        forms.append(rf"{MARKER}(?:{name})(?:{code})?")
+        if code:
+            forms.append(rf"(?:{name}){code}")
+    return re.compile(rf"(?<![\w-])(?:{'|'.join(forms)})(?![\w-])") if forms else None
+
+
+def without_places(text: str, places: PlaceText) -> str:
+    """`text` without what names the places in it, ignoring case and accents."""
+    pattern = _place_pattern(places)
     folded, index = _fold(text)
     matches = list(pattern.finditer(folded)) if pattern else []
     if not matches:
@@ -133,17 +145,18 @@ def keyword_texts(q: ArmQuery) -> dict[str, str]:
     itself when it is in that store's language (or the language is unknown), and otherwise only the
     question's identifiers (SR numbers, article numbers, postal codes) joined by OR.
 
-    The names of the places the extent filter already restricts to are left out of the question
-    and the translations (#32): a chunk rarely names its own canton or municipality, and ANDing the
-    name would drop it. A text left with nothing but the place falls back to the identifiers, or
-    the store is skipped: matching the place name alone would rank chunks for naming the place.
+    Where the question and the translations name a place the extent filter already restricts to,
+    that text is left out (#32): a chunk rarely names its own canton or municipality, and ANDing the
+    name would drop it. A bare name that is not the text that named the place stays; it may be an
+    ordinary word ("im Wald"). A text left with nothing but the place falls back to the identifiers,
+    or the store is skipped: matching the place name alone would rank chunks for naming the place.
     """
-    question = without_places(q.question, q.place_names)
+    question = without_places(q.question, q.places)
     identifiers = " OR ".join(dict.fromkeys(IDENTIFIER.findall(question)))
     texts = {}
     for lang in LANGS:
         if lang in q.translations:
-            text = without_places(q.translations[lang], q.place_names)
+            text = without_places(q.translations[lang], q.places)
         elif q.question_lang in (None, lang):
             text = question
         else:
