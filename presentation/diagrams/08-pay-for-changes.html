@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>We only pay for what changed · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · jury deck · slide 08</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pay-for-changes-title pay-for-changes-desc">
+<title id="pay-for-changes-title">We only pay for what changed</title>
+<desc id="pay-for-changes-desc">A refresh checks every page against the version already held. An unchanged page keeps its version for free. A changed page gets a new version and the old one is kept; of its passages, those with the same text keep their description and vectors, and only passages with new text go to the paid AI step.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<!-- arrows -->
+<path d="M 180,424 L 180,288 Q 180,280 188,280 L 400,280" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 320,480 L 400,480" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 760,480 L 840,480" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 760,452 L 792,452 Q 800,452 800,444 L 800,288 Q 800,280 808,280 L 840,280" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<!-- labels -->
+<rect x="248" y="258" width="84" height="16" rx="2" fill="#f5f5f5"/>
+<text x="290" y="270.3" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">UNCHANGED</text>
+<rect x="326" y="458" width="68" height="16" rx="2" fill="#f5f5f5"/>
+<text x="360" y="470.3" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CHANGED</text>
+<rect x="762" y="486" width="76" height="16" rx="2" fill="#f5f5f5"/>
+<text x="800" y="498.3" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NEW TEXT</text>
+<rect x="806" y="358" width="84" height="16" rx="2" fill="#f5f5f5"/>
+<text x="848" y="370.3" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SAME TEXT</text>
+<!-- nodes -->
+<rect x="40" y="424" width="280" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="424" width="280" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="180" y="468.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Check every page</text>
+<text x="180" y="486" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">compared with the version</text>
+<text x="180" y="502" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">we already hold</text>
+<rect x="400" y="224" width="360" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="400" y="224" width="360" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="408" y="230" width="32" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="424" y="240.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FREE</text>
+<text x="580" y="279.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Unchanged page</text>
+<text x="580" y="297" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">keeps its version:</text>
+<text x="580" y="313" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">nothing to pay</text>
+<rect x="400" y="424" width="360" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="400" y="424" width="360" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="580" y="468.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Changed page</text>
+<text x="580" y="486" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">gets a new version, the old one is</text>
+<text x="580" y="502" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">kept; its text is cut into passages</text>
+<rect x="840" y="224" width="400" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="840" y="224" width="400" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="848" y="230" width="32" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="864" y="240.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FREE</text>
+<text x="1040" y="279.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Passage with the same text</text>
+<text x="1040" y="297" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">keeps its description and vectors:</text>
+<text x="1040" y="313" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">nothing to pay</text>
+<rect x="840" y="424" width="400" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="840" y="424" width="400" height="112" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.6"/>
+<rect x="848" y="430" width="32" height="16" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="864" y="440.9" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PAID</text>
+<text x="1040" y="479.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Passage with new text</text>
+<text x="1040" y="497" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">the only part sent to the</text>
+<text x="1040" y="513" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">paid AI step again</text>
+<!-- annotations -->
+<text x="40" y="52" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SWISS GROUNDING · REFRESH</text>
+<text x="40" y="100" fill="#2d3142" font-size="40" font-family="'Instrument Serif', 'Noto Serif', serif">We only pay for what changed</text>
+<text x="40" y="132" fill="#4f5d75" font-size="16" font-family="'Geist', sans-serif">A refresh checks every page again. Only passages with new text go back to the paid AI step.</text>
+<text x="40" y="648" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif">The paid AI step writes descriptions and reads scanned pages; vectors are made on the laptop.</text>
+</svg>
+  </main>
+</body>
+</html>

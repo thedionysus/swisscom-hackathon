@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Models we use · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · jury deck · slide 18</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="models-title models-desc">
+<title id="models-title">Models we use</title>
+<desc id="models-desc">On the laptop, with no key: bge-m3 turns passages and questions into search vectors and a reranker scores each passage (bge-reranker-v2-m3 on a GPU or Apple chip, a smaller mmarco model on CPU). In the cloud, only to build the corpus: gpt-5-mini and gpt-5-nano, or Claude Haiku 4.5. Optional: Supertext. For evaluation: Claude answers, a Claude model judges.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="176" width="576" height="304" rx="8" fill="rgba(213,43,30,0.03)" stroke="rgba(213,43,30,0.35)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<rect x="664" y="176" width="576" height="304" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.18)" stroke-width="0.8"/>
+<!-- arrows -->
+<!-- labels -->
+<!-- nodes -->
+<rect x="64" y="232" width="528" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="64" y="232" width="528" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="328" y="260.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">bge-m3</text>
+<text x="328" y="278" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">turns passages and questions</text>
+<text x="328" y="294" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">into search vectors</text>
+<rect x="64" y="352" width="528" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="64" y="352" width="528" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="328" y="384.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Reranker</text>
+<text x="328" y="402" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">reads each passage with the question and scores it:</text>
+<text x="328" y="418" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">bge-reranker-v2-m3 on a GPU or Apple chip,</text>
+<text x="328" y="434" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">a smaller mmarco model on a plain CPU</text>
+<rect x="688" y="232" width="244" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="688" y="232" width="244" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="810" y="260.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">gpt-5-mini</text>
+<text x="810" y="278" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">reads scanned pages,</text>
+<text x="810" y="294" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">describes documents</text>
+<rect x="972" y="232" width="244" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="972" y="232" width="244" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="1094" y="260.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">gpt-5-nano</text>
+<text x="1094" y="278" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">describes each passage,</text>
+<text x="1094" y="294" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">so search can find it</text>
+<rect x="688" y="352" width="528" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="688" y="352" width="528" height="104" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="952" y="384.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Claude Haiku 4.5</text>
+<text x="952" y="402" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">with an Anthropic key instead:</text>
+<text x="952" y="418" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">reads scanned pages, describes</text>
+<text x="952" y="434" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">documents and passages</text>
+<rect x="40" y="520" width="576" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="520" width="576" height="96" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="48" y="526" width="56" height="16" rx="2" fill="none" stroke="#7a8399" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="76" y="536.9" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">OPTIONAL</text>
+<text x="328" y="575.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Supertext</text>
+<text x="328" y="593" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">translates questions and cited passages, with its key</text>
+<rect x="664" y="520" width="576" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="664" y="520" width="576" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="672" y="526" width="88" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="716" y="536.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FOR EVALUATION</text>
+<text x="952" y="567.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Claude</text>
+<text x="952" y="585" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">answers the test questions; a second Claude model</text>
+<text x="952" y="601" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">judges whether each answer stays faithful</text>
+<!-- annotations -->
+<text x="40" y="52" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SWISS GROUNDING · MODELS</text>
+<text x="40" y="100" fill="#2d3142" font-size="40" font-family="'Instrument Serif', 'Noto Serif', serif">Models we use</text>
+<text x="40" y="132" fill="#4f5d75" font-size="16" font-family="'Geist', sans-serif">Searching needs no key: those models run on the laptop. Cloud models only build the corpus.</text>
+<text x="64" y="208" fill="#d52b1e" font-size="12" font-family="'Geist Mono', monospace" letter-spacing="0.06em">ON THE LAPTOP · NO KEY NEEDED TO SEARCH</text>
+<text x="688" y="208" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" letter-spacing="0.06em">IN THE CLOUD · ONLY TO BUILD THE CORPUS</text>
+</svg>
+  </main>
+</body>
+</html>
