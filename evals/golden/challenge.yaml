@@ -87,8 +87,10 @@ probes:
       arrivee-inscription-suisse.html states a 14-day filing deadline ("Délai d'annonce: 14 jours"); Bern's
       Einwohnerdienste/EMF page lists Anmeldung/Adressänderung as services handled at that office (exact
       day count not machine-verified for Bern, so the key fact is phrased generically enough to hold for
-      both cities).
-    expect: {status: results, place_statuses: [results, results], sources: [arrivee-inscription-suisse, einwohnerdienste-migration-und-fremdenpolizei-emf], key_fact: "Registration with the residents' office within the local deadline, per city."}
+      both cities). Amended 2026-09-25: arrivee-inscription-suisse is not in run3; Lausanne's
+      s-installer-a-lausanne.html carries "Inscription au Service du contrôle des habitants (délai de 14
+      jours)".
+    expect: {status: results, place_statuses: [results, results], sources: [s-installer-a-lausanne, einwohnerdienste-migration-und-fremdenpolizei-emf], key_fact: "Registration with the residents' office within the local deadline, per city."}
   - id: g-practice-citation-licence
     question: Welche Quelle belegt die Frist von 12 Monaten für den Umtausch des ausländischen Führerausweises?
     language: de

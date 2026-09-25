@@ -90,7 +90,8 @@ probes:
       Schaffhausen, canton and city, has no passages in any corpus release, so it stays outside the
       scope the server derives from the corpus. The 12-month exchange rule that is in the corpus was only
       found on a cantonal Zürich page (the federal VZV Art. 44 source is a data gap), so there is no
-      federal-level passage to fall back on and the expected status is outside_scope.
+      federal-level passage to fall back on and the expected status is outside_scope. Rechecked
+      2026-09-25 on run3: no CH-SH extent holds passages and SR 741.51 is still absent, so it stands.
     expect: {status: outside_scope}
   - id: g-scope-outside-foreign-country-de
     question: Wie beantrage ich einen neuen Personalausweis in München, Deutschland?
