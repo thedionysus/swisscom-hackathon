@@ -157,8 +157,15 @@ def _llm(settings: Settings):
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
     if settings.corpus_llm_provider == "apertus":
-        return apertus_llm(settings)
+        return apertus_llm(settings, max_retries=DIRECT_MAX_RETRIES)
     return _FakeCorpusLLM()
+
+
+def _sync_workers(settings: Settings) -> int:
+    """Apertus has its own per-minute limit, tighter than the other providers' SYNC_WORKERS."""
+    if settings.corpus_llm_provider == "apertus":
+        return settings.apertus_workers
+    return SYNC_WORKERS
 
 
 # --- configured indexes -----------------------------------------------------------------------------
@@ -226,7 +233,7 @@ def _batch_runner(settings: Settings, tokens_per_file: int, kind: str | None = N
 def _chat_runner(settings: Settings, sync: bool, kind: str | None = None, kind_cap: float | None = None):
     if _uses_batch(settings, sync):
         return _batch_runner(settings, settings.corpus_chat_tokens_per_file, kind, kind_cap)
-    return SyncRunner(_llm(settings), workers=SYNC_WORKERS)
+    return SyncRunner(_llm(settings), workers=_sync_workers(settings))
 
 
 def _side_by_side(settings: Settings, sync: bool) -> bool:
@@ -409,8 +416,8 @@ def _ocr_pilot(settings: Settings, pages: int) -> None:
         typer.echo(f"pilot: {len(tasks)} page(s), estimate {usd(estimate)} ({_price_label(priced, False)})")
         _check_budget(conn, settings, estimate, len(tasks), kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
         last_id = conn.execute("select coalesce(max(id), 0) as id from corpus.llm_spend").fetchone()["id"]
-    report = run_ocr(settings.database_url, SyncRunner(_llm(settings), workers=SYNC_WORKERS), tasks, model=priced,
-                     batch=False)
+    runner = SyncRunner(_llm(settings), workers=_sync_workers(settings))
+    report = run_ocr(settings.database_url, runner, tasks, model=priced, batch=False)
     with connect(settings.database_url) as conn:
         used = conn.execute("select coalesce(sum(usd), 0) as usd, coalesce(sum(input_tokens), 0) as tokens "
                             "from corpus.llm_spend where kind = 'ocr' and id > %s", (last_id,)).fetchone()

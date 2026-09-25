@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     apertus_base_url: str = "https://api.swisscom.com/products/swiss-ai-weeks/apertus-1.5-70b/v1"
     apertus_model: str = "swiss-ai/Apertus-v1.5-70B"
     apertus_timeout_seconds: float = 60.0
+    # Direct calls only (no Batch API): parallel workers for corpus runs, sized under the 5 requests/s limit.
+    apertus_workers: int = 3
     # Which model writes eval labels and generated questions.
     eval_llm_provider: Literal["openai", "anthropic", "apertus"] = "openai"
     # Embedding indexes the pipeline builds (CORPUS_INDEXES, comma-separated). bge-m3 is local and free;

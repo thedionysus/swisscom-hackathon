@@ -304,6 +304,7 @@ Every setting comes from the environment or `.env`. The ones that matter:
 | `APERTUS_API_KEY` | unset | Key for Apertus on Swisscom's Swiss AI Platform. Needed by any setting set to `apertus` (`CORPUS_LLM_PROVIDER`, `EVAL_LLM_PROVIDER`, `TRANSLATOR`, `eval … --model apertus`). |
 | `APERTUS_BASE_URL` | Swiss {ai} Weeks endpoint | The subscription's Production URL ending in `/v1`. |
 | `APERTUS_MODEL` | `swiss-ai/Apertus-v1.5-70B` | Model id sent to that endpoint. |
+| `APERTUS_WORKERS` | `3` | Parallel direct calls for a corpus run under `CORPUS_LLM_PROVIDER=apertus`, sized under the 5 requests/s limit. |
 | `EVAL_LLM_PROVIDER` | `openai` | `openai`, `anthropic` or `apertus`: writes `eval label` verdicts and `eval generate` questions. |
 | `CORPUS_BUDGET_USD`, `CORPUS_OCR_BUDGET_USD` | `100`, `10` | Hard spending cap, and the OCR share of it. |
 | `CORPUS_INDEXES` | `bge-m3` | Embedding indexes to build. Add `openai-3l` to also pay for the OpenAI index. |
