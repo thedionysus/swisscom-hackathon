@@ -54,11 +54,24 @@ def _hosts(config: Mapping) -> set[str]:
     return {f"{p.scheme}://{p.netloc}" for p in map(urlparse, urls) if p.scheme and p.netloc}
 
 
+def with_readable_ca_bundles[S](sources: Iterable[S]) -> list[S]:
+    """The sources whose `config.ca_bundle`, if any, is a file. Each other one is named in one line and
+    left out, so a missing PEM file costs its own source and not the whole command."""
+    kept = []
+    for source in sources:
+        bundle = source.config.get("ca_bundle")
+        if bundle and not Path(bundle).is_file():
+            typer.echo(f"{source.id}: config.ca_bundle {bundle!r} is not a file")
+            continue
+        kept.append(source)
+    return kept
+
+
 def tls_mounts(sources: Iterable) -> dict[str, httpx.HTTPTransport]:
     """One transport per host of a source with `config.ca_bundle`: the default CA store plus that PEM
-    file (a relative path is taken from the working directory). It is for a host that serves an
-    incomplete certificate chain, like www.schulen-aargau.ch (#57): the missing intermediate is trusted
-    there and nowhere else. Verification is never switched off."""
+    file (load_manifest resolves a relative path from the manifest's directory). It is for a host that
+    serves an incomplete certificate chain, like www.schulen-aargau.ch (#57): the missing intermediate is
+    trusted there and nowhere else. Verification is never switched off."""
     mounts: dict[str, httpx.HTTPTransport] = {}
     for source in sources:
         bundle = source.config.get("ca_bundle")
@@ -170,8 +183,9 @@ def check_manifest_cmd(path: Path) -> None:
     manifest = load_manifest(path)
     with connect(settings.database_url) as conn:
         extents = {r["id"] for r in conn.execute("select id from location").fetchall()}
-    problems = 0
-    with corpus_http(settings, manifest.sources) as http:
+    usable = with_readable_ca_bundles(manifest.sources)
+    problems = len(manifest.sources) - len(usable)
+    with corpus_http(settings, usable) as http:
         fedlex = FedlexConnector(http, swiss_today, settings.data_dir, respect_robots=settings.respect_robots)
         for entry in manifest.sources:
             if entry.extent_id not in extents:
@@ -201,7 +215,8 @@ def fetch_cmd(manifest: Annotated[Path, typer.Option("--manifest")],
     """Fetch the manifest's sources, persist documents and chunks, promote scheduled versions that are due."""
     settings = load_settings()
     try:
-        specs = select_sources(load_manifest(manifest), tier=tier, source_ids=tuple(source or ()))
+        specs = with_readable_ca_bundles(select_sources(load_manifest(manifest), tier=tier,
+                                                        source_ids=tuple(source or ())))
         http = corpus_http(settings, specs)
     except ValueError as exc:
         raise typer.BadParameter(str(exc)) from exc
