@@ -766,6 +766,43 @@ sources:
       content_selector: "div.pageContent"
       max_pages: 800
       max_pdfs: 60
+  # The EDK's political organs are the cantonal education directors (/de/die-edk/politische-organe), so
+  # official_info; it recognises teaching diplomas for the whole country (/de/themen/diplomanerkennung), hence
+  # extent CH at the cantonal level. Case ED-03: recognition of foreign teaching (and special-needs education)
+  # diplomas, applied for in the EDK online portal. German only: every language version declares <html lang="de">
+  # and carries no hreflang alternates (checked 2026-09-25 on the fr and it pages), so French and Italian text
+  # would be stored as German.
+  - id: edk_diploma_recognition
+    name: EDK — recognition of diplomas
+    publisher: Swiss Conference of Cantonal Ministers of Education EDK
+    authority: official_info
+    level: cantonal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de]
+    config:
+      start_urls: ["https://edk.ch/de/themen/diplomanerkennung/auslaendische-diplome"]
+      allow_prefixes: ["https://edk.ch/de/themen/diplomanerkennung"]
+      max_pages: 40
+      max_pdfs: 0
+  # IV-Stelle Kanton Bern is a public-law institution that carries out the federal disability insurance in the
+  # canton (/de/ueber-uns/portraet/zahlenundfakten.html); Bern residents file IV applications with it, so
+  # official_info. Case SI-05.
+  - id: ivbe
+    name: IV-Stelle Kanton Bern — application and procedure
+    publisher: IV-Stelle Kanton Bern
+    authority: official_info
+    level: cantonal
+    extent_id: CH-BE
+    connector: html
+    tier: 1
+    languages: [de, fr]
+    config:
+      start_urls: ["https://www.ivbe.ch/de/prozesse/anmeldung.html", "https://www.ivbe.ch/fr/procedures/demande.html"]
+      allow_prefixes: ["https://www.ivbe.ch/de/prozesse", "https://www.ivbe.ch/fr/procedures"]
+      max_pages: 30
+      max_pdfs: 0
 
   # ---------------- Municipalities ----------------
   - id: zuerich_city
@@ -885,6 +922,23 @@ sources:
       max_pages: 300
       max_pdfs: 40
       delay_seconds: 3
+  # Case DG-07: the city's population statistics (122,937 residents in 2025 on bevoelkerung-und-soziales).
+  # robots.txt sets Crawl-delay: 10, repeated here as delay_seconds.
+  - id: winterthur_statistik
+    name: Stadt Winterthur — data and statistics
+    publisher: Stadt Winterthur
+    authority: official_info
+    level: municipal
+    extent_id: CH-ZH-230
+    connector: html
+    tier: 2
+    languages: [de]
+    config:
+      start_urls: ["https://stadt.winterthur.ch/themen/arbeit-steuern-wirtschaft/daten-statistik/bevoelkerung-und-soziales", "https://stadt.winterthur.ch/themen/arbeit-steuern-wirtschaft/daten-statistik"]
+      allow_prefixes: ["https://stadt.winterthur.ch/themen/arbeit-steuern-wirtschaft/daten-statistik"]
+      max_pages: 12
+      max_pdfs: 0
+      delay_seconds: 10
 
   # ---------------- Run 3 (2026-09-23): sources found and verified in the sub-national discovery ----------------
 
