@@ -146,35 +146,57 @@ def test_three_429s_return_the_last_failing_response_without_a_fourth_attempt():
     assert calls["n"] == 3
 
 
-def test_a_dropped_connection_is_retried_after_a_backoff():
-    """www.gerichte-zh.ch dropped the connection in 2 of 3 attempts on 2026-09-23 (#57)."""
+def test_a_dropped_connection_is_retried_without_slowing_the_host_for_the_rest_of_the_run():
+    """www.gerichte-zh.ch dropped the connection in 2 of 3 attempts on 2026-09-23 (#57). The retry
+    waits, but unlike a 429 it does not raise the host's delay for every later request."""
     clock = FakeClock()
     throttle = HostThrottle(clock=clock)
     calls = {"n": 0}
 
     def send():
         calls["n"] += 1
-        if calls["n"] < 3:
+        if calls["n"] == 1:
             raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
+        if calls["n"] == 2:
+            raise httpx.ReadError("connection reset by peer")
         return FetchResult(200, httpx.Headers())
 
     result = request_with_backoff("https://www.gerichte-zh.ch/x", throttle, lambda u: None, send, clock.sleep)
     assert result.status_code == 200
     assert calls["n"] == 3
     assert clock.sleeps == [2.0, 4.0]
+    assert throttle._min_delay.get("www.gerichte-zh.ch", 0.0) == 0.0
 
 
-def test_a_connection_error_on_every_attempt_is_raised_after_the_last_one():
+def test_a_dropped_connection_on_every_attempt_is_raised_after_the_last_one():
     calls = {"n": 0}
 
     def send():
         calls["n"] += 1
-        raise httpx.ConnectError("connection refused")
+        raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
 
     clock = FakeClock()
-    with pytest.raises(httpx.ConnectError):
+    with pytest.raises(httpx.RemoteProtocolError):
         request_with_backoff("https://a.ch/x", HostThrottle(clock=clock), lambda u: None, send, clock.sleep)
     assert calls["n"] == 3
+
+
+@pytest.mark.parametrize("error", [httpx.ConnectError("[SSL: CERTIFICATE_VERIFY_FAILED]"),
+                                   httpx.ConnectError("[Errno 8] nodename nor servname provided"),
+                                   httpx.ConnectTimeout("timed out")])
+def test_a_connection_that_cannot_be_made_is_not_retried(error):
+    """A certificate or DNS failure does not go away on a retry; each would only cost more waiting."""
+    calls = {"n": 0}
+
+    def send():
+        calls["n"] += 1
+        raise error
+
+    clock = FakeClock()
+    with pytest.raises(type(error)):
+        request_with_backoff("https://a.ch/x", HostThrottle(clock=clock), lambda u: None, send, clock.sleep)
+    assert calls["n"] == 1
+    assert clock.sleeps == []
 
 
 def test_a_read_timeout_is_not_retried():
