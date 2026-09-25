@@ -380,7 +380,7 @@ def _echo_embed_estimates(conn, settings: Settings, batch: bool) -> float:
 def estimate_cmd() -> None:
     """Pending work per stage with its cost, and the ledger."""
     settings = load_settings()
-    batch = settings.corpus_llm_provider != "anthropic"     # the Anthropic fallback is sync-only
+    batch = _uses_batch(settings, sync=False)     # Apertus and the Anthropic fallback are sync-only
     ocr_model = _priced_model(settings, settings.corpus_ocr_model)
     with connect(settings.database_url) as conn:
         ocr_usd = estimate_ocr(conn, ocr_model, batch=batch)
