@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from swiss_grounding.locations.models import Level, Location
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.serving.models import PlaceResult, ScoredGroup
-from swiss_grounding.serving.place_dependent import answer_depends_on_place
+from swiss_grounding.serving.place_dependent import answer_depends_on_place, street_named
 from swiss_grounding.serving.places import PlaceOutcome
 
 FOREIGN = ("{place!r} is outside Switzerland. This server covers Swiss public sources only; "
@@ -15,6 +15,7 @@ UNRESOLVED = ("{place!r} is not a Swiss municipality this server recognises, so 
 AMBIGUOUS = "{place!r} matches several Swiss places ({options}). Ask the user which one they mean."
 NEEDS_PLACE = ("The answer depends on the place: {reason}. "
                "Ask the user for their municipality, then search again.")
+STREET_REASON = "{street!r} is a street name found in many municipalities"
 NO_EVIDENCE = "No passage in the indexed sources answers this question{where}."
 OUT_OF_SCOPE_PLACE = ("{place!r} is in Switzerland, but its {levels} rules are outside this server's declared "
                       "scope, and no covered passage answers the question.")
@@ -62,6 +63,10 @@ def decide(outcome: PlaceOutcome, scored: Sequence[ScoredGroup], *, threshold: f
     """Statuses decided after the search: uncovered levels, no evidence, a place still needed."""
     relevant = [s for s in scored if s.relevance >= threshold]
     uncovered = " and ".join(uncovered_levels(outcome))
+    # A street without a place is asked back, evidence or not: the name exists in many communes.
+    street = street_named(question) if outcome.kind == "none" else None
+    if street:
+        return "needs_location", NEEDS_PLACE.format(reason=STREET_REASON.format(street=street))
     if not relevant:
         if uncovered:
             return "outside_scope", OUT_OF_SCOPE_PLACE.format(place=outcome.text, levels=uncovered)

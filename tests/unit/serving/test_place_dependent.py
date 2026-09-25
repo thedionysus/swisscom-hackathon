@@ -1,6 +1,6 @@
 import pytest
 
-from swiss_grounding.serving.place_dependent import KINDS, place_dependent_kind
+from swiss_grounding.serving.place_dependent import KINDS, place_dependent_kind, street_named
 
 # Golden-set questions that must ask for the place before any search.
 GOLDEN_PLACELESS = [
@@ -110,3 +110,23 @@ def test_every_kind_has_a_reason_for_the_user():
 
 def test_empty_question_is_not_gated():
     assert place_dependent_kind("") is None
+
+
+@pytest.mark.parametrize(("question", "street"), [
+    ("When is the next cardboard collection at Bahnhofstrasse?", "Bahnhofstrasse"),
+    ("Wann wird an der Kirchgasse Karton abgeholt?", "Kirchgasse"),
+    ("Parking à la rue de la Gare ?", "rue de la Gare"),
+    ("Raccolta carta in Via Nassa?", "Via Nassa"),
+])
+def test_street_named(question, street):
+    assert street_named(question) == street
+
+
+@pytest.mark.parametrize("question", [
+    "Öffnungszeiten Strassenverkehrsamt?",
+    "Horaires des chemins de fer?",
+    "Can I travel via Zürich with a B permit?",
+    "When is the next cardboard collection?",
+])
+def test_no_street_named(question):
+    assert street_named(question) is None
