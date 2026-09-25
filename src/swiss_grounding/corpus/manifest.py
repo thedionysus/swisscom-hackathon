@@ -249,7 +249,16 @@ def _url_prefixes(source: SourceEntry) -> tuple[str, ...]:
 
 
 def load_manifest(path: Path) -> Manifest:
-    return Manifest.model_validate(yaml.safe_load(Path(path).read_text(encoding="utf-8")))
+    """Parse and validate a manifest. A relative `config.ca_bundle` is taken from the manifest's own
+    directory, so it names the same file from any working directory."""
+    path = Path(path)
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    for source in (data.get("sources") or []) if isinstance(data, dict) else []:
+        config = source.get("config") if isinstance(source, dict) else None
+        bundle = config.get("ca_bundle") if isinstance(config, dict) else None
+        if isinstance(bundle, str) and bundle.strip() and not Path(bundle).is_absolute():
+            config["ca_bundle"] = str(path.parent / bundle)
+    return Manifest.model_validate(data)
 
 
 def select_sources(manifest: Manifest, tier: int, source_ids: tuple[str, ...] = ()) -> tuple[SourceSpec, ...]:

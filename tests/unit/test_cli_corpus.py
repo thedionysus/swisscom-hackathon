@@ -109,13 +109,23 @@ def test_check_manifest_probes_nothing_for_a_source_with_only_pdf_urls():
     assert cs._check_html(http, entry, respect_robots=True) == 0
 
 
-def _aargau(**config):
+def _aargau(source_id="ag", **config):
     from swiss_grounding.corpus.models import SourceSpec
     base = {"start_urls": ["https://www.schulen-aargau.ch/regelschule/ferien"],
             "allow_prefixes": ["https://www.schulen-aargau.ch/regelschule/"],
             "pdf_allow_prefixes": ["https://media.schulen-aargau.ch/ferienplan"]}
-    return SourceSpec(id="ag", name="AG", publisher="AG", authority="official_info", level="cantonal",
+    return SourceSpec(id=source_id, name="AG", publisher="AG", authority="official_info", level="cantonal",
                       extent_id="CH-AG", connector="html", tier=2, languages=("de",), config={**base, **config})
+
+
+def test_a_source_whose_ca_bundle_is_missing_is_left_out_with_one_line(capsys):
+    """A missing PEM file costs its own source, not the whole fetch, and no traceback."""
+    import certifi
+
+    from swiss_grounding.cli import corpus_source_commands as cs
+    sources = [_aargau(ca_bundle="/nowhere/ag.pem"), _aargau("bl"), _aargau("zh", ca_bundle=certifi.where())]
+    assert [s.id for s in cs.with_readable_ca_bundles(sources)] == ["bl", "zh"]
+    assert capsys.readouterr().out == "ag: config.ca_bundle '/nowhere/ag.pem' is not a file\n"
 
 
 def test_a_ca_bundle_mounts_its_own_tls_transport_on_every_host_of_the_source():

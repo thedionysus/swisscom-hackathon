@@ -236,6 +236,18 @@ FETCH_KEYS = BERN_CONFIG.replace("}", ', ca_bundle: "certs/ag.pem", max_pdf_byte
                                       'sitemap_rewrite: {from: "http://admin.bern.ch/", to: "https://www.bern.ch/"}}')
 
 
+def test_a_relative_ca_bundle_is_taken_from_the_manifests_directory(tmp_path):
+    folder = tmp_path / "manifests"
+    folder.mkdir()
+    path = folder / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, BERN_CONFIG.replace("}", ', ca_bundle: "certs/ag.pem"}')))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["ca_bundle"] == str(folder / "certs" / "ag.pem")
+    path.write_text(MANIFEST.replace(BERN_CONFIG, BERN_CONFIG.replace("}", ', ca_bundle: "/etc/ssl/ag.pem"}')))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["ca_bundle"] == "/etc/ssl/ag.pem"
+
+
 def test_accepts_the_per_source_fetch_keys(tmp_path):
     path = tmp_path / "m.yaml"
     path.write_text(MANIFEST.replace(BERN_CONFIG, FETCH_KEYS))
