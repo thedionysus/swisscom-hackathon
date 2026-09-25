@@ -108,3 +108,9 @@ def test_placeless_question_answered_by_a_federal_page_is_not_asked_back():
 
 def test_pre_search_never_gates_on_the_question():
     assert pre_search(PlaceOutcome("none")) is None
+
+
+def test_street_without_a_place_asks_for_the_municipality_even_without_evidence():
+    status, message = decide(PlaceOutcome("none"), [], threshold=0.1, tree=TREE,
+                             question="When is the next cardboard collection at Bahnhofstrasse?")
+    assert status == "needs_location" and "'Bahnhofstrasse'" in message
