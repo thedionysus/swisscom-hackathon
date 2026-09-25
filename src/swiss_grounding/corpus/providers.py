@@ -48,12 +48,13 @@ class FakeEmbeddings:
 
 
 class OpenAIEmbeddings:
-    """Synchronous OpenAI embeddings, for `--sync` and small runs. Large runs use the Batch API (Task 17)."""
+    """Synchronous OpenAI embeddings, for `--sync` and small runs. Large runs use the Batch API."""
     dim = 3072
 
-    def __init__(self, api_key: str, model: str = "text-embedding-3-large"):
+    def __init__(self, api_key: str, model: str = "text-embedding-3-large", max_retries: int = 2):
+        """`max_retries` also covers 429s: the client waits as the rate-limit headers ask."""
         from openai import OpenAI
-        self._client = OpenAI(api_key=api_key)
+        self._client = OpenAI(api_key=api_key, max_retries=max_retries)
         self.model = model
         self.last_usage = 0
 
@@ -65,7 +66,7 @@ class OpenAIEmbeddings:
 
 BGE_M3_VOCAB = 250002
 MAX_SPARSE_TERMS = 1000     # pgvector's HNSW limit on non-zero entries of a sparsevec
-BGE_MAX_TOKENS = 2048       # RAG review E4: breadcrumb + description + a long paragraph exceeds 1,024
+BGE_MAX_TOKENS = 2048       # breadcrumb + description + a long paragraph exceeds 1,024
 
 
 def top_sparse(weights: dict, limit: int = MAX_SPARSE_TERMS) -> dict[int, float]:
@@ -78,7 +79,7 @@ class LocalBgeM3:
     """bge-m3 on this machine: Apple GPU when available, else CPU.
 
     With FlagEmbedding installed it returns the dense vector and bge-m3's learned sparse vector from the
-    same forward pass (RAG review E1); without it, it falls back to sentence-transformers, dense only.
+    same forward pass; without it, it falls back to sentence-transformers, dense only.
     """
     dim = 1024
 
@@ -152,23 +153,36 @@ class FakeLLM:
         return self._responder(task), Usage(len(task.user) // 3, 50)
 
 
+def chat_messages(task: LlmTask) -> list[dict]:
+    """System + user messages in the OpenAI chat format; a page image travels as a data URL."""
+    if task.image_png_b64:
+        user_content: list | str = [
+            {"type": "text", "text": task.user},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{task.image_png_b64}"}},
+        ]
+    else:
+        user_content = task.user
+    return [{"role": "system", "content": task.system}, {"role": "user", "content": user_content}]
+
+
+def _parsed(text: str, usage: Usage, finish_reason: str | None) -> tuple[dict, Usage]:
+    try:
+        return extract_json(text), usage
+    except ValueError as exc:
+        raise ReplyError(f"unparseable reply: {exc}", usage, finish_reason) from exc
+
+
 class OpenAILLM:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, max_retries: int = 2):
+        """`max_retries` also covers 429s: the client waits as the rate-limit headers ask."""
         from openai import OpenAI
-        self._client = OpenAI(api_key=api_key)
+        self._client = OpenAI(api_key=api_key, max_retries=max_retries)
 
     @staticmethod
     def chat_body(task: LlmTask) -> dict:
-        if task.image_png_b64:
-            user_content: list | str = [
-                {"type": "text", "text": task.user},
-                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{task.image_png_b64}"}},
-            ]
-        else:
-            user_content = task.user
         return {
             "model": task.model,
-            "messages": [{"role": "system", "content": task.system}, {"role": "user", "content": user_content}],
+            "messages": chat_messages(task),
             "response_format": {"type": "json_object"},
             "max_completion_tokens": task.max_output_tokens,
             # gpt-5 models bill reasoning tokens as output; descriptions and OCR need none.
@@ -180,14 +194,11 @@ class OpenAILLM:
         choice = response.choices[0]
         text = choice.message.content or ""
         usage = Usage(response.usage.prompt_tokens, response.usage.completion_tokens)
-        try:
-            return extract_json(text), usage
-        except ValueError as exc:
-            raise ReplyError(f"unparseable reply: {exc}", usage, getattr(choice, "finish_reason", None)) from exc
+        return _parsed(text, usage, getattr(choice, "finish_reason", None))
 
 
 class AnthropicLLM:
-    """Synchronous fallback on Claude. The Batch path is OpenAI-only (ADR 0006: OpenAI is the main provider)."""
+    """Synchronous fallback on Claude. The Batch path is OpenAI-only (OpenAI is the main provider)."""
 
     def __init__(self, api_key: str, model: str):
         from anthropic import Anthropic
@@ -207,3 +218,30 @@ class AnthropicLLM:
             return extract_json(text), usage
         except ValueError as exc:
             raise ReplyError(f"unparseable reply: {exc}", usage, getattr(response, "stop_reason", None)) from exc
+
+
+APERTUS_TEMPERATURE = 0.2   # descriptions and labels want steady wording, not variety
+
+
+class ApertusLLM:
+    """Apertus through an OpenAI-compatible endpoint (Swisscom's Swiss AI Platform). Direct calls only:
+    the platform has no Batch API. The model is the configured one, whatever the task names (as with
+    AnthropicLLM). `max_retries` also covers 429s from the 5 requests/s limit."""
+
+    def __init__(self, api_key: str, *, base_url: str, model: str, timeout_seconds: float = 60.0,
+                 max_retries: int = 2, client=None):
+        if client is None:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout_seconds, max_retries=max_retries)
+        self._client = client
+        self.model = model
+
+    def chat_body(self, task: LlmTask) -> dict:
+        return {"model": self.model, "messages": chat_messages(task), "response_format": {"type": "json_object"},
+                "max_tokens": task.max_output_tokens, "temperature": APERTUS_TEMPERATURE}
+
+    def complete(self, task: LlmTask) -> tuple[dict, Usage]:
+        response = self._client.chat.completions.create(**self.chat_body(task))
+        choice = response.choices[0]
+        usage = Usage(response.usage.prompt_tokens, response.usage.completion_tokens)
+        return _parsed(choice.message.content or "", usage, getattr(choice, "finish_reason", None))

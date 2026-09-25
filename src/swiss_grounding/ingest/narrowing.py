@@ -1,4 +1,4 @@
-"""Extent narrowing under ADR 0002: only a level marker, a postal code, or a bare name in the
+"""Extent narrowing: only a level marker, a postal code, or a bare name in the
 title or a heading may narrow; a name shared with an ancestor of the default extent never
 narrows on its own; common-word Quartier and commune names always need a marker."""
 import re

@@ -20,7 +20,7 @@ def test_ledger_and_caps(corpus_db):
 
 
 def test_in_flight_batch_jobs_count_against_the_cap(corpus_db):
-    """A3: a batch job not yet ingested still counts, so a second run can't blow past the cap
+    """A batch job not yet ingested still counts, so a second run can't blow past the cap
     while the first run's batches are pending. A batch that is already ingested, or that ended
     failed/expired/cancelled, does not count."""
     with connect(corpus_db) as conn:

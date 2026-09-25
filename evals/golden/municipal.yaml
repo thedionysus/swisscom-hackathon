@@ -1,0 +1,64 @@
+version: 2026-09-24.1
+probes:
+  - id: g-muni-zh-dog-registration
+    question: Innerhalb welcher Frist muss ich meinen Hund in der Stadt Zürich anmelden?
+    language: de
+    area: none
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: stadt-zuerich.ch/.../hundekontrolle/anmeldung.html, "Jeder Hund im Alter von
+      über drei Monaten muss bei der Hundekontrolle innert zehn Tagen vom Haltenden angemeldet werden."
+    expect: {status: results, sources: [hundekontrolle/anmeldung], key_fact: "A dog over three months old must be registered with the dog control office within ten days."}
+  - id: g-muni-chur-waste-categories
+    question: Wie entsorge ich Karton in der Stadt Chur?
+    language: de
+    area: waste
+    level: municipal
+    split: holdout
+    note: >-
+      Verified in corpus: chur.ch/abfallarten lists Karton alongside Altmetall, Batterien, Bauschutt,
+      Hauskehricht etc. as a separate waste category with its own collection point.
+    expect: {status: results, sources: [chur.ch/abfallarten], key_fact: "Karton is collected as its own waste category in Chur, separately from household refuse."}
+  - id: g-muni-ge-household-waste
+    question: Qu'est-ce qui va dans les ordures ménagères à Genève?
+    language: fr
+    area: waste
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: geneve.ch/.../recyclage-dechets-menagers/ordures-menageres, "Les ordures
+      ménagères ... sont toutes celles qui ne peuvent pas se recycler, comme par exemple: les litières
+      pour animaux ... les couches culottes ... les sacs d'aspirateur."
+    expect: {status: results, sources: [recyclage-dechets-menagers/ordures-menageres], key_fact: "Household waste (ordures ménagères) in Geneva is whatever cannot be recycled, such as cat litter, nappies and vacuum-cleaner bags."}
+  - id: g-muni-lugano-autumn-holidays
+    question: Quando sono le vacanze autunnali 2026 per le scuole di Lugano?
+    language: it
+    area: school_holidays
+    level: municipal
+    split: holdout
+    note: >-
+      Verified in corpus: lugano.ch/.../calendario-scolastico.html, "vacanze autunnali: dal 31 ottobre
+      all'8 novembre 2026."
+    expect: {status: results, sources: [calendario-scolastico], key_fact: "Lugano's 2026 autumn school holidays run from 31 October to 8 November."}
+  - id: g-muni-lausanne-registration-deadline
+    question: Dans quel délai dois-je m'annoncer au contrôle des habitants après mon arrivée à Lausanne?
+    language: fr
+    area: moving
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: lausanne.ch/.../arrivee-inscription-suisse.html, "Délai d'annonce: 14 jours.
+      Vous devez annoncer votre arrivée dans les 14 jours suivant votre arrivée."
+    expect: {status: results, sources: [arrivee-inscription-suisse], key_fact: "Arrival must be reported to the Lausanne residents' office within 14 days."}
+  - id: g-muni-bern-emf-services
+    question: Welche Geschäfte kann ich bei den Einwohnerdiensten der Stadt Bern online erledigen?
+    language: de
+    area: moving
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: bern.ch/.../einwohnerdienste-migration-und-fremdenpolizei-emf/, lists Abmeldung,
+      Adresse sperren, Adressänderung innerhalb der Gemeinde Bern, Anmeldung and further services that can
+      be submitted online or by post.
+    expect: {status: results, sources: [einwohnerdienste-migration-und-fremdenpolizei-emf], key_fact: "Bern's Einwohnerdienste (EMF) accepts online or postal submissions for Abmeldung, address changes and Anmeldung, among other matters."}

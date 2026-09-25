@@ -61,7 +61,7 @@ def test_corpus_settings_defaults(monkeypatch):
     assert s.data_dir == "data"
     # Parallel HNSW builds need more /dev/shm than Docker's 64 MB default; serial is safe everywhere.
     assert s.corpus_index_parallel_workers == 0
-    # ch.ch serves a 404 shell to user agents without a browser-style prefix (A11).
+    # ch.ch serves a 404 shell to user agents without a browser-style prefix.
     assert s.corpus_user_agent == ("Mozilla/5.0 (compatible; swiss-grounding/0.2; "
                                    "+https://github.com/thedionysus/swisscom-hackathon)")
 
@@ -116,3 +116,109 @@ def test_the_openai_index_needs_an_openai_key(monkeypatch):
     _corpus_env(monkeypatch, "bge-m3,openai-3l")
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
         Settings(_env_file=None)
+
+
+SERVING_ENV = ("RERANKER_MODEL", "SERVING_INDEX", "QUERY_EMBEDDER", "OPENAI_API_KEY", "RERANK_CANDIDATES")
+
+
+def test_serving_defaults_are_keyless(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x/y")
+    for name in SERVING_ENV:   # the integration session fixture sets some of these
+        monkeypatch.delenv(name, raising=False)
+    from swiss_grounding.config import Settings
+    s = Settings(_env_file=None)
+    assert s.rerank_candidates_cpu == 20
+    assert s.serving_index == "bge-m3"
+    assert s.query_embedder == "auto"      # real bge-m3; "fake" only in tests
+    assert s.reranker_model == "auto"
+    assert s.rerank_candidates == 30
+    assert s.local_candidate_quota == 10
+    assert s.hnsw_ef_search == 100
+    assert s.transport_base_url == "https://transport.opendata.ch/v1"
+    assert s.lookup_timeout_seconds == 8.0
+    assert s.relevance_model_path == "evals/relevance_model.json"
+
+
+def test_openai_serving_index_needs_a_key(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x/y")
+    for name in SERVING_ENV:
+        monkeypatch.delenv(name, raising=False)
+    import pytest
+
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+        Settings(_env_file=None, serving_index="openai-3l")
+
+
+def test_translation_settings_default_to_every_language_and_no_key(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.delenv("SUPERTEXT_API_KEY", raising=False)
+    s = Settings(_env_file=None)
+    assert s.supertext_api_key is None
+    assert s.translate_query_languages == ("de", "fr", "it", "en")   # Romansh off by default, see config.py
+    assert s.translate_citations is True
+
+
+def test_translate_query_languages_is_a_comma_separated_list(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.setenv("TRANSLATE_QUERY_LANGUAGES", "de, fr,,fr")
+    assert Settings(_env_file=None).translate_query_languages == ("de", "fr")
+
+
+def test_translate_query_languages_rejects_an_unknown_language(monkeypatch):
+    import pytest
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.setenv("TRANSLATE_QUERY_LANGUAGES", "de,es")
+    with pytest.raises(ValueError, match="TRANSLATE_QUERY_LANGUAGES"):
+        Settings(_env_file=None)
+
+
+def test_translator_is_supertext_only_with_a_key(monkeypatch):
+    from swiss_grounding.app import build_translator
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@h:1/db")
+    monkeypatch.delenv("SUPERTEXT_API_KEY", raising=False)
+    assert build_translator(Settings(_env_file=None)).name == "none"
+    monkeypatch.setenv("SUPERTEXT_API_KEY", "k")
+    assert build_translator(Settings(_env_file=None)).name == "supertext"
+
+
+def test_apertus_defaults_point_at_the_hackathon_endpoint(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    from swiss_grounding.config import Settings
+    s = Settings(_env_file=None)
+    assert s.apertus_base_url == "https://api.swisscom.com/products/swiss-ai-weeks/apertus-1.5-70b/v1"
+    assert s.apertus_model == "swiss-ai/Apertus-v1.5-70B"
+    assert s.eval_llm_provider == "openai" and s.translator == "supertext"
+
+
+def test_apertus_corpus_provider_needs_a_key(monkeypatch):
+    import pytest
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.delenv("APERTUS_API_KEY", raising=False)
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="APERTUS_API_KEY"):
+        Settings(_env_file=None, corpus_llm_provider="apertus")
+
+
+def test_apertus_translator_needs_a_key(monkeypatch):
+    import pytest
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.delenv("APERTUS_API_KEY", raising=False)
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="APERTUS_API_KEY"):
+        Settings(_env_file=None, translator="apertus")
+
+
+def test_apertus_translator_retries_once(monkeypatch):
+    from swiss_grounding import app
+    from swiss_grounding.config import Settings
+    from swiss_grounding.corpus import llm_factory
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    captured = {}
+    monkeypatch.setattr(llm_factory, "apertus_llm", lambda settings, **kw: captured.update(kw) or object())
+    settings = Settings(_env_file=None, translator="apertus", apertus_api_key="k")
+    app.build_translator(settings)
+    assert captured["max_retries"] == 1

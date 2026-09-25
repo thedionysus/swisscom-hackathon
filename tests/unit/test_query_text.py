@@ -1,4 +1,4 @@
-"""How a request's three text fields become the two queries retrieval runs (ADR 0004).
+"""How a request's three text fields become the two queries retrieval runs.
 
 These are the unit-level statement of the contract `swiss_search` now advertises: the
 dense arm embeds the caller's English rendering, the lexical arm keeps the verbatim
@@ -27,14 +27,14 @@ def _request(**kwargs) -> QueryRequest:
 
 
 def test_the_dense_query_is_the_english_question_then_the_topic():
-    """Step 2 of the contract: `question_en + topic_en` is what gets embedded."""
+    """`question_en + topic_en` is what gets embedded."""
     query = build_search_query(_request(question_en=QUESTION_EN, topic_en=TOPIC_EN))
     assert query.dense == f"{QUESTION_EN}{QUERY_SEPARATOR}{TOPIC_EN}"
     assert query.fields == ("question_en", "topic_en")
 
 
 def test_the_lexical_query_stays_the_verbatim_question():
-    """Step 1: the original-language text is what the keyword index is asked for, even
+    """The original-language text is what the keyword index is asked for, even
     when the caller also supplied English. If the lexical arm followed the dense one,
     every original-language term the caller typed would stop being searched for."""
     query = build_search_query(_request(question_en=QUESTION_EN, topic_en=TOPIC_EN))
@@ -50,7 +50,7 @@ def test_an_absent_topic_leaves_the_english_question_alone():
 
 
 def test_an_absent_english_question_degrades_to_the_verbatim_one():
-    """Step 4: an un-updated client sends only `question`, and must still get a search
+    """An un-updated client sends only `question`, and must still get a search
     rather than an error or an empty query vector."""
     query = build_search_query(_request())
     assert query.dense == QUESTION

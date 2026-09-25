@@ -1,6 +1,6 @@
-"""Local topic classifier: the fallback when the caller supplies no topic (ADR 0004).
+"""Local topic classifier: the fallback when the caller supplies no topic.
 
-`swiss_search` treats topic as a hard filter, and ADR 0004 makes the calling model the
+`swiss_search` treats topic as a hard filter, and the calling model is the
 primary source of it — the server cannot translate or interpret intent at query time
 without an API call, which the offline guarantee forbids. When a caller supplies none,
 this module estimates it locally: embed the question with the same Embedder already
@@ -21,8 +21,8 @@ and the range is [-1, 1]. `search.py`'s pgvector `<=>` operator is cosine *dista
 same geometry read in opposite directions, so TOPIC_FLOOR and TOPIC_MARGIN below are
 honest against it once "higher is better" is kept straight.
 
-ADR 0004 also records why the margin band exists rather than picking the single best
-category: matching a German question against English descriptions is uneven —
+The margin band exists, rather than picking the single best
+category, because matching a German question against English descriptions is uneven —
 `Leinenpflicht` landed on `hiking` ahead of `dogs` by a similarity margin of only 0.008,
 and `Grüngutabfuhr` only cleared its category by 0.032. A near-tie is evidence the
 classifier cannot tell the categories apart for this question, not evidence for the
@@ -43,11 +43,11 @@ from swiss_grounding.retrieval.query_text import build_search_query
 # return no topics so an unrecognised question degrades to no filter (search still runs
 # on the extent path alone) rather than being pinned to a wrong one.
 #
-# The plan supplied 0.45. Measured against a 23-question corpus spanning all ten
+# The first value was 0.45. Measured against a 23-question corpus spanning all ten
 # categories (English and German, including compounds), the worst genuine on-topic
 # question — "Krankenkassenprämie" ("health insurance premium"), a single German
 # compound noun with no other context — scored 0.4535 against `health`: only 0.0035
-# above the plan's floor. One word of rewording would have put a legitimate question
+# above that floor. One word of rewording would have put a legitimate question
 # below it and silently returned no topics. Moved to 0.42 for real headroom (0.0335 on
 # that same case) rather than leaving the constant sitting on the edge of the first
 # on-topic case that happened to get measured.
@@ -66,13 +66,13 @@ TOPIC_FLOOR = 0.42
 # Any category within this many cosine-similarity points of the best is kept alongside
 # it, not discarded, because bge-m3's cross-lingual matching is uneven enough that the
 # true topic and a runner-up can sit this close together (see module docstring). Widening
-# the band trades precision for recall; 0.10 is the plan's measured value, not tuned here.
+# the band trades precision for recall; 0.10 is the originally measured value, not tuned here.
 TOPIC_MARGIN = 0.10
 
 # When more than this many categories fall within TOPIC_MARGIN of the best, the band has
 # saturated: the classifier has no opinion, not a confident multi-topic match, and must
 # say so by returning no topics rather than a wide one. This matters once topic is a hard
-# filter (Task 8) — CONTEXT.md records that a chunk may legitimately carry no topics and
+# filter — a chunk may legitimately carry no topics and
 # is accepted as invisible under a hard filter, so a nine-of-ten-category result still
 # excludes every untagged chunk exactly as one category would, while an empty result
 # skips the filter and keeps them. A caller cannot tell "confidently these two" from
@@ -155,13 +155,13 @@ def topic_decided_by(request: QueryRequest) -> str:
 
 
 def resolve_topics(request: QueryRequest, embedder: Embedder) -> tuple[str, ...]:
-    """Decide what `swiss_search` filters on for this request, in ADR 0004's order.
+    """Decide what `swiss_search` filters on for this request, in this order.
 
-    1. `request.topics` -- the caller said what the question is about. ADR 0004 makes the
-       calling model the primary source: it reads the user's question, it already speaks
+    1. `request.topics` -- the caller said what the question is about. The calling model
+       is the primary source: it reads the user's question, it already speaks
        the user's language, and it is paying for its own tokens.
     2. `request.categories` -- the same caller, on the deprecated alias of `topics` that
-       `swiss_search` carried before Task 10. Same meaning, same hard filter; it survives
+       `swiss_search` carried before `topics`. Same meaning, same hard filter; it survives
        because a registered client that has not been updated has no other way to state a
        subject, and an explicit statement from the caller must outrank a guess made on
        its behalf. `topic_decided_by` reports when a request arrived on this rung.
@@ -169,14 +169,14 @@ def resolve_topics(request: QueryRequest, embedder: Embedder) -> tuple[str, ...]
 
     Rung 3 classifies `build_search_query(request).dense`, not the raw question: that is
     the caller's English rendering when there is one, and the classifier compares against
-    English category descriptions. ADR 0004's whole complaint is that a German question
+    English category descriptions. The whole problem is that a German question
     against an English description decides on margins of 0.008; feeding it English when
     English was supplied removes that coin-flip from the fallback path too. With no
     English fields the dense text *is* the verbatim question, so an un-updated client
-    gets exactly the pre-Task-10 behaviour.
+    gets exactly the behaviour it had before the English fields existed.
 
     Returns sorted ids so the applied filter is deterministic whatever PYTHONHASHSEED is
-    (ADR 0004 commits probes to determinism), and an empty tuple to mean *no constraint*
+    (the probes rely on determinism), and an empty tuple to mean *no constraint*
     -- which is not the same as a constraint nothing satisfies. `search.FILTER` documents
     what that distinction costs if it is lost.
 

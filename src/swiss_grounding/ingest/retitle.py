@@ -1,7 +1,7 @@
 """Repair stored Fedlex titles from the SPARQL endpoint, without re-crawling anything.
 
 Five stored acts are titled `SR 455` and one carries no title at all. The query that would have
-named them was fixed in Task 4, but no re-ingest reaches these rows: `fetchers/fedlex.py`
+named them has since been fixed, but no re-ingest reaches these rows: `fetchers/fedlex.py`
 short-circuits on the URL alone before downloading, `persist` returns unchanged on a matching
 content hash, and `hashing.content_hash` deliberately excludes titles from that hash. Three
 independent blocks, any one of them sufficient. So the repair is a command of its own.

@@ -1,4 +1,4 @@
-"""A11 site adaptations: language switchers, the federal Nuxt payload, extensionless PDF links,
+"""Site adaptations: language switchers, the federal Nuxt payload, extensionless PDF links,
 a content selector, and sitemap seeding -- driven by trimmed copies of the live pages."""
 import gzip
 from pathlib import Path
@@ -49,7 +49,7 @@ def _run(client: httpx.Client, spec: SourceSpec):
     return HtmlConnector(client, CrawlPolicy(True, 0)).run(spec, known={})
 
 
-# --- A1 grouping with the new alternate sources ----------------------------------------------
+# --- translation grouping with the new alternate sources -------------------------------------
 
 def test_chch_language_switcher_groups_de_and_fr():
     pages = {CHCH_DE: _fixture("chch_kk_de.html"), CHCH_FR: _fixture("chch_kk_fr.html")}
@@ -97,6 +97,21 @@ def test_pdf_link_patterns_discover_pdfs_and_never_crawl_them_as_pages():
                                             "https://www.ahv-iv.ch/p/2.03.d"]
     assert result.pdfs[0].title_hint.startswith("2.01 - Lohnbeiträge")
     assert not any("/p/" in u for u in seen)
+
+
+def test_deny_patterns_keep_pages_inside_the_prefixes_from_being_fetched():
+    # fo.fr.ch style: one issue's rubrics share a prefix; the personal-data rubrics (15, 20, 21) are denied.
+    issue = "https://fo.fr.ch/archive/2026/38"
+    rubrics = ("1", "15", "18", "20", "21", "22")
+    links = "".join(f'<a href="{issue}/{r}">Rubrique {r}</a>' for r in rubrics)
+    pages = {issue: f'<html lang="fr"><body><main><h1>Numéro 38</h1>{links}</main></body></html>',
+             **{f"{issue}/{r}": _page(f"Rubrique {r}", lang="fr") for r in rubrics}}
+    seen: list[str] = []
+    spec = _spec(languages=("fr",), start_urls=[issue, f"{issue}/20"], allow_prefixes=["https://fo.fr.ch/archive/"],
+                 deny_patterns=[r"^https://fo\.fr\.ch/archive/\d{4}/\d+/(15|20|21)(/|$)"])
+    result = _run(_client(pages, seen=seen), spec)
+    assert [d.url for d in result.documents] == [issue] + [f"{issue}/{r}" for r in ("1", "18", "22")]
+    assert not any(u.endswith(("/15", "/20", "/21")) for u in seen)  # a denied start URL is not fetched either
 
 
 def test_content_selector_drops_navigation_outside_the_content_root():

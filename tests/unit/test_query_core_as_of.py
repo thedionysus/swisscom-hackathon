@@ -1,4 +1,4 @@
-"""What `as_of` means to `QueryCore`: the boundary, and where the check sits (D2).
+"""What `as_of` means to `QueryCore`: the boundary, and where the check sits.
 
 `as_of` is two things at once. It replaces `today` for the reranker, which is
 `test_query_core_clock.py`; and it restricts which documents are retrievable at all,
@@ -13,7 +13,7 @@ from datetime import date
 
 from swiss_grounding.retrieval.query_core import QueryCore
 
-# --- `as_of` is refused when the index cannot answer for it (D2) -----------------------
+# --- `as_of` is refused when the index cannot answer for it ----------------------------
 #
 # The clock and the filter are the same field seen twice: `as_of` replaces `today` for
 # the reranker (above) *and* restricts which documents are retrievable at all. The tests
@@ -65,7 +65,7 @@ def _stub_core(monkeypatch, *, earliest, searched):
 
 
 def test_as_of_before_the_earliest_indexed_version_is_refused_not_silently_filtered(monkeypatch):
-    """The defect D2 names: only current consolidations are indexed, so `as_of` 2020
+    """The defect this guards against: only current consolidations are indexed, so `as_of` 2020
     excluded every act and returned the undated pages that bypassed the filter, as the
     answer to a question about 2020. Refusing names the boundary the caller can move to."""
     from swiss_grounding.retrieval.models import QueryRequest

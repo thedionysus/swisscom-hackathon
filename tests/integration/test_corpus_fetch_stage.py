@@ -132,7 +132,7 @@ def test_source_failure_keeps_its_tally_when_quarantine_cannot_be_written(corpus
 
 
 def test_scheduled_versions_are_promoted_after_the_run(corpus_db):
-    """Amendment A5: the connector reports nothing new, yet the due scheduled version takes over."""
+    """The connector reports nothing new, yet the due scheduled version takes over."""
     fedlex = SourceSpec(id="fedlex", name="Fedlex", publisher="BK", authority="federal_law", level="federal",
                         extent_id="CH", connector="fedlex", tier=1, languages=("de",))
     section = ParsedSection("art_1", ("SR 220", "Art. 1"), "art_1", "Text.")

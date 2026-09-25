@@ -63,7 +63,7 @@ def test_bge_m3_stores_the_sparse_vector(corpus_db):
 
 
 def test_unchanged_chunk_of_a_new_version_reuses_the_vector(corpus_db):
-    """RAG review E3: identical embedded text is copied, not re-embedded."""
+    """Identical embedded text is copied, not re-embedded."""
     calls = []
 
     class CountingFake(FakeEmbeddings):

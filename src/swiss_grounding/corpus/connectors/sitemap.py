@@ -1,4 +1,4 @@
-"""Sitemap seeding for the HTML crawler (A11).
+"""Sitemap seeding for the HTML crawler.
 
 Reads sitemap files and sitemap indexes (plain or gzip, whatever content-type the server labels
 them with -- ch.ch serves its sitemap as text/html) and returns page URLs that pass the caller's

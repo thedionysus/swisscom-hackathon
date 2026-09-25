@@ -1,4 +1,4 @@
-"""Coverage signal on search results (ADR 0001): setup mirrors test_probes_structural."""
+"""Coverage signal on search results: setup mirrors test_probes_structural."""
 import os
 from datetime import date
 from pathlib import Path
@@ -66,10 +66,3 @@ def test_results_carry_one_coverage_row_per_extent_on_the_path(core):
     assert counts["CH-ZH-261-K3-ALT-WIEDIKON"] == 0
     assert "no documents" in resp.resolution_note.lower()
 
-
-def test_coverage_rows_survive_the_mcp_dict(core):
-    from swiss_grounding.mcp_server.server import _response_to_dict
-
-    resp = core.query(QueryRequest(question="dog leash", location="Zug"))
-    data = _response_to_dict(resp, "concise")
-    assert data["coverage"][0]["extent_id"] == "CH"

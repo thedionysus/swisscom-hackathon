@@ -36,7 +36,7 @@ def test_top_level_article_has_only_the_act_above_it():
 
 
 def test_pretty_printed_whitespace_between_num_and_content_does_not_break_lines():
-    """Amendment A10: newlines/indent between <num>1</num> and <content> must not split them."""
+    """Newlines/indent between <num>1</num> and <content> must not split them."""
     s = _by_key(parse_akn(PRETTY_XML, act_title="Obligationenrecht", sr="220"))["art_336_c"]
     assert s.text.startswith("1 Nach Ablauf der Probezeit")
     assert "\na. während die andere Partei" in s.text

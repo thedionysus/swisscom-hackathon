@@ -122,7 +122,7 @@ def test_prompts_name_the_exact_language_keys_and_caps_leave_room(corpus_db):
 
 
 def test_html_chunks_with_empty_topics_build_tasks(corpus_db):
-    """A2: array_agg over empty text[] must not fail."""
+    """An array_agg over an empty text[] must not fail."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 1)
         _describe_groups(conn)
@@ -131,7 +131,7 @@ def test_html_chunks_with_empty_topics_build_tasks(corpus_db):
 
 
 def test_document_prompt_names_the_municipality(corpus_db):
-    """A6: the jurisdiction comes from public.location.names labels (communes carry only 'de')."""
+    """The jurisdiction comes from public.location.names labels (communes carry only 'de')."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 1)
         [task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
@@ -166,7 +166,7 @@ def test_duplicate_same_language_chunks_are_described_one_per_task(corpus_db):
 
 
 def test_repeated_site_furniture_is_marked_before_describing(corpus_db):
-    """RAG review E2: the same chunk on three pages of one site is furniture, found without a model call."""
+    """The same chunk on three pages of one site is furniture, found without a model call."""
     with connect(corpus_db) as conn:
         _seed_city_pages(conn, 3)
         _describe_groups(conn)
@@ -174,6 +174,22 @@ def test_repeated_site_furniture_is_marked_before_describing(corpus_db):
         statuses = {r["text"][:7]: r["status"] for r in conn.execute("select text, status from corpus.chunk")}
         assert len(build_chunk_tasks(conn, model="gpt-5-nano", limit=None)) == 3   # only the own-content chunks
     assert statuses["Kontakt"] == "boilerplate" and statuses["Eigener"] == "current"
+
+
+def test_keep_one_leaves_the_first_pages_copy_of_repeated_furniture_live(corpus_db):
+    """The keep-one cleanup: the copy in the lowest document id stays findable, the others are marked, and a
+    second run of either kind finds nothing left to mark."""
+    with connect(corpus_db) as conn:
+        _seed_city_pages(conn, 3)
+        assert mark_repeated_furniture(conn, min_documents=3, keep_one=True) == 2
+        first = conn.execute("select min(id) as d from corpus.document").fetchone()["d"]
+        footers = {r["document_id"]: r["status"] for r in conn.execute(
+            "select document_id, status from corpus.chunk where text like 'Kontakt%'")}
+        own = {r["status"] for r in conn.execute("select status from corpus.chunk where text like 'Eigener%'")}
+        assert mark_repeated_furniture(conn, min_documents=3, keep_one=True) == 0
+        assert mark_repeated_furniture(conn, min_documents=3) == 0
+    assert footers.pop(first) == "current" and set(footers.values()) == {"boilerplate"}
+    assert own == {"current"}
 
 
 def test_law_is_exempt_from_furniture_marking(corpus_db):
@@ -265,6 +281,19 @@ def test_replayed_outcomes_are_skipped_without_spend(corpus_db):
         assert conn.execute("select count(*) as n from corpus.llm_spend").fetchone()["n"] == 2
         descriptions = {r["description"] for r in conn.execute("select description from corpus.chunk")}
     assert descriptions == {"Kündigungsschutz bei Krankheit", "Protection contre le licenciement"}
+
+
+def test_a_direct_call_outcome_is_priced_at_the_sync_rate_in_a_batch_run(corpus_db):
+    """Batch and direct calls run side by side (HybridRunner); each outcome is priced by its own path."""
+    from swiss_grounding.corpus.budget import cost_usd
+    with connect(corpus_db) as conn:
+        _seed(conn)
+        [doc_task] = build_doc_tasks(conn, model="gpt-5-mini", limit=None)
+    outcome = LlmOutcome(doc_task.custom_id, _responder(doc_task), 900, 100, sync=True)
+    run_doc_descriptions(corpus_db, _ScriptedRunner([outcome]), [doc_task], model="gpt-5-mini", batch=True)
+    with connect(corpus_db) as conn:
+        usd = conn.execute("select usd from corpus.llm_spend").fetchone()["usd"]
+    assert float(usd) == pytest.approx(cost_usd("gpt-5-mini", 900, 100, batch=False))
 
 
 def test_estimate_uses_batch_price_by_default(corpus_db):

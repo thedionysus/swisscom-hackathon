@@ -1,4 +1,4 @@
-"""OCR of scanned PDF pages (Task 16).
+"""OCR of scanned PDF pages.
 
 Chunks with `needs_ocr = true` and no text get one vision task per page image. The transcription is
 written into `chunk.text`; `chunk_hash` stays the image digest (it identifies the source page, not the
@@ -83,12 +83,15 @@ def estimate_ocr(conn: psycopg.Connection, model: str, image_tokens: int = OCR_I
 def _record(conn: psycopg.Connection, model: str, outcome: LlmOutcome, batch: bool) -> None:
     if outcome.input_tokens or outcome.output_tokens:
         record_spend(conn, kind="ocr", model=model,
-                     usd=cost_usd(model, outcome.input_tokens, outcome.output_tokens, batch=batch),
+                     usd=cost_usd(model, outcome.input_tokens, outcome.output_tokens,
+                                  batch=batch and not outcome.sync),
                      input_tokens=outcome.input_tokens, output_tokens=outcome.output_tokens, estimated=False)
 
 
 def _transcription(outcome: LlmOutcome) -> str | None:
     text = outcome.data.get("text") if isinstance(outcome.data, dict) else None
+    if isinstance(text, str):
+        text = text.replace("\x00", "")  # PostgreSQL text rejects NUL; a transcription can carry one
     return text.strip() if isinstance(text, str) and text.strip() else None
 
 

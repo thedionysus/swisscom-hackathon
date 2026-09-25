@@ -27,6 +27,7 @@ class LlmOutcome:
     input_tokens: int
     output_tokens: int
     error: str | None = None
+    sync: bool = False          # a direct call (twice the batch price), not a Batch API result
 
 
 log = logging.getLogger(__name__)
@@ -34,6 +35,22 @@ CHAT_ENDPOINT = "/v1/chat/completions"
 EMBEDDINGS_ENDPOINT = "/v1/embeddings"
 TERMINAL = {"completed", "failed", "expired", "cancelled"}
 NON_SUCCESS_STATUSES = {"failed", "expired", "cancelled"}
+# Files are filled to this share of max_tokens_per_file: OpenAI counts the queue with its own tokenizer.
+BATCH_TOKEN_HEADROOM = 0.95
+
+
+def complete_one(llm, task: LlmTask) -> LlmOutcome:
+    """One direct call as an outcome: provider failures become per-task errors, never exceptions."""
+    from swiss_grounding.corpus.providers import ReplyError
+    try:
+        data, usage = llm.complete(task)
+        return LlmOutcome(task.custom_id, data, usage.input_tokens, usage.output_tokens, sync=True)
+    except ReplyError as exc:
+        # A paid reply that failed to parse still billed tokens; keep them on the outcome.
+        return LlmOutcome(task.custom_id, None, exc.usage.input_tokens, exc.usage.output_tokens,
+                          error=str(exc), sync=True)
+    except Exception as exc:  # noqa: BLE001 - any provider failure becomes a per-task error outcome
+        return LlmOutcome(task.custom_id, None, 0, 0, error=repr(exc), sync=True)
 
 
 class SyncRunner:
@@ -44,19 +61,8 @@ class SyncRunner:
     def run(self, tasks: Sequence[LlmTask], kind: str = "", estimated_usd: float = 0.0) -> Iterator[LlmOutcome]:
         """`kind` and `estimated_usd` are accepted (and ignored) so callers can share one
         signature with `BatchRunner.run` regardless of which runner they hold."""
-        def one(task: LlmTask) -> LlmOutcome:
-            from swiss_grounding.corpus.providers import ReplyError
-            try:
-                data, usage = self._llm.complete(task)
-                return LlmOutcome(task.custom_id, data, usage.input_tokens, usage.output_tokens)
-            except ReplyError as exc:
-                # A paid reply that failed to parse still billed tokens; keep them on the outcome.
-                return LlmOutcome(task.custom_id, None, exc.usage.input_tokens, exc.usage.output_tokens,
-                                  error=str(exc))
-            except Exception as exc:  # noqa: BLE001 - any provider failure becomes a per-task error outcome
-                return LlmOutcome(task.custom_id, None, 0, 0, error=repr(exc))
         with ThreadPoolExecutor(max_workers=self._workers) as pool:
-            for future in as_completed([pool.submit(one, t) for t in tasks]):
+            for future in as_completed([pool.submit(complete_one, self._llm, t) for t in tasks]):
                 yield future.result()
 
 
@@ -78,11 +84,17 @@ def parse_batch_line(line: str) -> LlmOutcome:
     return LlmOutcome(custom_id, data, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
 
 
+def chat_line(task: LlmTask) -> dict:
+    from swiss_grounding.corpus.providers import OpenAILLM
+    return {"custom_id": task.custom_id, "method": "POST", "url": CHAT_ENDPOINT, "body": OpenAILLM.chat_body(task)}
+
+
 def _line_input_tokens(line: dict) -> int:
-    """Estimate a batch line's input tokens for the enqueued-token-limit split (chat lines: system +
-    user text, plus OCR_IMAGE_TOKENS when the user content carries an image; embedding lines: their
-    `input` text)."""
-    from swiss_grounding.corpus.budget import OCR_IMAGE_TOKENS, estimate_tokens
+    """A batch line's input tokens for the enqueued-token-limit split (chat lines: system + user text,
+    plus OCR_IMAGE_TOKENS when the user content carries an image; embedding lines: their `input` text),
+    counted with the model's tokenizer."""
+    from swiss_grounding.corpus.budget import OCR_IMAGE_TOKENS
+    from swiss_grounding.corpus.tokens import count_tokens
 
     body = line.get("body", {})
     if "messages" in body:
@@ -95,11 +107,30 @@ def _line_input_tokens(line: dict) -> int:
             has_image = any(part.get("type") == "image_url" for part in content)
         else:
             text = content
-        tokens = estimate_tokens(f"{system}{text}")
+        tokens = count_tokens(f"{system}{text}")
         return tokens + OCR_IMAGE_TOKENS if has_image else tokens
     if "input" in body:
-        return estimate_tokens(body["input"])
+        return count_tokens(body["input"])
     return 0
+
+
+class FileBudget:
+    """Admits lines into one Batch file until the next would pass the item, byte or token limit.
+    The first line is always admitted, so an oversized line still gets a file of its own."""
+
+    def __init__(self, max_items: int, max_bytes: int, max_tokens: float):
+        self._limits = (max_items, max_bytes, max_tokens)
+        self.items, self.bytes, self.tokens = 0, 0, 0
+
+    def admit(self, line: dict) -> bool:
+        encoded_len = len(json.dumps(line, ensure_ascii=False).encode("utf-8")) + 1
+        tokens = _line_input_tokens(line)
+        max_items, max_bytes, max_tokens = self._limits
+        if self.items and (self.items >= max_items or self.bytes + encoded_len > max_bytes
+                           or self.tokens + tokens > max_tokens):
+            return False
+        self.items, self.bytes, self.tokens = self.items + 1, self.bytes + encoded_len, self.tokens + tokens
+        return True
 
 
 class BatchRunner:
@@ -110,7 +141,7 @@ class BatchRunner:
     called by `collect()` only once every one of that batch's result lines has been pulled from the
     generator by the caller — callers must have committed the outcome of each yielded line (or at
     least be certain they will) before asking for the next one, since `mark_done` is the signal that
-    this batch no longer counts as "in flight" for `budget.ensure_within` (A3). `resume(batch_ids)`
+    this batch no longer counts as "in flight" for `budget.ensure_within`. `resume(batch_ids)`
     re-attaches to batches already submitted by an earlier, interrupted run. `before_submit(file_usd)`
     runs before each file of `run()`/`submit_sequentially()` is submitted; raising stops the run there.
 
@@ -179,49 +210,51 @@ class BatchRunner:
         return lines
 
     def done(self, batch_id: str) -> None:
-        """Mark a fetched batch done (A3): it no longer counts as in flight for `ensure_within`."""
+        """Mark a fetched batch done: it no longer counts as in flight for `ensure_within`."""
         self._mark_done(batch_id, self._batch_status.get(batch_id, "unknown"))
 
     def collect(self, batch_id: str) -> Iterator[str]:
         """Wait for one batch and yield its raw result lines (successes and errors), then mark
-        it done (A3) so a later `ensure_within` no longer counts it as in flight. See the class
+        it done so a later `ensure_within` no longer counts it as in flight. See the class
         docstring for the commit-before-advancing contract this implies for callers."""
         yield from self.fetch(batch_id)
         self.done(batch_id)
 
+    def file_budget(self) -> FileBudget:
+        return FileBudget(self._max, self._max_bytes, self._max_tokens * BATCH_TOKEN_HEADROOM)
+
     def _group_lines(self, lines: Sequence[dict]) -> list[list[dict]]:
-        """A4 plus the enqueued-token-limit fix: a new file starts when adding a line would pass
-        `max_bytes`, `max_per_file`, or `max_tokens_per_file`."""
+        """Split lines into files: a new file starts when adding a line would pass
+        `max_bytes`, `max_per_file`, or `max_tokens_per_file` (less BATCH_TOKEN_HEADROOM)."""
         groups: list[list[dict]] = []
         current: list[dict] = []
-        current_bytes = 0
-        current_tokens = 0
+        budget = self.file_budget()
         for line in lines:
-            encoded_len = len(json.dumps(line, ensure_ascii=False).encode("utf-8")) + 1
-            tokens = _line_input_tokens(line)
-            if current and (len(current) >= self._max or current_bytes + encoded_len > self._max_bytes
-                            or current_tokens + tokens > self._max_tokens):
+            if not budget.admit(line):
                 groups.append(current)
-                current, current_bytes, current_tokens = [], 0, 0
+                current, budget = [], self.file_budget()
+                budget.admit(line)
             current.append(line)
-            current_bytes += encoded_len
-            current_tokens += tokens
         if current:
             groups.append(current)
         return groups
 
+    def outcomes(self, batch_id: str, lines: Sequence[str], expected_ids: Sequence[str]) -> list[LlmOutcome]:
+        """A fetched batch's outcomes, plus an error outcome for every expected id it did not return."""
+        parsed = [parse_batch_line(line) for line in lines]
+        missing = set(expected_ids) - {o.custom_id for o in parsed}
+        status = self._batch_status.get(batch_id, "unknown")
+        return parsed + [LlmOutcome(custom_id, None, 0, 0, error=f"no result: batch {batch_id} {status}")
+                         for custom_id in sorted(missing)]
+
+    def submit_file(self, lines: list[dict], kind: str, endpoint: str, index: int, estimated_usd: float) -> str:
+        """Check the cap (`before_submit`, raises to stop), then submit one file that fits the limits."""
+        self._before_submit(estimated_usd)
+        return self._submit(lines, kind, endpoint, index, estimated_usd)
+
     def _collect_group(self, batch_id: str, expected_ids: Sequence[str]) -> Iterator[LlmOutcome]:
-        expected = set(expected_ids)
-        seen: set[str] = set()
-        for line in self.collect(batch_id):
-            outcome = parse_batch_line(line)
-            seen.add(outcome.custom_id)
-            yield outcome
-        missing = expected - seen
-        if missing:
-            status = self._batch_status.get(batch_id, "unknown")
-            for custom_id in missing:
-                yield LlmOutcome(custom_id, None, 0, 0, error=f"no result: batch {batch_id} {status}")
+        yield from self.outcomes(batch_id, self.fetch(batch_id), list(expected_ids))
+        self.done(batch_id)
 
     def resume(self, batch_ids: Sequence[str]) -> Iterator[LlmOutcome]:
         """Re-attach to batches already submitted (by this run or a prior, interrupted one). When
@@ -251,13 +284,10 @@ class BatchRunner:
         for index, group in enumerate(groups):
             estimate = estimated_usd * (len(group) / total) if total else 0.0
             # Raises to stop: later files are checked against the spend the earlier ones actually recorded.
-            self._before_submit(estimate)
-            yield self._submit(group, kind, endpoint, index, estimate), group
+            yield self.submit_file(group, kind, endpoint, index, estimate), group
 
     def run(self, tasks: Sequence[LlmTask], kind: str, estimated_usd: float = 0.0) -> Iterator[LlmOutcome]:
         """Submit and collect one file at a time (see `submit_sequentially`)."""
-        from swiss_grounding.corpus.providers import OpenAILLM
-        lines = [{"custom_id": t.custom_id, "method": "POST", "url": CHAT_ENDPOINT, "body": OpenAILLM.chat_body(t)}
-                 for t in tasks]
+        lines = [chat_line(t) for t in tasks]
         for batch_id, group in self.submit_sequentially(lines, kind, CHAT_ENDPOINT, estimated_usd):
             yield from self._collect_group(batch_id, (line["custom_id"] for line in group))

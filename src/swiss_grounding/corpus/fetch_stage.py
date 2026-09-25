@@ -104,7 +104,8 @@ def _promote(database_url: str, today) -> Counter:
 
 def run_fetch(database_url: str, specs: Sequence[SourceSpec], connectors: Mapping, pdf_connector,
               now: Callable[[], datetime], workers: int = 4) -> dict[str, Counter]:
-    """Fetch every source; the report maps source id to outcome counts, plus `_promote` for A5 promotion."""
+    """Fetch every source; the report maps source id to outcome counts, plus `_promote`: the
+    scheduled versions that came into force and were made current."""
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {spec.id: pool.submit(_run_source, database_url, spec, connectors, pdf_connector, now)
                    for spec in specs}

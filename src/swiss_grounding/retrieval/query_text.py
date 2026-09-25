@@ -1,4 +1,4 @@
-"""The two queries one request produces, and which of its fields made them (ADR 0004).
+"""The two queries one request produces, and which of its fields made them.
 
 Everything is indexed in English -- the embedding is built from `context_en` and `text_en`,
 and `db/schema.sql` builds `tsv` from the same two columns -- while questions arrive in
@@ -16,9 +16,9 @@ place that decides which goes where:
   index matches literal terms and the caller's own words are the ones worth matching.
 
 It also reports the request fields it used. A caller that supplies no `question_en` still
-gets a search (ADR 0004's degrade path), and nothing else in the response would reveal
+gets a search (the degrade path), and nothing else in the response would reveal
 that the answer came from matching a German vector against an English index -- which is
-precisely the unevenness ADR 0004 exists to remove. `SearchQuery.fields` is what makes a
+precisely the unevenness the English fields exist to remove. `SearchQuery.fields` is what makes a
 degraded answer tell you so.
 
 This module is pure string work with no database, no embedder and no model: it is the

@@ -10,6 +10,7 @@ import typer
 from swiss_grounding.app import build_query_core
 from swiss_grounding.cli.corpus_run import corpus_app
 from swiss_grounding.cli.eval_commands import eval_app
+from swiss_grounding.cli.serving_commands import dump_app, lookups_app, serving_app, setup_cmd
 from swiss_grounding.config import load_settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.db.migrate import apply_schema
@@ -50,7 +51,7 @@ def _link(url: str, anchor: str | None) -> str:
 def _citation_line(index: int, citation: Citation) -> str:
     """The heading line for one citation.
 
-    It prints `tier` and `distance`, which replaced `score` in Task 9: both are
+    It prints `tier` and `distance`, which replaced the earlier `score`: both are
     lower-is-better, the tier is the hop count from the question's jurisdiction and
     orders the list, and the distance is reported but is not a relevance threshold.
     Either can legitimately be absent, and each is spelled out in words rather than
@@ -80,6 +81,10 @@ app.add_typer(eval_app, name="eval")
 app.add_typer(corpus_app, name="corpus")
 locations_app = typer.Typer(help="Location tree data.")
 app.add_typer(locations_app, name="locations")
+app.add_typer(serving_app, name="serving")
+app.add_typer(lookups_app, name="lookups")
+app.add_typer(dump_app, name="dump")
+app.command("setup")(setup_cmd)
 
 
 @db_app.command("init")
@@ -124,7 +129,7 @@ def query_cmd(
     question_en: str | None = typer.Option(
         None, "--question-en",
         help="the same question in English. Embedded, with --topic-en, against an index that "
-             "is entirely English (ADR 0004). Omit it and the verbatim question is embedded "
+             "is entirely English. Omit it and the verbatim question is embedded "
              "instead, which still works but matches worse; the printed `query` line says "
              "which happened.",
     ),

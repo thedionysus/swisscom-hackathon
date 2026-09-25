@@ -1,4 +1,4 @@
-"""Generated per-chunk context and per-chunk topics (ADR 0005, ADR 0003).
+"""Generated per-chunk context and per-chunk topics.
 
 A stored chunk says nothing about what it belongs to: the article setting penalties for
 mistreating animals reads, in the index, as a bare sentence about penalties. This step gives
@@ -43,7 +43,7 @@ def indexed_text(context_en: str, text_en: str) -> str:
     Kept in one place because two indexes read it -- the embedding, built here, and the `tsv`
     generated column, built by `db/schema.sql` from the same two columns with the same separator.
     An empty context contributes nothing, not a leading separator, so a chunk described by
-    nothing indexes exactly as it did before ADR 0005.
+    nothing indexes on its text alone, exactly as it did before chunks had a context.
     """
     return CONTEXT_SEPARATOR.join(part for part in (context_en, text_en) if part)
 
@@ -56,8 +56,8 @@ def _fallback_applies(source: Source) -> bool:
     also says anything about an individual chunk of it: `open_erz` declaring `waste` does tell you
     what every record of a waste calendar is about, while `fedlex` declaring five does not tell
     you that a definitions article is about all five. Writing all five onto a chunk the model
-    named nothing for is the defect ADR 0003 exists to remove -- 563 chunks each asserting dogs,
-    hiking, safety, transport and waste -- re-entered through the fallback, and at chunk
+    named nothing for is the defect per-chunk topics exist to remove -- 563 chunks each asserting
+    dogs, hiking, safety, transport and waste -- re-entered through the fallback, and at chunk
     granularity an empty answer is far commoner than it ever was per document, because a
     definitions article or a penalty clause genuinely has no topic.
 
@@ -74,13 +74,13 @@ def merge_topics(source: Source, model_topics: Sequence[CategoryTag]) -> tuple[C
 
     The model's per-chunk judgement always wins. Where it named nothing, `source.categories` may
     stand in, but only under `_fallback_applies` and then below certainty, because a source-level
-    default is not a per-chunk assertion (ADR 0003).
+    default is not a per-chunk assertion.
 
     A chunk of a multi-category source that the model tagged with nothing therefore ends with no
     topics at all. Under the hard topic filter this is deliberate and accepted, not an oversight:
     such a chunk is unreachable, which is the honest outcome, and better than reaching it under
     topics that are false of it -- a false topic surfaces wrong evidence, while a missing one
-    surfaces none. Task 8 should meet this as a decision rather than a surprise.
+    surfaces none. The topic filter should meet this as a decision rather than a surprise.
     """
     topics = {t.id: t for t in model_topics}
     if not topics and _fallback_applies(source):
@@ -93,7 +93,7 @@ def document_topics(chunks: Sequence[ChunkDraft]) -> tuple[CategoryTag, ...]:
     """What a document asserts: the union of its chunks' topics, each at its strongest confidence.
 
     Derived rather than decided, so `document.categories` cannot disagree with the chunks under
-    it. ADR 0003 moved the judgement to the chunk; this is the roll-up, and it costs no call.
+    it. The judgement is made per chunk; this is the roll-up, and it costs no call.
     """
     strongest: dict[str, CategoryTag] = {}
     for chunk in chunks:
@@ -111,7 +111,7 @@ def _sorted(topics) -> tuple[CategoryTag, ...]:
 class DescribedChunks:
     """What became of a document's chunks: the ones to store, and the ones judged page furniture.
 
-    The dropped ones are returned rather than left to be inferred. `recontext` (Task 6) has to
+    The dropped ones are returned rather than left to be inferred. `recontext` has to
     delete chunks already stored that are now judged furniture, and the only other way to find
     them is to notice which ordinals are missing from `kept` -- a contract written down nowhere
     and broken silently by anything that renumbers. Every chunk passed in comes back in exactly
@@ -150,7 +150,7 @@ def describe_chunks(
     the per-chunk call affordable: without it each chunk's prompt would have to carry a document
     excerpt of its own, and a hundred-article act would pay for that excerpt a hundred times.
 
-    Page furniture is dropped in two stages, cheapest first. The heading rules of Task 1 name two
+    Page furniture is dropped in two stages, cheapest first. The rules in `boilerplate` name two
     headings that are furniture beyond argument, and a chunk carrying one is dropped before any
     call is made -- the model could only agree, and asking costs a call per navigation menu. The
     model's verdict is the general one, covering everything the heading rules cannot see. It

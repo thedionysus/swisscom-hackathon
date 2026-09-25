@@ -161,7 +161,7 @@ class FedlexConnector:
     def _rows_for_language(self, sr: str, lang: str, today: date) -> dict[str, dict]:
         """{status: row} for one SR/language: in-force consolidations first; for an OPTIONAL
         language with none in force, fall back to its newest consolidation regardless of end
-        date, reported as `current` (amendment: English translations can lag the in-force text)."""
+        date, reported as `current` (English translations can lag the in-force text)."""
         rows = self._rows(sr, lang, today, in_force_only=True)
         if rows:
             current, scheduled = choose_consolidations(rows, today)
@@ -211,7 +211,7 @@ class FedlexConnector:
                     unchanged.extend(urls.values())
                     continue
                 # At least one language version is new: re-download every language version of this
-                # SR+status (even the "known" ones), so split-paragraph alignment (amendment)
+                # SR+status (even the "known" ones), so split-paragraph alignment
                 # always sees every language, not just the ones that changed upstream this run.
                 for lang, row in group:
                     url = urls[lang]

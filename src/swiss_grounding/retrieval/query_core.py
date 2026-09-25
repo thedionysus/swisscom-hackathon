@@ -97,7 +97,7 @@ class QueryCore:
             return QueryResponse(status="needs_location", message=message)
         limit = max(1, min(request.limit, MAX_LIMIT))
         today = request.as_of or self.today()
-        # One split of the caller's text (ADR 0004): the English rendering for the dense
+        # One split of the caller's text: the English rendering for the dense
         # arm, the verbatim question for the lexical one. Built here and passed to both
         # arms and to the response, so the text that was embedded and the text the
         # response claims was embedded cannot disagree.
@@ -114,8 +114,8 @@ class QueryCore:
                 as_of=request.as_of, top_n=CANDIDATE_TOP_N, topics=topics,
                 embedded_question=query.dense,
             )
-            # Deliberately not passed `topics`: coverage is about places, not subjects
-            # (ADR 0001), and it is the same count `swiss_coverage` returns.
+            # Deliberately not passed `topics`: coverage is about places, not subjects,
+            # and it is the same count `swiss_coverage` returns.
             rows = coverage_rows(conn, self.tree, resolved.path)
             # Only on the empty path, and only there: this is what lets `no_evidence`
             # establish which arm of the filter emptied the result instead of guessing
@@ -143,7 +143,7 @@ class QueryCore:
             ))
         # The same topics that filtered, not `request.categories`, so the soft signal and
         # the hard filter can never disagree about what this question is about. They are
-        # identical for a caller on the old contract, which is every caller until Task 10.
+        # identical for a caller on the old contract, which sends `categories` instead.
         ranked = rerank(hits, self.tree, resolved.location.id, topics, self.weights,
                         today=lambda: today)
         # per_document_cap, per_series_cap, and upcoming_calendar_cap all take diversify()'s
@@ -153,7 +153,7 @@ class QueryCore:
         return replace(base, status="results", citations=citations)
 
     def _validate_as_of(self, as_of: date | None) -> QueryResponse | None:
-        """Refuse an `as_of` the index cannot reach back to (D2, `retrieval/as_of.py`).
+        """Refuse an `as_of` the index cannot reach back to (`retrieval/as_of.py`).
 
         This is the one boundary check that cannot live in `_validate`: the earliest
         answerable date is a property of the corpus, so it has to be queried. Rather than

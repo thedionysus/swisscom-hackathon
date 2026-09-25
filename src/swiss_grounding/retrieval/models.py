@@ -94,7 +94,7 @@ class Citation:
 
     Replaces the former `score`, which moved with the question's extent: the same chunk
     measured 1.1918 asked about `CH` and 0.8168 asked about `8003`, entirely on the
-    specificity term, so no caller could compare it across calls (decision D1).
+    specificity term, so no caller could compare it across calls.
     """
     distance: float | None
     """Cosine distance from the chunk to the vector that was searched, lower being nearer.
@@ -119,7 +119,7 @@ class CoverageRow:
 
 @dataclass(frozen=True)
 class QueryRequest:
-    """One search, as ADR 0004 asks the calling model to state it.
+    """One search, as the calling model is asked to state it.
 
     Three fields carry text and they are not interchangeable. `question` is what the user
     wrote, in whatever language they wrote it, and it is what the keyword index is asked
@@ -135,9 +135,9 @@ class QueryRequest:
 
     `categories` is a **deprecated alias for `topics`**: identical meaning, identical hard
     filter, read only when `topics` is empty. It exists because the MCP tool carried it
-    before Task 10 and a registered client that has not been updated sends it; dropping it
-    would turn every such call into a schema error rather than the degrade ADR 0004 asks
-    for. Nothing reads it except `resolve_topics`'s second rung, and `QueryResponse`
+    before `topics` existed and a registered client that has not been updated sends it;
+    dropping it would turn every such call into a schema error rather than a graceful
+    degrade. Nothing reads it except `resolve_topics`'s second rung, and `QueryResponse`
     reports when a request came in on it. New code writes `topics`.
     """
     question: str
@@ -171,9 +171,9 @@ class QueryResponse:
     resolution_note: str = ""
     query_fields: tuple[str, ...] = ()
     """Which request fields composed the text that was embedded, in the order they were
-    joined: `("question_en", "topic_en")` for a caller on the full ADR 0004 contract, and
+    joined: `("question_en", "topic_en")` for a caller on the full contract, and
     `("question",)` for one that supplied no English -- meaning the user's own language
-    was matched against an index that is entirely English. ADR 0004 records that nothing
+    was matched against an index that is entirely English. Before this field, nothing
     in the response revealed which of those happened; this is that field.
 
     `()` means no query was built at all, which is the case for every refused or

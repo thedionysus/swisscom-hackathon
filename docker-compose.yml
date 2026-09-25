@@ -1,6 +1,8 @@
 services:
   db:
-    image: pgvector/pgvector:pg16
+    # Pinned to the pgvector extension version the prebuilt dump was made with:
+    # a restore must never meet a different extension version.
+    image: pgvector/pgvector:0.8.6-pg16
     # Parallel HNSW index builds share memory through /dev/shm; Docker's 64 MB default is too small.
     shm_size: "2gb"
     environment:

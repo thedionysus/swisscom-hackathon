@@ -87,7 +87,7 @@ def _write(conn: psycopg.Connection, index: IndexSpec, rows: Sequence[tuple]) ->
 
 
 def reuse_embeddings(conn: psycopg.Connection, index: IndexSpec, require_description: bool = True) -> int:
-    """Copy stored vectors onto pending chunks whose embedded text is identical (RAG review E3, amendment A7).
+    """Copy stored vectors onto pending chunks whose embedded text is identical.
 
     One set-based statement: for each eligible chunk without a vector for its current text, take any one stored
     vector with the same (text_hash, language) — an index lookup — and upsert it. Call it before building the
@@ -116,7 +116,7 @@ def reuse_embeddings(conn: psycopg.Connection, index: IndexSpec, require_descrip
 
 
 def _record_sync_spend(conn: psycopg.Connection, provider) -> None:
-    """A9: a paid in-process provider (OpenAIEmbeddings) exposes `model` and `last_usage`; bill it at sync price."""
+    """A paid in-process provider (OpenAIEmbeddings) exposes `model` and `last_usage`; bill it at sync price."""
     model = getattr(provider, "model", None)
     tokens = getattr(provider, "last_usage", None)
     if model not in PRICES or not tokens:
@@ -288,7 +288,7 @@ def embed_openai_batch(database_url: str, index: IndexSpec, batch_runner, pendin
 
 def resume_embed_batches(database_url: str, index: IndexSpec, batch_runner,
                          batch_ids: Sequence[str]) -> dict[str, int]:
-    """Ingest embed batches submitted by an earlier, interrupted run through the same writer (amendment A3)."""
+    """Ingest embed batches submitted by an earlier, interrupted run through the same writer."""
     report = _new_report()
     for batch_id in batch_ids:
         _ingest_batch(database_url, index, batch_runner, batch_id, None, report)
@@ -313,7 +313,7 @@ def build_vector_indexes(database_url: str, index: IndexSpec, parallel_workers: 
             conn.execute(f"create index if not exists {table}_{lang}_hnsw on corpus.{table}_{lang} "
                          f"using hnsw (embedding {index.opclass}) with (m = 16, ef_construction = 64)")
             if _has_sparse(index):
-                # Inner product is the scoring bge-m3's lexical weights are trained for (RAG review E1).
+                # Inner product is the scoring bge-m3's lexical weights are trained for.
                 conn.execute(f"create index if not exists {table}_{lang}_sparse_hnsw on corpus.{table}_{lang} "
                              f"using hnsw (sparse sparsevec_ip_ops) with (m = 16, ef_construction = 64)")
             conn.commit()

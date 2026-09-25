@@ -1,0 +1,125 @@
+version: 2026-09-24.1
+probes:
+  - id: g-scope-needs-location-waste-de
+    question: Wann wird bei mir der Hauskehricht abgeholt?
+    language: de
+    area: waste
+    level: none
+    split: dev
+    note: >-
+      Placeless local topic (waste). No federal passage answers a household-refuse collection schedule,
+      so the server must ask for the municipality rather than guess.
+    expect: {status: needs_location}
+  - id: g-scope-needs-location-registration-fr
+    question: Comment m'annoncer à la commune après un déménagement?
+    language: fr
+    area: moving
+    level: none
+    split: dev
+    note: >-
+      Same question as g-practice-paired-registration but with no place given, and no federal registration
+      deadline exists (registration deadlines are municipal). Must ask for the commune.
+    expect: {status: needs_location}
+  - id: g-scope-needs-location-holidays-it
+    question: Quando iniziano le vacanze scolastiche?
+    language: it
+    area: school_holidays
+    level: none
+    split: dev
+    note: >-
+      Placeless local topic (school holidays are set per canton in Switzerland, confirmed by the ch.ch/it
+      passage: "Il calendario delle vacanze scolastiche di tutti i Cantoni vi mostra quando le vacanze
+      iniziano e finiscono nei singoli Cantoni" — that statement itself is federal-level context, not an
+      answer, so the server still needs the canton or municipality to give dates).
+    expect: {status: needs_location}
+  - id: g-scope-needs-location-dogtax-de
+    question: Wie hoch ist die Hundesteuer?
+    language: de
+    area: none
+    level: none
+    split: holdout
+    note: >-
+      Placeless version of g-schaffhausen-dog-tax and the challenge sample. No federal dog tax exists and dog tax
+      is set per municipality, so with no place given the server must ask rather than guess a canton.
+    expect: {status: needs_location}
+  - id: g-scope-multiplace-notice-period-de
+    question: Wie lange ist die Kündigungsfrist für meine Mietwohnung, wenn ich in Zürich bzw. in Bern wohne?
+    locations: [Zürich, Bern]
+    language: de
+    area: law
+    level: federal
+    split: dev
+    note: >-
+      Two declared cities on a purely federal question (OR Art. 266c applies identically everywhere in
+      Switzerland). Both places should come back results with the same federal citation, not a merged or
+      single-place answer.
+    expect: {status: results, place_statuses: [results, results], sources: [art_266_c], key_fact: "Three months to a customary local term (Art. 266c OR), the same nationwide."}
+  - id: g-scope-multiplace-waste-de
+    question: Wie entsorge ich Karton, in Chur wie auch in der Stadt Zürich?
+    locations: [Chur, Stadt Zürich]
+    language: de
+    area: waste
+    level: municipal
+    split: dev
+    note: >-
+      Two declared cities, each with its own municipal cardboard page (chur.ch/abfallarten;
+      stadt-zuerich.ch .../entsorgung/.../karton). Answered separately per place.
+    expect: {status: results, place_statuses: [results, results], sources: [chur.ch/abfallarten, stadt-zuerich.ch/de/umwelt-und-energie/entsorgung], key_fact: "Chur and the city of Zürich each describe how cardboard is collected."}
+  - id: g-scope-outside-basel-notice-de
+    question: Gilt die dreimonatige Kündigungsfrist für Mietwohnungen auch in Winterthur?
+    locations: [Winterthur]
+    language: de
+    area: law
+    level: federal
+    split: dev
+    note: >-
+      Winterthur is in canton Zürich, which is a declared canton (SCOPE_CANTONS includes CH-ZH), so
+      covered_levels for this place includes federal and cantonal even though Winterthur itself is not a
+      declared municipality. Because the underlying rule (OR Art. 266c) is federal and applies everywhere,
+      this should return results, not outside_scope — included to test that a non-declared municipality
+      in a declared canton is not wrongly rejected for a federal-level question.
+    expect: {status: results, sources: [art_266_c], key_fact: "Three months to a customary local term (Art. 266c OR), the same nationwide."}
+  - id: g-scope-outside-schaffhausen-licence-de
+    question: Innerhalb welcher Frist muss ich meinen ausländischen Führerausweis umtauschen, wenn ich in Schaffhausen wohne?
+    locations: [Schaffhausen]
+    language: de
+    area: driving
+    level: none
+    split: dev
+    note: >-
+      Schaffhausen, canton and city, has no passages in any corpus release, so it stays outside the
+      scope the server derives from the corpus. The 12-month exchange rule that is in the corpus was only
+      found on a cantonal Zürich page (the federal VZV Art. 44 source is a data gap), so there is no
+      federal-level passage to fall back on and the expected status is outside_scope.
+    expect: {status: outside_scope}
+  - id: g-scope-outside-foreign-country-de
+    question: Wie beantrage ich einen neuen Personalausweis in München, Deutschland?
+    locations: [München, Deutschland]
+    language: de
+    area: none
+    level: none
+    split: holdout
+    note: A foreign place named with its country. Clear-cut outside_scope, the counterpart to the Konstanz probes which omit the country.
+    expect: {status: outside_scope}
+  - id: g-scope-noevidence-weather-de
+    question: Wie wird das Wetter morgen in Zürich?
+    language: de
+    area: statistics
+    level: none
+    split: dev
+    note: >-
+      Out-of-scope topic (ADR 0015/scope.py: live weather forecasts are explicitly not covered; only
+      MeteoSwiss hazard guidance is). No code path detects "weather forecast" as a topic outside scope, so
+      the status is no_evidence and the response should carry the scope statement.
+    expect: {status: no_evidence}
+  - id: g-scope-noevidence-taxbill-de
+    question: Wie hoch wird meine Steuerrechnung dieses Jahr ausfallen?
+    language: de
+    area: taxes
+    level: none
+    split: holdout
+    note: >-
+      Out-of-scope topic (ADR 0015: computed amounts such as a tax bill are not covered; the server gives
+      official rules and calculators instead, never a computed personal figure). No code path detects
+      this as out of scope, so the expected status is no_evidence with the scope statement.
+    expect: {status: no_evidence}

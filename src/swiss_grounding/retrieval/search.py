@@ -19,7 +19,7 @@ CHUNK_COLUMNS = """
 # One predicate, shared by both retrieval arms below, so the dense and the lexical arm
 # can never disagree about what counts as evidence.
 #
-# The topic clause is ADR 0003: a chunk that does not carry one of the question's topics
+# The topic clause: a chunk that does not carry one of the question's topics
 # is not evidence for that question, the same way a chunk off the extent path is not.
 # `&&` is array overlap, so a chunk qualifies by carrying *any* one of the topics, not
 # all of them -- the classifier returns a margin band precisely because a near-tie is not
@@ -33,7 +33,7 @@ CHUNK_COLUMNS = """
 # may carry no categories at all (`ingest/context.py`) -- and "no opinion" must not be
 # spelled the same way as "an opinion nothing satisfies".
 #
-# The `as_of` arm is D2. `d.valid_from is not null` is the load-bearing half: a document
+# In the `as_of` arm, `d.valid_from is not null` is the load-bearing half: a document
 # that records no start date cannot be shown to have been in force on the asked-for date,
 # and the clause used to read `d.valid_from is null or ...`, which let every undated
 # document satisfy every date. A question about 2020 then came back holding the undated
@@ -206,7 +206,7 @@ def distances_for(
 
     This exists because only the dense arm measures a distance: a chunk the lexical arm
     found and the dense arm did not has never been compared to the query vector, and
-    Task 9 needs a distance for every hit -- it is what decides whether a chunk may claim
+    the reranker needs a distance for every hit -- it is what decides whether a chunk may claim
     a specificity tier, and it is published on every citation.
 
     **An id with no row is simply absent from the result.** Every id passed here came out
@@ -269,7 +269,7 @@ def hybrid_search(
 ) -> tuple[Hit, ...]:
     """Dense and lexical retrieval restricted to the extent path and the topics, fused with RRF.
 
-    The two arms are asked different things (ADR 0004). `question` is the text as the
+    The two arms are asked different things. `question` is the text as the
     user wrote it and it is what the lexical arm matches, because a keyword index matches
     literal terms and the caller's own words are the ones worth matching.
     `embedded_question` is what the dense arm embeds -- the caller's English rendering,
@@ -279,13 +279,13 @@ def hybrid_search(
     which is what a caller with only one string has and is the honest default for a test
     about the filter rather than about the query.
 
-    `topics` is a hard filter (ADR 0003), and an empty tuple applies no filter at all
+    `topics` is a hard filter, and an empty tuple applies no filter at all
     rather than a filter nothing satisfies -- see FILTER for why the two must differ.
     Unknown topic ids are the caller's to reject; `query_core._validate` does it, and an
     unknown id reaching here simply matches no chunk.
 
     Every returned hit carries the cosine distance it would have had in the dense arm,
-    backfilled for the lexically-retrieved ones. The plan sited that backfill after
+    backfilled for the lexically-retrieved ones. The obvious place for that backfill is after
     diversification, over the ≤25 surviving ids; it runs here instead, over the fused
     candidate set, because the distance decides the specificity tier and the tier is the
     reranker's outer ordering key -- fetching it later would mean publishing a tier that

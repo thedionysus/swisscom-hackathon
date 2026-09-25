@@ -87,7 +87,7 @@ create table if not exists chunk (
     text_en          text not null,
     heading_path     text not null default '',
     anchor           text,
-    -- Generated description of what the document is about and what this chunk covers (ADR 0005).
+    -- Generated description of what the document is about and what this chunk covers.
     -- Indexed with the text, never cited: `retrieval/cite.py` reads text_en and text_original only.
     context_en       text not null default '',
     embedding        vector({{EMBEDDING_DIM}}) not null,
@@ -106,8 +106,8 @@ create table if not exists chunk (
 -- Databases created before this column existed pick it up on the next db init.
 alter table chunk add column if not exists context_en text not null default '';
 
--- The one definition of `tsv`, which must cover the generated context as well as the text
--- (ADR 0005). It is here rather than inline in `create table` because `create table if not
+-- The one definition of `tsv`, which must cover the generated context as well as the text.
+-- It is here rather than inline in `create table` because `create table if not
 -- exists` skips an existing table: an inline definition would reach databases created from
 -- scratch and never the one already holding the corpus. A generated column cannot be altered
 -- in place, so an existing one is dropped and rebuilt -- which also drops `chunk_tsv_idx`,

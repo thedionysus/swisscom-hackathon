@@ -211,7 +211,7 @@ def test_budget_cap_blocks_a_paid_run(corpus_db, monkeypatch):
 
 
 def test_budget_refusal_says_how_many_tasks_fit(corpus_db, monkeypatch):
-    """A9 follow-up: a refused stage tells the operator how many of its tasks fit in what is left,
+    """A refused stage tells the operator how many of its tasks fit in what is left,
     computed from the price it would actually pay, instead of leaving them to guess --limit."""
     with connect(corpus_db) as conn:
         upsert_source(conn, AHV)

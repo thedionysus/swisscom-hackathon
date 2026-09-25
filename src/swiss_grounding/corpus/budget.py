@@ -8,12 +8,15 @@ PRICES: dict[str, tuple[float, float]] = {
     # Anthropic sync fallback, stated at half its list price like the rows above (sync x2 = $1 / $5).
     "claude-haiku-4-5-20251001": (0.5, 2.5),
     "claude-haiku-4-5": (0.5, 2.5),
+    # Swiss {ai} Weeks hackathon key: no charge; the gateway caps it at 10M input and 2.5M output tokens.
+    # Replace with Swisscom's per-token price when running on a paid subscription.
+    "swiss-ai/Apertus-v1.5-70B": (0.0, 0.0),
 }
 SYNC_MULTIPLIER = 2.0
 CHARS_PER_TOKEN = 3          # conservative for German/French/Italian
-OCR_IMAGE_TOKENS = 1500      # per page image; replaced by the pilot's measured value (Task 16)
+OCR_IMAGE_TOKENS = 1500      # per page image; replaced by the pilot's measured value
 
-# corpus.batch_job.kind values that map to the "describe" ledger kind (A3).
+# corpus.batch_job.kind values that map to the "describe" ledger kind.
 DESCRIBE_BATCH_KINDS = ("describe-doc", "describe-chunk")
 # Batch statuses that no longer count against the budget while in flight.
 TERMINAL_NON_COUNTING_STATUSES = ("failed", "expired", "cancelled")
@@ -46,7 +49,7 @@ def spent(conn: psycopg.Connection, kind: str | None = None) -> float:
 
 
 def _in_flight_batch_usd(conn: psycopg.Connection, kind: str | None = None) -> float:
-    """A3: batch jobs not yet ingested still count against the cap, so a second run of the
+    """Batch jobs not yet ingested still count against the cap, so a second run of the
     pipeline cannot pass `ensure_within` while the first run's batches are still pending."""
     placeholders = ",".join(["%s"] * len(TERMINAL_NON_COUNTING_STATUSES))
     params: list[object] = list(TERMINAL_NON_COUNTING_STATUSES)
