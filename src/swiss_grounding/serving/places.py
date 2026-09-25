@@ -72,6 +72,11 @@ def _from_argument(text: str, resolver: Resolver, scope: Scope = DECLARED) -> Pl
     return _from_resolution(text.strip(), resolver.resolve(cleaned), scope)
 
 
+def place_names(tree: LocationTree, extents: Sequence[str]) -> tuple[str, ...]:
+    """Every name and alias of the places at `extents`, in every language the tree has."""
+    return tuple(name for extent in extents for name in tree.get(extent).all_names())
+
+
 def place_outcomes(question: str, locations: Sequence[str], resolver: Resolver,
                    tree: LocationTree, scope: Scope = DECLARED) -> tuple[PlaceOutcome, ...]:
     """One outcome per place argument; one outcome for the question when no argument was sent."""
