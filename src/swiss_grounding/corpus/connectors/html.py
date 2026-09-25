@@ -283,7 +283,10 @@ class HtmlConnector:
             url, conditional = item
             # A known PDF sits in the revisit queue too; one matched by pdf_link_patterns has no .pdf
             # suffix to stop it, and it is the PDF connector's to re-check, not a page.
-            if url in queue.seen or _matches(url, pdf_patterns) or not self._allowed(url, prefixes, min_delay, deny):
+            if url in queue.seen or not self._crawlable(url, prefixes, pdf_patterns, deny):
+                continue
+            if not self._robots_allow(url, min_delay):
+                crawl.skip(url, "robots")
                 continue
             queue.seen.add(url)
             pages += 1
@@ -403,8 +406,9 @@ class _CrawlResults:
             return
         # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
         if not self._pdf_allowed(pdf_url):
+            # A rule, not a failure: as a quarantine entry it would count as failed and never clear.
             self._pdfs_refused.add(pdf_url)
-            self.errors.append((pdf_url, "PDF disallowed by robots.txt"))
+            self.skip(pdf_url, "robots")
             return
         self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=language, title_hint=title_hint,
                                            source_id=self._spec.id)

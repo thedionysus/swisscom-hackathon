@@ -73,6 +73,8 @@ def test_robots_disallow_is_respected_only_when_switched_on():
     off = HtmlConnector(_client(robots), CrawlPolicy(False, 0)).run(_spec(), known={})
     assert "https://www.x.ch/de/hund" not in {d.url for d in on.documents}
     assert "https://www.x.ch/de/hund" in {d.url for d in off.documents}
+    assert on.skipped == (("https://www.x.ch/de/hund", "robots"),) and on.errors == ()
+    assert off.skipped == ()
 
 
 def test_robots_file_is_not_requested_when_switched_off():
@@ -502,11 +504,13 @@ def test_robots_group_for_our_own_name_can_disallow_what_star_allows():
     assert "https://www.x.ch/de/hund" not in {d.url for d in result.documents}
 
 
-def test_pdf_link_disallowed_by_robots_is_reported_and_not_queued():
+def test_pdf_link_disallowed_by_robots_is_counted_as_skipped_not_as_a_failure():
+    """A robots.txt refusal is a rule, not a failure: as a quarantine entry it never cleared (#51 audit)."""
     robots = "User-agent: *\nDisallow: /de/merkblatt.pdf\n"
     result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
     assert result.pdfs == ()
-    assert ("https://www.x.ch/de/merkblatt.pdf", "PDF disallowed by robots.txt") in result.errors
+    assert result.skipped == (("https://www.x.ch/de/merkblatt.pdf", "robots"),)
+    assert result.errors == ()
 
 
 def test_pdf_link_is_queued_when_robots_is_switched_off():
@@ -769,7 +773,7 @@ def test_pdf_urls_obey_robots_and_count_against_max_pdfs():
                               ("https://www.gl.ch/public/tarif.pdf", "max_pdfs"))
     result = HtmlConnector(_client(robots, pages={}), CrawlPolicy(True, 0)).run(_pdf_only_spec(), known={})
     assert [p.url for p in result.pdfs] == ["https://www.gl.ch/public/tarif.pdf"]
-    assert ("https://www.gl.ch/public/wegleitung.pdf", "PDF disallowed by robots.txt") in result.errors
+    assert result.skipped == (("https://www.gl.ch/public/wegleitung.pdf", "robots"),)
 
 
 def test_pdfs_in_a_json_attribute_are_handed_over_and_a_known_one_is_never_fetched_as_a_page():

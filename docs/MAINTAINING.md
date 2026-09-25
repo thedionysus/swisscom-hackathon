@@ -197,7 +197,7 @@ versions whose start date has arrived.
 | Page returns 200 but its `<title>` or h1 says it is an error page ("Seite nicht gefunden", "Page introuvable", "Error 404") | Not stored, its links not followed, and quarantined as a fetch error. A document stored earlier at that URL is not withdrawn. |
 | URL already owned by another source | Left alone and counted as a duplicate. |
 | Page whose `<link rel="canonical">` names another page of the source, stored in the same run with the same text | Not stored a second time; counted as `skipped[duplicate of canonical]`. A document stored earlier under the alias URL is left as it is. |
-| In-scope link to a `.docx`, `.xlsx`, `.csv`, `.zip` or `.ics` file, a PDF beyond `max_pdfs`, or a page answering with a type that is neither HTML nor PDF | Not fetched or stored, but counted per reason in the fetch report: `skipped[.docx]=3 skipped[max_pdfs]=12`. A link without a `.pdf` suffix that answers with a PDF is handed to the PDF connector. |
+| In-scope link to a `.docx`, `.xlsx`, `.csv`, `.zip` or `.ics` file, a PDF beyond `max_pdfs`, a page or PDF that robots.txt disallows, or a page answering with a type that is neither HTML nor PDF | Not fetched or stored, but counted per reason in the fetch report: `skipped[.docx]=3 skipped[max_pdfs]=12 skipped[robots]=4`. These are not failures and are not quarantined. A link without a `.pdf` suffix that answers with a PDF is handed to the PDF connector. |
 
 After `fetch`, `corpus run` only works on what is new. A chunk whose text did not change keeps its
 description, topics and boilerplate verdict from the earlier version. A vector is reused whenever the
