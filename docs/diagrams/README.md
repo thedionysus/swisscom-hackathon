@@ -46,7 +46,7 @@ Every passage keeps its section's breadcrumb and anchor, its order in the docume
 
 ### 06 · OCR, descriptions and embeddings
 
-The enrich stage of corpus run. Descriptions are written in each language the text exists in and are part of both the embedded text and the keyword index. Embeddings run locally with bge-m3; the OpenAI index is opt-in, paid, and left out of the published dump.
+The enrich stage of corpus run. Descriptions are written in each language the text exists in and are part of both the embedded text and the keyword index. Embeddings run locally with bge-m3; the OpenAI index is opt-in and paid; corpus-latest leaves it out, and it is the only index in the Run 3 release.
 
 ![OCR, descriptions and embeddings](06-describe-embed.png)
 
@@ -72,7 +72,7 @@ public.location holds every place a question or a source can name: Switzerland, 
 
 ### 09 · Coverage by canton
 
-How much local data each canton has: passages from the canton's own site and from its covered cities' sites, counted in the local corpus. Federal sources apply everywhere and are not part of the shading. Hover a canton for its sources.
+How much local data each canton has in the Run 3 corpus (release corpus-run3-cleaned-2026-09-25): passages from the canton's own sources and from its communes' sources. Federal sources apply everywhere and are not part of the shading. Hover a canton for its numbers and a dot for the commune's name.
 
 ![Coverage by canton](09-coverage-map.png)
 
@@ -182,27 +182,27 @@ Every place gets one status, from the first rule that applies. A place is never 
 
 ### 22 · Models by stage
 
-Which model runs at each stage, and where. Building the corpus pays for OCR and descriptions, by default with OpenAI through the Batch API; embeddings are made on this machine. Answering a question needs no key: bge-m3 embeds the question and the reranker scores the candidates locally (BAAI/bge-reranker-v2-m3 on a GPU or Apple MPS, cross-encoder/mmarco-mMiniLMv2-L12-H384-v1 on a CPU). eval label and eval generate call CORPUS_DOC_MODEL through OpenAI.
+Which model runs at each stage, and where. Building the corpus pays for OCR and descriptions, by default with OpenAI through the Batch API; embeddings are made on this machine. Answering a question needs no key: bge-m3 embeds the question and the reranker scores the candidates locally (BAAI/bge-reranker-v2-m3 on a GPU or Apple MPS, cross-encoder/mmarco-mMiniLMv2-L12-H384-v1 on a CPU). Apertus runs direct calls only, at $0 on the Swiss {ai} Weeks key (10M input and 2.5M output tokens). The Run 3 corpus used gpt-5-nano for OCR and text-embedding-3-large for every passage, with no bge-m3 vectors, so serving it takes SERVING_INDEX=openai-3l; Apertus is writing its descriptions.
 
 ![Models by stage](22-models-by-stage.png)
 
-[HTML](22-models-by-stage.html) · code: [`src/swiss_grounding/config.py`](../../src/swiss_grounding/config.py) · [`src/swiss_grounding/corpus/budget.py`](../../src/swiss_grounding/corpus/budget.py) · [`src/swiss_grounding/corpus/providers.py`](../../src/swiss_grounding/corpus/providers.py) · [`src/swiss_grounding/serving/reranker.py`](../../src/swiss_grounding/serving/reranker.py) · [`src/swiss_grounding/app.py`](../../src/swiss_grounding/app.py) · [`src/swiss_grounding/serving/translation.py`](../../src/swiss_grounding/serving/translation.py) · [`src/swiss_grounding/locations/geoadmin.py`](../../src/swiss_grounding/locations/geoadmin.py) · [`src/swiss_grounding/cli/eval_commands.py`](../../src/swiss_grounding/cli/eval_commands.py) · [`evals/judge_harness.py`](../../evals/judge_harness.py)
+[HTML](22-models-by-stage.html) · code: [`src/swiss_grounding/config.py`](../../src/swiss_grounding/config.py) · [`src/swiss_grounding/corpus/budget.py`](../../src/swiss_grounding/corpus/budget.py) · [`src/swiss_grounding/corpus/providers.py`](../../src/swiss_grounding/corpus/providers.py) · [`src/swiss_grounding/corpus/llm_factory.py`](../../src/swiss_grounding/corpus/llm_factory.py) · [`src/swiss_grounding/serving/reranker.py`](../../src/swiss_grounding/serving/reranker.py) · [`src/swiss_grounding/app.py`](../../src/swiss_grounding/app.py) · [`src/swiss_grounding/serving/translation.py`](../../src/swiss_grounding/serving/translation.py) · [`src/swiss_grounding/serving/translation_apertus.py`](../../src/swiss_grounding/serving/translation_apertus.py) · [`src/swiss_grounding/locations/geoadmin.py`](../../src/swiss_grounding/locations/geoadmin.py) · [`src/swiss_grounding/cli/eval_commands.py`](../../src/swiss_grounding/cli/eval_commands.py) · [`evals/judge_harness.py`](../../evals/judge_harness.py)
 
 ### 23 · Serving settings
 
-What the server decides from its settings when it starts. Without keys nothing is translated, no parliament tools are listed and the question is embedded locally with bge-m3. The hardware picks the reranker, and the reranker decides which fitted relevance model may be used; until one is fitted, the provisional score applies. Every setting comes from the environment or .env, except HF_HUB_OFFLINE.
+What the server decides from its settings when it starts. Without keys nothing is translated, no parliament tools are listed and the question is embedded locally with bge-m3; the Run 3 release has only OpenAI vectors, so it is served with SERVING_INDEX=openai-3l and OPENAI_API_KEY. The hardware picks the reranker, and the reranker decides which fitted relevance model may be used; until one is fitted, the provisional score applies. Every setting comes from the environment or .env, except HF_HUB_OFFLINE.
 
 ![Serving settings](23-serving-settings.png)
 
-[HTML](23-serving-settings.html) · code: [`src/swiss_grounding/config.py`](../../src/swiss_grounding/config.py) · [`src/swiss_grounding/app.py`](../../src/swiss_grounding/app.py) · [`src/swiss_grounding/serving/reranker.py`](../../src/swiss_grounding/serving/reranker.py) · [`src/swiss_grounding/serving/relevance.py`](../../src/swiss_grounding/serving/relevance.py) · [`src/swiss_grounding/serving/translation.py`](../../src/swiss_grounding/serving/translation.py) · [`src/swiss_grounding/mcp_server/zbern.py`](../../src/swiss_grounding/mcp_server/zbern.py) · [`src/swiss_grounding/cli/main.py`](../../src/swiss_grounding/cli/main.py)
+[HTML](23-serving-settings.html) · code: [`src/swiss_grounding/config.py`](../../src/swiss_grounding/config.py) · [`src/swiss_grounding/app.py`](../../src/swiss_grounding/app.py) · [`src/swiss_grounding/serving/reranker.py`](../../src/swiss_grounding/serving/reranker.py) · [`src/swiss_grounding/serving/relevance.py`](../../src/swiss_grounding/serving/relevance.py) · [`src/swiss_grounding/serving/translation.py`](../../src/swiss_grounding/serving/translation.py) · [`src/swiss_grounding/serving/translation_apertus.py`](../../src/swiss_grounding/serving/translation_apertus.py) · [`src/swiss_grounding/mcp_server/zbern.py`](../../src/swiss_grounding/mcp_server/zbern.py) · [`src/swiss_grounding/cli/main.py`](../../src/swiss_grounding/cli/main.py)
 
 ### 24 · Corpus build settings
 
-How the paid stages are called and what they may spend. CORPUS_LLM_PROVIDER defaults to fake, so a real build sets openai or anthropic with its key. OpenAI calls go through the Batch API unless --sync is passed; Anthropic calls are always direct. The local bge-m3 index needs EMBEDDING_BACKEND=sentence_transformers; the OpenAI index is opt-in and paid. Every paid stage stops at CORPUS_BUDGET_USD.
+How the paid stages are called and what they may spend. CORPUS_LLM_PROVIDER defaults to fake, so a real build sets openai, anthropic or apertus with its key. OpenAI calls go through the Batch API unless --sync is passed; Anthropic and Apertus calls are always direct. Apertus 1.5 70B on Swisscom's Swiss AI Platform costs $0 on the Swiss {ai} Weeks key, capped at 10M input and 2.5M output tokens and 5 requests a second. The local bge-m3 index needs EMBEDDING_BACKEND=sentence_transformers; the OpenAI index is opt-in and paid. Every paid stage stops at CORPUS_BUDGET_USD.
 
 ![Corpus build settings](24-build-settings.png)
 
-[HTML](24-build-settings.html) · code: [`src/swiss_grounding/config.py`](../../src/swiss_grounding/config.py) · [`src/swiss_grounding/cli/corpus_commands.py`](../../src/swiss_grounding/cli/corpus_commands.py) · [`src/swiss_grounding/cli/corpus_run.py`](../../src/swiss_grounding/cli/corpus_run.py) · [`src/swiss_grounding/corpus/budget.py`](../../src/swiss_grounding/corpus/budget.py) · [`src/swiss_grounding/corpus/providers.py`](../../src/swiss_grounding/corpus/providers.py) · [`docs/MAINTAINING.md`](../../docs/MAINTAINING.md)
+[HTML](24-build-settings.html) · code: [`src/swiss_grounding/config.py`](../../src/swiss_grounding/config.py) · [`src/swiss_grounding/cli/corpus_commands.py`](../../src/swiss_grounding/cli/corpus_commands.py) · [`src/swiss_grounding/cli/corpus_run.py`](../../src/swiss_grounding/cli/corpus_run.py) · [`src/swiss_grounding/corpus/budget.py`](../../src/swiss_grounding/corpus/budget.py) · [`src/swiss_grounding/corpus/providers.py`](../../src/swiss_grounding/corpus/providers.py) · [`src/swiss_grounding/corpus/llm_factory.py`](../../src/swiss_grounding/corpus/llm_factory.py) · [`docs/MAINTAINING.md`](../../docs/MAINTAINING.md)
 
 ### 25 · Reranker findings
 

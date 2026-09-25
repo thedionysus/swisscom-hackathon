@@ -25,6 +25,6 @@ Slides for the hackathon jury, 16:9 (2560×1440 PNG), plain language. Drop the P
 | 17 | [Architecture at a glance](17-architecture.png) | yes |
 | 18 | [Models we use](18-models.png) |  |
 | 19 | [How we got here](19-how-we-got-here.png) |  |
-| 20 | [Runs with or without keys](20-keys.png) |  |
+| 20 | [Keys and what they add](20-keys.png) |  |
 | 21 | [How we know it works](21-how-we-know.png) | yes |
 | 22 | [From clone to running server](22-quick-start.png) |  |

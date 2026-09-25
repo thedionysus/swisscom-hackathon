@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Runs with or without keys · Swiss Grounding</title>
+  <title>Keys and what they add · Swiss Grounding</title>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,8 +42,8 @@
   <main class="frame">
     <p class="eyebrow">Swiss Grounding · jury deck · slide 20</p>
 <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="keys-title keys-desc">
-<title id="keys-title">Runs with or without keys</title>
-<desc id="keys-desc">With no key, search and lookups work on local models; a Supertext key adds translation of questions and cited passages; a zbern token adds the Parliament and votes tools. A GPU or Apple chip gets the larger reranker with 30 candidates, a plain CPU the smaller one with 20. Building the corpus needs an OpenAI or Anthropic key under a hard budget cap.</desc>
+<title id="keys-title">Keys and what they add</title>
+<desc id="keys-desc">The Run 3 corpus has only OpenAI vectors, so each question is embedded with an OpenAI key; a Supertext or Apertus key adds translation of questions and cited passages; a zbern token adds the Parliament and votes tools. A GPU or Apple chip gets the larger reranker with 30 candidates, a plain CPU the smaller one with 20. Building the corpus needs an Apertus, OpenAI or Anthropic key under a hard budget cap.</desc>
 <defs>
 <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
 <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
@@ -58,12 +58,12 @@
 <!-- nodes -->
 <rect x="40" y="232" width="368" height="112" rx="6" fill="#f5f5f5"/>
 <rect x="40" y="232" width="368" height="112" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.6"/>
-<text x="224" y="276.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">No key</text>
-<text x="224" y="294" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">search and lookups work on local models;</text>
-<text x="224" y="310" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">no translation, no Parliament tools</text>
+<text x="224" y="276.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">OpenAI key</text>
+<text x="224" y="294" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">embeds each question: the Run 3</text>
+<text x="224" y="310" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">corpus has only OpenAI vectors</text>
 <rect x="456" y="232" width="368" height="112" rx="6" fill="#f5f5f5"/>
 <rect x="456" y="232" width="368" height="112" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
-<text x="640" y="276.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">+ Supertext key</text>
+<text x="640" y="276.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">+ Supertext or Apertus</text>
 <text x="640" y="294" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">questions and cited passages</text>
 <text x="640" y="310" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">are translated</text>
 <rect x="872" y="232" width="368" height="112" rx="6" fill="#f5f5f5"/>
@@ -83,18 +83,18 @@
 <text x="640" y="518" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">20 candidates per question</text>
 <rect x="872" y="440" width="368" height="112" rx="6" fill="#f5f5f5"/>
 <rect x="872" y="440" width="368" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-<text x="1056" y="484.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">OpenAI or Anthropic key</text>
-<text x="1056" y="502" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">needed only to build the corpus,</text>
-<text x="1056" y="518" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">under a hard budget cap</text>
+<text x="1056" y="484.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Apertus, OpenAI or Anthropic</text>
+<text x="1056" y="502" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">a key, needed only to build the</text>
+<text x="1056" y="518" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">corpus, under a hard budget cap</text>
 <!-- annotations -->
 <text x="40" y="52" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SWISS GROUNDING · KEYS</text>
-<text x="40" y="100" fill="#2d3142" font-size="40" font-family="'Instrument Serif', 'Noto Serif', serif">Runs with or without keys</text>
-<text x="40" y="132" fill="#4f5d75" font-size="16" font-family="'Geist', sans-serif">No key is needed to search. Each key adds something, and the machine picks the reranker.</text>
+<text x="40" y="100" fill="#2d3142" font-size="40" font-family="'Instrument Serif', 'Noto Serif', serif">Keys and what they add</text>
+<text x="40" y="132" fill="#4f5d75" font-size="16" font-family="'Geist', sans-serif">Run 3 searches with OpenAI vectors, so each question needs an OpenAI key. Other keys add features.</text>
 <text x="40" y="212" fill="#7a8399" font-size="12" font-family="'Geist Mono', monospace" letter-spacing="0.06em">WHAT EACH KEY ADDS</text>
 <text x="40" y="420" fill="#7a8399" font-size="12" font-family="'Geist Mono', monospace" letter-spacing="0.06em">THE MACHINE PICKS THE RERANKER</text>
 <text x="872" y="420" fill="#7a8399" font-size="12" font-family="'Geist Mono', monospace" letter-spacing="0.06em">BUILDING THE CORPUS</text>
 <text x="432" y="501" fill="#7a8399" font-size="16" font-family="'Geist', sans-serif" text-anchor="middle">or</text>
-<text x="40" y="648" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif">Setup installs the team&#x27;s shared keys, Supertext and zbern, from the private release.</text>
+<text x="40" y="648" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif">With no key at all, the smaller corpus-latest release still searches with bge-m3 on the laptop.</text>
 </svg>
   </main>
 </body>

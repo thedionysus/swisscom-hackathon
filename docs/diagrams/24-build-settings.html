@@ -42,10 +42,10 @@
   <main class="frame">
     <p class="eyebrow">Swiss Grounding · Models and configuration · 24</p>
     <h1>Corpus build settings</h1>
-    <p class="lede">How the paid stages are called and what they may spend. CORPUS_LLM_PROVIDER defaults to fake, so a real build sets openai or anthropic with its key. OpenAI calls go through the Batch API unless --sync is passed; Anthropic calls are always direct. The local bge-m3 index needs EMBEDDING_BACKEND=sentence_transformers; the OpenAI index is opt-in and paid. Every paid stage stops at CORPUS_BUDGET_USD.</p>
+    <p class="lede">How the paid stages are called and what they may spend. CORPUS_LLM_PROVIDER defaults to fake, so a real build sets openai, anthropic or apertus with its key. OpenAI calls go through the Batch API unless --sync is passed; Anthropic and Apertus calls are always direct. Apertus 1.5 70B on Swisscom&#x27;s Swiss AI Platform costs $0 on the Swiss {ai} Weeks key, capped at 10M input and 2.5M output tokens and 5 requests a second. The local bge-m3 index needs EMBEDDING_BACKEND=sentence_transformers; the OpenAI index is opt-in and paid. Every paid stage stops at CORPUS_BUDGET_USD.</p>
 <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="build-settings-title build-settings-desc">
 <title id="build-settings-title">Corpus build settings: provider, call mode, indexes and the values to set</title>
-<desc id="build-settings-desc">A decision tree for the paid calls: CORPUS_LLM_PROVIDER is fake by default and refused on a real database; openai runs the OpenAI models through the Batch API at half price unless --sync asks for direct calls at twice the price; anthropic always calls claude-haiku-4-5 directly. A second tree picks the embedding indexes: local bge-m3, and optionally the paid OpenAI index. The budget cap and the crawl, file and release settings are listed with their defaults.</desc>
+<desc id="build-settings-desc">A decision tree for the paid calls: CORPUS_LLM_PROVIDER is fake by default and refused on a real database; openai runs the OpenAI models through the Batch API at half price unless --sync asks for direct calls at twice the price; anthropic and apertus always call directly, claude-haiku-4-5 or Apertus 1.5 70B. A second tree picks the embedding indexes: local bge-m3, and optionally the paid OpenAI index. The budget cap and the crawl, file and release settings are listed with their defaults.</desc>
 <defs>
 <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
 <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
@@ -76,8 +76,8 @@
 <text x="242" y="154.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FAKE</text>
 <rect x="278" y="182" width="44" height="12" rx="2" fill="#f5f5f5"/>
 <text x="300" y="190.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">OPENAI</text>
-<rect x="198" y="246" width="60" height="12" rx="2" fill="#f5f5f5"/>
-<text x="228" y="254.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ANTHROPIC</text>
+<rect x="150" y="246" width="108" height="12" rx="2" fill="#f5f5f5"/>
+<text x="204" y="254.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ANTHROPIC, APERTUS</text>
 <rect x="842" y="162" width="24" height="12" rx="2" fill="#f5f5f5"/>
 <text x="854" y="170.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
 <rect x="846" y="226" width="20" height="12" rx="2" fill="#f5f5f5"/>
@@ -103,13 +103,14 @@
 <text x="484" y="205" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CORPUS_DOC_MODEL=gpt-5-mini</text>
 <text x="484" y="217" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CORPUS_CHUNK_MODEL=gpt-5-nano</text>
 <text x="484" y="229" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">OPENAI_API_KEY</text>
-<rect x="336" y="264" width="296" height="80" rx="6" fill="#f5f5f5"/>
-<rect x="336" y="264" width="296" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-<text x="484" y="282.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Direct calls on Claude</text>
-<text x="484" y="296" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CORPUS_ANTHROPIC_MODEL=claude-haiku-4-5-20251001</text>
-<text x="484" y="308" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">ANTHROPIC_API_KEY</text>
-<text x="484" y="320.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">all three tasks, never batched:</text>
-<text x="484" y="333.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">$1.00 in · $5.00 out per 1M tokens</text>
+<rect x="336" y="256" width="296" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="336" y="256" width="296" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="484" y="276.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Direct calls: Claude or Apertus</text>
+<text x="484" y="290" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">anthropic: claude-haiku-4-5-20251001</text>
+<text x="484" y="302" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">apertus: swiss-ai/Apertus-v1.5-70B</text>
+<text x="484" y="314" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">ANTHROPIC_API_KEY or APERTUS_API_KEY</text>
+<text x="484" y="326.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">never batched; Claude $1 · $5 per 1M,</text>
+<text x="484" y="339.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Apertus $0 on the hackathon key</text>
 <polygon points="752,160 840,200 752,240 664,200" fill="#f5f5f5"/>
 <polygon points="752,160 840,200 752,240 664,200" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
 <text x="752" y="203.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">--sync passed?</text>
@@ -137,7 +138,7 @@
 <rect x="264" y="520" width="272" height="72" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
 <text x="400" y="547" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">+ text-embedding-3-large, paid</text>
 <text x="400" y="560.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CORPUS_EMBED_TOKENS_PER_FILE=2000000</text>
-<text x="400" y="573.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">OPENAI_API_KEY; not in the published dump</text>
+<text x="400" y="573.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">OPENAI_API_KEY; Run 3&#x27;s only index</text>
 <rect x="592" y="408" width="632" height="56" rx="6" fill="#f5f5f5"/>
 <rect x="592" y="408" width="632" height="56" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
 <text x="908" y="427" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Budget cap</text>
@@ -149,8 +150,8 @@
 <text x="592" y="530" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">CORPUS_CHAT_TOKENS_PER_FILE</text>
 <text x="592" y="544" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">CORPUS_EMBED_TOKENS_PER_FILE</text>
 <text x="592" y="558" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the account&#x27;s enqueued-token limit</text>
-<text x="592" y="578" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">DATA_DIR=data</text>
-<text x="592" y="592" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">raw files, page images, Batch API files</text>
+<text x="592" y="578" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">CORPUS_SYNC_WORKERS=8 · APERTUS_WORKERS=3</text>
+<text x="592" y="592" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">parallel direct calls; Apertus under 5 requests/s</text>
 <text x="912" y="496" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">RESPECT_ROBOTS=true · CRAWL_DELAY_SECONDS=0.5</text>
 <text x="912" y="510" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">obey robots.txt; ≥ 0.5 s between requests to a host</text>
 <text x="912" y="530" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">FETCH_TIMEOUT_SECONDS=20</text>
@@ -177,7 +178,7 @@
 </svg>
 
     <footer>
-      <p>Code: <code>src/swiss_grounding/config.py</code> · <code>src/swiss_grounding/cli/corpus_commands.py</code> · <code>src/swiss_grounding/cli/corpus_run.py</code> · <code>src/swiss_grounding/corpus/budget.py</code> · <code>src/swiss_grounding/corpus/providers.py</code> · <code>docs/MAINTAINING.md</code></p>
+      <p>Code: <code>src/swiss_grounding/config.py</code> · <code>src/swiss_grounding/cli/corpus_commands.py</code> · <code>src/swiss_grounding/cli/corpus_run.py</code> · <code>src/swiss_grounding/corpus/budget.py</code> · <code>src/swiss_grounding/corpus/providers.py</code> · <code>src/swiss_grounding/corpus/llm_factory.py</code> · <code>docs/MAINTAINING.md</code></p>
       <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
     </footer>
   </main>

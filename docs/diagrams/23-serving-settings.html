@@ -42,10 +42,10 @@
   <main class="frame">
     <p class="eyebrow">Swiss Grounding · Models and configuration · 23</p>
     <h1>Serving settings</h1>
-    <p class="lede">What the server decides from its settings when it starts. Without keys nothing is translated, no parliament tools are listed and the question is embedded locally with bge-m3. The hardware picks the reranker, and the reranker decides which fitted relevance model may be used; until one is fitted, the provisional score applies. Every setting comes from the environment or .env, except HF_HUB_OFFLINE.</p>
+    <p class="lede">What the server decides from its settings when it starts. Without keys nothing is translated, no parliament tools are listed and the question is embedded locally with bge-m3; the Run 3 release has only OpenAI vectors, so it is served with SERVING_INDEX=openai-3l and OPENAI_API_KEY. The hardware picks the reranker, and the reranker decides which fitted relevance model may be used; until one is fitted, the provisional score applies. Every setting comes from the environment or .env, except HF_HUB_OFFLINE.</p>
 <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="serving-settings-title serving-settings-desc">
 <title id="serving-settings-title">Serving settings: what each one switches when the server starts</title>
-<desc id="serving-settings-desc">The server starts over stdio, or over HTTP at a fixed local address. Five decisions follow down a spine: a Supertext key turns on translation; a zbern token turns on the parliament tools; SERVING_INDEX picks bge-m3 or OpenAI question vectors; the device picks the large reranker on a GPU or Apple MPS and the small one on a CPU; and a relevance model fitted for that reranker replaces the provisional score.</desc>
+<desc id="serving-settings-desc">The server starts over stdio, or over HTTP at a fixed local address. Five decisions follow down a spine: TRANSLATOR picks Supertext or Apertus translation; a zbern token turns on the parliament tools; SERVING_INDEX picks bge-m3 or OpenAI question vectors; the device picks the large reranker on a GPU or Apple MPS and the small one on a CPU; and a relevance model fitted for that reranker replaces the provisional score.</desc>
 <defs>
 <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
 <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
@@ -112,14 +112,15 @@
 <polygon points="640,140 728,172 640,204 552,172" fill="#f5f5f5"/>
 <polygon points="640,140 728,172 640,204 552,172" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
 <text x="640" y="169.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Translate?</text>
-<text x="640" y="183" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">SUPERTEXT_API_KEY</text>
+<text x="640" y="183" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">TRANSLATOR</text>
 <rect x="800" y="140" width="424" height="64" rx="6" fill="#f5f5f5"/>
 <rect x="800" y="140" width="424" height="64" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
-<text x="1012" y="163" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Supertext translates the question and citations</text>
-<text x="1012" y="176.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">TRANSLATE_QUERY_LANGUAGES=de,fr,it,en · TRANSLATE_CITATIONS=true</text>
-<text x="1012" y="189.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">rm is off: the reranker over-scores weak Romansh passages (25)</text>
+<text x="1012" y="157" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Supertext or Apertus translates</text>
+<text x="1012" y="170.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">supertext with SUPERTEXT_API_KEY · apertus with APERTUS_API_KEY</text>
+<text x="1012" y="182.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">TRANSLATE_QUERY_LANGUAGES=de,fr,it,en · TRANSLATE_CITATIONS=true</text>
+<text x="1012" y="195.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">rm is off: the reranker over-scores weak Romansh passages (25)</text>
 <text x="396" y="169" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Nothing translated</text>
-<text x="396" y="183.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">questions stay as asked</text>
+<text x="396" y="183.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">none, or no key</text>
 <polygon points="640,228 728,260 640,292 552,260" fill="#f5f5f5"/>
 <polygon points="640,228 728,260 640,292 552,260" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
 <text x="640" y="257.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">zbern tools?</text>
@@ -144,7 +145,7 @@
 <rect x="56" y="348" width="424" height="64" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
 <text x="268" y="371" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">text-embedding-3-large</text>
 <text x="268" y="384.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">SERVING_INDEX=openai-3l · OPENAI_API_KEY</text>
-<text x="268" y="397.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one paid call per question; the prebuilt database has none</text>
+<text x="268" y="397.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one paid call per question; the Run 3 release has only these</text>
 <polygon points="640,436 728,468 640,500 552,468" fill="#f5f5f5"/>
 <polygon points="640,436 728,468 640,500 552,468" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
 <text x="640" y="465.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Device?</text>
@@ -195,7 +196,7 @@
 </svg>
 
     <footer>
-      <p>Code: <code>src/swiss_grounding/config.py</code> · <code>src/swiss_grounding/app.py</code> · <code>src/swiss_grounding/serving/reranker.py</code> · <code>src/swiss_grounding/serving/relevance.py</code> · <code>src/swiss_grounding/serving/translation.py</code> · <code>src/swiss_grounding/mcp_server/zbern.py</code> · <code>src/swiss_grounding/cli/main.py</code></p>
+      <p>Code: <code>src/swiss_grounding/config.py</code> · <code>src/swiss_grounding/app.py</code> · <code>src/swiss_grounding/serving/reranker.py</code> · <code>src/swiss_grounding/serving/relevance.py</code> · <code>src/swiss_grounding/serving/translation.py</code> · <code>src/swiss_grounding/serving/translation_apertus.py</code> · <code>src/swiss_grounding/mcp_server/zbern.py</code> · <code>src/swiss_grounding/cli/main.py</code></p>
       <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
     </footer>
   </main>
