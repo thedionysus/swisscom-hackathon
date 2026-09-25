@@ -98,6 +98,19 @@ def test_same_content_is_unchanged(corpus_db):
         assert len(_rows(conn)) == 1
 
 
+def test_an_unchanged_document_points_at_the_artifact_this_fetch_wrote(corpus_db):
+    """#12: with version-safe names or keep_html, a re-fetch of the same text writes a file under a
+    name the row never had; the row must point at it. A fetch that wrote no file keeps the old path."""
+    with connect(corpus_db) as conn:
+        upsert_source(conn, HTML_SPEC)
+        persist_document(conn, _page("https://x/p"), HTML_SPEC, NOW)
+        assert persist_document(conn, replace(_page("https://x/p"), artifact_path="raw/bern/a-1.html"),
+                                HTML_SPEC, NOW) == "unchanged"
+        assert persist_document(conn, _page("https://x/p"), HTML_SPEC, NOW) == "unchanged"
+        [row] = conn.execute("select artifact_path from corpus.document").fetchall()
+    assert row["artifact_path"] == "raw/bern/a-1.html"
+
+
 def test_nul_bytes_are_stripped_before_they_reach_postgres(corpus_db):
     """Live crawl: three PDFs (vd.ch, scuol.net, bern.ch) failed to persist with
     psycopg.DataError because their extracted text carried a NUL byte."""
