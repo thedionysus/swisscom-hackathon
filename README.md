@@ -35,6 +35,11 @@ Items marked **TBD** are still being settled by the team.
                                    # and restores the database, downloads bge-m3 and the reranker
    ```
 
+   If `setup` and the server run in a container and Docker runs outside it (the Docker socket mounted
+   into the container), `localhost:5433` does not reach the database. Export
+   `DATABASE_URL=postgresql://swiss:swiss@host.docker.internal:5433/swiss_grounding` before `setup`
+   and before starting the server; it overrides the value in `.env`.
+
    Needs about 15 GB of free disk and 6 GB of memory for Docker. Time: **TBD** (measured on an
    Apple silicon Mac).
 5. **Start command:** `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
