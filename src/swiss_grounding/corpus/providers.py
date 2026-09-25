@@ -152,6 +152,25 @@ class FakeLLM:
         return self._responder(task), Usage(len(task.user) // 3, 50)
 
 
+def chat_messages(task: LlmTask) -> list[dict]:
+    """System + user messages in the OpenAI chat format; a page image travels as a data URL."""
+    if task.image_png_b64:
+        user_content: list | str = [
+            {"type": "text", "text": task.user},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{task.image_png_b64}"}},
+        ]
+    else:
+        user_content = task.user
+    return [{"role": "system", "content": task.system}, {"role": "user", "content": user_content}]
+
+
+def _parsed(text: str, usage: Usage, finish_reason: str | None) -> tuple[dict, Usage]:
+    try:
+        return extract_json(text), usage
+    except ValueError as exc:
+        raise ReplyError(f"unparseable reply: {exc}", usage, finish_reason) from exc
+
+
 class OpenAILLM:
     def __init__(self, api_key: str, max_retries: int = 2):
         """`max_retries` also covers 429s: the client waits as the rate-limit headers ask."""
@@ -160,16 +179,9 @@ class OpenAILLM:
 
     @staticmethod
     def chat_body(task: LlmTask) -> dict:
-        if task.image_png_b64:
-            user_content: list | str = [
-                {"type": "text", "text": task.user},
-                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{task.image_png_b64}"}},
-            ]
-        else:
-            user_content = task.user
         return {
             "model": task.model,
-            "messages": [{"role": "system", "content": task.system}, {"role": "user", "content": user_content}],
+            "messages": chat_messages(task),
             "response_format": {"type": "json_object"},
             "max_completion_tokens": task.max_output_tokens,
             # gpt-5 models bill reasoning tokens as output; descriptions and OCR need none.
@@ -181,10 +193,7 @@ class OpenAILLM:
         choice = response.choices[0]
         text = choice.message.content or ""
         usage = Usage(response.usage.prompt_tokens, response.usage.completion_tokens)
-        try:
-            return extract_json(text), usage
-        except ValueError as exc:
-            raise ReplyError(f"unparseable reply: {exc}", usage, getattr(choice, "finish_reason", None)) from exc
+        return _parsed(text, usage, getattr(choice, "finish_reason", None))
 
 
 class AnthropicLLM:
@@ -208,3 +217,30 @@ class AnthropicLLM:
             return extract_json(text), usage
         except ValueError as exc:
             raise ReplyError(f"unparseable reply: {exc}", usage, getattr(response, "stop_reason", None)) from exc
+
+
+APERTUS_TEMPERATURE = 0.2   # descriptions and labels want steady wording, not variety
+
+
+class ApertusLLM:
+    """Apertus through an OpenAI-compatible endpoint (Swisscom's Swiss AI Platform). Direct calls only:
+    the platform has no Batch API. The model is the configured one, whatever the task names (as with
+    AnthropicLLM). `max_retries` also covers 429s from the 5 requests/s limit."""
+
+    def __init__(self, api_key: str, *, base_url: str, model: str, timeout_seconds: float = 60.0,
+                 max_retries: int = 2, client=None):
+        if client is None:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout_seconds, max_retries=max_retries)
+        self._client = client
+        self.model = model
+
+    def chat_body(self, task: LlmTask) -> dict:
+        return {"model": self.model, "messages": chat_messages(task), "response_format": {"type": "json_object"},
+                "max_tokens": task.max_output_tokens, "temperature": APERTUS_TEMPERATURE}
+
+    def complete(self, task: LlmTask) -> tuple[dict, Usage]:
+        response = self._client.chat.completions.create(**self.chat_body(task))
+        choice = response.choices[0]
+        usage = Usage(response.usage.prompt_tokens, response.usage.completion_tokens)
+        return _parsed(choice.message.content or "", usage, getattr(choice, "finish_reason", None))
