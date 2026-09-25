@@ -18,6 +18,18 @@ published database, which `setup` does not install, follow [`docs/USING-A-RELEAS
 
 ## Evaluation quick start
 
+> **Judges and evaluators: evaluate only the database in the release
+> [`corpus-full-sources-described-2026-09-25`](https://github.com/thedionysus/swisscom-hackathon/releases/tag/corpus-full-sources-described-2026-09-25)**
+> (published 2026-09-25 at 12:02 CEST). It is our latest and final corpus: 252 sources, about
+> 271,000 chunks, every document and chunk described, and every chunk embedded with its description.
+> Ignore the older releases `corpus-latest` and `corpus-run3-cleaned-2026-09-25`.
+>
+> `swiss-grounding setup` still installs `corpus-latest`, so do not use it to get the data. Follow
+> [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md) instead: it downloads and checks this release,
+> restores it into its own database `swiss_grounding_full`, and starts the server on it with
+> `SERVING_INDEX=openai-3l`. This database has only OpenAI vectors, so the server needs an
+> `OPENAI_API_KEY`. Where the steps below differ from that guide, the guide wins.
+
 Items marked **TBD** are still being settled by the team.
 
 1. **Commit to evaluate:** branch `main`.
@@ -46,20 +58,24 @@ Items marked **TBD** are still being settled by the team.
 5. **Start command:** `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
    `HF_HUB_OFFLINE=1 uv run swiss-grounding serve --transport http --host 0.0.0.0 --port 8000` for HTTP.
    The Docker database must be running (`docker compose up -d db` after a restart).
-6. **Prebuilt data:** a PostgreSQL dump (documents, chunks, bge-m3 vectors) of about 900 MB in parts
-   of 150 MiB, downloaded by `setup` from this repository's `corpus-latest` release and checked
-   against the checksums in its manifest. `setup` also downloads the models `BAAI/bge-m3` and the
+6. **Prebuilt data:** the database to evaluate is the release
+   `corpus-full-sources-described-2026-09-25`, a PostgreSQL dump (documents, chunks, descriptions,
+   OpenAI `text-embedding-3-large` vectors) in parts, restored and checked as described in
+   [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md). The older `corpus-latest` dump (bge-m3
+   vectors, about 900 MB) is what `setup` downloads; it is not the one to evaluate. `setup` also downloads the models `BAAI/bge-m3` and the
    reranker from Hugging Face. Rebuilding the corpus from the sources (crawl, OCR, descriptions,
    embeddings) is described in [`docs/MAINTAINING.md`](docs/MAINTAINING.md); the crawl alone takes
    hours, and descriptions need an LLM key.
-7. **Credentials:** the server starts and answers without any of them. `DATABASE_URL` points at the
+7. **Credentials:** on the evaluated database the server needs `OPENAI_API_KEY`; it starts and answers
+   without the others. `DATABASE_URL` points at the
    Docker database and comes from `.env.example`; it is not a secret.
 
    | Variable | What it is for | Without it |
    |---|---|---|
    | `SUPERTEXT_API_KEY` | Translates questions into the other languages, and cited passages into the question's language | No translation: searches in other languages use vectors only |
    | `ZBERN_MCP_TOKEN` | The `zbern_*` tools: Swiss Parliament and federal popular votes, from zbern.ch | The `zbern_*` tools are not listed |
-   | `GH_TOKEN` | Setup only: downloads the database from the private release | Run `gh auth login` instead |
+   | `OPENAI_API_KEY` | Embeds every question for the evaluated database (`SERVING_INDEX=openai-3l`) | That database cannot be searched |
+   | `GH_TOKEN` | Downloads the database from the private release | Run `gh auth login` instead |
 
    The values reach the organisers through their secure channel, never through the repository.
 8. **Hosted endpoint:** none.
