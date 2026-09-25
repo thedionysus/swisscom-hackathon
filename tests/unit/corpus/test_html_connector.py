@@ -628,6 +628,44 @@ def test_alias_whose_canonical_holds_the_same_text_is_not_a_second_document():
     assert result.skipped == (("https://www.g.ch/themes/env", "duplicate of canonical"),)
 
 
+_BILINGUAL = """<html lang="{lang}"><head><link rel="canonical" href="{canonical}">
+  <link rel="alternate" hreflang="de" href="https://www.g.ch/de/themes/umwelt">
+  <link rel="alternate" hreflang="fr" href="{fr}"></head><body><main><h1>{title}</h1><p>{text}</p></main></body></html>"""
+
+
+def _bilingual_run(tmp_path=None):
+    """The German page names the French alias as its translation; the alias names its canonical."""
+    alias, canonical = "https://www.g.ch/themes/env", "https://www.g.ch/fr/themes/env"
+    french = {"lang": "fr", "title": "Environnement", "text": "Les parcs."}
+    pages = {
+        "https://www.g.ch/de/themes/umwelt": _BILINGUAL.format(lang="de", canonical="https://www.g.ch/de/themes/umwelt",
+                                                               fr=alias, title="Umwelt", text="Die Parks."),
+        alias: _BILINGUAL.format(canonical=canonical, fr=alias, **french),
+        canonical: _BILINGUAL.format(canonical=canonical, fr=canonical, **french),
+    }
+    spec = SourceSpec(id="g", name="G", publisher="G", authority="official_info", level="municipal",
+                      extent_id="CH-GE-6621", connector="html", tier=1, languages=("de", "fr"),
+                      config={"start_urls": ["https://www.g.ch/de/themes/umwelt"], "keep_html": tmp_path is not None,
+                              "allow_prefixes": ["https://www.g.ch/de/themes/", "https://www.g.ch/themes/",
+                                                 "https://www.g.ch/fr/themes/"]})
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0), data_dir=tmp_path).run(spec, known={})
+    return {d.url: d for d in result.documents}, result
+
+
+def test_a_translation_that_names_the_alias_is_grouped_with_the_canonical_page():
+    """Dropping the alias must not cost the German page its French translation (audit of PR #77)."""
+    by_url, result = _bilingual_run()
+    assert set(by_url) == {"https://www.g.ch/de/themes/umwelt", "https://www.g.ch/fr/themes/env"}
+    assert by_url["https://www.g.ch/de/themes/umwelt"].work_key == by_url["https://www.g.ch/fr/themes/env"].work_key
+    assert result.skipped == (("https://www.g.ch/themes/env", "duplicate of canonical"),)
+
+
+def test_the_dropped_alias_leaves_no_raw_html_file(tmp_path):
+    by_url, _ = _bilingual_run(tmp_path)
+    kept = {Path(d.artifact_path) for d in by_url.values()}
+    assert set((tmp_path / "raw" / "g").iterdir()) == kept
+
+
 def test_page_whose_canonical_holds_other_text_stays_a_document():
     """A list's page 2 often names page 1 as canonical; its items are not page 1's."""
     canonical = "https://www.g.ch/fr/themes/env"

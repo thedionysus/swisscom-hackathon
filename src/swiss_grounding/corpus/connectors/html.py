@@ -374,6 +374,7 @@ class _CrawlResults:
         self.errors: list[tuple[str, str]] = []
         self.skipped: dict[str, str] = {}
         self.canonicals: dict[str, str | None] = {}
+        self._raw_html: dict[str, bytes] = {}  # only with html_dir; held until result() drops aliases
 
     def skip(self, url: str, reason: str) -> None:
         self.skipped.setdefault(url, reason)
@@ -415,33 +416,47 @@ class _CrawlResults:
                 retrieved_via=self._spec.retrieved_via, etag=response.headers.get("etag"),
                 last_modified=response.headers.get("last-modified"))
             if self._html_dir is not None:
-                # Named by the text's hash, not the markup's: a page whose markup changes on every fetch
-                # (a token, a timestamp) keeps one file per version of its text.
-                doc = replace(doc, artifact_path=save_artifact(self._html_dir, self._spec.id, final,
-                                                               response.content, ".html", version=content_hash(doc)))
+                self._raw_html[final] = response.content  # written in result(), once aliases are gone
             self.pending.append(doc)
 
     def _drop_canonical_aliases(self) -> None:
         """Drop a page that names another page as canonical when that page was stored in this run
         with the same text, and names itself (or nothing) as canonical (#27). The canonical link
         alone is not enough: sites point language versions, or page 2 of a list, at one canonical
-        URL, and those hold other text. Both stay documents then, as before."""
+        URL, and those hold other text. Both stay documents then, as before.
+
+        A translation that names the alias names its canonical page from then on, so the German
+        page listing the French alias is still grouped with the French canonical page."""
         by_url = {doc.url: doc for doc in self.pending}
-        aliases = set()
+        canonical_of: dict[str, str] = {}
         for doc in self.pending:
             canonical = self.canonicals.get(doc.url)
             target = by_url.get(canonical) if canonical and canonical != doc.url else None
             if (target is not None and self.canonicals.get(target.url) in (None, target.url)
                     and target.language == doc.language and content_hash(target) == content_hash(doc)):
-                aliases.add(doc.url)
+                canonical_of[doc.url] = target.url
                 self.skip(doc.url, "duplicate of canonical")
-        self.pending = [doc for doc in self.pending if doc.url not in aliases]
-        for url in aliases:  # an alias left in would join its canonical's translation group as a
+        self.pending = [doc for doc in self.pending if doc.url not in canonical_of]
+        for url in canonical_of:  # an alias left in would join its canonical's translation group as a
             self.alternates_by_url.pop(url, None)  # second page of the same language, and break it
             self.page_languages.pop(url, None)
+            self._raw_html.pop(url, None)
+        for alternates in self.alternates_by_url.values():
+            for lang, href in alternates.items():
+                alternates[lang] = canonical_of.get(urldefrag(href)[0], href)
+
+    def _save_raw_html(self) -> None:
+        """Keep each stored page's raw HTML (config.keep_html, #12). Named by the text's hash, not the
+        markup's: a page whose markup changes on every fetch (a token, a timestamp) keeps one file per
+        version of its text."""
+        self.pending = [replace(doc, artifact_path=save_artifact(self._html_dir, self._spec.id, doc.url,
+                                                                 self._raw_html[doc.url], ".html",
+                                                                 version=content_hash(doc)))
+                        if doc.url in self._raw_html else doc for doc in self.pending]
 
     def result(self) -> ConnectorResult:
         self._drop_canonical_aliases()
+        self._save_raw_html()
         keys = _language_groups(self.alternates_by_url, self.page_languages)
         documents = tuple(replace(doc, work_key=keys.get(doc.url, work_key(doc.url, {}))) for doc in self.pending)
         return ConnectorResult(documents=documents, unchanged_urls=tuple(self.unchanged),
