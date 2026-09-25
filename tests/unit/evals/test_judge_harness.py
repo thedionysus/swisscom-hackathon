@@ -187,7 +187,7 @@ def test_claude_raises_runtime_error_on_timeout(monkeypatch):
 
 
 def test_run_case_records_error_when_claude_fails(monkeypatch):
-    def fake_claude(prompt, model, *, mcp, stream):
+    def fake_claude(prompt, model, *, mcp, stream, mcp_config=None):
         raise RuntimeError("boom")
 
     monkeypatch.setattr(judge_harness, "_claude", fake_claude)
@@ -286,3 +286,12 @@ def test_run_judge_suite_resume_keeps_clean_records_and_reruns_errors(monkeypatc
     assert ran == ["b"]
     assert "unscored: 0 of 2" in table
     assert len(json.loads(out.read_text())["records"]) == 2
+
+
+def test_apertus_answers_through_the_openai_loop_and_claude_still_judges(monkeypatch):
+    from swiss_grounding.evals import judge_harness as jh
+    calls = []
+    monkeypatch.setattr(jh, "_apertus_answer", lambda q: (calls.append(q) or (["ev"], "answer")))
+    monkeypatch.setattr(jh, "_claude", lambda prompt, model, **kw: '{"faithful": true, "cited_urls_in_evidence": true}')
+    record = jh.run_question("Frage?", "g1", "apertus", "{question}{evidence}{answer}")
+    assert calls == ["Frage?"] and record["answer"] == "answer" and record["verdict"]["faithful"]

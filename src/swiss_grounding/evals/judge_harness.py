@@ -24,6 +24,8 @@ ANSWER_SYSTEM = (
 )
 STDERR_PREVIEW = 500
 CLAUDE_TIMEOUT_SECONDS = 600
+APERTUS = "apertus"                      # --models alias; answered through evals/openai_answer.py
+MCP_HTTP_CONFIG = JUDGE_DIR / "mcp-http.json"
 
 
 def _claude(prompt: str, model: str, *, mcp: bool, stream: bool, mcp_config: Path = MCP_CONFIG) -> str:
@@ -127,10 +129,30 @@ def _question_text(probe: Probe) -> str:
     return f"{probe.question} (location: {probe.location})" if probe.location else probe.question
 
 
+def _apertus_answer(question: str) -> tuple[list[str], str]:
+    from openai import OpenAI
+
+    from swiss_grounding.config import load_settings
+    from swiss_grounding.evals.openai_answer import answer_with_tools, mcp_http_url
+
+    settings = load_settings()
+    if not settings.apertus_api_key:
+        raise RuntimeError("APERTUS_API_KEY is not set")
+    client = OpenAI(api_key=settings.apertus_api_key, base_url=settings.apertus_base_url,
+                    timeout=settings.apertus_timeout_seconds)
+    return answer_with_tools(question, client=client, model=settings.apertus_model,
+                             mcp_url=mcp_http_url(MCP_HTTP_CONFIG), system=ANSWER_SYSTEM)
+
+
+def _answer(question: str, model: str, mcp_config: Path) -> tuple[list[str], str]:
+    if model == APERTUS:
+        return _apertus_answer(question)
+    return extract_tool_results(_claude(question, model, mcp=True, stream=True, mcp_config=mcp_config))
+
+
 def run_case(probe: Probe, model: str, rubric: str) -> dict:
     try:
-        stream = _claude(_question_text(probe), model, mcp=True, stream=True)
-        evidence, answer = extract_tool_results(stream)
+        evidence, answer = _answer(_question_text(probe), model, MCP_CONFIG)
         verdict_text = _claude(build_judge_prompt(rubric, _question_text(probe), evidence, answer),
                                JUDGE_MODEL, mcp=False, stream=False)
         verdict, parsed = parse_verdict(verdict_text)
@@ -146,8 +168,7 @@ def run_question(question: str, case_id: str, model: str, rubric: str,
                  keys: Sequence[str] = FAITHFULNESS_KEYS, mcp_config: Path = MCP_CONFIG) -> dict:
     """Answer `question` with `model` through the MCP server; grade it with the fixed JUDGE_MODEL."""
     try:
-        stream = _claude(question, model, mcp=True, stream=True, mcp_config=mcp_config)
-        evidence, answer = extract_tool_results(stream)
+        evidence, answer = _answer(question, model, mcp_config)
         verdict_text = _claude(build_judge_prompt(rubric, question, evidence, answer), JUDGE_MODEL,
                                mcp=False, stream=False)
         verdict, parsed = parse_verdict(verdict_text, keys)
