@@ -16,7 +16,11 @@ Maintaining the data (adding sources, refreshing, publishing a new database) is 
 
 ## What it covers
 
-The `swiss_scope` tool returns this text, and the server repeats it whenever a question is not covered:
+The `swiss_scope` tool returns this text, and the server repeats it whenever a question is not covered.
+The six cantons and seven municipalities below are the floor: at start, the server adds every canton and
+municipality its database holds current passages for, searches them, and names them in this text and in
+its instructions. A canton with more than ten added municipalities is named with a count. For the
+prebuilt database the text reads:
 
 > Covered: federal information for all of Switzerland; cantonal information for Zurich, Bern,
 > Vaud, Geneva, Ticino and Graubünden; municipal services for Zürich, Bern, Lausanne, Genève,

@@ -75,11 +75,13 @@ from swiss_grounding.db.connection import connect
 corpus_app = typer.Typer(help="Encoding track: fetch, describe, OCR and embed the declared-scope corpus.")
 register(corpus_app)
 
-SYNC_WORKERS = 8
 DIRECT_MAX_RETRIES = 8                   # direct calls beside batches run at the per-minute limit; 429s are retried
 LOCAL_EMBED_BATCH = 64
 OPENAI_EMBED_MAX_ITEMS = 2048            # inputs per embeddings request (OpenAI limit)
-OPENAI_EMBED_MAX_TOKENS = 250_000        # estimated tokens per sync embeddings request (limit is 300k)
+# Estimated tokens per sync embeddings request; OpenAI rejects a request over 300k real tokens. The estimate
+# (budget.CHARS_PER_TOKEN = 3) runs low on OCR'd pages full of digits and table pipes: at 250k estimated, a
+# request passed 300k real. 100k leaves a threefold margin; throughput is set by the tokens-per-minute limit.
+OPENAI_EMBED_MAX_TOKENS = 100_000
 PROJECTED_DESCRIPTION_TOKENS = 40        # a chunk description's share of the embedded text
 OCR_SLICE = 1000                         # pages built (images read) and run per round without --limit
 DESCRIBE_KINDS = {"docs": "describe-doc", "chunks": "describe-chunk"}
@@ -153,7 +155,9 @@ def _fake_reply(task: LlmTask) -> dict:
 
 def _llm(settings: Settings):
     if settings.corpus_llm_provider == "openai":
-        return OpenAILLM(settings.openai_api_key)
+        # A plain --sync run is direct calls too: without these retries, 846 of 1,648 OCR requests on a
+        # 200k-tokens-per-minute account ended in quarantine after the SDK default of 2.
+        return OpenAILLM(settings.openai_api_key, max_retries=DIRECT_MAX_RETRIES)
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
     if settings.corpus_llm_provider == "apertus":
@@ -162,10 +166,10 @@ def _llm(settings: Settings):
 
 
 def _sync_workers(settings: Settings) -> int:
-    """Apertus has its own per-minute limit, tighter than the other providers' SYNC_WORKERS."""
+    """Apertus has its own per-minute limit, tighter than CORPUS_SYNC_WORKERS allows the other providers."""
     if settings.corpus_llm_provider == "apertus":
         return settings.apertus_workers
-    return SYNC_WORKERS
+    return settings.corpus_sync_workers
 
 
 # --- configured indexes -----------------------------------------------------------------------------
@@ -569,7 +573,7 @@ def _embed_in_process(settings: Settings, spec: IndexSpec, require_description: 
         batch_size = LOCAL_EMBED_BATCH
     else:
         provider = (FakeEmbeddings(spec.dim) if settings.corpus_llm_provider == "fake"
-                    else OpenAIEmbeddings(settings.openai_api_key, spec.model))
+                    else OpenAIEmbeddings(settings.openai_api_key, spec.model, max_retries=DIRECT_MAX_RETRIES))
         batch_size, max_tokens = OPENAI_EMBED_MAX_ITEMS, OPENAI_EMBED_MAX_TOKENS
     written = embed_local(settings.database_url, spec, provider, batch_size=batch_size,
                           require_description=require_description, max_tokens_per_request=max_tokens)

@@ -22,6 +22,7 @@ from swiss_grounding.serving.reranker import (
     choose_model,
     detect_device,
 )
+from swiss_grounding.serving.scope import load_scope
 from swiss_grounding.serving.search_service import SearchService, query_embedder
 from swiss_grounding.serving.translation import NoTranslator, SupertextTranslator, Translator
 
@@ -92,6 +93,7 @@ def build_translator(settings: Settings) -> Translator:
 def build_search_service(settings: Settings, today: Callable[[], date] = date.today) -> SearchService:
     with connect(settings.database_url) as conn:
         tree = load_location_tree(conn)
+        scope = load_scope(conn, tree)
     if settings.query_embedder == "fake":
         log.warning("QUERY_EMBEDDER=fake: query vectors are meaningless; use only in tests")
     device = "cpu" if settings.reranker_model == "overlap" else detect_device()
@@ -104,4 +106,5 @@ def build_search_service(settings: Settings, today: Callable[[], date] = date.to
         relevance=load_relevance(relevance_path(settings, reranker.name), reranker.name),
         index=settings.serving_index, rerank_candidates=candidates, local_quota=settings.local_candidate_quota,
         ef_search=settings.hnsw_ef_search, today=today, translator=build_translator(settings),
-        query_langs=settings.translate_query_languages, translate_citations=settings.translate_citations)
+        query_langs=settings.translate_query_languages, translate_citations=settings.translate_citations,
+        scope=scope)

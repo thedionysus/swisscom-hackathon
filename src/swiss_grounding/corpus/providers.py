@@ -51,9 +51,10 @@ class OpenAIEmbeddings:
     """Synchronous OpenAI embeddings, for `--sync` and small runs. Large runs use the Batch API."""
     dim = 3072
 
-    def __init__(self, api_key: str, model: str = "text-embedding-3-large"):
+    def __init__(self, api_key: str, model: str = "text-embedding-3-large", max_retries: int = 2):
+        """`max_retries` also covers 429s: the client waits as the rate-limit headers ask."""
         from openai import OpenAI
-        self._client = OpenAI(api_key=api_key)
+        self._client = OpenAI(api_key=api_key, max_retries=max_retries)
         self.model = model
         self.last_usage = 0
 

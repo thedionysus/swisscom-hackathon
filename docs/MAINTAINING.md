@@ -63,13 +63,18 @@ Settings are described in the README's Configuration section.
 
    ```bash
    uv run swiss-grounding corpus check-manifest manifests/declared-scope.yaml
-   uv run swiss-grounding corpus fetch --manifest manifests/declared-scope.yaml --tier 1
+   uv run swiss-grounding corpus fetch --manifest manifests/declared-scope.yaml --tier 3
    uv run swiss-grounding corpus status
    ```
 
    `check-manifest` validates the file, requests every start URL and SR number, and reports robots.txt
    verdicts and language alternates. `fetch` costs nothing but takes hours: some sites ask for 10
-   seconds between requests.
+   seconds between requests. `--tier 3` fetches every tier: 1 (the declared scope), 2 (other cantons
+   and cities) and 3 (bulk and gazette collections); the manifest header says which is which. The
+   default, `--tier 1`, skips the Run 3 sources.
+   A `json` source whose manifest entry gives a `robots_exception_reason` is fetched where robots.txt
+   disallows its documented API (Opendatasoft portals disallow `/api/` for every crawler except
+   Googlebot) only with `ROBOTS_API_EXCEPTIONS=true`; the default is false, and each such request is logged.
 
 6. **Import the Zürich waste calendar.**
 
@@ -124,7 +129,7 @@ Sources are entries in `manifests/declared-scope.yaml`. Each entry has:
 | `name`, `publisher` | Shown to users; `publisher` is on every citation. |
 | `authority` | `federal_law`, `cantonal_law` or `municipal_law` for the legal text itself; `official_info` for pages of governments and offices; `institutional` for other publishers. |
 | `level`, `extent_id` | `federal`, `cantonal` or `municipal`, and the node of the location tree the source applies to (`CH`, `CH-VD`, `CH-GR-3762`). Every document of the source gets this jurisdiction. |
-| `connector` | `fedlex` or `html`. |
+| `connector` | `fedlex`, `html`, or `json` for records from a JSON/REST API (its config keys are documented in `src/swiss_grounding/corpus/connectors/json_api.py`). |
 | `tier` | 1 to 3. `fetch --tier N` takes every source at or below N. |
 | `languages` | The languages to keep: `de`, `fr`, `it`, `en`, `rm`. |
 | `config` | Connector settings, below. |

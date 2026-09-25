@@ -102,7 +102,8 @@ def _title(soup: BeautifulSoup, root: Tag | None) -> str:
 def _language(soup: BeautifulSoup, default: str) -> str:
     html = soup.find("html")
     lang = html.get("lang") if html else None
-    return lang.split("-")[0].lower() if lang else default
+    # "fr-CH", but also "fr_CH" and "fr_ch.utf8" (seen on www.neyruz.ch): the primary subtag either way.
+    return re.split(r"[-_.]", lang.strip())[0].lower() if lang else default
 
 
 def _to_text(nodes: list[PageElement]) -> str:

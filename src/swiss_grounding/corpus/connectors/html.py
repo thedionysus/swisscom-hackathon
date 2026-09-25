@@ -46,8 +46,12 @@ def _robots_root(url: str) -> str:
 def load_robots(http: httpx.Client, root: str) -> tuple[Protego, str | None]:
     """The parsed robots.txt of a host, and why the whole host is disallowed when it could not be read.
 
-    A fetch failure, 401/403 or 5xx disallows the host; any other non-200 (e.g. 404) allows
-    everything. Parsed with protego (RFC 9309: longest matching rule wins, not the first one --
+    RFC 9309 section 2.3.1: any 4xx -- 401 and 403 included -- means robots.txt is unavailable, and
+    everything is allowed (2.3.1.3); a fetch failure or a 5xx means it is unreachable, and the whole
+    host is disallowed (2.3.1.4). bl-api.webcloud7.ch answers its robots.txt with a login redirect
+    that ends in 403, so under the RFC it may be crawled (#57).
+
+    Parsed with protego (RFC 9309: longest matching rule wins, not the first one --
     urllib.robotparser gets this wrong, which wrongly refused be.ch's own PDFs under a narrower
     Allow nested inside a broader Disallow).
     """
@@ -57,7 +61,7 @@ def load_robots(http: httpx.Client, root: str) -> tuple[Protego, str | None]:
         return Protego.parse(_DENY_ALL_ROBOTS), f"fetch failed: {exc}"
     if response.status_code == 200:
         return Protego.parse(response.text), None
-    if response.status_code in (401, 403) or response.status_code >= 500:
+    if response.status_code >= 500:
         return Protego.parse(_DENY_ALL_ROBOTS), f"HTTP {response.status_code}"
     return Protego.parse(""), None
 
@@ -187,26 +191,29 @@ class HtmlConnector:
     def _in_prefixes(url: str, prefixes: tuple[str, ...]) -> bool:
         return any(url.startswith(p) for p in prefixes)
 
-    def _crawlable(self, url: str, prefixes: tuple[str, ...], pdf_patterns: tuple[re.Pattern[str], ...]) -> bool:
-        """In scope as a page (robots aside): inside the prefixes, not a file, not a PDF pattern."""
+    def _crawlable(self, url: str, prefixes: tuple[str, ...], pdf_patterns: tuple[re.Pattern[str], ...],
+                   deny: tuple[re.Pattern[str], ...] = ()) -> bool:
+        """In scope as a page (robots aside): inside the prefixes, not denied, not a file, not a PDF pattern."""
         path = urlparse(url).path.lower()
-        return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
+        return (self._in_prefixes(url, prefixes) and not _matches(url, deny) and not path.endswith(SKIP_SUFFIXES)
                 and not _matches(url, pdf_patterns))
 
-    def _allowed(self, url: str, prefixes: tuple[str, ...], min_delay: float = 0.0) -> bool:
+    def _allowed(self, url: str, prefixes: tuple[str, ...], min_delay: float = 0.0,
+                 deny: tuple[re.Pattern[str], ...] = ()) -> bool:
         path = urlparse(url).path.lower()
-        return (self._in_prefixes(url, prefixes) and not path.endswith(SKIP_SUFFIXES)
+        return (self._in_prefixes(url, prefixes) and not _matches(url, deny) and not path.endswith(SKIP_SUFFIXES)
                 and self._robots_allow(url, min_delay))
 
     def _seed_from_sitemaps(self, cfg: Mapping, queue: CrawlQueue, limit: int, prefixes: tuple[str, ...],
-                            pdf_patterns: tuple[re.Pattern[str], ...], min_delay: float = 0.0) -> list[tuple[str, str]]:
+                            pdf_patterns: tuple[re.Pattern[str], ...], min_delay: float = 0.0,
+                            deny: tuple[re.Pattern[str], ...] = ()) -> list[tuple[str, str]]:
         """Queue URLs from config.sitemap_urls matching config.sitemap_include, at most
         `limit`. Known or already-queued URLs do not use up the budget: it is for new pages."""
         if not cfg.get("sitemap_urls"):
             return []
 
         def accept(url: str) -> bool:
-            return not queue.is_known_or_queued(url) and self._crawlable(url, prefixes, pdf_patterns)
+            return not queue.is_known_or_queued(url) and self._crawlable(url, prefixes, pdf_patterns, deny)
 
         seeds = collect_sitemap_urls(self._http, tuple(cfg["sitemap_urls"]), tuple(cfg.get("sitemap_include", ())),
                                      limit, accept=accept, fetchable=lambda u: self._robots_allow(u, min_delay),
@@ -235,16 +242,18 @@ class HtmlConnector:
         prefixes = tuple(cfg["allow_prefixes"])
         max_pages = int(cfg.get("max_pages", DEFAULT_MAX_PAGES))
         pdf_patterns = tuple(re.compile(p) for p in cfg.get("pdf_link_patterns", ()))
+        # Pages inside the prefixes that must never be fetched, e.g. a gazette's personal-data rubrics.
+        deny = tuple(re.compile(p) for p in cfg.get("deny_patterns", ()))
         min_delay = float(cfg.get("delay_seconds", 0.0))
         queue = CrawlQueue(cfg["start_urls"], known)
-        errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay)
+        errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay, deny)
         crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)),
                               tuple(cfg.get("pdf_allow_prefixes", prefixes)))
         crawl.errors.extend(errors)
         pages = 0
         while pages < max_pages and (item := queue.pop()) is not None:
             url, conditional = item
-            if url in queue.seen or not self._allowed(url, prefixes, min_delay):
+            if url in queue.seen or not self._allowed(url, prefixes, min_delay, deny):
                 continue
             queue.seen.add(url)
             pages += 1
@@ -253,7 +262,7 @@ class HtmlConnector:
             except httpx.HTTPError as exc:
                 crawl.errors.append((url, f"fetch failed: {exc}"))
                 continue
-            final = self._settle(url, str(response.url), response.status_code, queue, known, prefixes, crawl)
+            final = self._settle(url, str(response.url), response.status_code, queue, known, prefixes, crawl, deny)
             if final is None or "html" not in response.headers.get("content-type", "text/html").lower():
                 continue
             try:
@@ -265,22 +274,23 @@ class HtmlConnector:
             for alt_lang, href in page.alternates.items():
                 # Language versions jump the queue, ahead of the page's own links (which often
                 # include the language switcher): only pages crawled in the same run are grouped.
-                if alt_lang in spec.languages and self._crawlable(href, prefixes, pdf_patterns):
+                if alt_lang in spec.languages and self._crawlable(href, prefixes, pdf_patterns, deny):
                     queue.add(href, front=True)
             for link in page.links:
-                if self._crawlable(link, prefixes, pdf_patterns):
+                if self._crawlable(link, prefixes, pdf_patterns, deny):
                     queue.add(link)
             crawl.record(final, page, response)
         return crawl.result()
 
     def _settle(self, url: str, final: str, status: int, queue: CrawlQueue, known: Mapping[str, KnownState],
-                prefixes: tuple[str, ...], crawl: "_CrawlResults") -> str | None:
+                prefixes: tuple[str, ...], crawl: "_CrawlResults",
+                deny: tuple[re.Pattern[str], ...] = ()) -> str | None:
         """The URL to parse the response as, or None after recording why it is not parsed."""
         if final != url:
             if url in known:
                 crawl.gone[url] = None  # a known URL that now redirects is retired either way
             # A redirect's destination scope matters more than whatever status it ends on.
-            if not self._allowed(final, prefixes):
+            if not self._allowed(final, prefixes, deny=deny):
                 crawl.errors.append((final, "redirected outside scope"))
                 return None
             if final in queue.seen:

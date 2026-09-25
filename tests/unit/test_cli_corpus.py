@@ -99,4 +99,4 @@ def test_sync_workers_is_apertus_workers_under_apertus_and_sync_workers_otherwis
     apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k", apertus_workers=5)
     openai = _settings(corpus_llm_provider="openai", openai_api_key="k")
     assert cc._sync_workers(apertus) == 5
-    assert cc._sync_workers(openai) == cc.SYNC_WORKERS
+    assert cc._sync_workers(openai) == openai.corpus_sync_workers

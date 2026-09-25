@@ -176,6 +176,22 @@ def test_repeated_site_furniture_is_marked_before_describing(corpus_db):
     assert statuses["Kontakt"] == "boilerplate" and statuses["Eigener"] == "current"
 
 
+def test_keep_one_leaves_the_first_pages_copy_of_repeated_furniture_live(corpus_db):
+    """The keep-one cleanup: the copy in the lowest document id stays findable, the others are marked, and a
+    second run of either kind finds nothing left to mark."""
+    with connect(corpus_db) as conn:
+        _seed_city_pages(conn, 3)
+        assert mark_repeated_furniture(conn, min_documents=3, keep_one=True) == 2
+        first = conn.execute("select min(id) as d from corpus.document").fetchone()["d"]
+        footers = {r["document_id"]: r["status"] for r in conn.execute(
+            "select document_id, status from corpus.chunk where text like 'Kontakt%'")}
+        own = {r["status"] for r in conn.execute("select status from corpus.chunk where text like 'Eigener%'")}
+        assert mark_repeated_furniture(conn, min_documents=3, keep_one=True) == 0
+        assert mark_repeated_furniture(conn, min_documents=3) == 0
+    assert footers.pop(first) == "current" and set(footers.values()) == {"boilerplate"}
+    assert own == {"current"}
+
+
 def test_law_is_exempt_from_furniture_marking(corpus_db):
     law = SourceSpec(id="fedlex", name="Fedlex", publisher="Federal Chancellery", authority="federal_law",
                      level="federal", extent_id="CH", connector="fedlex", tier=1, languages=("de",), config={})
