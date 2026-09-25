@@ -275,6 +275,241 @@ sources:
       max_pages: 400
       max_pdfs: 0
 
+  # ---------------- Federal: offices named by the benchmark cases ----------------
+  # Federal offices that benchmark cases (EM-, SI-, CR-, MV-, ED-, EN-, DG-, HO- ids) cite and no source covered.
+  # All run the new federal CMS: flat /{lang}/{slug} URLs, /sitemap/{lang}.xml, robots.txt "Disallow:" with no
+  # path. Where only the German sitemap is filtered, the fr/it/en versions of each seed come in as language
+  # alternates, so max_pages allows about four pages per seed. Start URLs checked live on 2026-09-25 with the
+  # corpus user agent.
+  # Cases EM-02..EM-08, EM-10, SI-08: labour-law FAQs (holidays, notice, sick pay), working and rest times,
+  # night and Sunday work permits, posted workers. arbeit_swiss covers unemployment insurance.
+  - id: seco_labour
+    name: State Secretariat for Economic Affairs — labour law, working time and posted workers
+    publisher: State Secretariat for Economic Affairs SECO
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.seco.admin.ch/de/arbeitsrecht", "https://www.seco.admin.ch/fr/droit-du-travail", "https://www.seco.admin.ch/it/diritto-del-lavoro", "https://www.seco.admin.ch/en/posting"]
+      allow_prefixes: ["https://www.seco.admin.ch/de/", "https://www.seco.admin.ch/fr/", "https://www.seco.admin.ch/it/", "https://www.seco.admin.ch/en/"]
+      pdf_allow_prefixes: ["https://www.seco.admin.ch/dam/"]
+      sitemap_urls: ["https://www.seco.admin.ch/sitemap/de.xml", "https://www.seco.admin.ch/sitemap/fr.xml", "https://www.seco.admin.ch/sitemap/it.xml", "https://www.seco.admin.ch/sitemap/en.xml"]
+      sitemap_include:
+        - "/de/.*(arbeitsrecht|arbeitsgesetz|ruhezeit|arbeitszeit|nacht|sonntag|entsendung|flankierend|mutterschutz|jugendarbeitsschutz|gesamtarbeitsvertr|normalarbeitsvertr|arbeitsinspekt|ferien|kuendigung|verhinderung|vertragsabschluss|ueberstunden|freizeit-und-feiertage|urlaub-des-anderen|arbeitszeugnis|nebenerwerb|ladenoeffnung|militaerdienst|rechtsquellen-zum-privaten)"
+        - "/fr/.*(droit-du-travail|loi-sur-le-travail-et|duree-du-travail|travail-de-nuit|dimanche|detachement|mesures-d-accompagnement|maternite|jeunes-travailleurs|conventions-collectives|contrats-types|inspection-fed|inspections-cantonales|faq-(vacances|resiliation|empechement|conclusion|heures-supp|conge|certificat|activite-accessoire|protection-des-rapports|source-du-droit|conditions-de-travail|permis-relatifs))"
+        - "/it/.*(diritto-del-lavoro|legge-sul-lavoro|durata-del-lavoro|lavoro-notturno|domenical|distacco|misure-accompagnatorie|maternita|giovani-lavoratori|contratti-collettivi|contratti-normali|ispettorat|faq-(vacanze|disdetta|impdedimento|conclusione|ore-supplementari|congedo|attestato|attivita-accessoria|protezioni?-dei|fonti-del-diritto|condizioni-di-lavoro|permessi|tempo-libero|apertura-negozi|risoluzione))"
+        - "/en/posting"
+      max_pages: 260
+      max_pdfs: 20
+  # Cases SI-01, SI-02, SI-04, SI-09, SI-10: contributions and benefits (AHV, IV, EO, BVG, family allowances),
+  # cash payout of vested benefits on leaving Switzerland. ahv_iv covers the AHV/IV leaflets.
+  - id: bsv
+    name: Federal Social Insurance Office — contributions and benefits
+    publisher: Federal Social Insurance Office FSIO
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.bsv.admin.ch/de/beitraege-und-leistungen", "https://www.bsv.admin.ch/fr/cotisations-et-prestations", "https://www.bsv.admin.ch/it/contributi-e-prestazioni", "https://www.bsv.admin.ch/en/contributions-and-benefits"]
+      allow_prefixes: ["https://www.bsv.admin.ch/de/", "https://www.bsv.admin.ch/fr/", "https://www.bsv.admin.ch/it/", "https://www.bsv.admin.ch/en/"]
+      pdf_allow_prefixes: ["https://www.bsv.admin.ch/dam/"]
+      sitemap_urls: ["https://www.bsv.admin.ch/sitemap/de.xml"]
+      sitemap_include:
+        - "/de/(?!.*(abstimmung|initiative|revision|reform|test|statistik|finanz|leichte-sprache|gebaerdensprache|-gs$|forschung|gesetze|verordnungen|organisation))(.*)(ahv|bvg|beruflichen-vorsorge|freizuegigkeit|eo-bei|eo-elternschaft|eo-fuer|leistungen-eo|mutterschaft|vaterschaft|urlaub|invalidenrente|invaliditaet|hilflosen|taggelder-iv|leistungen-iv|iv-hilfsmittel|el-im-detail|familienzulagen-leistungen|familienzulagen-kinder|beitraege|in-rente-gehen|dritte-saeule|dreisaeulensystem|bezug-ausland|selbststaendigkeit|scheidung|wohneigentum|zustaendige-kantonale|faq)"
+      max_pages: 220
+      max_pdfs: 20
+  # Cases CR-07, CR-10: Helpline EDA, consular protection, services for Swiss citizens abroad (registering a birth
+  # or marriage abroad), the Travel Admin app. Not MV-10: the travel-advice pages (reisehinweise-fuer-*,
+  # allgemeine-reiseinformationen-*) all parse to the same teaser links; their advice text is neither in the
+  # server-rendered HTML nor in __NUXT_DATA__ (checked 2026-09-25 on Austria, Italy and one general page), so the
+  # filter leaves them out.
+  - id: eda_consular
+    name: Federal Department of Foreign Affairs — Helpline, consular services and travel advice
+    publisher: Federal Department of Foreign Affairs FDFA
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.eda.admin.ch/de/helpline-eda", "https://www.eda.admin.ch/fr/helpline-dfae", "https://www.eda.admin.ch/it/dfae-helpline", "https://www.eda.admin.ch/en/fdfa-helpline"]
+      allow_prefixes: ["https://www.eda.admin.ch/de/", "https://www.eda.admin.ch/fr/", "https://www.eda.admin.ch/it/", "https://www.eda.admin.ch/en/"]
+      sitemap_urls: ["https://www.eda.admin.ch/sitemap/de.xml"]
+      sitemap_include:
+        - "/de/(helpline-eda|konsularischer-schutz-hilfe-bei-notlagen-im-ausland|dienstleistungen-fuer-schweizer-staatsangehoerige-im-ausland|online-schalter-auslandschweizerinnen-und-auslandschweizer|allgemeine-reiseinformationen|travel-admin-app|leben-und-arbeiten-im-ausland|schweizerinnen-und-schweizer-im-ausland|vorbereitungen-auslandaufenthalt-aus-und-rueckwanderung)$"
+      max_pages: 36
+      max_pdfs: 0
+  # Cases MV-01, MV-03, MV-04, MV-07: traffic rules, alcohol limits, driving licences, bicycle and e-bike rules.
+  # Motorway construction news (slugs a1-…, a13-…, a2p-…) are 1,519 of the 2,275 German sitemap URLs, so the
+  # sitemap filter skips them and deny_patterns keeps the crawl from following links to them.
+  - id: astra
+    name: Federal Roads Office — traffic rules, driving licences and vehicles
+    publisher: Federal Roads Office FEDRO
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    # The traffic-rule pages exist in de/fr/it only (no en alternate).
+    languages: [de, fr, it]
+    config:
+      start_urls: ["https://www.astra.admin.ch/de/verkehrsregeln-signale", "https://www.astra.admin.ch/fr/regles-circulation-signaux", "https://www.astra.admin.ch/it/norme-circolazione-segnali"]
+      allow_prefixes: ["https://www.astra.admin.ch/de/", "https://www.astra.admin.ch/fr/", "https://www.astra.admin.ch/it/"]
+      deny_patterns: ['^https://www\.astra\.admin\.ch/(de|fr|it)/[ahn]\d']
+      pdf_allow_prefixes: ["https://www.astra.admin.ch/dam/"]
+      sitemap_urls: ["https://www.astra.admin.ch/sitemap/de.xml"]
+      sitemap_include:
+        - "/de/(?!a\\d|n\\d|filiale|medien)[^/]*(fuehrer|fahrberecht|fahrausbild|fahrlehr|lernfahr|verkehrsregel|vorschrift|alkohol|drogen|fahrfaehig|reifen|velo|helm|e-bike|trottinett|kinder|signal|busse|massnahmen|entzug|verkehrssicherheit|via-sicura|ausland|umtausch|fahrzeug|pruefung|motorrad|wohnmobil|anhaenger|vignette|kontrolle|regeln|knigge|faq)"
+      # A dry run on 2026-09-25 reached the last seeded page (74 seeds, de/fr/it) at page 222; after that it
+      # followed links to news items, jobs and contact pages.
+      max_pages: 222
+      max_pdfs: 10
+  # CAVEAT (fees): cases CR-01, CR-02, CR-08 (passport and identity card). The price and validity table on
+  # /de/preise-gueltigkeit-und-lieferfristen is only in the page's embedded __NUXT_DATA__ JSON, with no <table> in
+  # the HTML, so the parser gets 72 words and no amounts from it: the fee (CR-08) and validity (CR-01) are not in
+  # this source's text. The prefixes are the passport and ID-card pages only; the rest of fedpol is out of scope.
+  - id: fedpol_id
+    name: Federal Office of Police — passport and identity card
+    publisher: Federal Office of Police fedpol
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.fedpol.admin.ch/de/pass-und-identitaetskarte", "https://www.fedpol.admin.ch/fr/passeport-et-carte-didentite", "https://www.fedpol.admin.ch/it/passaporto-e-carta-didentita", "https://www.fedpol.admin.ch/en/passport-and-identity-card"]
+      allow_prefixes: ["https://www.fedpol.admin.ch/de/pass-und-identitaetskarte", "https://www.fedpol.admin.ch/fr/passeport-et-carte-didentite", "https://www.fedpol.admin.ch/it/passaporto-e-carta-didentita", "https://www.fedpol.admin.ch/en/passport-and-identity-card",
+                       "https://www.fedpol.admin.ch/de/beantragen", "https://www.fedpol.admin.ch/fr/commander", "https://www.fedpol.admin.ch/it/richiesta", "https://www.fedpol.admin.ch/en/application",
+                       "https://www.fedpol.admin.ch/de/verlust-von-ausweisdokumenten", "https://www.fedpol.admin.ch/fr/perte-de-documents", "https://www.fedpol.admin.ch/it/perdita-dei-documenti-didentita", "https://www.fedpol.admin.ch/en/lost-documents",
+                       "https://www.fedpol.admin.ch/de/preise-gueltigkeit-und-lieferfristen", "https://www.fedpol.admin.ch/fr/prix-validite-et-delais-de-livraison", "https://www.fedpol.admin.ch/it/prezzi-validita-e-termini-di-consegna", "https://www.fedpol.admin.ch/en/prices-validity-and-delivery-times",
+                       "https://www.fedpol.admin.ch/de/kantonale-passstellen-und-verfahren-in-den-einzelnen-kantonen", "https://www.fedpol.admin.ch/fr/bureaux-cantonaux-des-passeports-et-procedures-dans-les-differents-cantons", "https://www.fedpol.admin.ch/it/uffici-cantonali-dei-passaporti-e-procedure-nei-singoli-cantoni", "https://www.fedpol.admin.ch/en/cantonal-passport-offices-and-application-procedures",
+                       "https://www.fedpol.admin.ch/de/fotos-neuer-schweizer-pass", "https://www.fedpol.admin.ch/fr/photos-nouveau-passeport", "https://www.fedpol.admin.ch/it/foto-nuovo-passaporto", "https://www.fedpol.admin.ch/en/photographs-of-the-new-passport",
+                       "https://www.fedpol.admin.ch/de/fotos-neue-identitaetskarte", "https://www.fedpol.admin.ch/fr/photos-nouvelle-carte-didentite", "https://www.fedpol.admin.ch/it/foto-nuova-carta-didentita", "https://www.fedpol.admin.ch/en/photographs-of-the-new-swiss-identity-card"]
+      pdf_allow_prefixes: ["https://www.fedpol.admin.ch/dam/"]
+      max_pages: 40
+      max_pdfs: 10
+  # Cases ED-01, ED-07, ED-10: recognition of foreign qualifications, the list of VET occupations
+  # (Berufsverzeichnis), Swiss Government Excellence Scholarships.
+  - id: sbfi
+    name: State Secretariat for Education, Research and Innovation — recognition, VET occupations, scholarships
+    publisher: State Secretariat for Education, Research and Innovation SERI
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.sbfi.admin.ch/de/anerkennung-von-berufsqualifikationen", "https://www.sbfi.admin.ch/fr/reconnaissance-de-qualifications-professionnelles", "https://www.sbfi.admin.ch/it/riconoscimento-di-qualifiche-professionali", "https://www.sbfi.admin.ch/en/recognition-of-professional-qualifications"]
+      allow_prefixes: ["https://www.sbfi.admin.ch/de/", "https://www.sbfi.admin.ch/fr/", "https://www.sbfi.admin.ch/it/", "https://www.sbfi.admin.ch/en/"]
+      sitemap_urls: ["https://www.sbfi.admin.ch/sitemap/de.xml"]
+      sitemap_include:
+        - "/de/(anerkennung-von-berufsqualifikationen|anerkennungsverfahren-beim-sbfi|auslaendische-berufsqualifikationen|reglementiert|berufsverzeichnis|schweizer-bundes-exzellenz|eidgenoessische-stipendienkommission|diplome-und-titel-an-schweizer-hochschulen|berufliche-grundbildung$|meldepflicht)"
+      # The 9 seeds and their language versions; a larger budget adds media, social-media and job pages.
+      max_pages: 35
+      max_pdfs: 0
+  # Cases EN-10 (energy labels for household appliances) and, in part, EN-02 (pronovo handles PV subsidies).
+  - id: bfe_energy_label
+    name: Swiss Federal Office of Energy — energy labels and efficiency requirements for appliances
+    publisher: Swiss Federal Office of Energy SFOE
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.bfe.admin.ch/de/energieetikette", "https://www.bfe.admin.ch/fr/etiquetteenergie", "https://www.bfe.admin.ch/it/etichettaenergia", "https://www.bfe.admin.ch/en/energy-labels-and-efficiency-requirements"]
+      allow_prefixes: ["https://www.bfe.admin.ch/de/", "https://www.bfe.admin.ch/fr/", "https://www.bfe.admin.ch/it/", "https://www.bfe.admin.ch/en/"]
+      sitemap_urls: ["https://www.bfe.admin.ch/sitemap/de.xml"]
+      sitemap_include:
+        - "/de/(energieetikette|etikette-erstellen|effizienzvorschriften|haushaltsgeraete|kuehlgeraete$|waschmaschinen|waeschetrockner|geschirrspueler|backoefen|kochfelder|dunstabzug|lampen|elektronische-geraete|haustechnik)"
+      max_pages: 60
+      max_pdfs: 0
+  # Case MV-09: passenger rights on delays (more than 60 minutes: 25 %, more than two hours: 50 % of the fare).
+  - id: bav_passenger_rights
+    name: Federal Office of Transport — passenger rights
+    publisher: Federal Office of Transport FOT
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.bav.admin.ch/de/passagierrechte", "https://www.bav.admin.ch/fr/droits-des-passagers", "https://www.bav.admin.ch/it/diritti-dei-passeggeri", "https://www.bav.admin.ch/en/passenger-rights"]
+      allow_prefixes: ["https://www.bav.admin.ch/de/", "https://www.bav.admin.ch/fr/", "https://www.bav.admin.ch/it/", "https://www.bav.admin.ch/en/"]
+      sitemap_urls: ["https://www.bav.admin.ch/sitemap/de.xml"]
+      sitemap_include: ["/de/(passagierrechte|faq-passagierrechte|tarife-und-passagierrechte|entschaedigungen-und-rueckerstattungen-im-oev)$"]
+      # Four pages in four languages; a larger budget only adds the contact pages.
+      max_pages: 16
+      max_pdfs: 0
+  # Case DG-10: reporting cyber incidents (reporting obligation for critical infrastructure, voluntary reports).
+  # www.ncsc.admin.ch redirects here.
+  - id: bacs
+    name: Federal Office for Cybersecurity — reporting cyber incidents
+    publisher: Federal Office for Cybersecurity NCSC
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.bacs.admin.ch/de/meldepflicht", "https://www.bacs.admin.ch/fr/obligation-de-signaler", "https://www.bacs.admin.ch/it/obbligo-di-notifica", "https://www.bacs.admin.ch/en/reporting-obligation"]
+      allow_prefixes: ["https://www.bacs.admin.ch/de/", "https://www.bacs.admin.ch/fr/", "https://www.bacs.admin.ch/it/", "https://www.bacs.admin.ch/en/"]
+      sitemap_urls: ["https://www.bacs.admin.ch/sitemap/de.xml"]
+      sitemap_include: ["/de/(meldepflicht|faq-meldepflicht|melden-sie-an-das-bacs|cybervorfall|infos-unternehmen-behoerden|erste-schritte-unternehmen-behoerden)$"]
+      max_pages: 30
+      max_pdfs: 0
+  # Case HO-09: second homes (no new second homes where they exceed 20 % of a municipality's housing), the
+  # annual housing inventory.
+  - id: are_second_homes
+    name: Federal Office for Spatial Development — second homes
+    publisher: Federal Office for Spatial Development ARE
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    # The second-home pages exist in de/fr/it only (no en alternate).
+    languages: [de, fr, it]
+    config:
+      start_urls: ["https://www.are.admin.ch/de/zweitwohnungen", "https://www.are.admin.ch/fr/residencessecondaires", "https://www.are.admin.ch/it/abitazionisecondarie"]
+      allow_prefixes: ["https://www.are.admin.ch/de/", "https://www.are.admin.ch/fr/", "https://www.are.admin.ch/it/"]
+      sitemap_urls: ["https://www.are.admin.ch/sitemap/de.xml"]
+      sitemap_include: ["/de/(zweitwohnungen|glossar-zweitwohnungen|erstwohnraum-und-zweitwohnungsnutzung|wohnungsinventar-und-zweitwohnungsanteil)"]
+      # Four pages in three languages; a larger budget only adds the contact pages.
+      max_pages: 12
+      max_pdfs: 0
+  # Cases DG-03 and DG-09 (they also name geo.admin.ch): swissBOUNDARIES3D, official cadastral surveying, the
+  # cadastral system, and where to download swisstopo geodata.
+  - id: swisstopo_geodata
+    name: swisstopo — boundaries, cadastral surveying and geodata downloads
+    publisher: Federal Office of Topography swisstopo
+    authority: official_info
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d", "https://www.swisstopo.admin.ch/fr/modele-du-territoire-swissboundaries3d", "https://www.swisstopo.admin.ch/it/modello-del-territorio-swissboundaries3d", "https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d"]
+      allow_prefixes: ["https://www.swisstopo.admin.ch/de/", "https://www.swisstopo.admin.ch/fr/", "https://www.swisstopo.admin.ch/it/", "https://www.swisstopo.admin.ch/en/"]
+      sitemap_urls: ["https://www.swisstopo.admin.ch/sitemap/de.xml"]
+      sitemap_include: ["/de/(landschaftsmodell-swissboundaries3d|amtliche-vermessung|katasterwesen|kantons-bezirks-gemeindegrenzen|download-geodaten-swisstopo|geodienste|geodienste-mit-geodaten-von-swisstopo|oereb-kataster)$"]
+      # Eight pages in four languages; a larger budget only adds the contact pages.
+      max_pages: 32
+      max_pdfs: 0
+
   # ---------------- Institutional ----------------
   - id: schweizer_wanderwege
     name: Schweizer Wanderwege / Suisse Rando / Sentieri Svizzeri
