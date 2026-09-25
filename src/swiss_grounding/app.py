@@ -79,8 +79,9 @@ def build_translator(settings: Settings) -> Translator:
     if settings.translator == "apertus":
         from swiss_grounding.corpus.llm_factory import apertus_llm
         from swiss_grounding.serving.translation_apertus import ApertusTranslator
+        # One retry: the 5 requests/s limit resets within about a second.
         return ApertusTranslator(apertus_llm(settings, timeout_seconds=settings.apertus_translate_timeout_seconds,
-                                             max_retries=0))
+                                             max_retries=1))
     if not settings.supertext_api_key:
         log.info("SUPERTEXT_API_KEY not set: questions and cited passages are not translated")
         return NoTranslator()

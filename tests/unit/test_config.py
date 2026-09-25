@@ -209,3 +209,16 @@ def test_apertus_translator_needs_a_key(monkeypatch):
     from swiss_grounding.config import Settings
     with pytest.raises(ValueError, match="APERTUS_API_KEY"):
         Settings(_env_file=None, translator="apertus")
+
+
+def test_apertus_translator_retries_once(monkeypatch):
+    from swiss_grounding import app
+    from swiss_grounding.config import Settings
+    from swiss_grounding.corpus import llm_factory
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    captured = {}
+    monkeypatch.setattr(llm_factory, "apertus_llm", lambda settings, **kw: captured.update(kw) or object())
+    settings = Settings(_env_file=None, translator="apertus", apertus_api_key="k")
+    app.build_translator(settings)
+    assert captured["max_retries"] == 1
