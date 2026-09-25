@@ -73,3 +73,15 @@ def test_side_by_side_describe_is_estimated_at_the_direct_call_price():
 
 def test_direct_workers_are_off_by_default():
     assert Settings.model_fields["corpus_direct_workers"].default == 0
+
+
+def test_priced_model_is_the_apertus_model_under_apertus():
+    apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k")
+    assert cc._priced_model(apertus, "gpt-5-nano") == "swiss-ai/Apertus-v1.5-70B"
+
+
+def test_apertus_runs_direct_calls_not_batches():
+    from swiss_grounding.corpus.providers import ApertusLLM
+    apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k")
+    assert not cc._uses_batch(apertus, sync=False)
+    assert isinstance(cc._llm(apertus), ApertusLLM)

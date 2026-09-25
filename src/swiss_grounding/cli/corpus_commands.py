@@ -50,6 +50,7 @@ from swiss_grounding.corpus.embed import (
     reuse_embeddings,
 )
 from swiss_grounding.corpus.hybrid_runner import HybridRunner
+from swiss_grounding.corpus.llm_factory import apertus_llm
 from swiss_grounding.corpus.ocr import (
     OCR_OUTPUT_TOKENS,
     OCR_PROMPT_TOKENS,
@@ -102,9 +103,18 @@ def _price_label(model: str, batch: bool) -> str:
     return f"{model} {'batch' if batch else 'sync'} price"
 
 
+def _provider_model(settings: Settings, openai_model: str) -> str:
+    """The model that actually answers: the Anthropic and Apertus providers use their one configured model."""
+    if settings.corpus_llm_provider == "anthropic":
+        return settings.corpus_anthropic_model
+    if settings.corpus_llm_provider == "apertus":
+        return settings.apertus_model
+    return openai_model
+
+
 def _priced_model(settings: Settings, openai_model: str) -> str:
-    """The model whose price is paid: the Anthropic fallback bills at its own rates. Refuses an unpriced model."""
-    model = settings.corpus_anthropic_model if settings.corpus_llm_provider == "anthropic" else openai_model
+    """The model whose price is paid. Refuses an unpriced model."""
+    model = _provider_model(settings, openai_model)
     if model not in PRICES:
         typer.echo(f"refused: no price for {model} in budget.PRICES; add it before running")
         raise typer.Exit(REFUSED_EXIT_CODE)
@@ -146,6 +156,8 @@ def _llm(settings: Settings):
         return OpenAILLM(settings.openai_api_key)
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
+    if settings.corpus_llm_provider == "apertus":
+        return apertus_llm(settings)
     return _FakeCorpusLLM()
 
 
