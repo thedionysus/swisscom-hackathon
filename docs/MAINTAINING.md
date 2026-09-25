@@ -186,6 +186,7 @@ versions whose start date has arrived.
 | Consolidation that starts in the future | Stored as `scheduled`. It becomes `current` on its start date, at the end of a later `fetch`, and the version it replaces is retired then. |
 | One language of a Fedlex act changed | Every language version of that act is downloaded again, so articles and paragraphs stay aligned across languages. |
 | Page returns 404 or 410, or a known URL now redirects elsewhere | The document becomes `withdrawn`. |
+| Page returns 200 but its `<title>` or h1 says it is an error page ("Seite nicht gefunden", "Page introuvable", "Error 404") | Not stored, its links not followed, and quarantined as a fetch error. A document stored earlier at that URL is not withdrawn. |
 | URL already owned by another source | Left alone and counted as a duplicate. |
 | In-scope link to a `.docx`, `.xlsx`, `.csv`, `.zip`… file, a PDF beyond `max_pdfs`, or a page answering with a non-HTML type | Not fetched or stored, but counted per reason in the fetch report: `skipped[.docx]=3 skipped[max_pdfs]=12`. |
 

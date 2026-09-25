@@ -290,6 +290,11 @@ class HtmlConnector:
                 logger.warning("parse failed for %s: %r", final, exc)
                 crawl.errors.append((final, f"parse failed: {exc!r}"))
                 continue
+            if page.soft_404:
+                # Handled like an HTTP error: reported, not stored, its links not followed. A known page
+                # is not withdrawn on the strength of a title match; it stays until a real 404/410.
+                crawl.errors.append((final, f"soft 404: title {page.soft_404!r}"))
+                continue
             for alt_lang, href in page.alternates.items():
                 # Language versions jump the queue, ahead of the page's own links (which often
                 # include the language switcher): only pages crawled in the same run are grouped.
