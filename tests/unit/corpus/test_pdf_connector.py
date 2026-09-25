@@ -131,6 +131,20 @@ def test_connector_downloads_and_parses(tmp_path):
     assert len(result.documents) == 1 and result.documents[0].title
 
 
+def test_a_changed_pdf_gets_a_new_artifact_and_the_old_bytes_stay(tmp_path):
+    """#12: the superseded version's artifact_path must keep pointing at the bytes it was parsed from."""
+    other = _text_pdf("A different version of the same leaflet, with enough text to skip OCR entirely.")
+    runs = []
+    for body in (SAMPLE, other):
+        client = httpx.Client(transport=httpx.MockTransport(
+            lambda r, body=body: httpx.Response(200, content=body, headers={"content-type": "application/pdf"})))
+        result = PdfConnector(client, data_dir=tmp_path, sleep=lambda s: None).run_pdfs(
+            SPEC, [DiscoveredPdf("https://x.ch/a.pdf", "de", "Merkblatt", "x")], known={})
+        runs.append(result.documents[0].artifact_path)
+    assert runs[0] != runs[1]
+    assert Path(runs[0]).read_bytes() == SAMPLE and Path(runs[1]).read_bytes() == other
+
+
 def test_known_pdf_answering_404_is_reported_gone(tmp_path):
     client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404)))
     known = {"https://x.ch/gone.pdf": KnownState(etag=None, last_modified=None, content_hash="h")}

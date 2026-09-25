@@ -3,11 +3,13 @@ import re
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
+from pathlib import Path
 from urllib.parse import urldefrag, urlparse
 
 import httpx
 from protego import Protego
 
+from swiss_grounding.corpus.artifacts import save_artifact
 from swiss_grounding.corpus.connectors.crawl_queue import CrawlQueue
 from swiss_grounding.corpus.connectors.html_meta import work_key
 from swiss_grounding.corpus.connectors.html_page import CrawledPage, parse_crawled_page
@@ -162,12 +164,16 @@ def _attachment_suffix(url: str) -> str | None:
 
 
 class HtmlConnector:
+    """`data_dir` is where a source with `config.keep_html` keeps each page's raw HTML (#12); without
+    it, no page is kept."""
+
     def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep,
-                 throttle: HostThrottle | None = None):
+                 throttle: HostThrottle | None = None, data_dir: Path | str | None = None):
         self._http = http
         self._policy = policy
         self._sleep = sleep
         self._throttle = throttle or SHARED_THROTTLE
+        self._data_dir = data_dir
         self._robots: dict[str, Protego] = {}
         self._delays: dict[str, float] = {}
         self._warned_hosts: set[str] = set()
@@ -264,7 +270,8 @@ class HtmlConnector:
         errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay, deny)
         pdf_prefixes = tuple(cfg.get("pdf_allow_prefixes", prefixes))
         crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)), pdf_prefixes,
-                              pdf_allowed=lambda u: self._robots_allow(u, min_delay))
+                              pdf_allowed=lambda u: self._robots_allow(u, min_delay),
+                              html_dir=self._data_dir if cfg.get("keep_html") else None)
         crawl.errors.extend(errors)
         for entry in cfg.get("pdf_urls", ()):
             # PDFs no crawlable page links to (#56). Listed first, so they are the last to lose out to max_pdfs.
@@ -350,11 +357,12 @@ class _CrawlResults:
     what was found but deliberately not fetched (skipped)."""
 
     def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...],
-                 pdf_allowed: Callable[[str], bool] = lambda url: True):
+                 pdf_allowed: Callable[[str], bool] = lambda url: True, html_dir: Path | str | None = None):
         self._spec = spec
         self._max_pdfs = max_pdfs
         self._pdf_prefixes = pdf_prefixes
         self._pdf_allowed = pdf_allowed
+        self._html_dir = html_dir
         self._pdfs_refused: set[str] = set()
         self.pending: list[ParsedDocument] = []
         self.alternates_by_url: dict[str, dict[str, str]] = {}
@@ -400,11 +408,17 @@ class _CrawlResults:
         for pdf_url, text in page.pdf_links:
             self.add_pdf(pdf_url, text or page.title_hint, page.language)
         if page.sections:
-            self.pending.append(ParsedDocument(
+            doc = ParsedDocument(
                 source_id=self._spec.id, url=final, language=page.language, work_key="", title=page.title,
                 sections=page.sections, published_at=page.published, modified_at=page.modified,
                 retrieved_via=self._spec.retrieved_via, etag=response.headers.get("etag"),
-                last_modified=response.headers.get("last-modified")))
+                last_modified=response.headers.get("last-modified"))
+            if self._html_dir is not None:
+                # Named by the text's hash, not the markup's: a page whose markup changes on every fetch
+                # (a token, a timestamp) keeps one file per version of its text.
+                doc = replace(doc, artifact_path=save_artifact(self._html_dir, self._spec.id, final,
+                                                               response.content, ".html", version=content_hash(doc)))
+            self.pending.append(doc)
 
     def _drop_canonical_aliases(self) -> None:
         """Drop a page that names another page as canonical when that page was stored in this run

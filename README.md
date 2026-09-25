@@ -250,7 +250,7 @@ prebuilt database):
 
 | Path | Contents |
 |---|---|
-| `data/raw/<source>/` | The raw Fedlex XML and downloaded PDFs, named by a hash of the URL. HTML pages are not stored raw, only their parsed text. |
+| `data/raw/<source>/` | The raw Fedlex XML and downloaded PDFs, named by a hash of the URL plus a hash of the version, so a changed file never overwrites the one an older version points at. HTML pages are stored raw only for sources with `keep_html: true`; otherwise only their parsed text is kept. |
 | `data/ocr/<source>/` | Images of PDF pages with too little text, waiting for OCR. |
 | `data/batches/` | Batch API input files and a log of submitted batches. |
 | `data/dump/` | Database parts downloaded by `setup`. Always `<repository root>/data/dump`, whatever `DATA_DIR` is. `dump export` writes new parts to `<repository root>/dist/`. |
