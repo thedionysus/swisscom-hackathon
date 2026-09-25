@@ -248,3 +248,23 @@ def test_responsive_hidden_utility_class_is_not_treated_as_hidden():
     html = '<main><h1 class="hidden md:block">Steuererklärung</h1><p>Body.</p></main>'
     page = html_to_page(html, url="https://x/", default_language="de")
     assert page.title == "Steuererklärung"
+
+
+def test_figure_caption_is_dropped_so_a_photo_credit_never_becomes_a_section():
+    # geneve.ch, #28: the credit sits in a <figcaption> and was stored as a chunk of its own.
+    html = """<html lang="fr"><body><main><h1>Espaces verts</h1>
+      <figure><img src="/a.jpg" alt=""><figcaption>© Thierry Parel / Ville de Genève</figcaption></figure>
+      <h2>Parcs</h2><p>La Ville entretient ses parcs.</p>
+      <figure><picture><img src="/b.jpg" alt=""></picture><figcaption>©\n\nMagali Girardin</figcaption></figure>
+      </main></body></html>"""
+    page = html_to_page(html, url="https://www.geneve.ch/themes/x", default_language="fr")
+    assert [s.text for s in page.sections] == ["La Ville entretient ses parcs."]
+
+
+def test_caption_of_a_figure_holding_a_table_is_kept():
+    # A figure can wrap a table (CKEditor 5 does); its caption then titles the table.
+    html = """<main><h1>Gebühren</h1><figure class="table"><table><tr><td>Hund</td><td>CHF 150</td></tr>
+      </table><figcaption>Hundetaxe 2026</figcaption></figure></main>"""
+    page = html_to_page(html, url="https://x/", default_language="de")
+    text = " ".join(s.text for s in page.sections)
+    assert "Hundetaxe 2026" in text and "CHF 150" in text
