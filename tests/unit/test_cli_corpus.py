@@ -87,12 +87,12 @@ def test_apertus_runs_direct_calls_not_batches():
     assert isinstance(cc._llm(apertus), ApertusLLM)
 
 
-def test_apertus_client_retries_up_to_the_direct_call_limit(monkeypatch):
+def test_apertus_client_does_not_retry_by_default(monkeypatch):
     captured = {}
     monkeypatch.setattr(cc, "apertus_llm", lambda settings, **kw: captured.update(kw) or object())
     apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k")
     cc._llm(apertus)
-    assert captured["max_retries"] == cc.DIRECT_MAX_RETRIES
+    assert captured["max_retries"] == 0
 
 
 def test_sync_workers_is_apertus_workers_under_apertus_and_sync_workers_otherwise():
