@@ -283,6 +283,21 @@ embedded and keyword-indexed. Topics are stored for later filtering but not used
 
 Every setting comes from the environment or `.env`. The ones that matter:
 
+### Keys and downloads per configuration
+
+| You want to… | Settings | Needs |
+|---|---|---|
+| Serve with the default index | `SERVING_INDEX=bge-m3` (default) | No key. `setup` downloads bge-m3 and the reranker (`BAAI/bge-m3`, `BAAI/bge-reranker-v2-m3`, roughly 2.3 GB each on Hugging Face; the CPU fallback `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` is smaller). |
+| Serve with the OpenAI index | `SERVING_INDEX=openai-3l` | `OPENAI_API_KEY` — every question is embedded with `text-embedding-3-large` — plus a database with OpenAI vectors (the prebuilt `corpus-latest` dump has none). The reranker still runs locally either way. |
+| Restore the prebuilt database | `setup` (default `DUMP_RELEASE_TAG=corpus-latest`, bge-m3 vectors) | `gh auth login` with access to this repository; `setup` downloads the release with `gh release download`. |
+| Use the Run 3 pre-release corpus | `DUMP_RELEASE_TAG=corpus-run3-cleaned-2026-09-25`, `SERVING_INDEX=openai-3l` | Same `gh auth login`, plus `OPENAI_API_KEY`: that release carries only `openai-3l` vectors, no bge-m3. |
+| Translate questions and citations | `TRANSLATOR=supertext` or `apertus` | `SUPERTEXT_API_KEY` or `APERTUS_API_KEY` (`setup` installs the team's Supertext key if the release carries it). |
+| Use the zbern parliament tools | `ZBERN_MCP_TOKEN` set | `ZBERN_MCP_TOKEN` (also installed by `setup` when the release carries it). |
+| Build or extend the corpus | `CORPUS_LLM_PROVIDER=openai\|anthropic\|apertus`, `CORPUS_INDEXES` | The matching key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY` or `APERTUS_API_KEY`); `OPENAI_API_KEY` again if `CORPUS_INDEXES` includes `openai-3l`. |
+| Run evals | `EVAL_LLM_PROVIDER=openai\|anthropic\|apertus` | The matching key. `eval judge` and `eval faithfulness` also need the `claude` CLI logged in — the judge model is always Claude, whichever model answers. `--model apertus` needs `APERTUS_API_KEY` and a running HTTP server (`swiss-grounding serve --transport http`). |
+
+See the tables below for every setting's default and purpose.
+
 **Running the server**
 
 | Setting | Default | Purpose |
