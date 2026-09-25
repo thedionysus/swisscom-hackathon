@@ -119,3 +119,18 @@ def test_answer_reports_an_unreachable_mcp_server_clearly(monkeypatch):
     with pytest.raises(RuntimeError, match="MCP server at http://dead/mcp unreachable"):
         asyncio.run(openai_answer._answer("q", client=object(), model="m", mcp_url="http://dead/mcp",
                                           system="s"))
+
+
+def test_a_non_connection_error_in_the_group_is_reported_as_itself(monkeypatch):
+    from contextlib import asynccontextmanager
+
+    from swiss_grounding.evals import openai_answer
+
+    @asynccontextmanager
+    async def failing_client(url, *args, **kwargs):
+        raise ExceptionGroup("body failed", [LookupError("401 from the model API")])
+        yield (None, None, None)  # pragma: no cover - never reached
+
+    monkeypatch.setattr("mcp.client.streamable_http.streamablehttp_client", failing_client)
+    with pytest.raises(LookupError, match="401"):
+        asyncio.run(openai_answer._answer("q", client=object(), model="m", mcp_url="http://h/mcp", system="s"))

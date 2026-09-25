@@ -59,13 +59,14 @@ async def tool_loop(question: str, *, client, model: str, tools: list[dict],
 
 
 async def _answer(question: str, *, client, model: str, mcp_url: str, system: str) -> tuple[list[str], str]:
+    import httpx
     from mcp import ClientSession
     from mcp.client.streamable_http import streamablehttp_client
 
     # The MCP HTTP transport keeps its connection alive in a background task and only surfaces a
     # dead server when this `async with` unwinds, as an anyio BaseExceptionGroup rather than a plain
     # connection error. `tool_loop` raises a plain RuntimeError (e.g. "no final answer"), which is
-    # not a group, so it passes through this except clause unchanged.
+    # not a group, so it passes through unchanged; a non-connection error inside a group is unwrapped.
     try:
         async with streamablehttp_client(mcp_url) as (read, write, _), ClientSession(read, write) as session:
             await session.initialize()
@@ -80,8 +81,11 @@ async def _answer(question: str, *, client, model: str, mcp_url: str, system: st
             return await tool_loop(question, client=client, model=model, tools=tools, call_tool=call_tool,
                                    system=system)
     except BaseExceptionGroup as group:
-        raise RuntimeError(f"MCP server at {mcp_url} unreachable: {group.exceptions[0]!r}; "
-                           "start `swiss-grounding serve --transport http`") from None
+        first = group.exceptions[0]
+        if isinstance(first, (OSError, httpx.TransportError)):
+            message = f"MCP server at {mcp_url} unreachable: {first!r}; start `swiss-grounding serve --transport http`"
+            raise RuntimeError(message) from None  # noqa: TRY004 - not a type check: a failed connection
+        raise first from None  # e.g. an API error from the model call, unwrapped from the transport's group
 
 
 def answer_with_tools(question: str, *, client, model: str, mcp_url: str, system: str) -> tuple[list[str], str]:
