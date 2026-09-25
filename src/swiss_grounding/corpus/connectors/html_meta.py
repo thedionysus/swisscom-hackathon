@@ -34,6 +34,7 @@ class PageMeta:
     published: date | None = None
     modified: date | None = None
     pdf_links: tuple[tuple[str, str], ...] = ()
+    title: str = ""  # the <title> text, whitespace collapsed
 
 
 def _absolute(base: str, href: str) -> str:
@@ -190,8 +191,9 @@ def page_meta(html: str, url: str, language_links_selector: str | None = None,
         target = _absolute(url, a["href"])
         if _is_pdf_link(target, patterns):
             pdfs.setdefault(target, " ".join(a.get_text(" ").split()))
+    title = " ".join(soup.title.get_text(" ").split()) if soup.title else ""
     return PageMeta(alternates=alternates, canonical=canonical, published=published, modified=modified,
-                    pdf_links=tuple(pdfs.items()))
+                    pdf_links=tuple(pdfs.items()), title=title)
 
 
 def work_key(url: str, alternates: Mapping[str, str]) -> str:

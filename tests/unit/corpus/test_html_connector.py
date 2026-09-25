@@ -587,3 +587,15 @@ def test_in_scope_link_answering_with_a_non_html_type_is_reported_as_skipped():
     result = HtmlConnector(client, CrawlPolicy(True, 0)).run(_spec(), known={})
     assert result.skipped == (("https://www.x.ch/de/download/1", f"type {xlsx}"),)
     assert result.errors == ()
+
+
+# --- soft 404 (#20) ---------------------------------------------------------------------------------
+
+def test_error_page_served_with_200_is_reported_not_stored_and_its_links_not_followed():
+    """www.ch.ch/en/ once served its error page with 200; it was stored as a current document (#20)."""
+    pages = dict(PAGES)
+    pages["https://www.x.ch/de/"] = """<html lang="de"><head><title>Error Page (404)</title></head><body><main>
+      <h1>Seite nicht gefunden</h1><p>Die Seite existiert nicht.</p><a href="/de/hund">Hund</a></main></body></html>"""
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert result.documents == ()
+    assert [(url, reason.split(":")[0]) for url, reason in result.errors] == [("https://www.x.ch/de/", "soft 404")]

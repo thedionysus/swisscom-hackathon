@@ -19,6 +19,13 @@ _MARKER_LINE = re.compile(
 
 
 _BLANK_RUN = re.compile(r"\n{3,}")
+# An error page served with 200 (a "soft 404", #20), recognised by its <title> or its h1 only: body text
+# can discuss a missing page. "404" alone is not enough ("Art. 404 OR"); it must stand alone or next to
+# an error word.
+_SOFT_404 = re.compile(
+    r"not found|seite (?:wurde )?nicht gefunden|page (?:introuvable|non trouvée)|pagina non trovata"
+    r"|^\W*404\W*$|\b(?:error|fehler|erreur|errore)\W+(?:page\W+)?\(?404\b|\b404\W+(?:error|fehler|erreur|errore)\b",
+    re.IGNORECASE)
 
 
 def _strip_cms_markers(text: str) -> str:
@@ -39,6 +46,11 @@ class CrawledPage:
     pdf_links: tuple[tuple[str, str], ...]
     published: date | None
     modified: date | None
+    soft_404: str | None = None  # the <title> or h1 that marks an error page served with 200
+
+
+def _soft_404(*titles: str) -> str | None:
+    return next((t for t in titles if t and _SOFT_404.search(t)), None)
 
 
 def parse_crawled_page(html: str, final: str, spec: SourceSpec,
@@ -65,4 +77,5 @@ def parse_crawled_page(html: str, final: str, spec: SourceSpec,
                                       text=_strip_cms_markers(s.text)))
     return CrawledPage(language=lang, emit=emit, title=title, title_hint=page.title, sections=tuple(sections),
                        alternates=dict(meta.alternates), links=extract_links(html, base_url=final),
-                       pdf_links=meta.pdf_links, published=meta.published, modified=meta.modified)
+                       pdf_links=meta.pdf_links, published=meta.published, modified=meta.modified,
+                       soft_404=_soft_404(meta.title, page.title))
