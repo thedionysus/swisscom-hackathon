@@ -541,3 +541,49 @@ def test_robots_crawl_delay_also_spaces_the_pdf_downloads(tmp_path):
     PdfConnector(pdf_client, data_dir=tmp_path, sleep=pdf_sleeps.append, delay_seconds=0.5,
                  throttle=throttle).run_pdfs(_spec(), result.pdfs, known={})
     assert pdf_sleeps and min(pdf_sleeps) >= 5.0
+
+
+# --- found, deliberately not fetched (#11) -------------------------------------------------------
+
+def test_attachment_links_in_scope_are_reported_as_skipped():
+    """A .docx/.xlsx link is never fetched, but the run says so. Images and links outside the
+    source's prefixes are not counted: they were never candidates."""
+    pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+      <a href="/de/gebuehren.docx">Gebühren</a><a href="/de/liste.XLSX">Liste</a><a href="/de/liste.XLSX">again</a>
+      <a href="/de/foto.jpg">Foto</a><a href="https://elsewhere.ch/x.docx">x</a>
+      <a href="https://www.x.ch/dam/tarif.csv">Tarif</a></main></body></html>"""}
+    spec = _spec(pdf_allow_prefixes=["https://www.x.ch/dam/"])
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(spec, known={})
+    assert sorted(result.skipped) == [("https://www.x.ch/dam/tarif.csv", ".csv"),
+                                      ("https://www.x.ch/de/gebuehren.docx", ".docx"),
+                                      ("https://www.x.ch/de/liste.XLSX", ".xlsx")]
+
+
+def test_pdfs_beyond_max_pdfs_are_reported_as_skipped():
+    pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+      <a href="/de/a.pdf">A</a><a href="/de/b.pdf">B</a><a href="/de/c.pdf">C</a><a href="/de/b.pdf">B again</a>
+      </main></body></html>"""}
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(_spec(max_pdfs=1), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.x.ch/de/a.pdf"]
+    assert result.skipped == (("https://www.x.ch/de/b.pdf", "max_pdfs"), ("https://www.x.ch/de/c.pdf", "max_pdfs"))
+
+
+def test_in_scope_link_answering_with_a_non_html_type_is_reported_as_skipped():
+    """The suffix lies: /de/download/1 serves a spreadsheet. It is not parsed, and the run says so."""
+    xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
+        if url == "https://www.x.ch/de/":
+            return httpx.Response(200, text="""<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+              <a href="/de/download/1">Liste</a></main></body></html>""", headers={"content-type": "text/html"})
+        if url == "https://www.x.ch/de/download/1":
+            return httpx.Response(200, content=b"PK\x03\x04", headers={"content-type": f"{xlsx}; charset=binary"})
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    result = HtmlConnector(client, CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert result.skipped == (("https://www.x.ch/de/download/1", f"type {xlsx}"),)
+    assert result.errors == ()

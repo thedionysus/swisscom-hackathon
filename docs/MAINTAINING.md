@@ -187,6 +187,7 @@ versions whose start date has arrived.
 | One language of a Fedlex act changed | Every language version of that act is downloaded again, so articles and paragraphs stay aligned across languages. |
 | Page returns 404 or 410, or a known URL now redirects elsewhere | The document becomes `withdrawn`. |
 | URL already owned by another source | Left alone and counted as a duplicate. |
+| In-scope link to a `.docx`, `.xlsx`, `.csv`, `.zip`… file, a PDF beyond `max_pdfs`, or a page answering with a non-HTML type | Not fetched or stored, but counted per reason in the fetch report: `skipped[.docx]=3 skipped[max_pdfs]=12`. |
 
 After `fetch`, `corpus run` only works on what is new. A chunk whose text did not change keeps its
 description, topics and boilerplate verdict from the earlier version. A vector is reused whenever the

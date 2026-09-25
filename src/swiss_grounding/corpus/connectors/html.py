@@ -29,6 +29,9 @@ logger = logging.getLogger(__name__)
 
 SKIP_SUFFIXES = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".zip", ".xml", ".json", ".ics", ".csv",
                  ".docx", ".doc", ".xlsx", ".xls", ".mp4", ".mp3")
+# The skipped files that could hold content (#11): an in-scope link to one is reported as skipped, so a
+# source whose rules sit in a .docx does not look fully covered. Images and media are never counted.
+ATTACHMENT_SUFFIXES = (".zip", ".xml", ".json", ".ics", ".csv", ".docx", ".doc", ".xlsx", ".xls")
 DEFAULT_MAX_PAGES = 300
 DEFAULT_MAX_PDFS = 50
 _DENY_ALL_ROBOTS = "User-agent: *\nDisallow: /\n"
@@ -152,6 +155,11 @@ def _matches(url: str, patterns: tuple[re.Pattern[str], ...]) -> bool:
     return any(p.search(url) for p in patterns)
 
 
+def _attachment_suffix(url: str) -> str | None:
+    path = urlparse(url).path.lower()
+    return next((s for s in ATTACHMENT_SUFFIXES if path.endswith(s)), None)
+
+
 class HtmlConnector:
     def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep,
                  throttle: HostThrottle | None = None):
@@ -253,8 +261,8 @@ class HtmlConnector:
         min_delay = float(cfg.get("delay_seconds", 0.0))
         queue = CrawlQueue(cfg["start_urls"], known)
         errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay, deny)
-        crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)),
-                              tuple(cfg.get("pdf_allow_prefixes", prefixes)),
+        pdf_prefixes = tuple(cfg.get("pdf_allow_prefixes", prefixes))
+        crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)), pdf_prefixes,
                               pdf_allowed=lambda u: self._robots_allow(u, min_delay))
         crawl.errors.extend(errors)
         pages = 0
@@ -270,7 +278,11 @@ class HtmlConnector:
                 crawl.errors.append((url, f"fetch failed: {exc}"))
                 continue
             final = self._settle(url, str(response.url), response.status_code, queue, known, prefixes, crawl, deny)
-            if final is None or "html" not in response.headers.get("content-type", "text/html").lower():
+            if final is None:
+                continue
+            media_type = response.headers.get("content-type", "text/html").split(";")[0].strip().lower()
+            if "html" not in media_type:
+                crawl.skip(final, f"type {media_type or 'missing'}")  # a link whose suffix did not say so
                 continue
             try:
                 page = parse_crawled_page(response.text, final, spec, pdf_patterns)
@@ -286,6 +298,9 @@ class HtmlConnector:
             for link in page.links:
                 if self._crawlable(link, prefixes, pdf_patterns, deny):
                     queue.add(link)
+                elif ((suffix := _attachment_suffix(link)) and self._in_prefixes(link, prefixes + pdf_prefixes)
+                      and not _matches(link, deny)):
+                    crawl.skip(link, suffix)
             crawl.record(final, page, response)
         return crawl.result()
 
@@ -317,7 +332,8 @@ class HtmlConnector:
 
 
 class _CrawlResults:
-    """What one run collects: emitted documents, their alternates for grouping, PDFs, errors."""
+    """What one run collects: emitted documents, their alternates for grouping, PDFs, errors, and
+    what was found but deliberately not fetched (skipped)."""
 
     def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...],
                  pdf_allowed: Callable[[str], bool] = lambda url: True):
@@ -333,6 +349,10 @@ class _CrawlResults:
         self.unchanged: list[str] = []
         self.gone: dict[str, None] = {}
         self.errors: list[tuple[str, str]] = []
+        self.skipped: dict[str, str] = {}
+
+    def skip(self, url: str, reason: str) -> None:
+        self.skipped.setdefault(url, reason)
 
     def record(self, final: str, page: CrawledPage, response: httpx.Response) -> None:
         if not page.emit:
@@ -340,15 +360,19 @@ class _CrawlResults:
         self.alternates_by_url[final] = dict(page.alternates)
         self.page_languages[final] = page.language
         for pdf_url, text in page.pdf_links:
-            if (len(self.pdfs) < self._max_pdfs and pdf_url not in self.pdfs and pdf_url not in self._pdfs_refused
-                    and any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
-                # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
-                if not self._pdf_allowed(pdf_url):
-                    self._pdfs_refused.add(pdf_url)
-                    self.errors.append((pdf_url, "PDF disallowed by robots.txt"))
-                    continue
-                self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=page.language,
-                                                   title_hint=text or page.title_hint, source_id=self._spec.id)
+            if (pdf_url in self.pdfs or pdf_url in self._pdfs_refused
+                    or not any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
+                continue
+            if len(self.pdfs) >= self._max_pdfs:
+                self.skip(pdf_url, "max_pdfs")
+                continue
+            # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
+            if not self._pdf_allowed(pdf_url):
+                self._pdfs_refused.add(pdf_url)
+                self.errors.append((pdf_url, "PDF disallowed by robots.txt"))
+                continue
+            self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=page.language,
+                                               title_hint=text or page.title_hint, source_id=self._spec.id)
         if page.sections:
             self.pending.append(ParsedDocument(
                 source_id=self._spec.id, url=final, language=page.language, work_key="", title=page.title,
@@ -360,4 +384,5 @@ class _CrawlResults:
         keys = _language_groups(self.alternates_by_url, self.page_languages)
         documents = tuple(replace(doc, work_key=keys.get(doc.url, work_key(doc.url, {}))) for doc in self.pending)
         return ConnectorResult(documents=documents, unchanged_urls=tuple(self.unchanged),
-                               gone_urls=tuple(self.gone), errors=tuple(self.errors), pdfs=tuple(self.pdfs.values()))
+                               gone_urls=tuple(self.gone), errors=tuple(self.errors), pdfs=tuple(self.pdfs.values()),
+                               skipped=tuple(self.skipped.items()))
