@@ -1,6 +1,7 @@
 version: 2026-09-24.1
 probes:
   - id: g-fed-marriage-age-de
+    group: marriage-age
     question: Ab welchem Alter darf man in der Schweiz heiraten?
     language: de
     area: law
@@ -51,6 +52,7 @@ probes:
       Confédération et les cantons," federal subsidy pegged to 7.5% of gross AOS costs.
     expect: {status: results, sources: [assurance-maladie-reduction-des-primes], key_fact: "Premium reductions for people of modest means are financed jointly by the Confederation and the cantons."}
   - id: g-fed-marriage-age-it
+    group: marriage-age
     question: A partire da quale età ci si può sposare in Svizzera?
     language: it
     area: law

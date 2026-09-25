@@ -1,0 +1,96 @@
+version: 2026-09-24.1
+probes:
+  - id: g-muni2-murten-dog-tax
+    question: Wie hoch ist die Hundesteuer in Murten?
+    locations: [Murten]
+    language: de
+    area: taxes
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: murten-morat.ch/finanzen/24313, "Hundesteuer | CHF 100.00 pro Hund und Jahr, Stichtag =
+      30.6."
+    expect: {status: results, sources: [murten-morat.ch/finanzen], key_fact: "CHF 100 per dog per year, with 30 June as the reference date."}
+  - id: g-muni2-kerzers-waste-day
+    question: An welchem Tag wird in Kerzers der Kehricht abgeholt?
+    locations: [Kerzers]
+    language: de
+    area: waste
+    level: municipal
+    split: holdout
+    note: >-
+      Verified in corpus: kerzers.ch/leben-kerzers/umwelt/entsorgung, "Die Kehricht- und Sperrgutabfuhr findet
+      jeden Mittwoch statt. Grüngutabfuhr jeden Freitag, im Dezember und Januar jeden zweiten Freitag."
+    expect: {status: results, sources: [kerzers.ch], key_fact: "Household refuse and bulky waste are collected every Wednesday; green waste every Friday."}
+  - id: g-muni2-kerzers-waste-fee
+    question: What is the basic waste fee per person in Kerzers?
+    locations: [Kerzers]
+    language: en
+    area: waste
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: kerzers.ch/leben-kerzers/portrait/zahlen-und-fakten, "Kehrichtgrundgebühr | Fr. 35.00
+      pro Person/Jahr (Kinder bis 4 Jahre ausgenommen) | Gewichtsgebühr Kehricht | Fr. 0.45 pro kg."
+    expect: {status: results, sources: [zahlen-und-fakten], key_fact: "CHF 35 per person per year (children up to 4 exempt), plus CHF 0.45 per kg of refuse."}
+  - id: g-muni2-fribourg-arrival
+    question: De quels documents ai-je besoin pour annoncer mon arrivée en séjour à Fribourg?
+    locations: [Fribourg]
+    language: fr
+    area: moving
+    level: municipal
+    split: holdout
+    note: >-
+      Verified in corpus: ville-fribourg.ch/controle-habitants, "Pour annoncer votre arrivée en séjour en ligne,
+      vous avez besoin d'une attestation d'établissement délivrée par votre commune de domicile principal, d'une
+      pièce d'identité; d'une copie de votre contrat de bail si vous êtes locataire ou du formulaire de logeur."
+      Location "Fribourg" is ambiguous between city and canton; the city Contrôle des habitants page is the
+      correct answer for registering a stay.
+    expect: {status: results, sources: [ville-fribourg.ch/controle-habitants], key_fact: "An attestation of residence from the main commune, an ID document, and a copy of the lease (or the host's form)."}
+  - id: g-muni2-estavayer-tax-rate
+    question: Quel est le taux de l'impôt communal sur le revenu à Estavayer?
+    locations: [Estavayer]
+    language: fr
+    area: taxes
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: estavayer.ch/.../2025_01_15_La_Commune_d_Estavayer_-_Chiffres_et_donnees.pdf, "Taux de
+      l'impôt communal sur le revenu/la fortune des personnes physiques. 84.00 % de la cote cantonale."
+    expect: {status: results, sources: [Chiffres_et_donnees], key_fact: "84% of the cantonal tax for income and wealth of individuals."}
+  - id: g-muni2-marly-tax-rate
+    question: Quel est le coefficient d'impôt communal à Marly depuis 2024?
+    locations: [Marly]
+    language: fr
+    area: taxes
+    level: municipal
+    split: holdout
+    note: >-
+      Verified in corpus: marly.ch/finances-et-impots/impots-et-taxes, "Revenu et fortune des personnes physiques
+      80 % de l'impôt cantonal, 89 % de l'impôt cantonal (dès le 1er janvier 2024)." The old 80% must not be
+      given as current.
+    expect: {status: results, sources: [marly.ch/finances-et-impots/impots-et-taxes], key_fact: "89% of the cantonal tax since 1 January 2024 (previously 80%)."}
+  - id: g-muni2-bulle-waste-info
+    question: Où trouver les horaires de la déchetterie à Bulle?
+    locations: [Bulle]
+    language: fr
+    area: waste
+    level: municipal
+    split: dev
+    note: >-
+      Verified in corpus: bulle.ch/calendrier, "Connaître les horaires d'ouverture de la déchetterie dans votre
+      secteur ... Grâce à MEMODéchets, tout ceci est désormais plus facile. Cet outil pratique et gratuit se
+      décline notamment en version web (www.memodechets.ch) et smartphone."
+    expect: {status: results, sources: [bulle.ch], key_fact: "Opening hours are published in the free MEMODéchets tool (web www.memodechets.ch and smartphone app)."}
+  - id: g-muni2-multi-murten-kerzers-dog
+    question: Wie hoch ist die Hundesteuer in Murten und in Kerzers?
+    locations: [Murten, Kerzers]
+    language: de
+    area: taxes
+    level: municipal
+    split: holdout
+    note: >-
+      Two newly covered Fribourg communes, each with its own page. Verified in corpus: murten-morat.ch/finanzen/24313,
+      "Hundesteuer | CHF 100.00 pro Hund und Jahr"; kerzers.ch/leben-kerzers/portrait/zahlen-und-fakten,
+      "Hundetaxe | Fr. 100.00 pro Hund/Jahr." Same amount, but each place must cite its own commune.
+    expect: {status: results, place_statuses: [results, results], sources: [murten-morat.ch/finanzen, zahlen-und-fakten], key_fact: "Both Murten and Kerzers charge CHF 100 per dog per year."}

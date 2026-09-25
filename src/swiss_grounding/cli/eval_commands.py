@@ -185,33 +185,43 @@ def _load_labels(path: Path) -> dict[tuple[str, str], bool]:
 def golden_cmd(
     split: str = typer.Option("dev", "--split", help="dev, holdout or all"),
     record: bool = typer.Option(False, "--record", help="write the report to evals/golden/runs/"),
+    compare: Annotated[Path | None, typer.Option("--compare", help="a recorded run JSON to diff against")] = None,
 ) -> None:
-    """Run the golden set; print per-probe results and the summary against the pass thresholds."""
+    """Run the golden set; print per-probe results, headline metrics with 95% CIs, slices and deltas."""
     import json
-    from dataclasses import asdict
 
     from swiss_grounding.app import build_search_service
+    from swiss_grounding.evals import golden_format as fmt
+    from swiss_grounding.evals.golden_analysis import compare as compare_runs
     from swiss_grounding.evals.golden_models import load_golden
     from swiss_grounding.evals.golden_runner import run_golden
-    from swiss_grounding.evals.metrics import passes
 
+    if compare is not None and not compare.is_file():
+        raise typer.BadParameter(f"no recorded run at {compare}", param_hint="--compare")
     settings = load_settings()
     service = build_search_service(settings, today=_today)
     report = run_golden(service, load_golden(), labels=_load_labels(LABELS_PATH), split=split)
     for o in report.outcomes:
         mark = "ok " if o.status == o.expected_status else "BAD"
         typer.echo(f"{mark} {o.probe_id:<32} {o.status:<16} (want {o.expected_status}) recall={o.recall}")
-    verdict = passes(report.summary)
-    for name, value in report.summary.items():
-        shown = "n/a" if value is None else f"{value:.3f}"
-        typer.echo(f"{name:<16} {shown:<7} {'PASS' if verdict.get(name) else 'FAIL'}")
+    payload = fmt.report_payload(report)
+    sections = [("headline (95% CI: Wilson for rates, bootstrap for means)",
+                 fmt.headline_lines(report.outcomes, report.summary) + [fmt.latency_line(report.outcomes)]),
+                ("status confusion", fmt.confusion_lines(report.outcomes)),
+                ("slices: value (n)", fmt.slice_lines(report.outcomes))]
+    if compare is not None:
+        previous = json.loads(compare.read_text(encoding="utf-8"))
+        sections.append((f"compare with {compare.name}", fmt.compare_lines(compare_runs(previous, payload))))
+    for title, lines in sections:
+        typer.echo(f"\n== {title}")
+        typer.echo("\n".join(lines))
     if record:
         GOLDEN_RUNS.mkdir(parents=True, exist_ok=True)
         config = {"reranker": service.reranker.name, "fitted": service.relevance.fitted,
                   "threshold": service.relevance.threshold, "index": settings.serving_index,
                   "rerank_candidates": settings.rerank_candidates, "git_commit": _git_commit()}
         path = GOLDEN_RUNS / f"{datetime.now(SWISS_TZ):%Y%m%dT%H%M%S}-{split}.json"
-        path.write_text(json.dumps({"config": config, **asdict(report)}, ensure_ascii=False, indent=2,
+        path.write_text(json.dumps({"config": config, **payload}, ensure_ascii=False, indent=2,
                                    default=str), encoding="utf-8")
         typer.echo(f"report written to {path}")
 
@@ -445,3 +455,63 @@ def fit_cmd() -> None:
                       "dataset_version": load_golden().version, "git_commit": _git_commit()})
     typer.echo(f"{base.reranker.name}: fitted on {len(rows['dev'])} dev pairs, threshold {threshold:.3f}; "
                f"holdout precision {precision:.3f}, recall {recall:.3f}; wrote {out}")
+
+
+def _fmt(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.3f}"
+
+
+@eval_app.command("tools")
+def tools_cmd(split: str = typer.Option("all", "--split", help="dev, holdout or all")) -> None:
+    """Exact checks of the non-search tools (lookups, documents, scope, zbern) against evals/golden/."""
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.evals.mcp_caller import call_all
+    from swiss_grounding.evals.tool_checks import run_tools
+
+    settings = load_settings()
+    report = run_tools(load_golden(), lambda calls: call_all(settings, calls), split=split)
+    for o in report.outcomes:
+        mark = "skip" if o.skipped else ("ok  " if o.passed else "BAD ")
+        typer.echo(f"{mark} {o.probe_id:<28} {o.tool:<24} {o.reason}")
+    typer.echo(" ".join(f"{k}={v}" for k, v in report.summary.items()))
+    if report.summary["failed"]:
+        raise typer.Exit(code=EXIT_STATUS_MISMATCH)
+
+
+ROBUSTNESS_SEED = 20260925
+
+
+@eval_app.command("robustness")
+def robustness_cmd(split: str = typer.Option("all", "--split", help="dev, holdout or all"),
+                   seed: int = typer.Option(ROBUSTNESS_SEED, "--seed")) -> None:
+    """Search stability under deterministic question perturbations (case, diacritics, typo, filler, '?')."""
+    from swiss_grounding.app import build_search_service
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.evals.live_search import hit_search
+    from swiss_grounding.evals.robustness import METRICS, run_robustness
+
+    service = build_search_service(load_settings(), today=_today)
+    report = run_robustness(load_golden(), hit_search(service), split=split, seed=seed)
+    typer.echo(f"{report.probes} results probes, baseline recall@5 {_fmt(report.baseline_recall)}")
+    typer.echo(f"{'perturbation':<18}" + "".join(f"{m:>18}" for m in METRICS))
+    for name, row in [*report.per_perturbation.items(), ("overall", report.overall)]:
+        typer.echo(f"{name:<18}" + "".join(f"{_fmt(row[m]):>18}" for m in METRICS))
+
+
+@eval_app.command("consistency")
+def consistency_cmd(split: str = typer.Option("all", "--split", help="dev, holdout or all")) -> None:
+    """Probes sharing a `group` (one question, several languages): same status and same top citation text?"""
+    from swiss_grounding.app import build_search_service
+    from swiss_grounding.evals.consistency import run_consistency
+    from swiss_grounding.evals.golden_models import load_golden
+    from swiss_grounding.evals.live_search import answer_search
+
+    settings = load_settings()
+    service = build_search_service(settings, today=_today)
+    report = run_consistency(load_golden(), answer_search(service, settings.database_url), split=split)
+    for g in report.groups:
+        mark = "ok " if g.status_agrees and g.top_agrees else "BAD"
+        typer.echo(f"{mark} {g.group}")
+        for pid, lang, a in g.answers:
+            typer.echo(f"      {lang} {pid:<34} {a.status:<14} {a.top}")
+    typer.echo(" ".join(f"{k}={_fmt(v) if isinstance(v, float) else v}" for k, v in report.summary.items()))

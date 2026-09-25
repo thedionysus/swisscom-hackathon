@@ -1,0 +1,150 @@
+version: 2026-09-24.1
+# Probes of the non-search tools, run by `eval tools`. Every expectation was checked by calling the tool
+# in-process on 2026-09-25. Live sources (timetable, upcoming votes) get structural checks only.
+probes:
+  - id: t-premium-lugano
+    question: Premio mensile più basso, adulto 30 anni, Lugano, franchigia 2500?
+    language: it
+    area: health_insurance
+    level: federal
+    split: dev
+    tool: swiss_premium
+    args: {municipality: Lugano, age: 30, deductible: 2500}
+    note: Challenge sample 3. 2026 BAG data, premium region TI-1; cheapest is Agrisano AGRIsmart at CHF 449.90.
+    expect: {status: results, contains: ["Lugano", "Agrisano"], value_path: premiums.0.premium_chf, value: 449.9, tolerance: 0.05}
+  - id: t-premium-chur-single
+    question: Günstigste Prämie in Chur, 30 Jahre, Franchise 2500?
+    language: de
+    area: health_insurance
+    level: federal
+    split: dev
+    tool: swiss_premium
+    args: {municipality: Chur, age: 30, deductible: 2500, limit: 1}
+    note: Region GR-1; cheapest 2026 is Sanitas TelMed (Compact One) at CHF 302.90.
+    expect: {status: results, contains: ["Sanitas"], value_path: premiums.0.premium_chf, value: 302.9, tolerance: 0.05}
+  - id: t-premium-bad-deductible
+    question: Prämie in Lugano, 30 Jahre, Franchise 2400?
+    language: de
+    area: health_insurance
+    level: federal
+    split: dev
+    tool: swiss_premium
+    args: {municipality: Lugano, age: 30, deductible: 2400}
+    note: 2400 is not an allowed adult deductible; the tool must refuse and list the allowed ones.
+    expect: {status: invalid_request, contains: ["2500"]}
+  - id: t-reference-rate-current
+    question: Wie hoch ist der aktuelle Referenzzinssatz für Mieten?
+    language: de
+    area: housing
+    level: federal
+    split: dev
+    tool: swiss_reference_rate
+    note: BWO rate 1.25 % effective since 2025-09-02. Update when BWO publishes a new rate (quarterly).
+    expect: {status: results, contains: ["2025-09-02", "bwo.admin.ch"], value_path: rate_percent, value: 1.25}
+  - id: t-connections-bern-zurich
+    question: Nächste Verbindung von Bern nach Zürich HB?
+    language: de
+    area: transport
+    level: federal
+    split: dev
+    tool: swiss_connections
+    args: {origin: Bern, destination: Zürich HB}
+    note: Live timetable; times change, so only the shape is checked.
+    expect: {status: results, nonempty: [connections, connections.0.departure, connections.0.products], contains: ["transport.opendata.ch"]}
+  - id: t-connections-lausanne-geneve
+    question: Prochain train de Lausanne à Genève?
+    language: fr
+    area: transport
+    level: federal
+    split: dev
+    tool: swiss_connections
+    args: {origin: Lausanne, destination: Genève, limit: 2}
+    note: Live timetable; structural only.
+    expect: {status: results, nonempty: [connections.1.arrival]}
+  - id: t-scope-cantons
+    question: Was deckt dieser Server ab?
+    language: de
+    area: none
+    level: none
+    split: dev
+    tool: swiss_scope
+    note: >-
+      Lists the six floor cantons. No tier-2 canton holds current passages yet (2026-09-25: every chunk extent
+      is CH or one of ZH, BE, VD, GE, TI, GR), so no added canton can be asserted; add one here once fetched.
+    expect: {status: results, contains: ["Graubünden", "Ticino", "Scuol", "reference interest rate"]}
+  - id: t-document-zgb-94
+    question: Art. 94 ZGB
+    language: de
+    area: law
+    level: federal
+    split: dev
+    tool: swiss_get_document
+    args: {reference: Art. 94 ZGB}
+    expect: {status: results, contains: ["233_245_233/20260701/de", "art_94", "das 18. Altersjahr zurückgelegt"]}
+  - id: t-document-url-roundtrip
+    question: ZGB by URL
+    language: de
+    area: law
+    level: federal
+    split: dev
+    tool: swiss_get_document
+    args: {reference: "https://www.fedlex.admin.ch/eli/cc/24/233_245_233/20260701/de"}
+    note: An official URL resolves to the same document (id and translation group) as the article reference.
+    expect: {status: results, contains: ["\"url\": \"https://www.fedlex.admin.ch/eli/cc/24/233_245_233/20260701/de\"", "g_24f32a418381f6bd", "SR 210"]}
+  - id: t-document-or-266c-fr
+    question: Art. 266c OR en français
+    language: fr
+    area: housing
+    level: federal
+    split: dev
+    tool: swiss_get_document
+    args: {reference: Art. 266c OR, language: fr}
+    expect: {status: results, contains: ["317_321_377", "/fr\"", "délai de congé de trois mois"]}
+  - id: z-person-pult
+    question: Wer ist Jon Pult?
+    language: de
+    area: voting
+    level: federal
+    split: dev
+    tool: zbern_search_person
+    args: {query: Jon Pult, active_only: true}
+    note: Sitting National Council member, SP, Graubünden, PersonNumber 4281.
+    expect: {status: results, contains: ["\"personNumber\": 4281", "\"council\": \"NR\"", "\"canton\": \"GR\"", "\"party\": \"SP\""]}
+  - id: z-business-21-047
+    question: Worum geht es im Geschäft 21.047?
+    language: de
+    area: voting
+    level: federal
+    split: dev
+    tool: zbern_get_business
+    args: {business_id: "21.047"}
+    note: The electricity supply act (Mantelerlass) put to the vote on 9 June 2024.
+    expect: {status: results, contains: ["Sichere Stromversorgung mit erneuerbaren Energien", "9. Juni 2024"]}
+  - id: z-business-search-ahv
+    question: Welche Geschäfte gibt es zur AHV-Rente?
+    language: de
+    area: voting
+    level: federal
+    split: dev
+    tool: zbern_search_business
+    args: {query: AHV-Rente}
+    expect: {status: results, nonempty: [results], contains: ["AHV"]}
+  - id: z-upcoming-votes
+    question: Wann ist die nächste Volksabstimmung?
+    language: de
+    area: voting
+    level: federal
+    split: dev
+    tool: zbern_get_upcoming_votes
+    note: Dates move; only the shape is checked.
+    expect: {status: results, nonempty: [votes, votes.0.date, votes.0.items.0.title]}
+  - id: z-vote-13th-ahv
+    question: Wie viel Prozent stimmten der 13. AHV-Rente zu?
+    language: de
+    area: voting
+    level: federal
+    split: dev
+    tool: zbern_get_vote_results
+    args: {date: "2024-03-03"}
+    note: Federal vote of 3 March 2024; the 13th AHV pension initiative passed with 58.25 % yes.
+    expect: {status: results, contains: ["13. AHV-Rente", "\"vorlageAngenommen\": true"], value_path: results.0.ja_pct, value: 58.25, tolerance: 0.01}
