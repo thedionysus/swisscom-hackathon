@@ -19,8 +19,9 @@ class GeoAdminClient:
         self._http = http
 
     @classmethod
-    def from_settings(cls, base_url: str, timeout_seconds: float) -> "GeoAdminClient":
-        return cls(http=httpx.Client(base_url=base_url, timeout=timeout_seconds))
+    def from_settings(cls, base_url: str, timeout_seconds: float,
+                      transport: httpx.BaseTransport | None = None) -> "GeoAdminClient":
+        return cls(http=httpx.Client(base_url=base_url, timeout=timeout_seconds, transport=transport))
 
     def search_communes(self, text: str) -> tuple[GeoAdminHit, ...]:
         try:

@@ -19,7 +19,7 @@ replies, are in [`docs/diagrams/`](docs/diagrams/README.md).
 
 Items marked **TBD** are still being settled by the team.
 
-1. **Commit to evaluate:** **TBD** (branch `main` or a tag).
+1. **Commit to evaluate:** branch `main`.
 2. **Transport:** stdio by default. Streamable HTTP with `--transport http`: path `/mcp`, port `8000`
    (change it with `--port`). In a container, add `--host 0.0.0.0`. There is no authentication.
 3. **Runtime:** Python 3.12 (`.python-version`), managed by `uv` with the lockfile `uv.lock`. It also
@@ -101,10 +101,10 @@ Items marked **TBD** are still being settled by the team.
     after start waits until the models are loaded.
 12. **robots.txt and terms of use:** `RESPECT_ROBOTS`, default `true`: the crawler obeys robots.txt.
     `ROBOTS_API_EXCEPTIONS`, default `false`: fetch a documented API that robots.txt blocks, for
-    sources whose manifest gives a reason. Both apply when building the corpus. At question time
-    the server makes live requests to three public sources, which these settings do not cover: the BWO
-    reference-rate page, the transport.opendata.ch API and the GeoAdmin API. On 2026-09-25 none of
-    their robots.txt files disallowed these requests.
+    sources whose manifest gives a reason. `RESPECT_ROBOTS` also applies at question time, to the
+    server's live requests to the BWO reference-rate page, the transport.opendata.ch API and the
+    GeoAdmin API: each host's robots.txt is read once a day, and a request it disallows is not sent
+    (the tool answers `source_unavailable`; for GeoAdmin, the place name counts as not recognised).
 13. **Parallel use:** over HTTP, one server handles several conversations at the same time. `swiss_search`
     calls use the models one at a time and queue; the other tools run in parallel. Over stdio, each
     conversation starts its own server process. Start: the server answers the MCP handshake within
@@ -427,7 +427,7 @@ See the tables below for every setting's default and purpose.
 | `CORPUS_BUDGET_USD`, `CORPUS_OCR_BUDGET_USD` | `100`, `10` | Hard spending cap, and the OCR share of it. |
 | `CORPUS_INDEXES` | `bge-m3` | Embedding indexes to build. Add `openai-3l` to also pay for the OpenAI index. |
 | `EMBEDDING_BACKEND` | `fake` | Set to `sentence_transformers` to build the local bge-m3 index. |
-| `RESPECT_ROBOTS` | `true` | Obey robots.txt while crawling. Keep it on unless a source's terms were checked. |
+| `RESPECT_ROBOTS` | `true` | Obey robots.txt while crawling, and for the server's live lookups (BWO, transport.opendata.ch, GeoAdmin). Keep it on unless a source's terms were checked. |
 | `CRAWL_DELAY_SECONDS`, `FETCH_TIMEOUT_SECONDS` | `0.5`, `20` | Minimum delay between requests to one host (robots.txt and the manifest can raise it), and the HTTP timeout. |
 | `DATA_DIR` | `data` | Where raw files, page images and batch files go. |
 | `CORPUS_CHAT_TOKENS_PER_FILE`, `CORPUS_EMBED_TOKENS_PER_FILE` | `2000000` | Input tokens per Batch API file. Set to the account's enqueued-token limit. |

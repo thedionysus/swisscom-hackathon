@@ -28,6 +28,7 @@ from swiss_grounding.db.connection import connect
 from swiss_grounding.lookups.connections import find_connections
 from swiss_grounding.lookups.premium import cheapest_premiums
 from swiss_grounding.lookups.reference_rate import reference_rate
+from swiss_grounding.lookups.robots import RobotsCache, robots_transport
 from swiss_grounding.mcp_server import zbern
 from swiss_grounding.serving.call_log import CallRecord, record_call
 from swiss_grounding.serving.documents import get_document
@@ -112,6 +113,7 @@ def build_server(settings: Settings, *, host: str = "127.0.0.1", port: int = 800
     scope = startup_scope(settings)
     lazy = LazyService(lambda: build_search_service(settings))
     models = anyio.CapacityLimiter(1)
+    robots = RobotsCache(settings.corpus_user_agent, settings.lookup_timeout_seconds) if settings.respect_robots else None
     mcp = FastMCP("swiss-grounding", instructions=instructions(scope), host=host, port=port)
 
     async def timed(tool: str, fn: Callable[[], dict], *, uses_models: bool = False) -> str:
@@ -243,7 +245,8 @@ def build_server(settings: Settings, *, host: str = "127.0.0.1", port: int = 800
         status source_unavailable means the timetable service is down: say so, do not guess times."""
         def run() -> dict:
             with httpx.Client(base_url=settings.transport_base_url, timeout=settings.lookup_timeout_seconds,
-                              headers={"user-agent": settings.corpus_user_agent}) as client:
+                              headers={"user-agent": settings.corpus_user_agent},
+                              transport=robots_transport(robots)) as client:
                 return find_connections(client, origin=origin, destination=destination, date=date, time=time,
                                         limit=limit)
         return await timed("swiss_connections", run)
@@ -256,7 +259,8 @@ def build_server(settings: Settings, *, host: str = "127.0.0.1", port: int = 800
         the date it was retrieved: tell the user it may be out of date."""
         def run() -> dict:
             with httpx.Client(timeout=settings.lookup_timeout_seconds, follow_redirects=True,
-                              headers={"user-agent": settings.corpus_user_agent}) as client, \
+                              headers={"user-agent": settings.corpus_user_agent},
+                              transport=robots_transport(robots)) as client, \
                     connect(settings.database_url) as conn:
                 return reference_rate(conn, client, settings.reference_rate_url)
         return await timed("swiss_reference_rate", run)
