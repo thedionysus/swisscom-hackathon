@@ -15,6 +15,95 @@ Maintaining the data (adding sources, refreshing, publishing a new database) is 
 [`docs/EVALUATION.md`](docs/EVALUATION.md). Diagrams of the whole system, from ingestion to the tool
 replies, are in [`docs/diagrams/`](docs/diagrams/README.md).
 
+## Evaluation quick start
+
+Items marked **TBD** are still being settled by the team.
+
+1. **Commit to evaluate:** **TBD** (branch `main` or a tag).
+2. **Transport:** stdio by default. Streamable HTTP with `--transport http`: path `/mcp`, port `8000`
+   (change it with `--port`). In a container, add `--host 0.0.0.0`. There is no authentication.
+3. **Runtime:** Python 3.12 (`.python-version`), managed by `uv` with the lockfile `uv.lock`. It also
+   needs Docker with Compose, which runs PostgreSQL 16 with pgvector (`pgvector/pgvector:0.8.6-pg16`,
+   published for arm64 and amd64), and the GitHub CLI `gh`. There is no prebuilt server image: the
+   server runs from source, on CPU on Linux arm64.
+4. **Setup**, from the repository root, without prompts once `GH_TOKEN` holds a token (or `gh auth
+   login` has run) for an account with read access to this private repository:
+
+   ```bash
+   uv sync --extra embed           # Python dependencies, including torch and the model libraries
+   uv run swiss-grounding setup    # creates .env, starts the Docker database, downloads, verifies
+                                   # and restores the database, downloads bge-m3 and the reranker
+   ```
+
+   Needs about 15 GB of free disk and 6 GB of memory for Docker. Time: **TBD** (measured on an
+   Apple silicon Mac).
+5. **Start command:** `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
+   `HF_HUB_OFFLINE=1 uv run swiss-grounding serve --transport http --host 0.0.0.0 --port 8000` for HTTP.
+   The Docker database must be running (`docker compose up -d db` after a restart).
+6. **Prebuilt data:** a PostgreSQL dump (documents, chunks, bge-m3 vectors) of about 900 MB in parts
+   of 150 MiB, downloaded by `setup` from this repository's `corpus-latest` release and checked
+   against the checksums in its manifest. `setup` also downloads the models `BAAI/bge-m3` and the
+   reranker from Hugging Face. Rebuilding the corpus from the sources (crawl, OCR, descriptions,
+   embeddings) is described in [`docs/MAINTAINING.md`](docs/MAINTAINING.md); the crawl alone takes
+   hours, and descriptions need an LLM key.
+7. **Credentials:** the server starts and answers without any of them. `DATABASE_URL` points at the
+   Docker database and comes from `.env.example`; it is not a secret.
+
+   | Variable | What it is for | Without it |
+   |---|---|---|
+   | `SUPERTEXT_API_KEY` | Translates questions into the other languages, and cited passages into the question's language | No translation: searches in other languages use vectors only |
+   | `ZBERN_MCP_TOKEN` | The `zbern_*` tools: Swiss Parliament and federal popular votes, from zbern.ch | The `zbern_*` tools are not listed |
+   | `GH_TOKEN` | Setup only: downloads the database from the private release | Run `gh auth login` instead |
+
+   The values reach the organisers through their secure channel, never through the repository.
+8. **Hosted endpoint:** none.
+9. **Declared scope:** topics from the organisers' table:
+
+   | # | Topic | Coverage |
+   |---|---|---|
+   | 1 | Health insurance premiums | Full: BAG information and the premium lookup `swiss_premium` |
+   | 2 | Taxes and fees | Partly: VAT and official guidance; no computed tax bills |
+   | 3 | Law and regulations | Full: federal law from Fedlex |
+   | 4 | Waste collection and recycling | Municipal pages of the municipalities below |
+   | 5 | Moving, registration, civil status | ch.ch and the municipalities below |
+   | 6 | Residence permits and migration | SEM and ch.ch |
+   | 7 | Social insurance and pensions | AHV/IV leaflets; no computed pensions |
+   | 8 | Work and unemployment | arbeit.swiss |
+   | 9 | Schools and education | Cantonal and municipal pages, including school holidays where published |
+   | 10 | Public transport | Live connections through `swiss_connections` |
+   | 11 | Road traffic and driving licences | Cantonal road traffic offices and federal law |
+   | 12 | Housing and renting | BWO, and the reference rate through `swiss_reference_rate` |
+   | 13 | Voting, elections, political rights | Federal Chancellery pages, and the `zbern_*` tools |
+   | 14 | Companies, commercial register, VAT | Partly: how the register works; no company lookup |
+   | 15 | Customs and ordering from abroad | BAZG |
+   | 16 | Statistics, geodata, weather | Partly: MeteoSwiss hazard guidance; no live data |
+
+   Geography: federal information for all of Switzerland; cantons ZH, BE, VD, GE, TI and GR;
+   municipalities Zürich, Bern, Lausanne, Genève, Lugano, Chur and Scuol. At start the server adds
+   every other canton and municipality the database holds current passages for, and `swiss_scope`
+   returns the full list. Languages: German, French, Italian, Romansh and English.
+10. **One example call:** `swiss_search` with
+
+    ```json
+    {"question": "Échanger mon permis de conduire étranger dans le canton de Vaud, et en combien de temps?", "locations": ["Vaud"]}
+    ```
+
+    Returns JSON with `status: "results"` and cited passages in French from vd.ch and ch.ch, each
+    with its URL, publisher, jurisdiction and relevance score.
+11. **Known limits:** places outside Switzerland; computed amounts such as tax bills or pensions (the
+    rules and official calculators are cited instead); looking up a specific company; live weather,
+    statistics and geodata; cantonal and municipal rules outside the places above. The first search
+    after start waits until the models are loaded.
+12. **robots.txt and terms of use:** `RESPECT_ROBOTS`, default `true`: the crawler obeys robots.txt.
+    `ROBOTS_API_EXCEPTIONS`, default `false`: fetch a documented API that robots.txt blocks, for
+    sources whose manifest gives a reason. Both apply when building the corpus; the running server
+    crawls nothing.
+13. **Parallel use:** over HTTP, one server handles several conversations at the same time. `swiss_search`
+    calls use the models one at a time and queue; the other tools run in parallel. Over stdio, each
+    conversation starts its own server process. Start: the server answers the MCP handshake within
+    seconds and loads the models in the background; the first search waits for them, **TBD** seconds
+    on an Apple silicon Mac.
+
 ## What it covers
 
 The `swiss_scope` tool returns this text, and the server repeats it whenever a question is not covered.
@@ -58,7 +147,7 @@ Requirements:
 Steps, from the repository root:
 
 ```bash
-cp .env.example .env                  # points at the Docker database; no key needed to serve
+cp .env.example .env                  # points at the Docker database; no key needed to serve (setup does this too)
 docker compose up -d db
 uv sync --extra embed                 # torch, bge-m3 and the reranker libraries
 uv run swiss-grounding setup          # download, verify and restore the database; download the models
@@ -119,7 +208,8 @@ and restart:
 ```
 
 **Other clients over HTTP:** `uv run swiss-grounding serve --transport http` serves streamable HTTP at
-`http://127.0.0.1:8000/mcp`. The address and port are fixed, and there is no authentication.
+`http://127.0.0.1:8000/mcp`. `--port` changes the port, and `--host 0.0.0.0` accepts connections from
+other machines, for example from outside a container. There is no authentication.
 
 ## Tools
 
