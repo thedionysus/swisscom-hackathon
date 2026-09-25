@@ -72,8 +72,12 @@ probes:
       Verified in corpus: bk.admin.ch/rm/register-federal-da-las-partidas, "Die Bundeskanzlei führt das
       Parteienregister des Bundes. Parteien, welche die Voraussetzungen nach Artikel 76a ... erfüllen ...
       müssen Angaben wie Adresse oder Statuten liefern." (the crawled rm page body carries this German
-      passage alongside the Romansh navigation).
-    expect: {status: results, sources: [register-federal-da-las-partidas], key_fact: "A party meeting Art. 76a of the political rights law must supply details such as its address and statutes to be entered in the federal party register."}
+      passage alongside the Romansh navigation). Amended 2026-09-25: that bk.admin.ch rm page is not in
+      run3; ch.ch/rm/co-pon-ins-fundar-ina-partida-politica-... is: "Las partidas ch'èn represchentadas
+      sin plaun federal u en almain trais parlaments chantunals pon profitar da tschertas facilitaziuns
+      administrativas, sch'ellas sa laschan inscriver en il register da las partidas tar la Chanzlia
+      federala. L'inscripziun n'è betg obligatorica."
+    expect: {status: results, sources: [co-pon-ins-fundar-ina-partida-politica], key_fact: "Parties represented federally or in at least three cantonal parliaments can register with the Federal Chancellery's party register for administrative relief; registration is voluntary."}
   - id: g-fed-vote-booklets-rm
     question: Nua chattain ins las explicaziuns dal Cussegl federal davart ils object da votar dals ultims onns?
     language: rm

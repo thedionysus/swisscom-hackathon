@@ -21,7 +21,9 @@ probes:
       corpus.document where url ilike '%//www.be.ch%' and status='current'` returns mostly an
       e-services directory (query-string variants of e-services.html) and Leichte-Sprache PDFs; no page
       about withholding-tax registration was found. Expected status reflects what the server can
-      actually answer, not what a resident would hope for.
+      actually answer, not what a resident would hope for. Rechecked 2026-09-25 on run3: the only
+      be.ch passages naming Quellensteuer are the e-services directory (tax calculator entry); still no
+      registration page, so no_evidence stands.
     expect: {status: no_evidence}
   - id: g-cant-ti-boat-licence
     question: Come si converte una patente nautica estera nel Cantone Ticino?
@@ -44,8 +46,10 @@ probes:
     note: >-
       Verified in corpus: gr.ch .../steuererklaerung/.../fristerstreckung.aspx, "Zum
       Fristerstreckungsgesuch für die Einreichung der Steuererklärung für Einkommen und Vermögen auf dem
-      ePortal."
-    expect: {status: results, sources: [einkommens_und_vermoegenssteuer/Seiten/fristerstreckung], key_fact: "Filing-deadline extensions for the income and wealth tax return are requested through the canton's ePortal."}
+      ePortal." Amended 2026-09-25: that page is not in run3 (no gr.ch URL or passage mentions
+      Fristerstreckung; only the Steuerverwaltung start page lists tax types), so the expectation is now
+      no_evidence.
+    expect: {status: no_evidence}
   - id: g-cant-vd-control-drive-experience
     question: Muss ich nach 5 Jahren in der Schweiz noch eine Kontrollfahrt machen, wenn ich meinen ausländischen Führerausweis in Vaud umtausche?
     language: fr
@@ -69,4 +73,7 @@ probes:
       réduction-des-primes page). The federal bag.admin.ch page (g-fed-premium-reduction-fr) states that
       cantons set the amount, but that is federal-level evidence, not a Geneva-specific page, so a
       cantonal-scoped question about how Geneva runs it has no cantonal source in the corpus.
-    expect: {status: no_evidence}
+      Amended 2026-09-25: run3 holds ge.ch/informations-generales-subside-assurance-maladie, "Le subside
+      est en principe accordé automatiquement selon votre revenu ... Il est annoncé à votre
+      assurance-maladie qui le déduit de vos primes." Now results.
+    expect: {status: results, sources: [ge.ch/informations-generales-subside-assurance-maladie], key_fact: "In Geneva the premium subsidy is granted automatically according to income and is deducted from the premiums by the health insurer."}

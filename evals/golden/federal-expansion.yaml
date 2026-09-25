@@ -1,0 +1,181 @@
+version: 2026-09-24.1
+probes:
+  - id: g-fed2-vat-registration-threshold-fr
+    question: À partir de quel chiffre d'affaires une entreprise doit-elle s'inscrire à la TVA en Suisse?
+    language: fr
+    area: taxes
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: estv.admin.ch/fr/taxe-sur-la-valeur-ajoutee, "Si la limite de chiffre
+      d'affaires prévue par la loi (100 000 francs) est effectivement atteinte ... l'entreprise est tenue
+      de s'inscrire au registre des assujettis à la TVA."
+    expect: {status: results, sources: [estv.admin.ch/fr/taxe-sur-la-valeur-ajoutee], key_fact: "A business must register for VAT once its turnover reaches the legal limit of CHF 100,000 per year."}
+  - id: g-fed2-vat-standard-rate-it
+    question: Qual è l'aliquota normale dell'IVA in Svizzera?
+    language: it
+    area: taxes
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: estv.admin.ch/it/imposta-sul-valore-aggiunto, "dal 1° gennaio 2024 le
+      seguenti aliquote ... Aliquota normale: 8,1".
+    expect: {status: results, sources: [estv.admin.ch/it/imposta-sul-valore-aggiunto], key_fact: "Since 1 January 2024 the standard Swiss VAT rate is 8.1%."}
+  - id: g-fed2-gmbh-minimum-capital-de
+    question: Wie viel Stammkapital braucht man mindestens für die Gründung einer GmbH?
+    language: de
+    area: companies
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: kmu.admin.ch/de/ag-oder-gmbh-was-ist-die-richtige-wahl, "Für eine GmbH
+      beläuft sich der Mindestbetrag auf CHF 20'000. Für eine AG sind mindestens CHF 100'000" (gefordert).
+    expect: {status: results, sources: [kmu.admin.ch/de/ag-oder-gmbh-was-ist-die-richtige-wahl], key_fact: "A GmbH needs at least CHF 20,000 capital (an AG at least CHF 100,000)."}
+  - id: g-fed2-short-time-work-notice-de
+    question: Wie lange im Voraus muss ein Arbeitgeber Kurzarbeit anmelden?
+    language: de
+    area: work
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: arbeit.swiss/de/arbeitgebende/faq-zur-kurzarbeitsentschaedigung, "Es
+      ist eine Voranmeldefrist (in der Regel 10 Tage) einzuhalten. Die Voranmeldung muss somit in der
+      Regel spätestens 10 Tage vor Beginn der Kurzarbeit bei der kantonalen Amtsstelle (KAST)
+      eintreffen."
+    expect: {status: results, sources: [faq-zur-kurzarbeitsentschaedigung], key_fact: "Short-time work must as a rule be notified to the cantonal office (KAST) at least 10 days before it starts."}
+  - id: g-fed2-reference-rate-rent-increase-de
+    question: Um wie viel darf die Miete steigen, wenn der Referenzzinssatz um 0,25 Prozentpunkte steigt?
+    language: de
+    area: housing
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: bwo.admin.ch/de/referenzzinssatz, "Falls der Referenzzinssatz um 0,25
+      Prozentpunkte steigt, kann der Mietzins um 3 Prozent erhöht werden (vgl. Art. 13 Abs. 1 lit. c
+      VMWG)."
+    expect: {status: results, sources: [bwo.admin.ch/de/referenzzinssatz], key_fact: "A 0.25-point rise in the reference rate allows a rent increase of 3% (Art. 13 para. 1 let. c VMWG)."}
+  - id: g-fed2-drought-warning-levels-it
+    question: Per quali livelli di pericolo MeteoSvizzera emette allerte di siccità?
+    language: it
+    area: statistics
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: meteosvizzera.admin.ch/tempo/pericoli/spiegazioni-dei-livelli-di-pericolo/siccita.html,
+      "Le allerte siccità vengono emesse solo per i livelli di pericolo 2 e 4. ... non trova applicazione
+      il livello di pericolo 5."
+    expect: {status: results, sources: [spiegazioni-dei-livelli-di-pericolo/siccita], key_fact: "MeteoSwiss issues drought warnings only at danger levels 2 and 4; level 5 is not used for drought."}
+  - id: g-fed2-etias-status-en
+    question: Do I need to apply for ETIAS before travelling to Switzerland?
+    language: en
+    area: permits
+    level: federal
+    split: dev
+    as_of: "2026-09-25"
+    note: >-
+      Verified 2026-09-25 in run3: sem.admin.ch/sem/en/.../voraussetzungen-nach-staat/etias.html, "The
+      introduction of ETIAS is determined by the EU timetable. At this point no applications are
+      collected. ... At this point in time, travellers do not need to take any precautions." Time-bound:
+      recheck when the EU announces the start date.
+    expect: {status: results, sources: [voraussetzungen-nach-staat/etias], key_fact: "ETIAS is not yet in force: no applications are collected and travellers need not take any precautions for now."}
+  - id: g-fed2-hiking-trail-colours-de
+    question: Was bedeutet die weiss-rot-weisse Markierung an Schweizer Wanderwegen?
+    language: de
+    area: transport
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: schweizer-wanderwege.ch/de/wissen/signalisation/der-wegweiser-erklaert,
+      "Es wird zwischen Wanderweg (gelb), Bergwanderweg (weiss-rot-weiss) und Alpinwanderweg
+      (weiss-blau-weiss) unterschieden."
+    expect: {status: results, sources: [schweizer-wanderwege.ch/de/wissen/signalisation], key_fact: "White-red-white marks a mountain hiking trail (yellow is a hiking trail, white-blue-white an alpine trail)."}
+  - id: g-fed2-vote-objects-deadline-fr
+    question: Combien de temps avant une votation fédérale le Conseil fédéral fixe-t-il les objets soumis au vote?
+    language: fr
+    area: voting
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: bk.admin.ch/fr/dates-reservees-pour-les-votations, "Le Conseil fédéral
+      fixe, au minimum quatre mois avant le jour de la votation, les objets qui feront l'objet de la
+      votation (Loi fédérale sur les droits politiques, art. 10, al. 1bis)."
+    expect: {status: results, sources: [bk.admin.ch/fr/dates-reservees-pour-les-votations], key_fact: "The Federal Council sets the ballot items at least four months before voting day (Art. 10 para. 1bis BPR)."}
+  - id: g-fed2-holiday-entitlement-it
+    question: Quante settimane di vacanza devo ricevere ogni anno come dipendente?
+    language: it
+    area: work
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: fedlex CO (SR 220) Art. 329a (it), "Il datore di lavoro deve accordare
+      al lavoratore, ogni anno di lavoro, almeno quattro settimane di vacanza; ai lavoratori sino ai 20
+      anni compiuti, almeno cinque settimane."
+    expect: {status: results, sources: ["317_321_377/20260101/it#art_329_a"], key_fact: "Employees get at least four weeks of holiday a year, five weeks up to age 20 (Art. 329a CO)."}
+  - id: g-fed2-employment-notice-period-it
+    question: Qual è il termine di disdetta di un contratto di lavoro dopo tre anni di servizio?
+    language: it
+    area: work
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: fedlex CO Art. 335c (it), "Il rapporto di lavoro può essere disdetto
+      per la fine di un mese, nel primo anno di servizio con preavviso di un mese, dal secondo al nono
+      anno di servizio incluso con preavviso di due mesi e in seguito con preavviso di tre mesi."
+    expect: {status: results, sources: ["317_321_377/20260101/it#art_335_c"], key_fact: "From the second to the ninth year of service the notice period is two months, to the end of a month (Art. 335c CO)."}
+  - id: g-fed2-tenancy-notice-en
+    question: What notice period applies when I terminate the lease of my flat in Switzerland?
+    language: en
+    area: housing
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: fedlex CO Art. 266c in English, "A party may terminate a lease of residential
+      premises by giving three months' notice expiring on a date fixed by local custom or, in the absence
+      of such custom, at the end of a three-month period of the lease."
+    expect: {status: results, sources: ["317_321_377/20260101/en#art_266_c"], key_fact: "Three months' notice to a customary local termination date (Art. 266c CO)."}
+  - id: g-fed2-blood-test-refusal-fr
+    question: La police peut-elle ordonner une prise de sang si je refuse l'alcootest?
+    language: fr
+    area: driving
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: fedlex LCR (SR 741.01) Art. 55 al. 3 (fr), "Une prise de sang doit être
+      ordonnée si la personne concernée: ... b. s'oppose ou se dérobe à l'alcootest"; al. 4, "la prise de
+      sang peut être effectuée contre la volonté de la personne suspectée."
+    expect: {status: results, sources: ["679_705_685/20260701/fr#art_55"], key_fact: "A blood test must be ordered if the driver refuses or evades the breath test (Art. 55 para. 3 SVG/LCR)."}
+  - id: g-fed2-ahv-nonearner-contributions-de
+    question: Ab wann muss ich als Nichterwerbstätiger AHV-Beiträge zahlen?
+    language: de
+    area: pensions
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: fedlex AHVG (SR 831.10) Art. 3 Abs. 1bis, "Für Nichterwerbstätige
+      beginnt die Beitragspflicht am 1. Januar nach Vollendung des 20. Altersjahres. Sie dauert bis zum
+      Ende des Monats, in dem die Nichterwerbstätigen das Referenzalter ... erreichen."
+    expect: {status: results, sources: ["837_843_843/20260101/de#art_3"], key_fact: "Non-earners owe AHV contributions from 1 January after their 20th birthday until the month they reach reference age (Art. 3 para. 1bis AHVG)."}
+  - id: g-fed2-iv-pension-condition-rm
+    question: Tge premissas ston ins ademplir per retrair ina renta d'invaliditad?
+    language: rm
+    area: pensions
+    level: federal
+    split: dev
+    note: >-
+      Verified 2026-09-25 in run3: ch.ch/rm/assicuranzas/assicuranza-d-invaliditad--ai-/, "Per retrair
+      ina renta stuais Vus esser inabla u inabel da lavurar durant in onn ed en media per almain 40
+      pertschient. Plinavant sto questa situaziun valair sco irreversibla."
+    expect: {status: results, sources: [assicuranza-d-invaliditad--ai-], key_fact: "An IV pension requires being unable to work for one year at an average of at least 40%, in a situation deemed irreversible."}
+  - id: g-fed2-settlement-permit-eu-de
+    question: Nach wie vielen Jahren erhalten EU-Bürger in der Regel die Niederlassungsbewilligung C?
+    language: de
+    area: permits
+    level: federal
+    split: holdout
+    note: >-
+      Verified 2026-09-25 in run3: sem.admin.ch/sem/de/home/themen/fza_schweiz-eu-efta/eu-efta_buerger_schweiz/faq.html,
+      "Das Freizügigkeitsabkommen regelt die Niederlassungsbewilligung nicht. Für die anderen EU-Länder
+      bestehen zurzeit keine solchen gegenseitigen Vereinbarungen, daher erfolgt die Erteilung der
+      Niederlassungsbewilligung grundsätzlich nach einem Aufenthalt von zehn Jahren." (five years for
+      states with a bilateral settlement agreement).
+    expect: {status: results, sources: [eu-efta_buerger_schweiz/faq], key_fact: "The free-movement agreement does not govern settlement; EU citizens without a bilateral settlement agreement generally get the C permit after ten years (five where such an agreement exists)."}

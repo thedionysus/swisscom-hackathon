@@ -49,8 +49,10 @@ probes:
     split: dev
     note: >-
       Verified in corpus: lausanne.ch/.../arrivee-inscription-suisse.html, "Délai d'annonce: 14 jours.
-      Vous devez annoncer votre arrivée dans les 14 jours suivant votre arrivée."
-    expect: {status: results, sources: [arrivee-inscription-suisse], key_fact: "Arrival must be reported to the Lausanne residents' office within 14 days."}
+      Vous devez annoncer votre arrivée dans les 14 jours suivant votre arrivée." Amended 2026-09-25: that
+      page is not in run3; lausanne.ch/.../s-installer-a-lausanne.html is: "Inscription au Service du
+      contrôle des habitants (délai de 14 jours)".
+    expect: {status: results, sources: [s-installer-a-lausanne], key_fact: "Arrival must be reported to the Lausanne residents' office within 14 days."}
   - id: g-muni-bern-emf-services
     question: Welche Geschäfte kann ich bei den Einwohnerdiensten der Stadt Bern online erledigen?
     language: de
