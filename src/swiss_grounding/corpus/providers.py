@@ -222,8 +222,8 @@ class AnthropicLLM:
             raise ReplyError(f"unparseable reply: {exc}", usage, getattr(response, "stop_reason", None)) from exc
 
 
-APERTUS_TEMPERATURE = 0.2
-CHARS_PER_TOKEN_ESTIMATE = 3   # conservative for German/French/Italian, as budget.CHARS_PER_TOKEN   # descriptions and labels want steady wording, not variety
+APERTUS_TEMPERATURE = 0.2   # descriptions and labels want steady wording, not variety
+CHARS_PER_TOKEN_ESTIMATE = 4   # Apertus counted 1,010 tokens for a 4,300-character description prompt (2026-09-25)
 
 
 class RequestPacer:
