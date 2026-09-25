@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     # Retries per corpus call. 0: retried 429s crawled (30 tasks took 27 min, against 11 s without retries,
     # measured 2026-09-25); a failed task stays undescribed and the next round takes it again.
     apertus_max_retries: int = 0
+    # Token budgets per minute that paced calls stay under (the key allows 50,000 in / 12,500 out; the
+    # gateway books each call's max_tokens against the output budget). 0 = not paced.
+    apertus_input_tokens_per_minute: float = 45_000
+    apertus_output_tokens_per_minute: float = 11_000
     # Which model writes eval labels and generated questions.
     eval_llm_provider: Literal["openai", "anthropic", "apertus"] = "openai"
     # Embedding indexes the pipeline builds (CORPUS_INDEXES, comma-separated). bge-m3 is local and free;

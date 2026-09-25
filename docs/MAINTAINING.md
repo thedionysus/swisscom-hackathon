@@ -238,9 +238,11 @@ that price. Apertus runs direct calls only (no Batch API) and is priced at $0 fo
 whose gateway caps it at 10M input and 2.5M output tokens; the ledger still records the tokens.
 The key is also limited to 50,000 input and 12,500 output tokens per minute and 5 requests per
 second. A description call uses about 1,200 input tokens, so a run tops out near 40 calls a minute;
-runs use `APERTUS_WORKERS` (default 3) parallel calls. A call over the limit gets a 429 and is not
-retried (`APERTUS_MAX_RETRIES=0`: retried 429s made 30 tasks take 27 minutes instead of 11 seconds);
-the task is quarantined and taken again by the next `describe` round.
+runs use `APERTUS_WORKERS` (default 3) parallel calls, and every call start is paced to stay under
+`APERTUS_INPUT_TOKENS_PER_MINUTE` (45,000) and `APERTUS_OUTPUT_TOKENS_PER_MINUTE` (11,000). The
+gateway books each call's full output cap (`max_tokens`) against the output budget, so a run describes
+about 20-30 passages a minute. A call that still gets a 429 is not retried (`APERTUS_MAX_RETRIES=0`:
+retried 429s made 30 tasks take 27 minutes); the task is quarantined and taken again by the next round.
 
 Prices live in `PRICES` in `src/swiss_grounding/corpus/budget.py`, per million tokens at batch
 price. Check them against the provider's price list before a large run; a model missing from the
