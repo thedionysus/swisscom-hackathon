@@ -181,3 +181,20 @@ def test_a_rejected_forced_tool_call_is_retried_with_auto():
         return "r"
     _evidence, answer = asyncio.run(tool_loop("q", client=client, model="m", tools=[], call_tool=call_tool, system="s"))
     assert [b["tool_choice"] for b in bodies] == ["required", "auto"] and answer == "answer without tools"
+
+
+def test_a_non_tool_call_bad_request_is_not_retried_with_auto():
+    import httpx
+    from openai import BadRequestError
+
+    too_long = BadRequestError("This model's maximum context length is 8192 tokens",
+                               response=httpx.Response(400, request=httpx.Request("POST", "http://x")), body=None)
+
+    def create(**body):
+        raise too_long
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+
+    async def call_tool(name, args):
+        return "r"
+    with pytest.raises(BadRequestError, match="context length"):
+        asyncio.run(tool_loop("q", client=client, model="m", tools=[], call_tool=call_tool, system="s"))

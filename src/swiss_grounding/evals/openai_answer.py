@@ -40,7 +40,8 @@ def _arguments(raw: str | None) -> dict:
 
 def _complete(client, model: str, messages: list[dict], tools: list[dict], tool_choice: str):
     """One chat turn. A server that rejects the forced tool call ("Invalid tool call", seen on the
-    Swisscom endpoint) gets the same turn once more with the choice left to the model."""
+    Swisscom endpoint) gets the same turn once more with the choice left to the model. Any other
+    BadRequestError (e.g. context length exceeded) is not this failure mode and is re-raised."""
     from openai import BadRequestError
 
     def create(choice: str):
@@ -48,8 +49,8 @@ def _complete(client, model: str, messages: list[dict], tools: list[dict], tool_
                                               temperature=ANSWER_TEMPERATURE)
     try:
         return create(tool_choice)
-    except BadRequestError:
-        if tool_choice == "auto":
+    except BadRequestError as exc:
+        if tool_choice == "auto" or "tool call" not in str(exc).lower():
             raise
         return create("auto")
 
