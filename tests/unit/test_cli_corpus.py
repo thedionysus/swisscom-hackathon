@@ -109,6 +109,39 @@ def test_check_manifest_probes_nothing_for_a_source_with_only_pdf_urls():
     assert cs._check_html(http, entry, respect_robots=True) == 0
 
 
+def _aargau(**config):
+    from swiss_grounding.corpus.models import SourceSpec
+    base = {"start_urls": ["https://www.schulen-aargau.ch/regelschule/ferien"],
+            "allow_prefixes": ["https://www.schulen-aargau.ch/regelschule/"],
+            "pdf_allow_prefixes": ["https://media.schulen-aargau.ch/ferienplan"]}
+    return SourceSpec(id="ag", name="AG", publisher="AG", authority="official_info", level="cantonal",
+                      extent_id="CH-AG", connector="html", tier=2, languages=("de",), config={**base, **config})
+
+
+def test_a_ca_bundle_mounts_its_own_tls_transport_on_every_host_of_the_source():
+    """www.schulen-aargau.ch serves an incomplete certificate chain (#57): its source names the
+    missing intermediate, which is trusted for that source's hosts only."""
+    import certifi
+
+    from swiss_grounding.cli import corpus_source_commands as cs
+    mounts = cs.tls_mounts([_aargau(ca_bundle=certifi.where()), _aargau()])
+    assert sorted(mounts) == ["https://media.schulen-aargau.ch", "https://www.schulen-aargau.ch"]
+
+
+def test_a_missing_ca_bundle_fails_before_any_request():
+    from swiss_grounding.cli import corpus_source_commands as cs
+    with pytest.raises(ValueError, match="ca_bundle"):
+        cs.tls_mounts([_aargau(ca_bundle="certs/does-not-exist.pem")])
+
+
+def test_readme_documents_both_robots_settings_with_their_defaults():
+    """The brief (p. 9) asks for the robots.txt settings and their defaults in the README (#57)."""
+    from pathlib import Path
+    readme = (Path(__file__).parents[2] / "README.md").read_text(encoding="utf-8")
+    assert "| `RESPECT_ROBOTS` | `true` |" in readme
+    assert "| `ROBOTS_API_EXCEPTIONS` | `false` |" in readme
+
+
 def test_sync_workers_is_apertus_workers_under_apertus_and_sync_workers_otherwise():
     apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k", apertus_workers=5)
     openai = _settings(corpus_llm_provider="openai", openai_api_key="k")

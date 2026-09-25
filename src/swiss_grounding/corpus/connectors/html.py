@@ -236,10 +236,11 @@ class HtmlConnector:
         def accept(url: str) -> bool:
             return not queue.is_known_or_queued(url) and self._crawlable(url, prefixes, pdf_patterns, deny)
 
+        rewrite = cfg.get("sitemap_rewrite")
         seeds = collect_sitemap_urls(self._http, tuple(cfg["sitemap_urls"]), tuple(cfg.get("sitemap_include", ())),
                                      limit, accept=accept, fetchable=lambda u: self._robots_allow(u, min_delay),
                                      before=lambda u: self._before(u, min_delay), throttle=self._throttle,
-                                     sleep=self._sleep)
+                                     sleep=self._sleep, rewrite=(rewrite["from"], rewrite["to"]) if rewrite else None)
         for url in seeds.urls:
             queue.add(url)
         return list(seeds.errors)

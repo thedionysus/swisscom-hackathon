@@ -4,10 +4,11 @@
 stages. The shared helpers used by both modules live here (`friendly_errors`, `usd`, `REFUSED_EXIT_CODE`).
 """
 import functools
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 import anthropic
@@ -44,8 +45,38 @@ def swiss_today() -> date:
     return datetime.now(tz=SWISS_TZ).date()
 
 
-def corpus_http(settings: Settings) -> httpx.Client:
-    return httpx.Client(headers={"user-agent": settings.corpus_user_agent}, timeout=settings.fetch_timeout_seconds)
+def _hosts(config: Mapping) -> set[str]:
+    """scheme://host of every URL and prefix a source's config names."""
+    urls = [*config.get("start_urls", ()), *config.get("allow_prefixes", ()), *config.get("pdf_allow_prefixes", ()),
+            *config.get("sitemap_urls", ()), *(entry["url"] for entry in config.get("pdf_urls", ()))]
+    if isinstance(config.get("url"), str):
+        urls.append(config["url"])
+    return {f"{p.scheme}://{p.netloc}" for p in map(urlparse, urls) if p.scheme and p.netloc}
+
+
+def tls_mounts(sources: Iterable) -> dict[str, httpx.HTTPTransport]:
+    """One transport per host of a source with `config.ca_bundle`: the default CA store plus that PEM
+    file (a relative path is taken from the working directory). It is for a host that serves an
+    incomplete certificate chain, like www.schulen-aargau.ch (#57): the missing intermediate is trusted
+    there and nowhere else. Verification is never switched off."""
+    mounts: dict[str, httpx.HTTPTransport] = {}
+    for source in sources:
+        bundle = source.config.get("ca_bundle")
+        if not bundle:
+            continue
+        if not Path(bundle).is_file():
+            raise ValueError(f"source {source.id}: config.ca_bundle {bundle!r} is not a file")
+        context = httpx.create_ssl_context()
+        context.load_verify_locations(cafile=bundle)
+        for host in _hosts(source.config):
+            mounts[host] = httpx.HTTPTransport(verify=context)
+    return mounts
+
+
+def corpus_http(settings: Settings, sources: Iterable = ()) -> httpx.Client:
+    """The corpus HTTP client; `sources` (manifest entries or specs) may bring their own CA bundle."""
+    return httpx.Client(headers={"user-agent": settings.corpus_user_agent}, timeout=settings.fetch_timeout_seconds,
+                        mounts=tls_mounts(sources))
 
 
 def _first_line(exc: Exception) -> str:
@@ -140,7 +171,7 @@ def check_manifest_cmd(path: Path) -> None:
     with connect(settings.database_url) as conn:
         extents = {r["id"] for r in conn.execute("select id from location").fetchall()}
     problems = 0
-    with corpus_http(settings) as http:
+    with corpus_http(settings, manifest.sources) as http:
         fedlex = FedlexConnector(http, swiss_today, settings.data_dir, respect_robots=settings.respect_robots)
         for entry in manifest.sources:
             if entry.extent_id not in extents:
@@ -171,9 +202,10 @@ def fetch_cmd(manifest: Annotated[Path, typer.Option("--manifest")],
     settings = load_settings()
     try:
         specs = select_sources(load_manifest(manifest), tier=tier, source_ids=tuple(source or ()))
+        http = corpus_http(settings, specs)
     except ValueError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    with corpus_http(settings) as http:
+    with http:
         policy = CrawlPolicy(respect_robots=settings.respect_robots, delay_seconds=settings.crawl_delay_seconds)
         connectors = {"fedlex": FedlexConnector(http, swiss_today, settings.data_dir,
                                                 respect_robots=settings.respect_robots),

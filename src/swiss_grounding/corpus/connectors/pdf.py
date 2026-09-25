@@ -1,12 +1,13 @@
 import hashlib
 import logging
+import re
 import time
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import replace
 from io import BytesIO
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import httpx
 import pypdfium2 as pdfium
@@ -39,6 +40,10 @@ MAX_PDF_BYTES = 30_000_000
 GENERIC_CONTENT_TYPES = frozenset({"", "application/octet-stream", "binary/octet-stream", "application/download",
                                    "application/force-download", "application/x-download"})
 PDF_MAGIC_WINDOW = 1024
+_FILE_NAME = re.compile(r"\.(?:pdf|docx?|dotx?|xlsx?|pptx?|indd|qxp|qxd|rtf|odt|ods|txt|html?|tiff?|jpe?g|png|eps|ai)$"
+                        r"|^Microsoft (?:Word|Excel|PowerPoint) - ", re.IGNORECASE)
+_TEMPLATE_NAME = re.compile(r"^(?:leer|untitled|unbenannt|ohne titel|sans titre|senza titolo|titel|title|titre|titolo"
+                            r"|vorlage|template|dokument|document|documento)\s*\d*$|^_.*_$", re.IGNORECASE)
 
 
 @contextmanager
@@ -58,11 +63,24 @@ def _render(document: pdfium.PdfDocument, index: int, path: Path) -> tuple[str, 
     return str(path), digest
 
 
+def _file_or_template_name(title: str) -> bool:
+    """A title that names a file or a template rather than the document: "Leer", "Dokument1",
+    "Ferienplan_2026.indd", "Microsoft Word - Tarif.docx", "_ERZIEHUNGSDIREKTION_"."""
+    return bool(_FILE_NAME.search(title) or _TEMPLATE_NAME.match(title))
+
+
+def _pdf_title(meta_title: str, title_hint: str, url: str) -> str:
+    """The metadata title, unless it names a file or a template (11 of 21 metadata titles in the Run 3
+    PDFs were junk, #57); then the link text; then either one as it is; then the URL-decoded file name."""
+    good = [t for t in (meta_title, title_hint) if t and not _file_or_template_name(t)]
+    return (good or [t for t in (title_hint, meta_title) if t] or [unquote(Path(urlparse(url).path).name)])[0]
+
+
 def parse_pdf(content: bytes, *, url: str, language: str, title_hint: str, source_id: str,
               artifact_path: str | None, ocr_dir: Path | str) -> ParsedDocument:
     reader = PdfReader(BytesIO(content))
     meta_title = " ".join((reader.metadata.title if reader.metadata and reader.metadata.title else "").split())
-    title = meta_title or " ".join(title_hint.split()) or Path(urlparse(url).path).name
+    title = _pdf_title(meta_title, " ".join(title_hint.split()), url)
     stem = Path(artifact_path).stem if artifact_path else Path(urlparse(url).path).stem
     sections = []
     document: pdfium.PdfDocument | None = None
@@ -115,8 +133,9 @@ class PdfConnector:
     def _before(self, url: str) -> None:
         self._throttle.wait(url, self._delay, self._sleep)
 
-    def _download(self, url: str, headers: dict[str, str]) -> FetchResult:
-        """Stream the response, aborting as soon as MAX_PDF_BYTES is exceeded.
+    def _download(self, url: str, headers: dict[str, str], limit: int = MAX_PDF_BYTES) -> FetchResult:
+        """Stream the response, aborting as soon as `limit` bytes (the source's `max_pdf_bytes`,
+        default MAX_PDF_BYTES) are exceeded.
 
         The body is empty for a non-2xx/304 response, so a 429/503 can be inspected by
         request_with_backoff without reading (and discarding) a body.
@@ -132,13 +151,13 @@ class PdfConnector:
                 response.close()
                 raise _NotPdf(media_type)
             content_length = response.headers.get("content-length")
-            if content_length and int(content_length) > MAX_PDF_BYTES:
+            if content_length and int(content_length) > limit:
                 response.close()
                 raise _TooLarge
             body = bytearray()
             for chunk in response.iter_bytes():
                 body += chunk
-                if len(body) > MAX_PDF_BYTES:
+                if len(body) > limit:
                     response.close()
                     raise _TooLarge
             if "pdf" not in media_type and b"%PDF" not in body[:PDF_MAGIC_WINDOW]:
@@ -148,6 +167,7 @@ class PdfConnector:
     def run_pdfs(self, spec: SourceSpec, pdfs: Sequence[DiscoveredPdf],
                  known: Mapping[str, KnownState]) -> ConnectorResult:
         documents, unchanged, gone, errors = [], [], [], []
+        limit = int(spec.config.get("max_pdf_bytes", MAX_PDF_BYTES))
         for pdf in pdfs:
             prior = known.get(pdf.url)
             headers = {}
@@ -157,9 +177,9 @@ class PdfConnector:
                 headers["if-modified-since"] = prior.last_modified
             try:
                 fetched = request_with_backoff(pdf.url, self._throttle, self._before,
-                                               lambda u=pdf.url, h=headers: self._download(u, h), self._sleep)
+                                               lambda u=pdf.url, h=headers: self._download(u, h, limit), self._sleep)
             except _TooLarge:
-                errors.append((pdf.url, f"PDF larger than {MAX_PDF_BYTES} bytes"))
+                errors.append((pdf.url, f"PDF larger than {limit} bytes"))
                 continue
             except _NotPdf as exc:
                 errors.append((pdf.url, str(exc)))

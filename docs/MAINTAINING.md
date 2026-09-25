@@ -152,8 +152,12 @@ optional: an act without an English version is not an error.
 | `json_link_attributes` | `[{selector, attribute}]`: elements whose attribute holds JSON with the page's document links, such as i-web's `{selector: "table.icms-dt", attribute: "data-entities"}`. URLs and `<a href>` inside the JSON are checked like any PDF link. |
 | `delay_seconds` | A longer delay between requests for this site. |
 | `keep_html` | `true` keeps each page's raw HTML under `data/raw/<source>/`, one file per version of its text, and records it as the document's `artifact_path`. Off by default: turn it on only where the source's terms allow keeping a copy. |
+| `max_pdf_bytes` | A larger (or smaller) size limit for this source's PDFs (default 30,000,000). |
+| `sitemap_rewrite` | `{from, to}`: a URL prefix to replace in every child sitemap and page a sitemap lists, for an index that names an internal host (`{from: "http://ne-prod-admin.ne.ch/", to: "https://www.ne.ch/"}`). |
+| `ca_bundle` | Path of a PEM file (from the working directory) trusted for this source's hosts on top of the default CA store: for a host with an incomplete certificate chain, name its missing intermediate. `json` sources take it too. |
 
-Two sources may not have overlapping URL prefixes; loading the manifest fails if they do.
+Two sources may not have overlapping URL prefixes, every start URL must lie inside `allow_prefixes`, and
+a config key the connector does not know is rejected; loading the manifest fails otherwise.
 
 Then:
 
