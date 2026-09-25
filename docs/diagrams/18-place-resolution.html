@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Place resolution · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Retrieval · 18</p>
+    <h1>Place resolution</h1>
+    <p class="lede">How swiss_search turns a place into the extents it searches. Each locations entry runs down the left ladder until something matches; with no locations the question itself is scanned. Failures are answered before any search (see 21). A resolved place is searched on its path from CH down, cut at the last level the declared scope covers; swiss_premium resolves its municipality the same way.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="place-resolution-title place-resolution-desc">
+<title id="place-resolution-title">Place resolution: from a place name to the searched path</title>
+<desc id="place-resolution-desc">Each entry in locations is checked for a country name, stripped of a Swiss suffix, then matched by exact alias, by names inside the text, by GeoAdmin, and by a one-letter typo; failures end as foreign, ambiguous or unresolved. Without locations the question is scanned for a place, then for a country; a resolved place is searched on its path, cut at the last covered level.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="264" y="40" width="272" height="604" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="276" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">WITH LOCATIONS</text>
+<text x="374.2" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">each entry</text>
+<rect x="816" y="40" width="248" height="304" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="828" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">WITHOUT LOCATIONS</text>
+<text x="945.4" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">the question</text>
+<!-- arrows -->
+<path d="M 400,136 L 400,160" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 400,224 L 400,248" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 400,328 L 400,352" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 400,416 L 400,440" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 400,544 L 400,568" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 280,104 L 224,104" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 280,288 L 224,288" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 280,492 L 224,492" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 280,600 L 224,600" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 520,288 L 576,288" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 520,384 L 576,384" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 520,492 L 576,492" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 520,600 L 576,600" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 832,148 L 812,148 Q 804,148 804,156 L 804,256 Q 804,264 796,264 L 776,264" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 940,224 L 940,248" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1048,288 L 1104,288" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 940,328 L 940,376" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 776,564 L 832,564" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<!-- labels -->
+<rect x="406" y="142" width="20" height="12" rx="2" fill="#f5f5f5"/>
+<text x="416" y="150.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO</text>
+<rect x="406" y="334" width="52" height="12" rx="2" fill="#f5f5f5"/>
+<text x="432" y="342.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO MATCH</text>
+<rect x="406" y="422" width="32" height="12" rx="2" fill="#f5f5f5"/>
+<text x="422" y="430.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NONE</text>
+<rect x="406" y="550" width="44" height="12" rx="2" fill="#f5f5f5"/>
+<text x="428" y="558.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO FIT</text>
+<rect x="240" y="86" width="24" height="12" rx="2" fill="#f5f5f5"/>
+<text x="252" y="94.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+<rect x="236" y="582" width="32" height="12" rx="2" fill="#f5f5f5"/>
+<text x="252" y="590.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NONE</text>
+<rect x="530" y="270" width="36" height="12" rx="2" fill="#f5f5f5"/>
+<text x="548" y="278.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FOUND</text>
+<rect x="530" y="366" width="36" height="12" rx="2" fill="#f5f5f5"/>
+<text x="548" y="374.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FOUND</text>
+<rect x="530" y="474" width="36" height="12" rx="2" fill="#f5f5f5"/>
+<text x="548" y="482.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FOUND</text>
+<rect x="530" y="582" width="36" height="12" rx="2" fill="#f5f5f5"/>
+<text x="548" y="590.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FOUND</text>
+<rect x="762" y="200" width="36" height="12" rx="2" fill="#f5f5f5"/>
+<text x="780" y="208.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FOUND</text>
+<rect x="946" y="230" width="32" height="12" rx="2" fill="#f5f5f5"/>
+<text x="962" y="238.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NONE</text>
+<rect x="1064" y="270" width="24" height="12" rx="2" fill="#f5f5f5"/>
+<text x="1076" y="278.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+<rect x="946" y="346" width="20" height="12" rx="2" fill="#f5f5f5"/>
+<text x="956" y="354.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO</text>
+<!-- nodes -->
+<rect x="280" y="72" width="240" height="64" rx="6" fill="#f5f5f5"/>
+<rect x="280" y="72" width="240" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="400" y="94.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Country word?</text>
+<text x="400" y="108.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Germany, France, Italy, Austria,</text>
+<text x="400" y="121.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Liechtenstein, in five languages</text>
+<rect x="280" y="160" width="240" height="64" rx="6" fill="#f5f5f5"/>
+<rect x="280" y="160" width="240" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="400" y="183.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Strip a Swiss suffix</text>
+<text x="400" y="197" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Schweiz · Switzerland · Suisse</text>
+<text x="400" y="209" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Svizzera · Svizra · CH</text>
+<rect x="280" y="248" width="240" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="280" y="248" width="240" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="400" y="272.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Marker, then exact alias</text>
+<text x="400" y="286" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Kanton · Stadt · Gemeinde · Kreis N</text>
+<text x="400" y="298.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">accents and case ignored; on one</text>
+<text x="400" y="311.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">path, the most specific (&#x27;Bern&#x27;)</text>
+<rect x="280" y="352" width="240" height="64" rx="6" fill="#f5f5f5"/>
+<rect x="280" y="352" width="240" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="400" y="374.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Names inside the text</text>
+<text x="400" y="388.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a postal code beside a name;</text>
+<text x="400" y="401.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">every name-like word must match</text>
+<rect x="280" y="440" width="240" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="280" y="440" width="240" height="104" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="400" y="463.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">GeoAdmin SearchServer</text>
+<text x="400" y="477" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">api3.geo.admin.ch · gg25 · 5 s</text>
+<text x="400" y="489.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a hit in the tree that covers the</text>
+<text x="400" y="502.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">input: that commune; a &#x27;… (XX)&#x27;</text>
+<text x="400" y="515.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">label sharing a word of ≥ 4</text>
+<text x="400" y="528.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">letters: canton XX</text>
+<rect x="280" y="568" width="240" height="64" rx="6" fill="#f5f5f5"/>
+<rect x="280" y="568" width="240" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="400" y="590.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">One-letter typo</text>
+<text x="400" y="604.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one word of ≥ 6 letters, one edit</text>
+<text x="400" y="617.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">from exactly one known name</text>
+<rect x="40" y="72" width="184" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="72" width="184" height="80" rx="6" fill="rgba(213,43,30,0.05)" stroke="rgba(213,43,30,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="52" y="96" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Foreign</text>
+<text x="52" y="113" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">outside_scope</text>
+<text x="52" y="125" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">outside Switzerland: look</text>
+<text x="52" y="138" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">for other sources</text>
+<rect x="40" y="176" width="184" height="208" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="176" width="184" height="208" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="52" y="200" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Ambiguous</text>
+<text x="52" y="217" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">needs_location</text>
+<text x="52" y="233" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.14em">NAMES OFF ONE PATH</text>
+<text x="52" y="246" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">&#x27;Wil&#x27; is two communes,</text>
+<text x="52" y="259" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH-ZH-71 · CH-SG-3427</text>
+<text x="52" y="271" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">so the user is asked: Wil</text>
+<text x="52" y="284" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">(Gemeinde, ZH), Wil</text>
+<text x="52" y="297" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">(Gemeinde, SG)</text>
+<text x="52" y="314" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.14em">A QUARTIER ALONE</text>
+<text x="52" y="327" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">that starts a commune&#x27;s</text>
+<text x="52" y="340" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">name (&#x27;Affoltern&#x27;), or a</text>
+<text x="52" y="353" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">common word: city, hard,</text>
+<text x="52" y="366" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">werd, enge</text>
+<rect x="40" y="408" width="184" height="224" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="408" width="184" height="224" rx="6" fill="rgba(213,43,30,0.05)" stroke="rgba(213,43,30,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="52" y="432" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Unresolved</text>
+<text x="52" y="449" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">outside_scope</text>
+<text x="52" y="465" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">GeoAdmin finds a lake or</text>
+<text x="52" y="478" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">region, or fails; a level</text>
+<text x="52" y="491" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">marker finds nothing at</text>
+<text x="52" y="504" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">its level (&#x27;Kanton Wil&#x27;);</text>
+<text x="52" y="517" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">or nothing matched at all:</text>
+<text x="52" y="530" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">&#x27;… is not a Swiss</text>
+<text x="52" y="543" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">municipality this server</text>
+<text x="52" y="556" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">recognises … If it is a</text>
+<text x="52" y="569" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Swiss place, check the</text>
+<text x="52" y="582" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">spelling or give the</text>
+<text x="52" y="595" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">postal code&#x27;</text>
+<rect x="576" y="248" width="200" height="384" rx="6" fill="#f5f5f5"/>
+<rect x="576" y="248" width="200" height="384" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="588" y="272" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Resolved</text>
+<text x="588" y="289" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">one place and its path from</text>
+<text x="588" y="302" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">CH down, e.g. Lausanne:</text>
+<text x="588" y="315" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">CH › CH-VD › CH-VD-5586</text>
+<text x="588" y="349" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">a Kreis or Quartier of Zürich</text>
+<text x="588" y="362" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">sits below the city:</text>
+<text x="588" y="375" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">… › CH-ZH-261 › CH-ZH-261-K3</text>
+<text x="588" y="409" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">several names on one path:</text>
+<text x="588" y="422" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the most specific: &#x27;Zürich&#x27;</text>
+<text x="588" y="435" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">is the city, not the canton</text>
+<text x="588" y="470" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">its method names the step:</text>
+<text x="588" y="483" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">alias · alias_scan</text>
+<text x="588" y="495" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">geoadmin · geoadmin_approximate</text>
+<text x="588" y="507" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">alias_fuzzy · alias_in_question</text>
+<rect x="832" y="72" width="216" height="152" rx="6" fill="#f5f5f5"/>
+<rect x="832" y="72" width="216" height="152" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="844" y="106" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Scan the question</text>
+<text x="844" y="120.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">1- to 3-word windows; 4-digit</text>
+<text x="844" y="133.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">numbers only as postal codes;</text>
+<text x="844" y="146.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">no 2-letter words; capitalised</text>
+<text x="844" y="159.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">words, not a sentence&#x27;s first;</text>
+<text x="844" y="172.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">a Quartier only with its parent;</text>
+<text x="844" y="185.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">the most specific wins; names</text>
+<text x="844" y="198.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">off one path: no place</text>
+<rect x="832" y="248" width="216" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="832" y="248" width="216" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="940" y="279" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Country as the place?</text>
+<text x="940" y="292.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">in im nach en au aux à a da per</text>
+<text x="940" y="305.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">&#x27;in Deutschland&#x27;</text>
+<rect x="1104" y="248" width="136" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="1104" y="248" width="136" height="80" rx="6" fill="rgba(213,43,30,0.05)" stroke="rgba(213,43,30,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="1116" y="272" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Foreign</text>
+<text x="1116" y="289" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">outside_scope</text>
+<text x="1116" y="301" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">&#x27;in Deutschland&#x27;</text>
+<rect x="832" y="376" width="216" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="832" y="376" width="216" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="940" y="408" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">No place</text>
+<text x="940" y="422.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">all of Switzerland, no extent</text>
+<text x="940" y="435.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">filter; a place-dependent</text>
+<text x="940" y="448.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">answer asks for it (21)</text>
+<rect x="832" y="496" width="408" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="832" y="496" width="408" height="136" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<text x="844" y="520" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Searched path: cut at the last covered level</text>
+<text x="844" y="537" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">federal always; cantonal: ZH, BE, VD, GE, TI, GR;</text>
+<text x="844" y="550" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">municipal: Zürich, Bern, Lausanne, Genève, Lugano, Chur, Scuol</text>
+<text x="844" y="571" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">Lausanne</text>
+<text x="928" y="571" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH › CH-VD › CH-VD-5586</text>
+<text x="844" y="584" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">Winterthur</text>
+<text x="928" y="584" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH › CH-ZH</text>
+<text x="844" y="597" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">Wil (SG)</text>
+<text x="928" y="597" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH</text>
+<!-- annotations -->
+<text x="584" y="100" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">The resolver never guesses:</text>
+<text x="584" y="118" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">several places are asked</text>
+<text x="584" y="136" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">back, unknown names are</text>
+<text x="584" y="154" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">refused.</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">check or outcome</text>
+<rect x="230.7" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="230.7" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="254.7" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">outside service</text>
+<rect x="357.1" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="357.1" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="381.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">what the search filters on</text>
+<rect x="538.1" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="538.1" y="685" width="16" height="10" rx="2" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="562.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">needs_location</text>
+<rect x="659.5" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="659.5" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.05)" stroke="rgba(213,43,30,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="683.5" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">outside_scope</text>
+<line x1="776" y1="691.1" x2="800" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="810" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">next check or exit</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/serving/places.py</code> · <code>src/swiss_grounding/locations/resolver.py</code> · <code>src/swiss_grounding/locations/question_scan.py</code> · <code>src/swiss_grounding/locations/markers.py</code> · <code>src/swiss_grounding/locations/geoadmin.py</code> · <code>src/swiss_grounding/locations/fuzzy.py</code> · <code>src/swiss_grounding/locations/tree.py</code> · <code>src/swiss_grounding/serving/scope.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

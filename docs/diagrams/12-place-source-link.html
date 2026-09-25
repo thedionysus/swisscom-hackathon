@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How a place links to a source · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Storage · 12</p>
+    <h1>How a place links to a source</h1>
+    <p class="lede">A place is attached to the data once, when a document is saved, and used on every search. The source&#x27;s extent_id, set by hand in the manifest, is copied into each document and passage. A question&#x27;s place is resolved to its path in the place tree, the path is cut where the declared scope stops, and only passages whose extent_id lies on the remaining path are candidates. A citation&#x27;s tier counts the levels from the deepest one searched up to CH, so for Winterthur a Zurich passage has tier 0.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="place-source-link-title place-source-link-desc">
+<title id="place-source-link-title">How a place links to a source</title>
+<desc id="place-source-link-desc">When a document is saved, the source&#x27;s extent_id from the manifest is copied into the document and into every passage. When a question is searched, its place is resolved to a path in the place tree, the path is cut at the last covered level, and only passages whose extent_id lies on that path are candidates; each citation gets a tier. Worked examples: Lausanne, Winterthur, St. Gallen and no place.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="1200" height="164" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">1 · WHEN A DOCUMENT IS SAVED</text>
+<text x="239.8" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">corpus fetch · corpus/persist.py</text>
+<rect x="40" y="228" width="1200" height="412" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="246" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">2 · WHEN A QUESTION IS SEARCHED</text>
+<text x="259" y="246" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">swiss_search · serving/search_service.py</text>
+<!-- arrows -->
+<path d="M 260,128 L 300,128" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 500,128 L 540,128" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 740,128 L 780,128" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 260,312 L 300,312" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 500,312 L 540,312" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 740,312 L 780,312" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 980,312 L 1020,312" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 880,184 L 880,260" fill="none" stroke="#d52b1e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<!-- labels -->
+<rect x="886" y="216" width="60" height="12" rx="2" fill="#f5f5f5"/>
+<text x="916" y="224.9" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">EXTENT_ID</text>
+<!-- nodes -->
+<rect x="60" y="72" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="60" y="72" width="200" height="112" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<rect x="68" y="78" width="32" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="84" y="86.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">YAML</text>
+<text x="160" y="116" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Manifest entry</text>
+<text x="160" y="129.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">lausanne_city → CH-VD-5586</text>
+<text x="160" y="141.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">vd_canton → CH-VD</text>
+<text x="160" y="153.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fedlex → CH</text>
+<text x="160" y="166.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">set by a person</text>
+<rect x="300" y="72" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="300" y="72" width="200" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="308" y="78" width="36" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="326" y="86.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TABLE</text>
+<text x="400" y="121.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">corpus.source</text>
+<text x="400" y="135" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">extent_id → location</text>
+<text x="400" y="147.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">foreign key: the place must</text>
+<text x="400" y="160.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">be in the tree (08)</text>
+<rect x="540" y="72" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="540" y="72" width="200" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="548" y="78" width="36" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="566" y="86.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TABLE</text>
+<text x="640" y="121.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">corpus.document</text>
+<text x="640" y="135" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">extent_id</text>
+<text x="640" y="147.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">copied from its source</text>
+<text x="640" y="160.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">when the page is saved</text>
+<rect x="780" y="72" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="780" y="72" width="200" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="788" y="78" width="36" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="806" y="86.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TABLE</text>
+<text x="880" y="121.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">corpus.chunk</text>
+<text x="880" y="135" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">extent_id</text>
+<text x="880" y="147.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">copied into every passage;</text>
+<text x="880" y="160.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">indexed with status</text>
+<rect x="60" y="260" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="60" y="260" width="200" height="104" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="160" y="296.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Asked place</text>
+<text x="160" y="310" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">locations: [&quot;Lausanne&quot;]</text>
+<text x="160" y="322.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">or a place named in the</text>
+<text x="160" y="335.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">question itself</text>
+<rect x="300" y="260" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="300" y="260" width="200" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="308" y="266" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="324" y="274.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TREE</text>
+<text x="400" y="305.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Resolve to a path</text>
+<text x="400" y="319" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH › CH-VD › CH-VD-5586</text>
+<text x="400" y="331.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">labels and aliases first,</text>
+<text x="400" y="344.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">then geo.admin.ch</text>
+<rect x="540" y="260" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="540" y="260" width="200" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="548" y="266" width="36" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="566" y="274.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SCOPE</text>
+<text x="640" y="305.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cut the path</text>
+<text x="640" y="319" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">covered_levels(path)</text>
+<text x="640" y="331.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">keep only the levels the</text>
+<text x="640" y="344.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">declared scope covers</text>
+<rect x="780" y="260" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="780" y="260" width="200" height="104" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<rect x="788" y="266" width="28" height="12" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="802" y="274.5" fill="#d52b1e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SQL</text>
+<text x="880" y="305.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Filter the candidates</text>
+<text x="880" y="319" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">c.extent_id = any(path)</text>
+<text x="880" y="331.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">the same filter in every arm;</text>
+<text x="880" y="344.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">up to 10 local passages kept</text>
+<rect x="1020" y="260" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="1020" y="260" width="200" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="1028" y="266" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="1044" y="274.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CITE</text>
+<text x="1120" y="305.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cite with a tier</text>
+<text x="1120" y="319" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">tier · extent_label</text>
+<text x="1120" y="331.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">0 = deepest level searched,</text>
+<text x="1120" y="344.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">+1 for each level up to CH</text>
+<!-- annotations -->
+<text x="1020" y="104" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">The place comes from</text>
+<text x="1020" y="122" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">the manifest, never</text>
+<text x="1020" y="140" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">from the page text.</text>
+<text x="60" y="400" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">ASKED PLACE</text>
+<text x="300" y="400" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">PATH SEARCHED · TIER</text>
+<text x="640" y="400" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">UNCOVERED_LEVELS</text>
+<text x="860" y="400" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">RESULT</text>
+<line x1="56" y1="408" x2="1224" y2="408" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="60" y="432" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Lausanne</text>
+<text x="60" y="447" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH-VD-5586</text>
+<rect x="300" y="420" width="27" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="313.5" y="434" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH</text>
+<text x="313.5" y="453" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tier 2</text>
+<text x="337" y="434" fill="#7a8399" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle">›</text>
+<rect x="347" y="420" width="44" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="369" y="434" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-VD</text>
+<text x="369" y="453" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tier 1</text>
+<text x="401" y="434" fill="#7a8399" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle">›</text>
+<rect x="411" y="420" width="72" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="447" y="434" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-VD-5586</text>
+<text x="447" y="453" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tier 0</text>
+<text x="640" y="434" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">—</text>
+<text x="860" y="428" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">results from the city, the canton and the</text>
+<text x="860" y="442" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">federal sources</text>
+<line x1="56" y1="464" x2="1224" y2="464" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="60" y="488" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Winterthur</text>
+<text x="60" y="503" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH-ZH-230</text>
+<rect x="300" y="476" width="27" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="313.5" y="490" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH</text>
+<text x="313.5" y="509" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tier 1</text>
+<text x="337" y="490" fill="#7a8399" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle">›</text>
+<rect x="347" y="476" width="44" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="369" y="490" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-ZH</text>
+<text x="369" y="509" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tier 0</text>
+<text x="401" y="490" fill="#7a8399" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle">›</text>
+<rect x="411" y="476" width="66" height="20" rx="4" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="444" y="490" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-ZH-230</text>
+<text x="444" y="509" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">cut</text>
+<text x="640" y="490" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">municipal</text>
+<text x="860" y="484" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">results + note: “The municipal rules of &#x27;Winterthur&#x27;</text>
+<text x="860" y="498" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">are not covered by this server; …”</text>
+<line x1="56" y1="520" x2="1224" y2="520" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="60" y="544" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">St. Gallen</text>
+<text x="60" y="559" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">CH-SG-3203</text>
+<rect x="300" y="532" width="27" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="313.5" y="546" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH</text>
+<text x="313.5" y="565" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tier 0</text>
+<text x="337" y="546" fill="#7a8399" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle">›</text>
+<rect x="347" y="532" width="44" height="20" rx="4" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="369" y="546" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-SG</text>
+<text x="369" y="565" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">cut</text>
+<text x="401" y="546" fill="#7a8399" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle">›</text>
+<rect x="411" y="532" width="72" height="20" rx="4" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="447" y="546" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CH-SG-3203</text>
+<text x="447" y="565" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">cut</text>
+<text x="640" y="546" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">cantonal, municipal</text>
+<text x="860" y="540" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">federal results + the same note for cantonal</text>
+<text x="860" y="554" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">and municipal; outside_scope if none answers</text>
+<line x1="56" y1="576" x2="1224" y2="576" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="60" y="600" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">No place</text>
+<text x="60" y="615" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">locations: []</text>
+<text x="300" y="602" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">no extent filter: all of Switzerland</text>
+<text x="640" y="602" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">—</text>
+<text x="860" y="596" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">only CH passages are cited; needs_location</text>
+<text x="860" y="610" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">when the answer depends on the place</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">input</text>
+<rect x="176.2" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="176.2" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="200.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">table</text>
+<rect x="253" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="253" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="277" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">step</text>
+<rect x="324.8" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="324.8" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="348.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">where place meets data</text>
+<rect x="485.9" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="485.9" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="509.9" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">path level cut: not searched</text>
+<line x1="676.8" y1="691.1" x2="700.8" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="710.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">flow</text>
+<line x1="758.6" y1="691.1" x2="782.6" y2="691.1" stroke="#d52b1e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<text x="792.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">extent_id feeds the filter</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>manifests/declared-scope.yaml</code> · <code>src/swiss_grounding/corpus/persist.py</code> · <code>src/swiss_grounding/serving/places.py</code> · <code>src/swiss_grounding/serving/scope.py</code> · <code>src/swiss_grounding/serving/search_service.py</code> · <code>src/swiss_grounding/serving/candidates.py</code> · <code>src/swiss_grounding/serving/status.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

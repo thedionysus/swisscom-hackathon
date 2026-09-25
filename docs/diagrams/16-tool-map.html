@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Which tool answers what · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Retrieval · 16</p>
+    <h1>Which tool answers what</h1>
+    <p class="lede">The server exposes six tools of its own and forwards the zbern_* tools. It never decides which tool answers a question: the chat model chooses from the server instructions and the tool descriptions. The zbern_* tools are served only when ZBERN_MCP_TOKEN is set; the tool annotations are the zone subtitles.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tool-map-title tool-map-desc">
+<title id="tool-map-title">Which tool answers what</title>
+<desc id="tool-map-desc">The chat model reads the server instructions and every tool&#x27;s description and picks a tool itself; four tools read the local database (passages, whole documents, the scope statement, premiums), two call live services (the transport timetable and the BWO reference rate), and the zbern_* tools are forwarded to the zbern.ch MCP server.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="72" y="168" width="604" height="456" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="84" y="186" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">LOCAL DATABASE</text>
+<text x="182.2" y="186" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">readOnlyHint · idempotentHint · openWorldHint false</text>
+<rect x="732" y="168" width="508" height="376" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="744" y="186" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">LIVE AND FORWARDED</text>
+<text x="867.8" y="186" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">readOnlyHint · openWorldHint</text>
+<!-- arrows -->
+<path d="M 232,80 L 480,80" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 904,80 L 840,80" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 704,120 L 704,472 Q 704,480 712,480 L 748,480" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 704,240 L 748,240" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 704,356 L 748,356" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 704,144 L 60,144 Q 52,144 52,152 L 52,556 Q 52,564 60,564 L 88,564" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 52,240 L 88,240" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 52,356 L 88,356" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 52,464 L 88,464" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 392,240 L 440,240" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 392,356 L 440,356" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 392,564 L 440,564" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 980,240 L 1024,240" fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<path d="M 980,356 L 1024,356" fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<path d="M 980,480 L 1024,480" fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<!-- labels -->
+<rect x="340" y="62" width="32" height="12" rx="2" fill="#f5f5f5"/>
+<text x="356" y="70.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ASKS</text>
+<!-- nodes -->
+<rect x="40" y="56" width="192" height="48" rx="24" fill="#f5f5f5"/>
+<rect x="40" y="56" width="192" height="48" rx="24" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="136" y="83.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">User question</text>
+<rect x="480" y="40" width="360" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="480" y="40" width="360" height="80" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<text x="660" y="64.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Chat model</text>
+<text x="660" y="78" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">in the MCP client</text>
+<text x="660" y="90.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">reads the instructions and every tool&#x27;s description,</text>
+<text x="660" y="103.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">then picks a tool and writes its arguments</text>
+<rect x="904" y="40" width="336" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="904" y="40" width="336" height="80" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="1072" y="64.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Server instructions</text>
+<text x="1072" y="78" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">mcp_server/server.py INSTRUCTIONS</text>
+<text x="1072" y="90.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">user&#x27;s language, every named place in locations,</text>
+<text x="1072" y="103.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">given URLs only; scope statement; zbern_* hint</text>
+<rect x="88" y="200" width="304" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="88" y="200" width="304" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="100" y="225" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">swiss_search</text>
+<text x="100" y="238.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">question ≤ 2,000 · locations ≤ 3 · translations</text>
+<text x="100" y="250.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">as_of · limit 1–20, default 8</text>
+<text x="100" y="263.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">passages that answer it, per place (see 17–21)</text>
+<rect x="88" y="304" width="304" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="88" y="304" width="304" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="100" y="329" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">swiss_get_document</text>
+<text x="100" y="342.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">document_id + chunk_id, or reference · language</text>
+<text x="100" y="354.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">&#x27;Art. 336c OR&#x27; · &#x27;SR 741.51 Art. 44&#x27; · URL</text>
+<text x="100" y="366.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">BV ZGB OR StGB AIG SVG VZV MWSTG AHVG KVG AVIG</text>
+<text x="100" y="378.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">≤ 120 chunks · truncated · available_languages</text>
+<text x="100" y="391.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">acts also by their French or Italian names</text>
+<rect x="88" y="432" width="304" height="64" rx="6" fill="#f5f5f5"/>
+<rect x="88" y="432" width="304" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="100" y="455" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">swiss_scope</text>
+<text x="100" y="468.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">serving/scope.py</text>
+<text x="100" y="481.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">the fixed scope statement; reads nothing else</text>
+<rect x="88" y="520" width="304" height="88" rx="6" fill="#f5f5f5"/>
+<rect x="88" y="520" width="304" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="100" y="542.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">swiss_premium</text>
+<text x="100" y="556" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">municipality · age · deductible · accident</text>
+<text x="100" y="568" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">model · year (latest loaded) · limit</text>
+<text x="100" y="580.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">place resolver (see 18); a canton is refused;</text>
+<text x="100" y="593.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">child ≤ 18 · young adult ≤ 25 · adult</text>
+<rect x="440" y="200" width="220" height="208" rx="6" fill="#f5f5f5"/>
+<rect x="440" y="200" width="220" height="208" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="550" y="276" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Corpus</text>
+<text x="550" y="289.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">corpus.document · corpus.chunk</text>
+<text x="550" y="301.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">corpus.emb_bge_m3 · chunk.tsv</text>
+<text x="550" y="314.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">bge-m3 and the reranker run on</text>
+<text x="550" y="327.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">this machine; GeoAdmin and</text>
+<text x="550" y="340.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Supertext only when needed</text>
+<rect x="440" y="520" width="220" height="88" rx="6" fill="#f5f5f5"/>
+<rect x="440" y="520" width="220" height="88" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="550" y="549.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">BAG premium tables</text>
+<text x="550" y="563" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving.premium</text>
+<text x="550" y="575" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving.premium_region</text>
+<text x="550" y="587" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">lookups load-premiums</text>
+<rect x="748" y="200" width="232" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="748" y="200" width="232" height="80" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="760" y="225" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">swiss_connections</text>
+<text x="760" y="238.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">origin · destination · date · time</text>
+<text x="760" y="250.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">limit 1–6, default 4</text>
+<text x="760" y="263.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">next public transport connections</text>
+<rect x="748" y="304" width="232" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="748" y="304" width="232" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="760" y="346.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">swiss_reference_rate</text>
+<text x="760" y="360.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">mortgage reference rate for rents</text>
+<text x="760" y="373.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">and its effective date</text>
+<rect x="748" y="432" width="232" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="748" y="432" width="232" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="760" y="457.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">zbern_*  (forwarded)</text>
+<text x="760" y="471.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">Parliament members, business</text>
+<text x="760" y="484.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">items, debates, roll-call votes,</text>
+<text x="760" y="497.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">vote results, upcoming votes;</text>
+<text x="760" y="510.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">zbern down: source_unavailable</text>
+<rect x="1024" y="200" width="200" height="80" rx="6" fill="#f5f5f5"/>
+<rect x="1024" y="200" width="200" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="1124" y="231" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">transport.opendata.ch</text>
+<text x="1124" y="244.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">GET /v1/connections</text>
+<text x="1124" y="257.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">down: source_unavailable</text>
+<rect x="1024" y="304" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="1024" y="304" width="200" height="104" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="1124" y="328" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">BWO page</text>
+<text x="1124" y="341.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">bwo.admin.ch</text>
+<text x="1124" y="353.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving.lookup_cache</text>
+<text x="1124" y="366.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">parsed, cached 24 hours;</text>
+<text x="1124" y="379.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">BWO down: the last value</text>
+<text x="1124" y="392.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">with source_unavailable</text>
+<rect x="1024" y="432" width="200" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="1024" y="432" width="200" height="96" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="1124" y="458" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">mcp.zbern.ch</text>
+<text x="1124" y="471.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">ZBERN_MCP_TOKEN</text>
+<text x="1124" y="484.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">tools discovered at start,</text>
+<text x="1124" y="497.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">then every 5 minutes; four</text>
+<text x="1124" y="510.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">raw-SQL tools left out</text>
+<!-- annotations -->
+<circle cx="704" cy="144" r="4" fill="#2d3142"/>
+<text x="748" y="580" fill="#d52b1e" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">The server never routes between tools:</text>
+<text x="748" y="598" fill="#d52b1e" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">the chat model picks one from its description.</text>
+<text x="748" y="624" fill="#7a8399" font-size="10" font-family="'Geist', sans-serif">Every call is logged in serving.call_log; an exception answers status error.</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">user</text>
+<rect x="171.2" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="171.2" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="195.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">picks the tool</text>
+<rect x="292.6" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="292.6" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="316.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">tool</text>
+<rect x="364.5" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="364.5" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="388.5" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">local data or text</text>
+<rect x="505.8" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="505.8" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="529.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">outside service</text>
+<line x1="632.2" y1="691.1" x2="656.2" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="666.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">call or read</text>
+<line x1="753.7" y1="691.1" x2="777.7" y2="691.1" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+<text x="787.7" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">live HTTP call</text>
+<line x1="885.1" y1="691.1" x2="909.1" y2="691.1" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<text x="919.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">read at connect</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/mcp_server/server.py</code> · <code>src/swiss_grounding/mcp_server/zbern.py</code> · <code>src/swiss_grounding/serving/documents.py</code> · <code>src/swiss_grounding/serving/scope.py</code> · <code>src/swiss_grounding/lookups/premium.py</code> · <code>src/swiss_grounding/lookups/connections.py</code> · <code>src/swiss_grounding/lookups/reference_rate.py</code> · <code>src/swiss_grounding/config.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

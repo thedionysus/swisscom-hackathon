@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zbern proxy · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Architecture · 29</p>
+    <h1>zbern proxy</h1>
+    <p class="lede">How the zbern.ch Parliament tools are served beside our own. The proxy is on when ZBERN_MCP_URL is not empty (default https://mcp.zbern.ch/mcp) and ZBERN_MCP_TOKEN is set; setup installs the token from the release. Nothing about the zbern tools is hard-coded: names, descriptions, input schemas and instructions come from the remote server, so its changes show up without a change here.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="zbern-proxy-title zbern-proxy-desc">
+<title id="zbern-proxy-title">zbern proxy: discovery, listing and forwarded calls</title>
+<desc id="zbern-proxy-desc">Sequence: at start the server discovers the zbern.ch tools over streamable HTTP with a bearer token and relabels them; when a client lists tools the list is refreshed if older than 300 seconds and merged with the local tools; a call to a zbern tool opens a new session, and the result is passed through verbatim, or source_unavailable on any failure.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<line x1="112" y1="96" x2="112" y2="644" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="440" y1="96" x2="440" y2="644" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="768" y1="96" x2="768" y2="644" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+<line x1="40" y1="112" x2="872" y2="112" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<rect x="38" y="117" width="274.1" height="13" rx="2" fill="#f5f5f5"/>
+<text x="40" y="126" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">AT START</text>
+<text x="99.8" y="126" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">prime(): own thread, joined for up to 15 s</text>
+<line x1="40" y1="300" x2="872" y2="300" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<rect x="38" y="305" width="158.2" height="13" rx="2" fill="#f5f5f5"/>
+<text x="40" y="314" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">A CLIENT LISTS THE TOOLS</text>
+<line x1="40" y1="428" x2="872" y2="428" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<rect x="38" y="433" width="177.4" height="13" rx="2" fill="#f5f5f5"/>
+<text x="40" y="442" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">A CLIENT CALLS A ZBERN TOOL</text>
+<rect x="436" y="164" width="8" height="88" fill="#f5f5f5"/>
+<rect x="436" y="164" width="8" height="88" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+<rect x="764" y="164" width="8" height="32" fill="#f5f5f5"/>
+<rect x="764" y="164" width="8" height="32" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+<rect x="436" y="344" width="8" height="68" fill="#f5f5f5"/>
+<rect x="436" y="344" width="8" height="68" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+<rect x="436" y="468" width="8" height="160" fill="#f5f5f5"/>
+<rect x="436" y="468" width="8" height="160" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+<rect x="764" y="500" width="8" height="40" fill="#f5f5f5"/>
+<rect x="764" y="500" width="8" height="40" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+<rect x="76" y="512" width="728" height="124" rx="4" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.22)" stroke-width="1"/>
+<rect x="76" y="512" width="40" height="16" rx="2" fill="#f5f5f5" stroke="rgba(45,49,66,0.22)" stroke-width="1"/>
+<text x="96" y="523.5" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">ALT</text>
+<text x="124" y="528" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[zbern.ch answers]</text>
+<text x="124" y="600" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[any failure]</text>
+<line x1="84" y1="584" x2="796" y2="584" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="896" y="40" width="344" height="72" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="908" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">ON WHEN</text>
+<rect x="896" y="128" width="344" height="156" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="908" y="146" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">RELABELLED FOR OUR CLIENTS</text>
+<rect x="896" y="316" width="344" height="88" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="908" y="334" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SERVER INSTRUCTIONS</text>
+<rect x="896" y="444" width="344" height="200" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="908" y="462" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">FAILURES AND LOGGING</text>
+<!-- arrows -->
+<path d="M 444,164 L 764,164" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 764,196 L 444,196" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 444,216 L 464,216 Q 472,216 472,224 L 472,236 Q 472,244 464,244 L 444,244" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 112,344 L 436,344" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 444,360 L 464,360 Q 472,360 472,368 L 472,380 Q 472,388 464,388 L 444,388" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 436,412 L 112,412" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 112,468 L 436,468" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 444,500 L 764,500" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 764,540 L 444,540" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 436,568 L 112,568" fill="none" stroke="#d52b1e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<path d="M 436,624 L 112,624" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="40" y="40" width="144" height="56" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="40" width="144" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="112" y="65" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">MCP client</text>
+<text x="112" y="79.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">e.g. Claude Code</text>
+<rect x="332" y="40" width="216" height="56" rx="6" fill="#f5f5f5"/>
+<rect x="332" y="40" width="216" height="56" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<text x="440" y="65.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">swiss-grounding server</text>
+<text x="440" y="79" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">mcp_server/zbern.py</text>
+<rect x="680" y="40" width="176" height="56" rx="6" fill="#f5f5f5"/>
+<rect x="680" y="40" width="176" height="56" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="768" y="65.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">zbern.ch</text>
+<text x="768" y="79" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">https://mcp.zbern.ch/mcp</text>
+<!-- annotations -->
+<text x="604" y="145" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">streamable HTTP, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">Authorization: Bearer &lt;token&gt;</tspan></text>
+<text x="604" y="157" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">initialize</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, then </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">list_tools</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, page by page</tspan></text>
+<text x="604" y="189" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">instructions and tools, all within 10 s</tspan></text>
+<text x="484" y="234" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">relabels every tool (right)</tspan></text>
+<text x="274" y="337" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">tools/list</tspan></text>
+<text x="484" y="378" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">older than 300 s: discover again first</tspan></text>
+<text x="274" y="393" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">swiss_*</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> + </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">zbern_*</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> tools</tspan></text>
+<text x="274" y="405" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">a local tool wins a name clash</tspan></text>
+<text x="274" y="461" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">tools/call zbern_x</tspan></text>
+<text x="604" y="481" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">a new session per call, 60 s timeout</tspan></text>
+<text x="604" y="493" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">initialize</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">call_tool(x)</tspan></text>
+<text x="604" y="533" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">result</tspan></text>
+<text x="274" y="561" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#d52b1e">the result, passed through verbatim</tspan></text>
+<text x="274" y="617" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">&quot;status&quot;: &quot;source_unavailable&quot;</tspan></text>
+<text x="912" y="80" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">ZBERN_MCP_URL</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> not empty (the default)</tspan></text>
+<text x="912" y="94" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">and </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">ZBERN_MCP_TOKEN</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> set; setup installs it</tspan></text>
+<text x="912" y="168" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">name</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">  →  </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">zbern_&lt;name&gt;</tspan></text>
+<text x="912" y="183" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">description</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">  →  prefixed</tspan></text>
+<text x="912" y="198" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">   &quot;[Swiss Parliament, via zbern.ch] &quot;</tspan></text>
+<text x="912" y="213" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">outputSchema</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">  →  dropped</tspan></text>
+<text x="912" y="228" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">annotations</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">  →  </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">readOnlyHint</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> + </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">openWorldHint</tspan></text>
+<text x="912" y="243" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">not served: </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">query</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">list_tables</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">,</tspan></text>
+<text x="912" y="258" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">   describe_table</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">get_reference</tspan></text>
+<text x="912" y="356" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">ours, then a routing paragraph:</tspan></text>
+<text x="912" y="370" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">Parliament and vote data  →  </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">zbern_*</tspan></text>
+<text x="912" y="384" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">vote information pages  →  </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">swiss_search</tspan></text>
+<text x="912" y="398" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">then zbern&#x27;s own instructions</tspan></text>
+<text x="912" y="484" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">any failure  →  </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">source_unavailable</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">:</tspan></text>
+<text x="912" y="499" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">“The Swiss Parliament source (zbern.ch)</tspan></text>
+<text x="912" y="514" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">cannot be reached right now. …”</tspan></text>
+<text x="912" y="529" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">unknown name  →  </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">invalid_request</tspan></text>
+<text x="912" y="544" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">never discovered  →  no </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">zbern_*</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> tools</tspan></text>
+<text x="912" y="559" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">failed refresh  →  the last list stays</tspan></text>
+<text x="912" y="574" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">swiss_*</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> tools keep working</tspan></text>
+<text x="912" y="589" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">every call is logged to </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">serving.call_log</tspan></text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">MCP client</text>
+<rect x="201" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="201" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="225" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">our server</text>
+<rect x="302.6" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="302.6" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="326.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">zbern.ch</text>
+<rect x="394.2" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.18)" stroke-width="0.8"/>
+<text x="418.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">note</text>
+<line x1="466.1" y1="691.1" x2="490.1" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="500.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">call</text>
+<line x1="547.9" y1="691.1" x2="571.9" y2="691.1" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<text x="581.9" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">reply</text>
+<line x1="634.7" y1="691.1" x2="658.7" y2="691.1" stroke="#d52b1e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+<text x="668.7" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">passed through</text>
+<rect x="770.2" y="683" width="6" height="14" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+<text x="784.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">busy</text>
+<rect x="832" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.22)" stroke-width="1"/>
+<text x="856" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">alternatives</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/mcp_server/zbern.py</code> · <code>src/swiss_grounding/mcp_server/server.py</code> · <code>src/swiss_grounding/config.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fedlex, PDF and feed connectors · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Ingestion · 04</p>
+    <h1>Fedlex, PDF and feed connectors</h1>
+    <p class="lede">The three other ways content enters the corpus. Fedlex law carries its validity dates and is kept aligned across languages; PDFs are only fetched when a crawled page links to them; a JSON feed needs an importer of its own, as the OpenERZ waste calendar has.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fedlex-pdf-feeds-title fedlex-pdf-feeds-desc">
+<title id="fedlex-pdf-feeds-title">Fedlex, PDF and feed connectors</title>
+<desc id="fedlex-pdf-feeds-desc">Federal law comes from Fedlex as XML per language with the version in force and the next scheduled one; PDFs linked from crawled pages are read page by page, and pages without text become images for OCR; the Zürich waste calendar is imported from a JSON feed.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="1200" height="196" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">FEDLEX · FEDERAL LAW</text>
+<text x="188.6" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">connector fedlex</text>
+<rect x="40" y="252" width="1200" height="220" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="270" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">PDF · LINKED FROM CRAWLED PAGES</text>
+<text x="259" y="270" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">connector html → pdf</text>
+<rect x="40" y="488" width="1200" height="152" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="506" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">JSON FEED · ZÜRICH WASTE CALENDAR</text>
+<text x="271.8" y="506" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">serving calendar</text>
+<!-- arrows -->
+<path d="M 262,148 L 294,148" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 498,148 L 530,148" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 734,148 L 766,148" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 970,148 L 1002,148" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 262,360 L 294,360" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 498,360 L 530,360" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 690,360 L 722,360" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 610,428 L 610,444 Q 610,452 618,452 L 1094,452 Q 1102,452 1102,444 L 1102,428" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 262,572 L 294,572" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 734,572 L 766,572" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<!-- labels -->
+<rect x="694" y="342" width="24" height="12" rx="2" fill="#f5f5f5"/>
+<text x="706" y="350.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+<rect x="632.6" y="434" width="68" height="12" rx="2" fill="#f5f5f5"/>
+<text x="666.6" y="442.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO: SCANNED</text>
+<!-- nodes -->
+<rect x="58" y="80" width="204" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="58" y="80" width="204" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="66" y="86" width="52" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="92" y="94.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">MANIFEST</text>
+<text x="160" y="141.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">37 acts by SR number</text>
+<text x="160" y="155" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">config.sr_numbers</text>
+<text x="160" y="167.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">e.g. 220 (OR), 741.51 (VZV)</text>
+<text x="160" y="180.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">in de, fr, it, en</text>
+<rect x="294" y="80" width="204" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="294" y="80" width="204" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="302" y="86" width="40" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="322" y="94.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SPARQL</text>
+<text x="396" y="135" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Query Fedlex</text>
+<text x="396" y="148.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fedlex.data.admin.ch</text>
+<text x="396" y="161.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">current: latest in force</text>
+<text x="396" y="174.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">scheduled: next future one</text>
+<text x="396" y="187.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">English: newest if none</text>
+<rect x="530" y="80" width="204" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="530" y="80" width="204" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="538" y="86" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="554" y="94.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HTTP</text>
+<text x="632" y="135" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Download the XML</text>
+<text x="632" y="148.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Akoma Ntoso, per language</text>
+<text x="632" y="161.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">skipped when every</text>
+<text x="632" y="174.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">language URL is known;</text>
+<text x="632" y="187.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">3 tries on 5xx or 429</text>
+<rect x="766" y="80" width="204" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="766" y="80" width="204" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="774" y="86" width="36" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="792" y="94.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PARSE</text>
+<text x="868" y="135" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">One section per article</text>
+<text x="868" y="148.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">align_key = article eId</text>
+<text x="868" y="161.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">footnotes removed</text>
+<text x="868" y="174.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">breadcrumb: SR › chapter</text>
+<text x="868" y="187.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">› article; paragraphs kept</text>
+<rect x="1002" y="80" width="224" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="1002" y="80" width="224" height="136" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="1010" y="86" width="28" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="1024" y="94.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DOC</text>
+<text x="1114" y="135" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Law documents</text>
+<text x="1114" y="148.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">identifier: SR 220</text>
+<text x="1114" y="161.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">authentic: de, fr, it (not en)</text>
+<text x="1114" y="174.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">valid_from and valid_to</text>
+<text x="1114" y="187.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">status current or scheduled</text>
+<rect x="58" y="292" width="204" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="58" y="292" width="204" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="66" y="298" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="80" y="306.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PDF</text>
+<text x="160" y="353.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Linked PDF</text>
+<text x="160" y="367" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">found on a crawled page</text>
+<text x="160" y="379.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">≤ max_pdfs (default 50)</text>
+<text x="160" y="392.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">under pdf_allow_prefixes</text>
+<rect x="294" y="292" width="204" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="294" y="292" width="204" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="302" y="298" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="318" y="306.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HTTP</text>
+<text x="396" y="347" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Download it</text>
+<text x="396" y="360.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">conditional GET</text>
+<text x="396" y="373.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">≤ 30 MB, must be a PDF</text>
+<text x="396" y="386.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">(%PDF in the first bytes)</text>
+<text x="396" y="399.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">304: unchanged</text>
+<polygon points="610,292 690,360 610,428 530,360" fill="#f5f5f5"/>
+<polygon points="610,292 690,360 610,428 530,360" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="610" y="357.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Text on page?</text>
+<text x="610" y="371" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">≥ 80 characters</text>
+<rect x="722" y="292" width="228" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="722" y="292" width="228" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="730" y="298" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="746" y="306.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TEXT</text>
+<text x="836" y="347" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Text section</text>
+<text x="836" y="360.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">align_key lang:pN</text>
+<text x="836" y="373.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one per page, read with</text>
+<text x="836" y="386.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">pypdf; anchor page=N</text>
+<text x="836" y="399.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">extraction: pdf_text</text>
+<rect x="982" y="292" width="240" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="982" y="292" width="240" height="136" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<rect x="990" y="298" width="28" height="12" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="1004" y="306.5" fill="#d52b1e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">OCR</text>
+<text x="1102" y="347" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Page image for OCR</text>
+<text x="1102" y="360.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">150 dpi PNG in data/ocr/</text>
+<text x="1102" y="373.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">an empty passage marked</text>
+<text x="1102" y="386.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">needs_ocr; a vision model</text>
+<text x="1102" y="399.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">reads it in corpus run (06)</text>
+<rect x="58" y="524" width="204" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="58" y="524" width="204" height="96" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<rect x="66" y="530" width="32" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="82" y="538.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">JSON</text>
+<text x="160" y="572" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">OpenERZ API</text>
+<text x="160" y="585.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">openerz.metaodi.ch</text>
+<text x="160" y="598.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">24 Zürich postal codes</text>
+<rect x="294" y="524" width="440" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="294" y="524" width="440" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="302" y="530" width="40" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="322" y="538.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">IMPORT</text>
+<text x="514" y="572" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">One document per postal code</text>
+<text x="514" y="585.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">corpus/calendar.py</text>
+<text x="514" y="598.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one section per waste type with its next 26 dates</text>
+<rect x="766" y="524" width="456" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="766" y="524" width="456" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="774" y="530" width="44" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="796" y="538.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PERSIST</text>
+<text x="994" y="572" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Saved like any other page</text>
+<text x="994" y="585.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">persist_document</text>
+<text x="994" y="598.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">same versioning: a changed calendar supersedes the old one</text>
+<!-- annotations -->
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">step</text>
+<rect x="171.2" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="171.2" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="195.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">stored document</text>
+<rect x="297.6" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="297.6" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="321.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">waits for OCR</text>
+<rect x="414.1" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="414.1" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="438.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">outside service</text>
+<line x1="540.5" y1="691.1" x2="564.5" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="574.5" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">flow</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/corpus/connectors/fedlex.py</code> · <code>src/swiss_grounding/corpus/connectors/fedlex_akn.py</code> · <code>src/swiss_grounding/corpus/connectors/pdf.py</code> · <code>src/swiss_grounding/corpus/calendar.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

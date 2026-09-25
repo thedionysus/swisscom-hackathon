@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluation loop · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Architecture · 31</p>
+    <h1>Evaluation loop</h1>
+    <p class="lede">How answer quality is measured. The loop turns labelled dev citations into a fitted relevance model and reports on the holdout split; eval fit asks for more labels when no threshold reaches 0.9 precision. Until a model is fitted, the server keeps its provisional score. Faithfulness was 12 of 12 on 2026-09-24, measured with the zbern tools on.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="evaluation-loop-title evaluation-loop-desc">
+<title id="evaluation-loop-title">Evaluation loop: labels, relevance model and gates</title>
+<desc id="evaluation-loop-desc">The golden set feeds a dev run; gpt-5-mini labels the citations, a person checks a sample, and label-check requires 0.85 agreement before eval fit trains the relevance model, whose threshold is chosen for 0.9 precision; the model file is committed and the holdout run is recorded. Beside it, generated questions measure recall, a judge model measures faithfulness, and serving stats reads the call log. Five gates decide whether the scores pass.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="1200" height="412" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">RELEVANCE LOOP</text>
+<text x="150.2" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">dev labels in, a fitted relevance model out</text>
+<rect x="40" y="468" width="1200" height="144" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="486" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">OTHER MEASUREMENTS</text>
+<!-- arrows -->
+<path d="M 312,132 L 344,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 576,132 L 608,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 880,132 L 912,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1064,188 L 1064,228" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 960,292 L 904,292" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1064,356 L 1064,380" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 624,292 L 592,292" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 344,292 L 312,292" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 744,236 L 744,188" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 336,548 L 368,548" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<!-- labels -->
+<rect x="920" y="274" width="24" height="12" rx="2" fill="#f5f5f5"/>
+<text x="932" y="282.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+<rect x="1070" y="362" width="20" height="12" rx="2" fill="#f5f5f5"/>
+<text x="1080" y="370.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO</text>
+<rect x="750" y="206" width="64" height="12" rx="2" fill="#f5f5f5"/>
+<text x="782" y="214.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">LABEL MORE</text>
+<!-- nodes -->
+<rect x="64" y="76" width="248" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="64" y="76" width="248" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="72" y="82" width="32" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="88" y="90.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">YAML</text>
+<text x="188" y="112.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Golden set</text>
+<text x="188" y="126" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">evals/golden/*.yaml</text>
+<text x="188" y="138.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="188" y="151.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="188" y="164.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="188" y="177.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="344" y="76" width="232" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="344" y="76" width="232" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="352" y="82" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="366" y="90.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLI</text>
+<text x="460" y="119" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Run the dev split</text>
+<text x="460" y="132.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval golden --split dev</text>
+<text x="460" y="145.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">each probe&#x27;s status against</text>
+<text x="460" y="158.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">the expected one; the metrics</text>
+<text x="460" y="171.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">against the gates</text>
+<rect x="608" y="76" width="272" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="608" y="76" width="272" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="616" y="82" width="96" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="664" y="90.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GPT-5-MINI · ≤ $2</text>
+<text x="744" y="119" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Label the citations</text>
+<text x="744" y="132.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval label --confirm-spend</text>
+<text x="744" y="145.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="744" y="158.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="744" y="171.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="912" y="76" width="304" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="912" y="76" width="304" height="112" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<rect x="920" y="82" width="40" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="940" y="90.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PERSON</text>
+<text x="1064" y="132" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">A person checks 100 pairs</text>
+<text x="1064" y="145.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">evals/golden/label_review.csv</text>
+<text x="1064" y="158.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<polygon points="1064,228 1168,292 1064,356 960,292" fill="#f5f5f5"/>
+<polygon points="1064,228 1168,292 1064,356 960,292" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="1064" y="289.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Agreement ≥ 0.85?</text>
+<text x="1064" y="303" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval label-check</text>
+<rect x="968" y="380" width="192" height="52" rx="6" fill="#f5f5f5"/>
+<rect x="968" y="380" width="192" height="52" rx="6" fill="rgba(213,43,30,0.05)" stroke="rgba(213,43,30,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="1064" y="403" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Stop: do not fit</text>
+<text x="1064" y="417.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="624" y="236" width="280" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="624" y="236" width="280" height="112" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<rect x="632" y="242" width="44" height="12" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="654" y="250.5" fill="#d52b1e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SKLEARN</text>
+<text x="764" y="279" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Fit the relevance model</text>
+<text x="764" y="292.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval fit</text>
+<text x="764" y="305.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">logistic regression over 10 features;</text>
+<text x="764" y="318.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">threshold: the lowest probability</text>
+<text x="764" y="331.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">reaching 0.9 precision out of fold</text>
+<rect x="344" y="236" width="248" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="344" y="236" width="248" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="352" y="242" width="32" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="368" y="250.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">JSON</text>
+<text x="584" y="251" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.08em">NONE YET</text>
+<text x="468" y="285.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Relevance model</text>
+<text x="468" y="299" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">relevance_model.&lt;reranker&gt;.json</text>
+<text x="468" y="311.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="468" y="324.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="64" y="236" width="248" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="64" y="236" width="248" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="72" y="242" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="86" y="250.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLI</text>
+<text x="304" y="251" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.08em">NONE RECORDED YET</text>
+<text x="188" y="285.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Report on the holdout</text>
+<text x="188" y="299" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval golden --split holdout --record</text>
+<text x="188" y="311.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="188" y="324.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="64" y="500" width="272" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="64" y="500" width="272" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="72" y="506" width="96" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="120" y="514.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GPT-5-MINI · ≤ $2</text>
+<text x="200" y="541.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Generate questions</text>
+<text x="200" y="555" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval generate --confirm-spend</text>
+<text x="200" y="567.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="200" y="580.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="368" y="500" width="192" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="368" y="500" width="192" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="464" y="532.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Recall@5</text>
+<text x="464" y="546" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval recall</text>
+<text x="464" y="558.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="464" y="571.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="592" y="500" width="368" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="592" y="500" width="368" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="600" y="506" width="56" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="628" y="514.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLAUDE -P</text>
+<text x="952" y="515" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.08em">12 OF 12 · 2026-09-24</text>
+<text x="776" y="535" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Faithfulness</text>
+<text x="776" y="548.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">eval faithfulness</text>
+<text x="776" y="561.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="776" y="574.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="776" y="587.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<rect x="992" y="500" width="224" height="96" rx="6" fill="#f5f5f5"/>
+<rect x="992" y="500" width="224" height="96" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="1104" y="526" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Latency and abstention</text>
+<text x="1104" y="539.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving stats</text>
+<text x="1104" y="552.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="1104" y="565.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<text x="1104" y="578.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle"> </text>
+<!-- annotations -->
+<text x="188" y="138.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">46 probes: federal 10, cantonal 6,</tspan></text>
+<text x="188" y="151.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">municipal 6, scope 11, challenge 13;</tspan></text>
+<text x="188" y="164.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">44 via </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">swiss_search</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, 12 holdout;</tspan></text>
+<text x="188" y="177.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">de 27 · fr 9 · it 5 · rm 3 · en 2</tspan></text>
+<text x="744" y="145.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">judges the top 10 per place + 5 random</tspan></text>
+<text x="744" y="158.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">lower ones, with the threshold at 0;</tspan></text>
+<text x="744" y="171.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">appends </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">evals/golden/labels.jsonl</tspan></text>
+<text x="1064" y="158.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">fills the </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">human_says</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> column</tspan></text>
+<text x="1064" y="417.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">eval fit</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> does not check it</tspan></text>
+<text x="468" y="311.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">in </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">evals/</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, committed for others;</tspan></text>
+<text x="468" y="324.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the server loads it at start</tspan></text>
+<text x="188" y="311.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">scored with the fitted model;</tspan></text>
+<text x="188" y="324.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">report to </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">evals/golden/runs/</tspan></text>
+<text x="200" y="567.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">≤ 35 chunks per language and source</tspan></text>
+<text x="200" y="580.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">level, one question for each</tspan></text>
+<text x="464" y="558.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">is the source chunk among</tspan></text>
+<text x="464" y="571.8" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the top 5 citations?</tspan></text>
+<text x="776" y="561.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">claude-sonnet-5</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> answers the holdout probes</tspan></text>
+<text x="776" y="574.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">through </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">serve --transport http</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">; </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">claude-fable-5-1</tspan></text>
+<text x="776" y="587.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">grades with </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">evals/judge/faithfulness.md</tspan></text>
+<text x="1104" y="552.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">p50 and p95 latency, abstention</tspan></text>
+<text x="1104" y="565.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">and empty rates per tool, from</tspan></text>
+<text x="1104" y="578.2" xml:space="preserve" text-anchor="middle"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">serving.call_log</tspan></text>
+<text x="40" y="637" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">GATES</text>
+<rect x="88" y="628" width="116" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.5" stroke-width="0.8"/>
+<text x="146" y="636.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATUS ACCURACY ≥ 0.9</text>
+<rect x="212" y="628" width="80" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.5" stroke-width="0.8"/>
+<text x="252" y="636.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RECALL@5 ≥ 0.8</text>
+<rect x="300" y="628" width="96" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.5" stroke-width="0.8"/>
+<text x="348" y="636.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PRECISION@5 ≥ 0.7</text>
+<rect x="404" y="628" width="72" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.5" stroke-width="0.8"/>
+<text x="440" y="636.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">NDCG@5 ≥ 0.7</text>
+<rect x="484" y="628" width="100" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.5" stroke-width="0.8"/>
+<text x="534" y="636.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FAITHFULNESS ≥ 0.9</text>
+<text x="1240" y="637" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="end">state on 25 Sep 2026: no golden run recorded, no model fitted</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">data</text>
+<rect x="171.2" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="171.2" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="195.2" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">command</text>
+<rect x="257.9" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="257.9" y="685" width="16" height="10" rx="2" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="281.9" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">person</text>
+<rect x="339.7" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="339.7" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="363.7" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">what the loop fits</text>
+<rect x="481" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="481" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.05)" stroke="rgba(213,43,30,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="505" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">stop</text>
+<line x1="552.8" y1="691.1" x2="576.8" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="586.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">next step</text>
+<line x1="659.4" y1="691.1" x2="683.4" y2="691.1" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<text x="693.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">no threshold reaches 0.9</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>docs/EVALUATION.md</code> · <code>src/swiss_grounding/cli/eval_commands.py</code> · <code>evals/fit.py</code> · <code>evals/metrics.py</code> · <code>evals/labels.py</code> · <code>src/swiss_grounding/serving/relevance.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>From candidates to citations · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Retrieval · 20</p>
+    <h1>From candidates to citations</h1>
+    <p class="lede">Steps 6 to 10 of swiss_search for one place. A passage exists in up to four languages; it is scored once, through the version the user can read, and its other versions count as corroboration. The reranker depends on the hardware, and so does a fitted relevance model.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="candidates-to-citations-title candidates-to-citations-desc">
+<title id="candidates-to-citations-title">From candidates to citations</title>
+<desc id="candidates-to-citations-desc">Candidates are grouped with every language version of the same passage and represented by one version; the reranker scores each representative against the question in its language; relevance blends the reranker with the retrieval rank until a model is fitted; the relevant groups are cut to distinct citations, a short supporting passage each, translated into the question&#x27;s language.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="1200" height="180" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">GROUP LANGUAGE VERSIONS</text>
+<text x="207.8" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">serving/groups.py</text>
+<rect x="40" y="236" width="1200" height="200" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="254" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SCORE</text>
+<text x="92.6" y="254" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">serving/reranker.py · serving/relevance.py</text>
+<rect x="40" y="452" width="1200" height="192" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="470" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">CITE</text>
+<!-- arrows -->
+<path d="M 232,138 L 272,138" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 562,138 L 602,138" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 892,138 L 932,138" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1088,204 L 1088,268" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 962,344 L 922,344" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 358,344 L 318,344" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 187,420 L 187,484" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 318,556 L 358,556" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 620,556 L 660,556" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 922,556 L 962,556" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="56" y="72" width="176" height="132" rx="6" fill="#f5f5f5"/>
+<rect x="56" y="72" width="176" height="132" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="144" y="129" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Candidates</text>
+<text x="144" y="142.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">≤ 30 per place (CPU 20)</text>
+<text x="144" y="155.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">from the arms (see 19)</text>
+<rect x="272" y="72" width="290" height="132" rx="6" fill="#f5f5f5"/>
+<rect x="272" y="72" width="290" height="132" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="417" y="116" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Aligned versions</text>
+<text x="417" y="129.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">(translation_group_id, align_key)</text>
+<text x="417" y="142.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">every live chunk sharing the pair, in any</text>
+<text x="417" y="155.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">language and with no extent filter: one</text>
+<text x="417" y="168.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">group per passage</text>
+<rect x="602" y="72" width="290" height="132" rx="6" fill="#f5f5f5"/>
+<rect x="602" y="72" width="290" height="132" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="614" y="109" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Representative</text>
+<text x="614" y="123.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">1  a candidate in the question&#x27;s language</text>
+<text x="614" y="136.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">2  else a version in that language</text>
+<text x="614" y="149.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">3  else a found authentic candidate</text>
+<text x="614" y="162.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">4  else the best candidate found;</text>
+<text x="614" y="175.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">it keeps the group&#x27;s best RRF rank</text>
+<rect x="932" y="72" width="292" height="132" rx="6" fill="#f5f5f5"/>
+<rect x="932" y="72" width="292" height="132" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="944" y="102.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Corroboration</text>
+<text x="944" y="116.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">share of the other authentic versions</text>
+<text x="944" y="129.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">found too (English Fedlex is never</text>
+<text x="944" y="142.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">authentic); versions_diverge when</text>
+<text x="944" y="155.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">valid_from differs; basis independent</text>
+<text x="944" y="168.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">when each was found in its own</text>
+<text x="944" y="181.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">language, else cross_lingual</text>
+<rect x="962" y="268" width="262" height="152" rx="6" fill="#f5f5f5"/>
+<rect x="962" y="268" width="262" height="152" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="974" y="292" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Rerank</text>
+<text x="974" y="309" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">by device: cuda &gt; mps &gt; cpu</text>
+<text x="974" y="322" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">BAAI/bge-reranker-v2-m3</text>
+<text x="974" y="334" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">on a GPU or MPS: 512 tokens, fp16</text>
+<text x="974" y="347" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">cross-encoder/mmarco-mMiniLMv2-L12-H384-v1</text>
+<text x="974" y="359" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">on the CPU: 256 tokens</text>
+<text x="974" y="376" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">reads &#x27;breadcrumb › text&#x27; without</text>
+<text x="974" y="389" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Markdown, against the question in the</text>
+<text x="974" y="402" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">passage&#x27;s language</text>
+<rect x="358" y="268" width="564" height="152" rx="6" fill="#f5f5f5"/>
+<rect x="358" y="268" width="564" height="152" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="370" y="292" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Relevance</text>
+<text x="370" y="309" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.14em">PROVISIONAL · IN USE TODAY</text>
+<text x="370" y="322" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">rerank &lt; 0.20   →  rerank</text>
+<text x="370" y="334" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">otherwise       →  0.5 · rerank + 0.5 / rrf_rank</text>
+<text x="370" y="350" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">relevant: ≥ 0.20. The blend exists because the</text>
+<text x="370" y="363" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">reranker alone put the right Vaud passage</text>
+<text x="370" y="376" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">below wrong pages (docs/EVALUATION.md)</text>
+<text x="650" y="309" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.14em">FITTED · EVAL FIT · NONE YET</text>
+<text x="650" y="322" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">logistic model over ten features:</text>
+<text x="650" y="335" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">rerank_logit · same_language</text>
+<text x="650" y="347" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">rrf_reciprocal · corroboration(_na)</text>
+<text x="650" y="359" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">independent · tier(_na) · is_law · age_years</text>
+<text x="650" y="371" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">tier: 0 = deepest level searched, +1 per</text>
+<text x="650" y="384" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">level up to CH. Read, with its threshold,</text>
+<text x="650" y="397" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">from evals/relevance_model.&lt;reranker&gt;.json</text>
+<rect x="56" y="268" width="262" height="152" rx="6" fill="#f5f5f5"/>
+<rect x="56" y="268" width="262" height="152" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<text x="68" y="292" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Keep the relevant</text>
+<text x="68" y="309" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">relevance ≥ threshold</text>
+<text x="68" y="321" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the rest is dropped; the status is</text>
+<text x="68" y="334" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">decided on these groups (see 21)</text>
+<text x="68" y="353" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">cited only with results; with no</text>
+<text x="68" y="366" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">place given, federal (CH) ones only</text>
+<rect x="56" y="484" width="262" height="144" rx="6" fill="#f5f5f5"/>
+<rect x="56" y="484" width="262" height="144" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="68" y="527.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Distinct citations</text>
+<text x="68" y="541" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">distinct_citations()</text>
+<text x="68" y="553.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">a page&#x27;s version in the question&#x27;s</text>
+<text x="68" y="566.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">language wins; the same text twice</text>
+<text x="68" y="579.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">and a page&#x27;s second language drop;</text>
+<text x="68" y="592.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">then the top limit</text>
+<rect x="358" y="484" width="262" height="144" rx="6" fill="#f5f5f5"/>
+<rect x="358" y="484" width="262" height="144" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="370" y="527.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Best passage</text>
+<text x="370" y="541" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">best_passage(), ≤ 600 characters</text>
+<text x="370" y="553.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">a short text: all of it; else the</text>
+<text x="370" y="566.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">window of whole sentences sharing</text>
+<text x="370" y="579.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">most words with the question and</text>
+<text x="370" y="592.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">its translations</text>
+<rect x="660" y="484" width="262" height="144" rx="6" fill="#f5f5f5"/>
+<rect x="660" y="484" width="262" height="144" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="672" y="527.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Translate the passage</text>
+<text x="672" y="541" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">Supertext · TRANSLATE_CITATIONS</text>
+<text x="672" y="553.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">passages in another language, into</text>
+<text x="672" y="566.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">the question&#x27;s; one request per source</text>
+<text x="672" y="579.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">language, in parallel; a failure</text>
+<text x="672" y="592.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">leaves the citation as it is</text>
+<rect x="962" y="484" width="262" height="144" rx="6" fill="#f5f5f5"/>
+<rect x="962" y="484" width="262" height="144" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="974" y="522" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Citation</text>
+<text x="974" y="535.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">passage · url · publisher · tier</text>
+<text x="974" y="547.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">relevance · corroboration · dates</text>
+<text x="974" y="559.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">translated_passage · translation_language</text>
+<text x="974" y="572.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">tier: 0 = deepest level searched, +1</text>
+<text x="974" y="585.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">per level up to CH; answer from the</text>
+<text x="974" y="598.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="start">translation, quote passage</text>
+<!-- annotations -->
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">candidates</text>
+<rect x="201" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="201" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="225" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">step</text>
+<rect x="272.8" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="272.8" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="296.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">the relevance gate</text>
+<rect x="414.1" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="414.1" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="438.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">what is cited</text>
+<line x1="530.6" y1="691.1" x2="554.6" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="564.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">flow</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/serving/groups.py</code> · <code>src/swiss_grounding/serving/reranker.py</code> · <code>src/swiss_grounding/serving/relevance.py</code> · <code>src/swiss_grounding/serving/search_service.py</code> · <code>src/swiss_grounding/serving/passages.py</code> · <code>src/swiss_grounding/serving/translation.py</code> · <code>docs/EVALUATION.md</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

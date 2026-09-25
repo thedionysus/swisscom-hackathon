@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>swiss_search overview · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Retrieval · 17</p>
+    <h1>swiss_search overview</h1>
+    <p class="lede">What one swiss_search call does. Places come back one result each, never merged. Steps 2 to 4 run once for the request; steps 5 to 10 run for every place that is searched, and the reranker&#x27;s scores are shared between those places. Without SUPERTEXT_API_KEY nothing is translated.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="search-overview-title search-overview-desc">
+<title id="search-overview-title">swiss_search from request to response</title>
+<desc id="search-overview-desc">A request is checked, each place is resolved, and places that are foreign, unknown or ambiguous are answered at once; for the others the question&#x27;s language is guessed, it is translated and embedded once, then each place is searched on its own: candidates, language groups, reranking, relevance, a status and citations; the response lists one result per place.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="508" y="40" width="732" height="152" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="520" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">ONCE PER REQUEST</text>
+<text x="631" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">only when a place is searched</text>
+<rect x="508" y="216" width="732" height="320" rx="8" fill="rgba(213,43,30,0.03)" stroke="rgba(213,43,30,0.35)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<text x="520" y="234" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">PER SEARCHED PLACE</text>
+<!-- arrows -->
+<path d="M 256,124 L 288,124" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 488,124 L 528,124" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 728,124 L 768,124" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 968,124 L 1008,124" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1114,176 L 1114,196 Q 1114,204 1106,204 L 672,204 Q 664,204 664,212 L 664,248" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 728,304 L 768,304" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 968,304 L 1008,304" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1114,360 L 1114,408" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1008,464 L 968,464" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 768,464 L 728,464" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 528,464 L 488,464" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 388,176 L 388,248" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 388,360 L 388,408" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<!-- labels -->
+<rect x="394" y="206" width="60" height="12" rx="2" fill="#f5f5f5"/>
+<text x="424" y="214.9" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO SEARCH</text>
+<!-- nodes -->
+<rect x="40" y="72" width="216" height="188" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="72" width="216" height="188" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="52" y="96" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Request</text>
+<text x="52" y="113" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">question</text>
+<text x="52" y="125" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">≤ 2,000 characters</text>
+<text x="52" y="143" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">locations</text>
+<text x="52" y="155" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">≤ 3; more: first three + a note</text>
+<text x="52" y="173" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">translations</text>
+<text x="52" y="185" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">de fr it en rm; the client&#x27;s win</text>
+<text x="52" y="203" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">as_of</text>
+<text x="52" y="215" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">YYYY-MM-DD, else invalid_request</text>
+<text x="52" y="233" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">limit</text>
+<text x="52" y="245" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">1–20, default 8</text>
+<rect x="288" y="72" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="288" y="72" width="200" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="388" y="102" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">1 · Resolve each place</text>
+<text x="388" y="115.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/places.py</text>
+<text x="388" y="128.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">each entry of locations, or</text>
+<text x="388" y="141.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">the question when none is</text>
+<text x="388" y="154.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">given (see 18)</text>
+<rect x="528" y="72" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="528" y="72" width="200" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="628" y="102" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">2 · Guess the language</text>
+<text x="628" y="115.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/language.py</text>
+<text x="628" y="128.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">function words: de, fr, it,</text>
+<text x="628" y="141.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">en, rm; if none match,</text>
+<text x="628" y="154.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Supertext&#x27;s detected one</text>
+<rect x="768" y="72" width="200" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="768" y="72" width="200" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="868" y="96" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">3 · Translate</text>
+<text x="868" y="109.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">SUPERTEXT_API_KEY</text>
+<text x="868" y="121.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">TRANSLATE_QUERY_LANGUAGES</text>
+<text x="868" y="134.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">de, fr, it, en by default;</text>
+<text x="868" y="147.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">own language skipped;</text>
+<text x="868" y="160.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a client&#x27;s translation wins</text>
+<rect x="1008" y="72" width="212" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="1008" y="72" width="212" height="104" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="1114" y="108.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">4 · Embed</text>
+<text x="1114" y="122" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">bge-m3</text>
+<text x="1114" y="134.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">the question: dense + sparse</text>
+<text x="1114" y="147.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">each translation: dense</text>
+<rect x="528" y="248" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="528" y="248" width="200" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="628" y="275.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">5 · Candidates</text>
+<text x="628" y="289" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/candidates.py</text>
+<text x="628" y="301.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">search arms on the place&#x27;s</text>
+<text x="628" y="314.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">path, fused by rank: top 30</text>
+<text x="628" y="327.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">(CPU 20), 10 kept for local</text>
+<text x="628" y="340.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">pages (see 19)</text>
+<rect x="768" y="248" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="768" y="248" width="200" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="868" y="282" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">6 · Group versions</text>
+<text x="868" y="295.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/groups.py</text>
+<text x="868" y="308.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">same translation group and</text>
+<text x="868" y="321.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">align_key; shown in the</text>
+<text x="868" y="334.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">question&#x27;s language (see 20)</text>
+<rect x="1008" y="248" width="212" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="1008" y="248" width="212" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="1114" y="275.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">7 · Rerank</text>
+<text x="1114" y="289" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/reranker.py</text>
+<text x="1114" y="301.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">cross-encoder: each group</text>
+<text x="1114" y="314.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">against the question in the</text>
+<text x="1114" y="327.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">passage&#x27;s language; scores</text>
+<text x="1114" y="340.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">cached, shared by places</text>
+<rect x="1008" y="408" width="212" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="1008" y="408" width="212" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="1114" y="435.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">8 · Relevance</text>
+<text x="1114" y="449" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/relevance.py</text>
+<text x="1114" y="461.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">rerank &lt; 0.20: that score,</text>
+<text x="1114" y="474.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">else 0.5·rerank + 0.5/rank;</text>
+<text x="1114" y="487.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a fitted model replaces it;</text>
+<text x="1114" y="500.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">relevant: ≥ 0.20</text>
+<rect x="768" y="408" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="768" y="408" width="200" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="868" y="442" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">9 · Status per place</text>
+<text x="868" y="455.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/status.py</text>
+<text x="868" y="468.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">results, needs_location,</text>
+<text x="868" y="481.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">no_evidence or outside_scope</text>
+<text x="868" y="494.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">(see 21)</text>
+<rect x="528" y="408" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="528" y="408" width="200" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="628" y="435.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">10 · Citations</text>
+<text x="628" y="449" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">serving/passages.py</text>
+<text x="628" y="461.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">placeless: CH passages only;</text>
+<text x="628" y="474.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">repeats removed; top limit;</text>
+<text x="628" y="487.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">best ≤ 600-char passage,</text>
+<text x="628" y="500.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">translated when needed</text>
+<rect x="288" y="248" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="288" y="248" width="200" height="112" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="388" y="281.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Answered at once</text>
+<text x="388" y="295.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">foreign or unresolved:</text>
+<text x="388" y="308.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">outside_scope; ambiguous:</text>
+<text x="388" y="321.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">needs_location + options</text>
+<text x="388" y="334.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">(see 21)</text>
+<rect x="288" y="408" width="200" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="288" y="408" width="200" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="388" y="442" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Response</text>
+<text x="388" y="455.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">status · places[] · scope</text>
+<text x="388" y="468.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one result per place, in the</text>
+<text x="388" y="481.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">order asked, with citations</text>
+<text x="388" y="494.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">and coverage</text>
+<!-- annotations -->
+<text x="508" y="572" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">overall status: the first present of results · outside_scope · needs_location · source_unavailable · no_evidence · invalid_request</text>
+<text x="508" y="594" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">scope (the coverage statement) is added when a place ended no_evidence or outside_scope.</text>
+<text x="40" y="316" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">Translation never fails a search:</text>
+<text x="40" y="334" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">a language Supertext cannot</text>
+<text x="40" y="352" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">deliver is simply left out.</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">request</text>
+<rect x="186.1" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="186.1" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="210.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">step</text>
+<rect x="257.9" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="257.9" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="281.9" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">answered without a search</text>
+<rect x="433.9" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="433.9" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="457.9" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">response</text>
+<line x1="525.6" y1="691.1" x2="549.6" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="559.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">flow</text>
+<line x1="607.4" y1="691.1" x2="631.4" y2="691.1" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<text x="641.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">no search</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/serving/search_service.py</code> · <code>src/swiss_grounding/mcp_server/server.py</code> · <code>src/swiss_grounding/serving/models.py</code> · <code>src/swiss_grounding/serving/language.py</code> · <code>src/swiss_grounding/serving/translation.py</code> · <code>src/swiss_grounding/serving/places.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>
