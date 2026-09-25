@@ -89,10 +89,10 @@ async def _answer(question: str, *, client, model: str, mcp_url: str, system: st
     from mcp import ClientSession
     from mcp.client.streamable_http import streamablehttp_client
 
-    # The MCP HTTP transport keeps its connection alive in a background task and only surfaces a
-    # dead server when this `async with` unwinds, as an anyio BaseExceptionGroup rather than a plain
-    # connection error. `tool_loop` raises a plain RuntimeError (e.g. "no final answer"), which is
-    # not a group, so it passes through unchanged; a non-connection error inside a group is unwrapped.
+    # The MCP HTTP transport keeps its connection alive in a background task, so any exception raised
+    # in this `async with` body - including a plain RuntimeError from `tool_loop` (e.g. "no final
+    # answer") - can reach here wrapped in an anyio BaseExceptionGroup rather than on its own. The
+    # unwrap branch below re-raises a non-connection error as itself, group or not.
     try:
         async with streamablehttp_client(mcp_url) as (read, write, _), ClientSession(read, write) as session:
             await session.initialize()
@@ -111,7 +111,7 @@ async def _answer(question: str, *, client, model: str, mcp_url: str, system: st
         if isinstance(first, (OSError, httpx.TransportError)):
             message = f"MCP server at {mcp_url} unreachable: {first!r}; start `swiss-grounding serve --transport http`"
             raise RuntimeError(message) from None  # noqa: TRY004 - not a type check: a failed connection
-        raise first from None  # e.g. an API error from the model call, unwrapped from the transport's group
+        raise first from None  # e.g. tool_loop's RuntimeError or an API error, unwrapped from the transport's group
 
 
 def answer_with_tools(question: str, *, client, model: str, mcp_url: str, system: str) -> tuple[list[str], str]:
