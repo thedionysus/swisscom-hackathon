@@ -134,3 +134,50 @@ def test_a_non_connection_error_in_the_group_is_reported_as_itself(monkeypatch):
     monkeypatch.setattr("mcp.client.streamable_http.streamablehttp_client", failing_client)
     with pytest.raises(LookupError, match="401"):
         asyncio.run(openai_answer._answer("q", client=object(), model="m", mcp_url="http://h/mcp", system="s"))
+
+
+def test_the_first_turn_requires_a_tool_call_and_later_turns_do_not():
+    client = _Client([_msg(calls=[("swiss_search", {})]), _msg(content="done")])
+
+    async def call_tool(name, args):
+        return "r"
+    asyncio.run(tool_loop("q", client=client, model="m", tools=[], call_tool=call_tool, system="s"))
+    assert [b["tool_choice"] for b in client.bodies] == ["required", "auto"]
+
+
+def test_a_nested_connection_error_is_reported_as_an_unreachable_server(monkeypatch):
+    from contextlib import asynccontextmanager
+
+    from swiss_grounding.evals import openai_answer
+
+    @asynccontextmanager
+    async def nested(url, *args, **kwargs):
+        raise ExceptionGroup("outer", [ExceptionGroup("inner", [ConnectionRefusedError("nope")])])
+        yield (None, None, None)  # pragma: no cover - never reached
+
+    monkeypatch.setattr("mcp.client.streamable_http.streamablehttp_client", nested)
+    with pytest.raises(RuntimeError, match="unreachable: ConnectionRefusedError"):
+        asyncio.run(openai_answer._answer("q", client=object(), model="m", mcp_url="http://h/mcp", system="s"))
+
+
+def test_a_rejected_forced_tool_call_is_retried_with_auto():
+    import httpx
+    from openai import BadRequestError
+
+    rejected = BadRequestError("Invalid tool call", response=httpx.Response(400, request=httpx.Request("POST", "http://x")),
+                               body=None)
+    replies = iter([rejected, _msg(content="answer without tools")])
+    bodies = []
+
+    def create(**body):
+        bodies.append(body)
+        reply = next(replies)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+
+    async def call_tool(name, args):
+        return "r"
+    _evidence, answer = asyncio.run(tool_loop("q", client=client, model="m", tools=[], call_tool=call_tool, system="s"))
+    assert [b["tool_choice"] for b in bodies] == ["required", "auto"] and answer == "answer without tools"

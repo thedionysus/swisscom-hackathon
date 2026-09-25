@@ -12,6 +12,9 @@ from pathlib import Path
 SERVER_NAME = "swiss-grounding"
 MAX_TURNS = 8
 ANSWER_TEMPERATURE = 0.2
+# Apertus answers from memory unless made to search; Claude calls the tools on its own. The first turn
+# therefore requires a tool call, later turns leave the choice to the model.
+FIRST_TURN_TOOL_CHOICE = "required"
 
 
 def mcp_http_url(config: Path) -> str:
@@ -35,14 +38,29 @@ def _arguments(raw: str | None) -> dict:
     return value if isinstance(value, dict) else {}
 
 
+def _complete(client, model: str, messages: list[dict], tools: list[dict], tool_choice: str):
+    """One chat turn. A server that rejects the forced tool call ("Invalid tool call", seen on the
+    Swisscom endpoint) gets the same turn once more with the choice left to the model."""
+    from openai import BadRequestError
+
+    def create(choice: str):
+        return client.chat.completions.create(model=model, messages=messages, tools=tools, tool_choice=choice,
+                                              temperature=ANSWER_TEMPERATURE)
+    try:
+        return create(tool_choice)
+    except BadRequestError:
+        if tool_choice == "auto":
+            raise
+        return create("auto")
+
+
 async def tool_loop(question: str, *, client, model: str, tools: list[dict],
                     call_tool: Callable[[str, dict], Awaitable[str]], system: str,
                     max_turns: int = MAX_TURNS) -> tuple[list[str], str]:
     messages: list[dict] = [{"role": "system", "content": system}, {"role": "user", "content": question}]
     evidence: list[str] = []
-    for _ in range(max_turns):
-        response = client.chat.completions.create(model=model, messages=messages, tools=tools,
-                                                  temperature=ANSWER_TEMPERATURE)
+    for turn in range(max_turns):
+        response = _complete(client, model, messages, tools, FIRST_TURN_TOOL_CHOICE if turn == 0 else "auto")
         message = response.choices[0].message
         if not message.tool_calls:
             return evidence, message.content or ""
@@ -56,6 +74,13 @@ async def tool_loop(question: str, *, client, model: str, tools: list[dict],
             evidence = [*evidence, text]
             messages = [*messages, {"role": "tool", "tool_call_id": call.id, "content": text}]
     raise RuntimeError(f"no final answer after {max_turns} turns")
+
+
+def _innermost(error: BaseException) -> BaseException:
+    """The first leaf of a (possibly nested) exception group."""
+    while isinstance(error, BaseExceptionGroup):
+        error = error.exceptions[0]
+    return error
 
 
 async def _answer(question: str, *, client, model: str, mcp_url: str, system: str) -> tuple[list[str], str]:
@@ -81,7 +106,7 @@ async def _answer(question: str, *, client, model: str, mcp_url: str, system: st
             return await tool_loop(question, client=client, model=model, tools=tools, call_tool=call_tool,
                                    system=system)
     except BaseExceptionGroup as group:
-        first = group.exceptions[0]
+        first = _innermost(group)
         if isinstance(first, (OSError, httpx.TransportError)):
             message = f"MCP server at {mcp_url} unreachable: {first!r}; start `swiss-grounding serve --transport http`"
             raise RuntimeError(message) from None  # noqa: TRY004 - not a type check: a failed connection
