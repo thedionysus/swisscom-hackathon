@@ -231,6 +231,10 @@ Anthropic calls are always synchronous. With `CORPUS_DIRECT_WORKERS` above 0, di
 beside the batches while describing: faster, at twice the batch price, and the budget is checked at
 that price. Apertus runs direct calls only (no Batch API) and is priced at $0 for the hackathon key,
 whose gateway caps it at 10M input and 2.5M output tokens; the ledger still records the tokens.
+The key is also limited to 50,000 input and 12,500 output tokens per minute and 5 requests per
+second. A description call uses about 1,200 input tokens, so a run tops out near 40 calls a minute;
+calls over the limit get a 429, are retried twice, and a task that still fails is quarantined and
+retried by the next run.
 
 Prices live in `PRICES` in `src/swiss_grounding/corpus/budget.py`, per million tokens at batch
 price. Check them against the provider's price list before a large run; a model missing from the
