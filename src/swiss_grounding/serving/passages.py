@@ -2,7 +2,11 @@
 import re
 from collections.abc import Sequence
 
-MAX_PASSAGE_CHARS = 600
+from swiss_grounding.corpus.chunker import MAX_CHARS
+
+# A chunk the chunker kept whole is cited whole: a shorter window cut the answer out when it sat
+# late in the chunk (adult passport validity) or split a table from its header (ID card fees).
+MAX_PASSAGE_CHARS = MAX_CHARS
 SENTENCE = re.compile(r"(?<=[.!?;:])\s+|\n+")
 TOKEN = re.compile(r"[\wà-ÿ]{4,}|\d+[a-z]?", re.IGNORECASE)
 

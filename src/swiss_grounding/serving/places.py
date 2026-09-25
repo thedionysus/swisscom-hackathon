@@ -4,8 +4,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
+from swiss_grounding.locations.markers import strip_marker
 from swiss_grounding.locations.models import AmbiguousLocation, Location, ResolvedLocation
-from swiss_grounding.locations.question_scan import resolve_from_question
+from swiss_grounding.locations.question_scan import places_in_question, resolve_from_question
 from swiss_grounding.locations.tree import LocationTree
 from swiss_grounding.serving.scope import DECLARED, Scope, covered_levels
 
@@ -24,6 +25,10 @@ LOCATIVE = re.compile(r"\b(?:in|im|nach|en|au|aux|à|a|in|da|per)\s+(?:der\s+|de
                       re.IGNORECASE)
 SWISS_SUFFIX = re.compile(r",?\s*\b(schweiz|switzerland|suisse|svizzera|svizra|ch)\s*$", re.IGNORECASE)
 WORD = re.compile(r"[a-zà-ÿ]+")
+# A bare place argument ("Zug") that the question calls a canton ("in the Canton of Zug").
+CANTON_IN_QUESTION = (r"\b(?:kanton|canton(?:\s+(?:of|de|du))?|cantone(?:\s+(?:di|del))?|chantun)"
+                      r"\s+{name}\b")
+MAX_PLACES = 3
 
 
 class Resolver(Protocol):
@@ -65,21 +70,30 @@ def _from_resolution(text: str, found: ResolvedLocation | AmbiguousLocation | No
     return PlaceOutcome("resolved", text, resolved=found, covered=covered_levels(found.path, scope))
 
 
-def _from_argument(text: str, resolver: Resolver, scope: Scope = DECLARED) -> PlaceOutcome:
+def _from_argument(text: str, resolver: Resolver, scope: Scope = DECLARED,
+                   question: str = "") -> PlaceOutcome:
     if _foreign_word(text):
         return PlaceOutcome("foreign", text.strip())
     cleaned = SWISS_SUFFIX.sub("", text).strip()
+    canton_named = re.search(CANTON_IN_QUESTION.format(name=re.escape(cleaned)), question,
+                             re.IGNORECASE)
+    if canton_named and strip_marker(cleaned)[0] is None:
+        cleaned = f"Kanton {cleaned}"
     return _from_resolution(text.strip(), resolver.resolve(cleaned), scope)
 
 
 def place_outcomes(question: str, locations: Sequence[str], resolver: Resolver,
                    tree: LocationTree, scope: Scope = DECLARED) -> tuple[PlaceOutcome, ...]:
-    """One outcome per place argument; one outcome for the question when no argument was sent."""
+    """One outcome per place argument, or per place the question names when no argument was sent."""
     if locations:
-        return tuple(_from_argument(t, resolver, scope) for t in locations)
+        return tuple(_from_argument(t, resolver, scope, question) for t in locations)
     scanned = resolve_from_question(tree, question)
     if scanned is not None:
         return (_from_resolution(scanned.input_text, scanned, scope),)
+    several = places_in_question(tree, question, MAX_PLACES)
+    if len(several) > 1:
+        # "From Vaud to Zürich": each place is searched, as if the client had sent both.
+        return tuple(_from_resolution(p.input_text, p, scope) for p in several)
     foreign = _foreign_locative(question)
     if foreign:
         return (PlaceOutcome("foreign", foreign),)
