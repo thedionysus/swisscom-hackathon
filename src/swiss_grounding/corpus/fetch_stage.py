@@ -64,6 +64,14 @@ def _persist_result(database_url: str, spec: SourceSpec, result: ConnectorResult
                   lambda url=url, reason=reason: quarantine(conn, spec.id, url, "fetch", reason))
 
 
+def _count_skipped(spec: SourceSpec, result: ConnectorResult, tally: Counter) -> None:
+    """What the connector found but deliberately did not fetch or store, one entry per reason
+    (`skipped[.docx]`, `skipped[max_pdfs]`): not failures, but the fetch report shows them."""
+    for url, reason in result.skipped:
+        log.debug("source %s skipped %s (%s)", spec.id, url, reason)
+        tally[f"skipped[{reason}]"] += 1
+
+
 def _quarantine_source(database_url: str, spec: SourceSpec, exc: Exception) -> None:
     try:
         with connect(database_url) as conn:
@@ -80,6 +88,7 @@ def _run_source(database_url: str, spec: SourceSpec, connectors: Mapping, pdf_co
             upsert_source(conn, spec)
             known = known_state(conn, spec.id)
         result = connectors[spec.connector].run(spec, known)
+        _count_skipped(spec, result, tally)
         _persist_result(database_url, spec, result, now(), tally)
         if result.pdfs and pdf_connector is not None:
             _persist_result(database_url, spec, pdf_connector.run_pdfs(spec, result.pdfs, known), now(), tally)
