@@ -528,6 +528,127 @@ sources:
       allow_prefixes: ["https://www.schweizer-wanderwege.ch/de/wandern", "https://www.schweizer-wanderwege.ch/fr/randonner", "https://www.schweizer-wanderwege.ch/it/escursionismo", "https://www.schweizer-wanderwege.ch/de/wissen", "https://www.schweizer-wanderwege.ch/fr/savoir"]
       max_pages: 300
       max_pdfs: 0
+  # University of Zürich: an institution under cantonal public law, not a government office, so institutional.
+  # Cases ED-05 (tuition fees) and ED-09 (ethics review of research with human participants).
+  - id: uzh
+    name: Universität Zürich — study fees and research ethics
+    publisher: Universität Zürich
+    authority: institutional
+    level: cantonal
+    extent_id: CH-ZH
+    connector: html
+    tier: 1
+    languages: [de, en]
+    config:
+      start_urls: ["https://www.uzh.ch/de/studies/application/fees.html", "https://www.uzh.ch/en/studies/application/fees.html", "https://www.uzh.ch/de/researchinnovation/ethics/humanresearch.html", "https://www.uzh.ch/en/researchinnovation/ethics/humanresearch.html"]
+      allow_prefixes: ["https://www.uzh.ch/de/studies/application", "https://www.uzh.ch/en/studies/application", "https://www.uzh.ch/de/researchinnovation/ethics", "https://www.uzh.ch/en/researchinnovation/ethics"]
+      # The pages link an unrendered template placeholder ([%=href%]) that answers HTTP 400.
+      deny_patterns: ['\[%=href%\]']
+      max_pages: 80
+      max_pdfs: 0
+  # ETH Zürich: a federal university, not an office, so institutional (as uzh). Case ED-04: the academic calendar
+  # page states the semester rules (autumn semester calendar weeks 38 to 51).
+  - id: ethz_calendar
+    name: ETH Zürich — academic calendar
+    publisher: ETH Zürich
+    authority: institutional
+    level: federal
+    extent_id: CH-ZH
+    connector: html
+    tier: 1
+    languages: [de, en]
+    config:
+      start_urls: ["https://ethz.ch/staffnet/de/news-und-veranstaltungen/akademischer-kalender.html", "https://ethz.ch/staffnet/en/news-and-events/academic-calendar.html"]
+      allow_prefixes: ["https://ethz.ch/staffnet/de/news-und-veranstaltungen/akademischer-kalender", "https://ethz.ch/staffnet/en/news-and-events/academic-calendar"]
+      max_pages: 4
+      max_pdfs: 0
+  # Tox Info Suisse describes itself as a private non-profit foundation (/portrait), so institutional. Case HC-09:
+  # the 145 poisoning emergency number (24 h) and first aid.
+  - id: toxinfo
+    name: Tox Info Suisse — poisoning emergency number 145
+    publisher: Tox Info Suisse
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      # The pages carry no <html lang>; their hreflang alternates give the language.
+      start_urls: ["https://www.toxinfo.ch/notruf-145", "https://www.toxinfo.ch/portrait", "https://www.toxinfo.ch/erste_hilfe"]
+      allow_prefixes: ["https://www.toxinfo.ch/notruf-145", "https://www.toxinfo.ch/portrait", "https://www.toxinfo.ch/erste_hilfe", "https://www.toxinfo.ch/erste-hilfe"]
+      max_pages: 12
+      max_pdfs: 0
+  # swissuniversities, the rectors' conference of the Swiss higher education institutions, runs Swiss ENIC; not a
+  # government office, so institutional. Case ED-01: most professions are not regulated and need no recognition;
+  # Swiss ENIC issues a level certificate when an employer asks for one.
+  - id: swissuniversities_enic
+    name: swissuniversities — Swiss ENIC, evaluation of foreign diplomas
+    publisher: swissuniversities
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.swissuniversities.ch/service/swiss-enic-bewertung-auslaendischer-diplome", "https://www.swissuniversities.ch/service/swiss-enic-bewertung-auslaendischer-diplome/bewertung-auslaendischer-diplome"]
+      allow_prefixes: ["https://www.swissuniversities.ch/service/swiss-enic-bewertung-auslaendischer-diplome", "https://www.swissuniversities.ch/fr/service/swiss-enic-evaluation-des-diplomes-etrangers", "https://www.swissuniversities.ch/it/servizi/swiss-enic-valutazione-dei-di-diplomi-esteri", "https://www.swissuniversities.ch/en/service/swiss-enic-evaluation-of-foreign-diplomas"]
+      max_pages: 30
+      max_pdfs: 0
+  # Swiss Red Cross: not a government office, so institutional. Case ED-02: recognition of foreign health
+  # diplomas (nursing included), the application by post and the four-month first decision.
+  - id: srk_health_professions
+    name: Swiss Red Cross — recognition and registration of health professions
+    publisher: Swiss Red Cross SRK
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.redcross.ch/de/unser-angebot/gesundheitsberufe-anerkennung-und-registrierung", "https://www.redcross.ch/de/unser-angebot/gesundheitsberufe-anerkennung-und-registrierung/anerkennung-auslaendischer-diplome"]
+      allow_prefixes: ["https://www.redcross.ch/de/unser-angebot/gesundheitsberufe-anerkennung-und-registrierung", "https://www.redcross.ch/fr/notre-offre/professions-de-la-sante-reconnaissance-et-enregistrement", "https://www.redcross.ch/it/la-nostra-offerta/professioni-sanitarie-riconoscimento-e-registrazione", "https://www.redcross.ch/en/our-services/healthcare-professions-recognition-and-registration"]
+      max_pages: 30
+      max_pdfs: 0
+  # Suva describes itself as a self-financing, non-profit company without public funds (/ueber-uns/die-suva): an
+  # insurer, not a government office, so institutional. Case HC-02: employees working at least
+  # eight hours a week for one employer are also insured against non-occupational accidents.
+  - id: suva_insured
+    name: Suva — who is insured, and interim accident insurance
+    publisher: Suva
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it, en]
+    config:
+      start_urls: ["https://www.suva.ch/de-ch/versicherung/unfallversicherung/unfallversicherung-uvg/unfallversicherung-wer-ist-versichert", "https://www.suva.ch/de-ch/versicherung/unfallversicherung/abredeversicherung"]
+      allow_prefixes: ["https://www.suva.ch/de-ch/versicherung/unfallversicherung/unfallversicherung-uvg/unfallversicherung-wer-ist-versichert", "https://www.suva.ch/fr-ch/assurance/assurance-accidents/assurance-accidents-laa/assurance-accidents-qui-est-assure", "https://www.suva.ch/it-ch/assicurazione/assicurazione-contro-gli-infortuni/assicurazione-contro-gli-infortuni-lainf/assicurazione-contro-gli-infortuni-chi-e-assicurato",
+                       "https://www.suva.ch/de-ch/versicherung/unfallversicherung/abredeversicherung", "https://www.suva.ch/fr-ch/assurance/assurance-accidents/assurance-par-convention", "https://www.suva.ch/it-ch/assicurazione/assicurazione-contro-gli-infortuni/assicurazione-convenzionale", "https://www.suva.ch/en/insurance/accident-insurance/interim-accident-insurance"]
+      # robots.txt disallows *.pdf.
+      max_pages: 30
+      max_pdfs: 0
+  # Pronovo AG is a company (Aargau commercial register) that runs the federal renewable-energy subsidies on the
+  # Confederation's behalf (/de/unternehmen/): a company, not an office, so institutional. Case EN-02: one-off
+  # payment for small PV systems (KLEIV, under 100 kW) and how to apply in the Pronovo customer portal.
+  - id: pronovo_pv
+    name: Pronovo — one-off payment for photovoltaic systems
+    publisher: Pronovo AG
+    authority: institutional
+    level: federal
+    extent_id: CH
+    connector: html
+    tier: 1
+    languages: [de, fr, it]
+    config:
+      start_urls: ["https://pronovo.ch/de/foerderung/photovoltaik/", "https://pronovo.ch/fr/subventions/photovoltaique/", "https://pronovo.ch/it/incentivazione/fotovoltaico/"]
+      allow_prefixes: ["https://pronovo.ch/de/foerderung/photovoltaik", "https://pronovo.ch/fr/subventions/photovoltaique", "https://pronovo.ch/it/incentivazione/fotovoltaico"]
+      # robots.txt disallows /downloads.
+      max_pages: 30
+      max_pdfs: 0
 
   # ---------------- Cantons ----------------
   - id: zh_canton
