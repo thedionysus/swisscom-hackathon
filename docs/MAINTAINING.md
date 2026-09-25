@@ -35,9 +35,9 @@ and the release in 30.
    cp .env.example .env
    ```
 
-   In `.env`, set the provider and its key (`CORPUS_LLM_PROVIDER=openai` with `OPENAI_API_KEY`, or
-   `CORPUS_LLM_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`), the budget, and
-   `EMBEDDING_BACKEND=sentence_transformers`.
+   In `.env`, set the provider and its key (`CORPUS_LLM_PROVIDER=openai` with `OPENAI_API_KEY`,
+   `CORPUS_LLM_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`, or `CORPUS_LLM_PROVIDER=apertus` with
+   `APERTUS_API_KEY`), the budget, and `EMBEDDING_BACKEND=sentence_transformers`.
 
 2. **Create the schemas.**
 
@@ -65,13 +65,18 @@ and the release in 30.
 
    ```bash
    uv run swiss-grounding corpus check-manifest manifests/declared-scope.yaml
-   uv run swiss-grounding corpus fetch --manifest manifests/declared-scope.yaml --tier 1
+   uv run swiss-grounding corpus fetch --manifest manifests/declared-scope.yaml --tier 3
    uv run swiss-grounding corpus status
    ```
 
    `check-manifest` validates the file, requests every start URL and SR number, and reports robots.txt
    verdicts and language alternates. `fetch` costs nothing but takes hours: some sites ask for 10
-   seconds between requests.
+   seconds between requests. `--tier 3` fetches every tier: 1 (the declared scope), 2 (other cantons
+   and cities) and 3 (bulk and gazette collections); the manifest header says which is which. The
+   default, `--tier 1`, skips the Run 3 sources.
+   A `json` source whose manifest entry gives a `robots_exception_reason` is fetched where robots.txt
+   disallows its documented API (Opendatasoft portals disallow `/api/` for every crawler except
+   Googlebot) only with `ROBOTS_API_EXCEPTIONS=true`; the default is false, and each such request is logged.
 
 6. **Import the Zürich waste calendar.**
 
@@ -126,7 +131,7 @@ Sources are entries in `manifests/declared-scope.yaml`. Each entry has:
 | `name`, `publisher` | Shown to users; `publisher` is on every citation. |
 | `authority` | `federal_law`, `cantonal_law` or `municipal_law` for the legal text itself; `official_info` for pages of governments and offices; `institutional` for other publishers. |
 | `level`, `extent_id` | `federal`, `cantonal` or `municipal`, and the node of the location tree the source applies to (`CH`, `CH-VD`, `CH-GR-3762`). Every document of the source gets this jurisdiction. |
-| `connector` | `fedlex` or `html`. |
+| `connector` | `fedlex`, `html`, or `json` for records from a JSON/REST API (its config keys are documented in `src/swiss_grounding/corpus/connectors/json_api.py`). |
 | `tier` | 1 to 3. `fetch --tier N` takes every source at or below N. |
 | `languages` | The languages to keep: `de`, `fr`, `it`, `en`, `rm`. |
 | `config` | Connector settings, below. |
@@ -227,10 +232,16 @@ cookie notices, contact blocks) are marked `boilerplate` for free. Law is exempt
 
 ### Providers
 
-The pipeline runs with OpenAI or Anthropic; switch with `CORPUS_LLM_PROVIDER` and the matching key.
-OpenAI calls go through the Batch API at half price unless `--sync` is passed. Anthropic calls are
-always synchronous. With `CORPUS_DIRECT_WORKERS` above 0, direct OpenAI calls run beside the batches
-while describing: faster, at twice the batch price, and the budget is checked at that price.
+The pipeline runs with OpenAI, Anthropic or Apertus; switch with `CORPUS_LLM_PROVIDER` and the
+matching key. OpenAI calls go through the Batch API at half price unless `--sync` is passed.
+Anthropic calls are always synchronous. With `CORPUS_DIRECT_WORKERS` above 0, direct OpenAI calls run
+beside the batches while describing: faster, at twice the batch price, and the budget is checked at
+that price. Apertus runs direct calls only (no Batch API) and is priced at $0 for the hackathon key,
+whose gateway caps it at 10M input and 2.5M output tokens; the ledger still records the tokens.
+The key is also limited to 50,000 input and 12,500 output tokens per minute and 5 requests per
+second. A description call uses about 1,200 input tokens, so a run tops out near 40 calls a minute;
+runs use `APERTUS_WORKERS` (default 3) parallel calls, calls over the limit get a 429 and are
+retried up to 8 times, and a task that still fails is quarantined and retried by the next run.
 
 Prices live in `PRICES` in `src/swiss_grounding/corpus/budget.py`, per million tokens at batch
 price. Check them against the provider's price list before a large run; a model missing from the
@@ -242,8 +253,9 @@ table is refused.
 | `gpt-5-mini` | 0.125 | 1.0 |
 | `gpt-5-nano` | 0.025 | 0.2 |
 | `claude-haiku-4-5-20251001` | 0.5 | 2.5 |
+| `swiss-ai/Apertus-v1.5-70B` | 0 | 0 |
 
-Synchronous calls cost twice these prices.
+Synchronous calls cost twice these prices, except Apertus, which is always $0.
 
 ### What the key pays for
 

@@ -73,3 +73,30 @@ def test_side_by_side_describe_is_estimated_at_the_direct_call_price():
 
 def test_direct_workers_are_off_by_default():
     assert Settings.model_fields["corpus_direct_workers"].default == 0
+
+
+def test_priced_model_is_the_apertus_model_under_apertus():
+    apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k")
+    assert cc._priced_model(apertus, "gpt-5-nano") == "swiss-ai/Apertus-v1.5-70B"
+
+
+def test_apertus_runs_direct_calls_not_batches():
+    from swiss_grounding.corpus.providers import ApertusLLM
+    apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k")
+    assert not cc._uses_batch(apertus, sync=False)
+    assert isinstance(cc._llm(apertus), ApertusLLM)
+
+
+def test_apertus_client_retries_up_to_the_direct_call_limit(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(cc, "apertus_llm", lambda settings, **kw: captured.update(kw) or object())
+    apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k")
+    cc._llm(apertus)
+    assert captured["max_retries"] == cc.DIRECT_MAX_RETRIES
+
+
+def test_sync_workers_is_apertus_workers_under_apertus_and_sync_workers_otherwise():
+    apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k", apertus_workers=5)
+    openai = _settings(corpus_llm_provider="openai", openai_api_key="k")
+    assert cc._sync_workers(apertus) == 5
+    assert cc._sync_workers(openai) == openai.corpus_sync_workers

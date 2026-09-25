@@ -99,6 +99,21 @@ def test_pdf_link_patterns_discover_pdfs_and_never_crawl_them_as_pages():
     assert not any("/p/" in u for u in seen)
 
 
+def test_deny_patterns_keep_pages_inside_the_prefixes_from_being_fetched():
+    # fo.fr.ch style: one issue's rubrics share a prefix; the personal-data rubrics (15, 20, 21) are denied.
+    issue = "https://fo.fr.ch/archive/2026/38"
+    rubrics = ("1", "15", "18", "20", "21", "22")
+    links = "".join(f'<a href="{issue}/{r}">Rubrique {r}</a>' for r in rubrics)
+    pages = {issue: f'<html lang="fr"><body><main><h1>Numéro 38</h1>{links}</main></body></html>',
+             **{f"{issue}/{r}": _page(f"Rubrique {r}", lang="fr") for r in rubrics}}
+    seen: list[str] = []
+    spec = _spec(languages=("fr",), start_urls=[issue, f"{issue}/20"], allow_prefixes=["https://fo.fr.ch/archive/"],
+                 deny_patterns=[r"^https://fo\.fr\.ch/archive/\d{4}/\d+/(15|20|21)(/|$)"])
+    result = _run(_client(pages, seen=seen), spec)
+    assert [d.url for d in result.documents] == [issue] + [f"{issue}/{r}" for r in ("1", "18", "22")]
+    assert not any(u.endswith(("/15", "/20", "/21")) for u in seen)  # a denied start URL is not fetched either
+
+
 def test_content_selector_drops_navigation_outside_the_content_root():
     pages = {AHV_PAGE: _fixture("ahv_merkblaetter_de.html")}
     plain = _spec(languages=("de",), start_urls=[AHV_PAGE], allow_prefixes=[AHV_PAGE])

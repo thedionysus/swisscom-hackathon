@@ -101,6 +101,26 @@ def test_probes_cmd_exit_code_on_status_mismatch(monkeypatch):
     assert "p-mismatch" in result.output
 
 
+def test_label_cmd_shows_the_spend_notice_without_needing_a_key(monkeypatch):
+    from swiss_grounding.config import Settings
+
+    monkeypatch.setattr(eval_commands, "load_settings",
+                        lambda: Settings(_env_file=None, database_url="postgresql://x", openai_api_key=None))
+    result = CliRunner().invoke(app, ["eval", "label"])
+    assert result.exit_code == 1
+    assert "gpt-5-mini" in result.output
+
+
+def test_generate_cmd_shows_the_spend_notice_without_needing_a_key(monkeypatch):
+    from swiss_grounding.config import Settings
+
+    monkeypatch.setattr(eval_commands, "load_settings",
+                        lambda: Settings(_env_file=None, database_url="postgresql://x", openai_api_key=None))
+    result = CliRunner().invoke(app, ["eval", "generate"])
+    assert result.exit_code == 1
+    assert "gpt-5-mini" in result.output
+
+
 def test_probes_cmd_does_not_write_to_the_database_without_record(monkeypatch):
     """Without --record, insert_results must not run (and connect must not even be called)."""
     probe = Probe(id="p-ok", question="q", kind="structural", failure_class="none",

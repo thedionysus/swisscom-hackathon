@@ -39,7 +39,7 @@ probes:
     level: none
     split: holdout
     note: >-
-      Placeless version of g-basel-dog-tax and the challenge sample. No federal dog tax exists and dog tax
+      Placeless version of g-schaffhausen-dog-tax and the challenge sample. No federal dog tax exists and dog tax
       is set per municipality, so with no place given the server must ask rather than guess a canton.
     expect: {status: needs_location}
   - id: g-scope-multiplace-notice-period-de
@@ -79,20 +79,18 @@ probes:
       this should return results, not outside_scope — included to test that a non-declared municipality
       in a declared canton is not wrongly rejected for a federal-level question.
     expect: {status: results, sources: [art_266_c], key_fact: "Three months to a customary local term (Art. 266c OR), the same nationwide."}
-  - id: g-scope-outside-stgallen-licence-de
-    question: Innerhalb welcher Frist muss ich meinen ausländischen Führerausweis umtauschen, wenn ich in St. Gallen wohne?
-    locations: [St. Gallen]
+  - id: g-scope-outside-schaffhausen-licence-de
+    question: Innerhalb welcher Frist muss ich meinen ausländischen Führerausweis umtauschen, wenn ich in Schaffhausen wohne?
+    locations: [Schaffhausen]
     language: de
     area: driving
     level: none
     split: dev
     note: >-
-      St. Gallen is a canton and city outside the declared scope (not in SCOPE_CANTONS or
-      SCOPE_MUNICIPALITIES). The 12-month exchange rule that is in the corpus was only found on a
-      cantonal Zürich page (g-practice-citation-licence noted the federal VZV Art. 44 source is a data
-      gap), so there is no federal-level passage to fall back on for St. Gallen. Per ADR 0013 rule 3
-      (Swiss place outside scope → federal evidence if any, else outside_scope), the expected status is
-      outside_scope.
+      Schaffhausen, canton and city, has no passages in any corpus release, so it stays outside the
+      scope the server derives from the corpus. The 12-month exchange rule that is in the corpus was only
+      found on a cantonal Zürich page (the federal VZV Art. 44 source is a data gap), so there is no
+      federal-level passage to fall back on and the expected status is outside_scope.
     expect: {status: outside_scope}
   - id: g-scope-outside-foreign-country-de
     question: Wie beantrage ich einen neuen Personalausweis in München, Deutschland?

@@ -7,7 +7,7 @@ from typing import Literal, Protocol
 from swiss_grounding.locations.models import AmbiguousLocation, Location, ResolvedLocation
 from swiss_grounding.locations.question_scan import resolve_from_question
 from swiss_grounding.locations.tree import LocationTree
-from swiss_grounding.serving.scope import covered_levels
+from swiss_grounding.serving.scope import DECLARED, Scope, covered_levels
 
 PlaceKind = Literal["none", "resolved", "ambiguous", "foreign", "unresolved"]
 # Country names only (de/fr/it/en/rm). Complete by construction; no foreign *places* are listed.
@@ -56,29 +56,30 @@ def _foreign_locative(question: str) -> str | None:
     return None
 
 
-def _from_resolution(text: str, found: ResolvedLocation | AmbiguousLocation | None) -> PlaceOutcome:
+def _from_resolution(text: str, found: ResolvedLocation | AmbiguousLocation | None,
+                     scope: Scope = DECLARED) -> PlaceOutcome:
     if isinstance(found, AmbiguousLocation):
         return PlaceOutcome("ambiguous", text, candidates=found.candidates)
     if found is None:
         return PlaceOutcome("unresolved", text)
-    return PlaceOutcome("resolved", text, resolved=found, covered=covered_levels(found.path))
+    return PlaceOutcome("resolved", text, resolved=found, covered=covered_levels(found.path, scope))
 
 
-def _from_argument(text: str, resolver: Resolver) -> PlaceOutcome:
+def _from_argument(text: str, resolver: Resolver, scope: Scope = DECLARED) -> PlaceOutcome:
     if _foreign_word(text):
         return PlaceOutcome("foreign", text.strip())
     cleaned = SWISS_SUFFIX.sub("", text).strip()
-    return _from_resolution(text.strip(), resolver.resolve(cleaned))
+    return _from_resolution(text.strip(), resolver.resolve(cleaned), scope)
 
 
 def place_outcomes(question: str, locations: Sequence[str], resolver: Resolver,
-                   tree: LocationTree) -> tuple[PlaceOutcome, ...]:
+                   tree: LocationTree, scope: Scope = DECLARED) -> tuple[PlaceOutcome, ...]:
     """One outcome per place argument; one outcome for the question when no argument was sent."""
     if locations:
-        return tuple(_from_argument(t, resolver) for t in locations)
+        return tuple(_from_argument(t, resolver, scope) for t in locations)
     scanned = resolve_from_question(tree, question)
     if scanned is not None:
-        return (_from_resolution(scanned.input_text, scanned),)
+        return (_from_resolution(scanned.input_text, scanned, scope),)
     foreign = _foreign_locative(question)
     if foreign:
         return (PlaceOutcome("foreign", foreign),)

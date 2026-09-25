@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date
 
 import pytest
@@ -8,6 +9,7 @@ from swiss_grounding.locations.models import ResolvedLocation
 from swiss_grounding.serving.models import SearchRequest
 from swiss_grounding.serving.relevance import FEATURES, ProvisionalRelevance
 from swiss_grounding.serving.reranker import OverlapReranker, passage_text
+from swiss_grounding.serving.scope import load_scope, scope_statement
 from swiss_grounding.serving.search_service import SearchService, query_embedder
 from tests.integration.serving.corpus_fixture import EMB, add_doc
 from tests.unit.serving.test_translation import FakeTranslator
@@ -304,3 +306,21 @@ def test_a_translator_that_raises_never_breaks_the_search(serving_db):
     resp = translating_service(serving_db, Broken()).search(
         SearchRequest(question="Wie lange ist die Kündigungsfrist für eine Wohnung?"))
     assert resp.status == "results"
+
+
+def test_a_canton_with_passages_in_the_corpus_is_searched_and_declared(serving_db):
+    """Issue #59: the declared floor has six cantons. Basel-Stadt holds a current passage of its own, so a Basel
+    question searches it instead of stopping at federal level; a canton with only a boilerplate chunk stays out."""
+    with connect(serving_db) as conn:
+        add_doc(conn, group="bs-dogs", lang="de", text="Hundesteuer im Kanton Basel-Stadt: 160 Franken pro Hund",
+                extent="CH-BS", source="bs", authority="official_info", align="p1")
+        add_doc(conn, group="sh-menu", lang="de", text="Hundesteuer Menü", extent="CH-SH", source="sh",
+                authority="official_info", align="p1", chunk_status="boilerplate")
+        scope = load_scope(conn, load_location_tree(conn))
+    request = SearchRequest(question="Hundesteuer?", locations=("Basel",))
+    [before] = service(serving_db).search(request).places
+    [after] = replace(service(serving_db), scope=scope).search(request).places
+    assert before.status == "outside_scope" and not before.citations
+    assert after.status == "results" and after.citations[0].extent_id == "CH-BS"
+    assert after.uncovered_levels == ("municipal",)
+    assert "CH-BS" in scope.cantons and "CH-SH" not in scope.cantons and "Basel-Stadt" in scope_statement(scope)

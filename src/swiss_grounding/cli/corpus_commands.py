@@ -50,6 +50,7 @@ from swiss_grounding.corpus.embed import (
     reuse_embeddings,
 )
 from swiss_grounding.corpus.hybrid_runner import HybridRunner
+from swiss_grounding.corpus.llm_factory import apertus_llm
 from swiss_grounding.corpus.ocr import (
     OCR_OUTPUT_TOKENS,
     OCR_PROMPT_TOKENS,
@@ -74,11 +75,13 @@ from swiss_grounding.db.connection import connect
 corpus_app = typer.Typer(help="Encoding track: fetch, describe, OCR and embed the declared-scope corpus.")
 register(corpus_app)
 
-SYNC_WORKERS = 8
 DIRECT_MAX_RETRIES = 8                   # direct calls beside batches run at the per-minute limit; 429s are retried
 LOCAL_EMBED_BATCH = 64
 OPENAI_EMBED_MAX_ITEMS = 2048            # inputs per embeddings request (OpenAI limit)
-OPENAI_EMBED_MAX_TOKENS = 250_000        # estimated tokens per sync embeddings request (limit is 300k)
+# Estimated tokens per sync embeddings request; OpenAI rejects a request over 300k real tokens. The estimate
+# (budget.CHARS_PER_TOKEN = 3) runs low on OCR'd pages full of digits and table pipes: at 250k estimated, a
+# request passed 300k real. 100k leaves a threefold margin; throughput is set by the tokens-per-minute limit.
+OPENAI_EMBED_MAX_TOKENS = 100_000
 PROJECTED_DESCRIPTION_TOKENS = 40        # a chunk description's share of the embedded text
 OCR_SLICE = 1000                         # pages built (images read) and run per round without --limit
 DESCRIBE_KINDS = {"docs": "describe-doc", "chunks": "describe-chunk"}
@@ -102,9 +105,18 @@ def _price_label(model: str, batch: bool) -> str:
     return f"{model} {'batch' if batch else 'sync'} price"
 
 
+def _provider_model(settings: Settings, openai_model: str) -> str:
+    """The model that actually answers: the Anthropic and Apertus providers use their one configured model."""
+    if settings.corpus_llm_provider == "anthropic":
+        return settings.corpus_anthropic_model
+    if settings.corpus_llm_provider == "apertus":
+        return settings.apertus_model
+    return openai_model
+
+
 def _priced_model(settings: Settings, openai_model: str) -> str:
-    """The model whose price is paid: the Anthropic fallback bills at its own rates. Refuses an unpriced model."""
-    model = settings.corpus_anthropic_model if settings.corpus_llm_provider == "anthropic" else openai_model
+    """The model whose price is paid. Refuses an unpriced model."""
+    model = _provider_model(settings, openai_model)
     if model not in PRICES:
         typer.echo(f"refused: no price for {model} in budget.PRICES; add it before running")
         raise typer.Exit(REFUSED_EXIT_CODE)
@@ -143,10 +155,21 @@ def _fake_reply(task: LlmTask) -> dict:
 
 def _llm(settings: Settings):
     if settings.corpus_llm_provider == "openai":
-        return OpenAILLM(settings.openai_api_key)
+        # A plain --sync run is direct calls too: without these retries, 846 of 1,648 OCR requests on a
+        # 200k-tokens-per-minute account ended in quarantine after the SDK default of 2.
+        return OpenAILLM(settings.openai_api_key, max_retries=DIRECT_MAX_RETRIES)
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
+    if settings.corpus_llm_provider == "apertus":
+        return apertus_llm(settings, max_retries=DIRECT_MAX_RETRIES)
     return _FakeCorpusLLM()
+
+
+def _sync_workers(settings: Settings) -> int:
+    """Apertus has its own per-minute limit, tighter than CORPUS_SYNC_WORKERS allows the other providers."""
+    if settings.corpus_llm_provider == "apertus":
+        return settings.apertus_workers
+    return settings.corpus_sync_workers
 
 
 # --- configured indexes -----------------------------------------------------------------------------
@@ -214,7 +237,7 @@ def _batch_runner(settings: Settings, tokens_per_file: int, kind: str | None = N
 def _chat_runner(settings: Settings, sync: bool, kind: str | None = None, kind_cap: float | None = None):
     if _uses_batch(settings, sync):
         return _batch_runner(settings, settings.corpus_chat_tokens_per_file, kind, kind_cap)
-    return SyncRunner(_llm(settings), workers=SYNC_WORKERS)
+    return SyncRunner(_llm(settings), workers=_sync_workers(settings))
 
 
 def _side_by_side(settings: Settings, sync: bool) -> bool:
@@ -361,7 +384,7 @@ def _echo_embed_estimates(conn, settings: Settings, batch: bool) -> float:
 def estimate_cmd() -> None:
     """Pending work per stage with its cost, and the ledger."""
     settings = load_settings()
-    batch = settings.corpus_llm_provider != "anthropic"     # the Anthropic fallback is sync-only
+    batch = _uses_batch(settings, sync=False)     # Apertus and the Anthropic fallback are sync-only
     ocr_model = _priced_model(settings, settings.corpus_ocr_model)
     with connect(settings.database_url) as conn:
         ocr_usd = estimate_ocr(conn, ocr_model, batch=batch)
@@ -397,8 +420,8 @@ def _ocr_pilot(settings: Settings, pages: int) -> None:
         typer.echo(f"pilot: {len(tasks)} page(s), estimate {usd(estimate)} ({_price_label(priced, False)})")
         _check_budget(conn, settings, estimate, len(tasks), kind="ocr", kind_cap=settings.corpus_ocr_budget_usd)
         last_id = conn.execute("select coalesce(max(id), 0) as id from corpus.llm_spend").fetchone()["id"]
-    report = run_ocr(settings.database_url, SyncRunner(_llm(settings), workers=SYNC_WORKERS), tasks, model=priced,
-                     batch=False)
+    runner = SyncRunner(_llm(settings), workers=_sync_workers(settings))
+    report = run_ocr(settings.database_url, runner, tasks, model=priced, batch=False)
     with connect(settings.database_url) as conn:
         used = conn.execute("select coalesce(sum(usd), 0) as usd, coalesce(sum(input_tokens), 0) as tokens "
                             "from corpus.llm_spend where kind = 'ocr' and id > %s", (last_id,)).fetchone()
@@ -550,7 +573,7 @@ def _embed_in_process(settings: Settings, spec: IndexSpec, require_description: 
         batch_size = LOCAL_EMBED_BATCH
     else:
         provider = (FakeEmbeddings(spec.dim) if settings.corpus_llm_provider == "fake"
-                    else OpenAIEmbeddings(settings.openai_api_key, spec.model))
+                    else OpenAIEmbeddings(settings.openai_api_key, spec.model, max_retries=DIRECT_MAX_RETRIES))
         batch_size, max_tokens = OPENAI_EMBED_MAX_ITEMS, OPENAI_EMBED_MAX_TOKENS
     written = embed_local(settings.database_url, spec, provider, batch_size=batch_size,
                           require_description=require_description, max_tokens_per_request=max_tokens)

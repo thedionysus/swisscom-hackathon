@@ -68,6 +68,15 @@ def _git_commit() -> str | None:
         return None
 
 
+def _eval_llm_or_exit(settings):
+    from swiss_grounding.corpus.llm_factory import eval_llm
+    try:
+        return eval_llm(settings)
+    except ValueError as exc:
+        typer.echo(f"refused: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+
 def _load_probes_or_exit(probe_dir: Path) -> tuple[tuple[Tier, Probe], ...]:
     try:
         return load_all_probes(probe_dir)
@@ -208,26 +217,29 @@ def golden_cmd(
 
 
 @eval_app.command("label")
-def label_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend", help="required: calls gpt-5-mini"),
+def label_cmd(confirm_spend: bool = typer.Option(
+                  False, "--confirm-spend", help="required: calls the EVAL_LLM_PROVIDER model"),
               top: int = typer.Option(10, "--top")) -> None:
-    """Judge the top citations of every results probe with gpt-5-mini; write evals/golden/labels.jsonl."""
+    """Judge the top citations of every results probe with the eval model; write evals/golden/labels.jsonl."""
     import csv
     import json
     import random
 
     from swiss_grounding.app import build_search_service
     from swiss_grounding.corpus.budget import ensure_within, record_spend
-    from swiss_grounding.corpus.providers import OpenAILLM
+    from swiss_grounding.corpus.llm_factory import eval_model
     from swiss_grounding.evals.golden_models import load_golden
     from swiss_grounding.evals.golden_runner import citation_key
     from swiss_grounding.evals.labels import LABEL_KIND, judge_pairs, sample_for_review
     from swiss_grounding.serving.models import MAX_LIMIT, SearchRequest
     from swiss_grounding.serving.relevance import ProvisionalRelevance
 
-    if not confirm_spend:
-        typer.echo("This calls gpt-5-mini (about $0.30 for 1,500 pairs). Re-run with --confirm-spend.", err=True)
-        raise typer.Exit(code=1)
     settings = load_settings()
+    model = eval_model(settings)
+    if not confirm_spend:
+        typer.echo(f"This calls {model} (about 1,500 pairs). Re-run with --confirm-spend.", err=True)
+        raise typer.Exit(code=1)
+    llm, model = _eval_llm_or_exit(settings)
     # Threshold 0 so pairs below the provisional threshold are judged too: the fitted model must learn
     # where abstention is decided. Top `top` per place, plus a random sample of the ranks below.
     service = replace(build_search_service(settings, today=_today), relevance=ProvisionalRelevance(0.0))
@@ -250,15 +262,14 @@ def label_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend", help=
 
     def spend(usd: float) -> None:        # its own short transaction: a later failure cannot roll it back
         with connect(settings.database_url) as c:
-            record_spend(c, kind=LABEL_KIND, model=settings.corpus_doc_model, usd=usd, input_tokens=0,
+            record_spend(c, kind=LABEL_KIND, model=model, usd=usd, input_tokens=0,
                          output_tokens=0, estimated=False)
 
     with LABELS_PATH.open("a", encoding="utf-8") as f:
         def append(row: dict) -> None:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
             f.flush()
-        rows = judge_pairs(todo, OpenAILLM(settings.openai_api_key), model=settings.corpus_doc_model,
-                           on_usage=spend, on_row=append)
+        rows = judge_pairs(todo, llm, model=model, on_usage=spend, on_row=append)
     review = sample_for_review(rows, 100, seed=LABEL_SEED)
     with REVIEW_PATH.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, delimiter=";")
@@ -288,20 +299,22 @@ def label_check_cmd() -> None:
 
 
 @eval_app.command("generate")
-def generate_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend",
-                                                     help="required: calls gpt-5-mini"),
+def generate_cmd(confirm_spend: bool = typer.Option(
+                     False, "--confirm-spend", help="required: calls the EVAL_LLM_PROVIDER model"),
                  per_stratum: int = typer.Option(35, "--per-stratum")) -> None:
-    """gpt-5-mini writes one question per sampled chunk; used for recall@5 only."""
+    """The eval model writes one question per sampled chunk; used for recall@5 only."""
     import json
 
     from swiss_grounding.corpus.budget import ensure_within, record_spend
-    from swiss_grounding.corpus.providers import OpenAILLM
+    from swiss_grounding.corpus.llm_factory import eval_model
     from swiss_grounding.evals.generate import GENERATE_KIND, SAMPLE_SQL, generate_questions
 
-    if not confirm_spend:
-        typer.echo("This calls gpt-5-mini. Re-run with --confirm-spend.", err=True)
-        raise typer.Exit(code=1)
     settings = load_settings()
+    model = eval_model(settings)
+    if not confirm_spend:
+        typer.echo(f"This calls {model}. Re-run with --confirm-spend.", err=True)
+        raise typer.Exit(code=1)
+    llm, model = _eval_llm_or_exit(settings)
     with connect(settings.database_url) as conn:
         chunks = conn.execute(SAMPLE_SQL, {"seed": GENERATE_SEED, "per_stratum": per_stratum}).fetchall()
         ensure_within(conn, estimate=0.0005 * len(chunks), total_cap=settings.corpus_budget_usd,
@@ -309,13 +322,12 @@ def generate_cmd(confirm_spend: bool = typer.Option(False, "--confirm-spend",
 
     def spend(usd: float) -> None:        # its own short transaction: a later failure cannot roll it back
         with connect(settings.database_url) as c:
-            record_spend(c, kind=GENERATE_KIND, model=settings.corpus_doc_model, usd=usd, input_tokens=0,
+            record_spend(c, kind=GENERATE_KIND, model=model, usd=usd, input_tokens=0,
                          output_tokens=0, estimated=False)
 
     GENERATED_PATH.parent.mkdir(parents=True, exist_ok=True)
     with GENERATED_PATH.open("w", encoding="utf-8") as f:
-        rows = generate_questions(chunks, OpenAILLM(settings.openai_api_key), model=settings.corpus_doc_model,
-                                  on_usage=spend)
+        rows = generate_questions(chunks, llm, model=model, on_usage=spend)
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
             f.flush()

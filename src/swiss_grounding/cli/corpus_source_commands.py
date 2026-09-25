@@ -21,6 +21,7 @@ from swiss_grounding.corpus.budget import BudgetExceeded, spent
 from swiss_grounding.corpus.connectors.fedlex import FedlexConnector
 from swiss_grounding.corpus.connectors.html import CrawlPolicy, HtmlConnector, robots_verdict
 from swiss_grounding.corpus.connectors.html_meta import page_meta
+from swiss_grounding.corpus.connectors.json_api import JsonConnector, dig
 from swiss_grounding.corpus.connectors.pdf import PdfConnector
 from swiss_grounding.corpus.db import apply_corpus_schema
 from swiss_grounding.corpus.fetch_stage import run_fetch
@@ -101,6 +102,22 @@ def _check_html(http: httpx.Client, entry, respect_robots: bool) -> int:
     return problems
 
 
+def _check_json(http: httpx.Client, entry, respect_robots: bool) -> int:
+    """The first page only: its status, robots verdict, and how many records sit at records_path."""
+    paging = entry.config.get("paging") or {}
+    url = entry.config["url"].format(offset=0, size=paging.get("size", 100), page=paging.get("first_page", 1))
+    try:
+        response = http.get(url, headers={"accept": "application/json"}, follow_redirects=True)
+        records = dig(response.json(), entry.config["records_path"]) if response.status_code == 200 else None
+    except (httpx.HTTPError, ValueError) as exc:
+        typer.echo(f"{entry.id}: FAILED {url} ({exc})")
+        return 1
+    count = 1 if isinstance(records, dict) else len(records) if isinstance(records, list) else 0
+    verdict = robots_verdict(http, url, respect=respect_robots)
+    typer.echo(f"{entry.id}: {response.status_code} {url} robots={verdict} records={count}")
+    return int(response.status_code >= 400 or verdict == "disallowed" or not count)
+
+
 def _check_fedlex(connector: FedlexConnector, entry) -> int:
     problems = 0
     for sr in entry.config["sr_numbers"]:
@@ -131,6 +148,8 @@ def check_manifest_cmd(path: Path) -> None:
                 problems += 1
             if entry.connector == "html":
                 problems += _check_html(http, entry, settings.respect_robots)
+            elif entry.connector == "json":
+                problems += _check_json(http, entry, settings.respect_robots)
             else:
                 problems += _check_fedlex(fedlex, entry)
     typer.echo(f"{problems} problem(s)")
@@ -157,7 +176,8 @@ def fetch_cmd(manifest: Annotated[Path, typer.Option("--manifest")],
     with corpus_http(settings) as http:
         policy = CrawlPolicy(respect_robots=settings.respect_robots, delay_seconds=settings.crawl_delay_seconds)
         connectors = {"fedlex": FedlexConnector(http, swiss_today, settings.data_dir),
-                      "html": HtmlConnector(http, policy)}
+                      "html": HtmlConnector(http, policy),
+                      "json": JsonConnector(http, policy, robots_api_exceptions=settings.robots_api_exceptions)}
         pdf = PdfConnector(http, settings.data_dir, delay_seconds=settings.crawl_delay_seconds)
         report = run_fetch(settings.database_url, specs, connectors, pdf, now=lambda: datetime.now(tz=UTC),
                            workers=workers)

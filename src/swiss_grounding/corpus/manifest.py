@@ -1,4 +1,5 @@
 import re
+import string
 from pathlib import Path
 from typing import Any, Literal
 
@@ -18,7 +19,7 @@ class SourceEntry(BaseModel):
     authority: Literal["federal_law", "cantonal_law", "municipal_law", "official_info", "institutional"]
     level: Literal["federal", "cantonal", "municipal"]
     extent_id: str
-    connector: Literal["fedlex", "html"]
+    connector: Literal["fedlex", "html", "json"]
     tier: int = Field(ge=1, le=3)
     languages: tuple[Literal["de", "fr", "it", "en", "rm"], ...] = Field(min_length=1)
     config: dict[str, Any] = {}
@@ -33,6 +34,8 @@ class SourceEntry(BaseModel):
             _check_site_adaptations(self.id, self.config)
         if self.connector == "fedlex" and not self.config.get("sr_numbers"):
             raise ValueError(f"source {self.id}: fedlex connector needs config.sr_numbers")
+        if self.connector == "json":
+            _check_json_config(self.id, self.config)
         dupes = sorted({lang for lang in self.languages if self.languages.count(lang) > 1})
         if dupes:
             raise ValueError(f"source {self.id}: duplicate languages: {dupes}")
@@ -63,7 +66,7 @@ def _check_delay_seconds(source_id: str, config: dict[str, Any]) -> None:
 def _check_site_adaptations(source_id: str, config: dict[str, Any]) -> None:
     """Optional per-site keys of the html connector: fail at load time, not mid-crawl."""
     _check_delay_seconds(source_id, config)
-    for key in ("pdf_link_patterns", "sitemap_include"):
+    for key in ("pdf_link_patterns", "sitemap_include", "deny_patterns"):
         for pattern in _string_list(source_id, config, key):
             try:
                 re.compile(pattern)
@@ -82,6 +85,63 @@ def _check_site_adaptations(source_id: str, config: dict[str, Any]) -> None:
             soupsieve.compile(selector)
         except soupsieve.SelectorSyntaxError as exc:
             raise ValueError(f"source {source_id}: config.{key} is not a valid CSS selector: {selector!r}") from exc
+
+
+JSON_PAGING_STYLES = ("none", "offset", "page", "next")
+JSON_URL_FIELDS = frozenset({"offset", "size", "page"})
+
+
+def _template_fields(source_id: str, key: str, template: Any) -> set[str]:
+    """The top-level field names a `str.format_map` template uses; a syntax error fails at load time."""
+    if not isinstance(template, str) or not template.strip():
+        raise ValueError(f"source {source_id}: config.{key} must be a non-empty template")
+    try:
+        names = [name for _, name, _, _ in string.Formatter().parse(template) if name is not None]
+    except ValueError as exc:
+        raise ValueError(f"source {source_id}: config.{key} is not a valid template: {exc}") from exc
+    return {re.split(r"[.\[]", name, maxsplit=1)[0] for name in names}
+
+
+def _check_json_config(source_id: str, config: dict[str, Any]) -> None:
+    """The json connector's keys (connectors/json_api.py): fail at load time, not mid-fetch."""
+    _check_delay_seconds(source_id, config)
+    url = config.get("url")
+    if not isinstance(url, str) or not url.startswith(("http://", "https://")):
+        raise ValueError(f"source {source_id}: json connector needs config.url, an absolute URL")
+    unknown = _template_fields(source_id, "url", url) - JSON_URL_FIELDS
+    if unknown:
+        raise ValueError(f"source {source_id}: config.url may only use {{offset}}, {{size}} and {{page}}, "
+                         f"got {sorted(unknown)} (double a literal brace)")
+    if not isinstance(config.get("records_path"), str):
+        raise ValueError(  # noqa: TRY004 - pydantic turns only ValueError into a validation error
+            f"source {source_id}: json connector needs config.records_path (\"\" for one record)")
+    for key in ("id_template", "title_template"):
+        _template_fields(source_id, key, config.get(key))
+    if not config.get("text_template") and not config.get("html_path"):
+        raise ValueError(f"source {source_id}: json connector needs config.text_template or config.html_path")
+    for key in ("text_template", "url_template"):
+        if key in config:
+            _template_fields(source_id, key, config[key])
+    paging = config.get("paging") or {}
+    if not isinstance(paging, dict) or paging.get("style", "none") not in JSON_PAGING_STYLES:
+        raise ValueError(f"source {source_id}: config.paging.style must be one of {JSON_PAGING_STYLES}")
+    style = paging.get("style", "none")
+    if style in ("offset", "page") and "{" + style + "}" not in url:
+        raise ValueError(f"source {source_id}: paging style {style!r} needs {{{style}}} in config.url")
+    for where, key, low in ((paging, "size", 1), (paging, "first_page", 0), (config, "max_records", 1)):
+        value = where.get(key)
+        if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < low):
+            raise ValueError(f"source {source_id}: {key} must be an integer >= {low}")
+    replace = config.get("url_replace")
+    if replace is not None and (not isinstance(replace, list) or len(replace) != 2
+                                or not all(isinstance(x, str) and x for x in replace)):
+        raise ValueError(f"source {source_id}: config.url_replace must be [from_prefix, to_prefix]")
+    crumbs = config.get("breadcrumbs")
+    if crumbs is not None and (not isinstance(crumbs, dict) or set(crumbs) - {"id_path", "title_path"}):
+        raise ValueError(f"source {source_id}: config.breadcrumbs takes only id_path and title_path")
+    reason = config.get("robots_exception_reason")
+    if reason is not None and (not isinstance(reason, str) or not reason.strip()):
+        raise ValueError(f"source {source_id}: config.robots_exception_reason must be a non-empty explanation")
 
 
 class Manifest(BaseModel):

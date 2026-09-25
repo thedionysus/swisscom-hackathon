@@ -12,6 +12,7 @@ from swiss_grounding.evals.judge_harness import (
     run_judge_suite,
     summary_table,
 )
+from swiss_grounding.evals.openai_answer import mcp_http_url
 
 
 def test_extract_tool_results_from_stream_json():
@@ -187,7 +188,7 @@ def test_claude_raises_runtime_error_on_timeout(monkeypatch):
 
 
 def test_run_case_records_error_when_claude_fails(monkeypatch):
-    def fake_claude(prompt, model, *, mcp, stream):
+    def fake_claude(prompt, model, *, mcp, stream, mcp_config=None):
         raise RuntimeError("boom")
 
     monkeypatch.setattr(judge_harness, "_claude", fake_claude)
@@ -286,3 +287,49 @@ def test_run_judge_suite_resume_keeps_clean_records_and_reruns_errors(monkeypatc
     assert ran == ["b"]
     assert "unscored: 0 of 2" in table
     assert len(json.loads(out.read_text())["records"]) == 2
+
+
+def test_apertus_answers_through_the_openai_loop_and_claude_still_judges(monkeypatch):
+    from swiss_grounding.evals import judge_harness as jh
+    calls = []
+    monkeypatch.setattr(jh, "_apertus_answer", lambda q, mcp_config: (calls.append(q) or (["ev"], "answer")))
+    monkeypatch.setattr(jh, "_claude", lambda prompt, model, **kw: '{"faithful": true, "cited_urls_in_evidence": true}')
+    record = jh.run_question("Frage?", "g1", "apertus", "{question}{evidence}{answer}")
+    assert calls == ["Frage?"] and record["answer"] == "answer" and record["verdict"]["faithful"]
+
+
+def test_apertus_answer_uses_an_http_config_it_is_given(monkeypatch, tmp_path):
+    import swiss_grounding.config as config_module
+    from swiss_grounding.evals import judge_harness as jh
+
+    monkeypatch.setattr(config_module, "load_settings",
+                        lambda: config_module.Settings(_env_file=None, database_url="postgresql://x",
+                                                        apertus_api_key="k"))
+    monkeypatch.setattr("openai.OpenAI", lambda **kw: object())
+    captured = {}
+    monkeypatch.setattr("swiss_grounding.evals.openai_answer.answer_with_tools",
+                        lambda q, *, client, model, mcp_url, system: captured.update(mcp_url=mcp_url) or
+                        (["ev"], "answer"))
+    http_config = tmp_path / "http.json"
+    http_config.write_text(json.dumps({"mcpServers": {"swiss-grounding": {"type": "http", "url": "http://h/mcp"}}}))
+    result = jh._apertus_answer("q", http_config)
+    assert result == (["ev"], "answer") and captured["mcp_url"] == "http://h/mcp"
+
+
+def test_apertus_answer_falls_back_to_the_http_config_for_a_stdio_config(monkeypatch, tmp_path):
+    import swiss_grounding.config as config_module
+    from swiss_grounding.evals import judge_harness as jh
+
+    monkeypatch.setattr(config_module, "load_settings",
+                        lambda: config_module.Settings(_env_file=None, database_url="postgresql://x",
+                                                        apertus_api_key="k"))
+    monkeypatch.setattr("openai.OpenAI", lambda **kw: object())
+    captured = {}
+    monkeypatch.setattr("swiss_grounding.evals.openai_answer.answer_with_tools",
+                        lambda q, *, client, model, mcp_url, system: captured.update(mcp_url=mcp_url) or
+                        (["ev"], "answer"))
+    stdio_config = tmp_path / "stdio.json"
+    stdio_config.write_text(json.dumps({"mcpServers": {"swiss-grounding": {"command": "uv"}}}))
+    result = jh._apertus_answer("q", stdio_config)
+    assert result == (["ev"], "answer")
+    assert captured["mcp_url"] == mcp_http_url(jh.MCP_HTTP_CONFIG)

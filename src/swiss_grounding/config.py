@@ -35,11 +35,21 @@ class Settings(BaseSettings):
 
     # Encoding track (corpus schema). Keys are needed only while ingesting.
     openai_api_key: str | None = None
-    corpus_llm_provider: Literal["openai", "anthropic", "fake"] = "fake"
+    corpus_llm_provider: Literal["openai", "anthropic", "apertus", "fake"] = "fake"
     corpus_doc_model: str = "gpt-5-mini"
     corpus_chunk_model: str = "gpt-5-nano"
     corpus_ocr_model: str = "gpt-5-mini"
     corpus_anthropic_model: str = "claude-haiku-4-5-20251001"
+    # Apertus 1.5 70B on Swisscom's Swiss AI Platform (OpenAI-compatible). The default URL is the
+    # Swiss {ai} Weeks hackathon product; a paid subscription has its own URL.
+    apertus_api_key: str | None = None
+    apertus_base_url: str = "https://api.swisscom.com/products/swiss-ai-weeks/apertus-1.5-70b/v1"
+    apertus_model: str = "swiss-ai/Apertus-v1.5-70B"
+    apertus_timeout_seconds: float = 60.0
+    # Direct calls only (no Batch API): parallel workers for corpus runs, sized under the 5 requests/s limit.
+    apertus_workers: int = 3
+    # Which model writes eval labels and generated questions.
+    eval_llm_provider: Literal["openai", "anthropic", "apertus"] = "openai"
     # Embedding indexes the pipeline builds (CORPUS_INDEXES, comma-separated). bge-m3 is local and free;
     # openai-3l is paid and needs OPENAI_API_KEY. `corpus embed`/`index`/`run` build exactly these.
     corpus_indexes: Annotated[tuple[str, ...], NoDecode] = DEFAULT_CORPUS_INDEXES
@@ -52,9 +62,15 @@ class Settings(BaseSettings):
     # per minute, separately from the Batch queue, so both together roughly double throughput at low
     # usage tiers; they cost twice the batch price. Size to the account's tokens-per-minute limit.
     corpus_direct_workers: int = 0
+    # Parallel requests of a plain --sync run (OCR, describe). Lower it on an account with a low tokens-per-minute
+    # limit: 8 kept a 200k-TPM account at its ceiling.
+    corpus_sync_workers: int = 8
     # Workers for HNSW index builds. 0 = serial: parallel builds need more /dev/shm than Docker's 64 MB default.
     corpus_index_parallel_workers: int = 0
     respect_robots: bool = True
+    # Opt-in, default off (brief p. 9, #55): a json source that names a `robots_exception_reason` is
+    # fetched even where robots.txt disallows its documented API. Every such fetch is logged.
+    robots_api_exceptions: bool = False
     # Browser-style prefix, the conventional honest-bot form: ch.ch serves a 404 shell to user
     # agents without one. Used for every corpus HTTP client.
     corpus_user_agent: str = (
@@ -85,6 +101,9 @@ class Settings(BaseSettings):
     supertext_api_key: str | None = None
     supertext_base_url: str = "https://api.supertext.com/v1"
     supertext_timeout_seconds: float = 8.0
+    # supertext: Supertext when SUPERTEXT_API_KEY is set, else no translation. apertus: Apertus translates.
+    translator: Literal["supertext", "apertus", "none"] = "supertext"
+    apertus_translate_timeout_seconds: float = 8.0
     # Stores the question is translated into (TRANSLATE_QUERY_LANGUAGES, comma-separated); its own
     # language is always skipped. Romansh is off by default: measured 2026-09-24, the reranker scores
     # weak Romansh passages 0.95 against a Romansh query (0.00 against the German question), which
@@ -153,6 +172,14 @@ class Settings(BaseSettings):
             raise ValueError("OPENAI_API_KEY is required when CORPUS_LLM_PROVIDER=openai")
         if self.corpus_llm_provider == "anthropic" and not self.anthropic_api_key:
             raise ValueError("ANTHROPIC_API_KEY is required when CORPUS_LLM_PROVIDER=anthropic")
+        return self
+
+    @model_validator(mode="after")
+    def _apertus_needs_key(self) -> "Settings":
+        users = [name for name, on in (("CORPUS_LLM_PROVIDER", self.corpus_llm_provider == "apertus"),
+                                       ("TRANSLATOR", self.translator == "apertus")) if on]
+        if users and not self.apertus_api_key:
+            raise ValueError(f"APERTUS_API_KEY is required when {' and '.join(users)}=apertus")
         return self
 
     @model_validator(mode="after")
