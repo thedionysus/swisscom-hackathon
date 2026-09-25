@@ -29,7 +29,8 @@ probes:
     level: federal
     split: dev
     tool: swiss_premium
-    note: Challenge sample 3. Lookup, not retrieval; not run by eval golden.
+    args: {municipality: Lugano, age: 30, deductible: 2500}
+    note: Challenge sample 3. Lookup, not retrieval; run by eval tools, not eval golden.
     expect: {status: results, sources: [opendata.swiss], key_fact: "Cheapest 2026 premium for premium region TI-1, adult, deductible 2500."}
   - id: g-sample-scuol-holidays
     question: Cura èn las vacanzas d'atun 2026 per la scola da Scuol?

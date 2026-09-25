@@ -1,5 +1,12 @@
-from swiss_grounding.evals.perturb import (add_filler, drop_question_mark, lowercase, perturbations,
-                                           strip_diacritics, strip_filler, typo)
+from swiss_grounding.evals.perturb import (
+    add_filler,
+    drop_question_mark,
+    lowercase,
+    perturbations,
+    strip_diacritics,
+    strip_filler,
+    typo,
+)
 
 
 def test_simple_perturbations():

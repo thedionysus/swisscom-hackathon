@@ -1,6 +1,6 @@
 """Adapters from the live search service to the robustness and consistency runners."""
 from collections.abc import Callable
-from functools import lru_cache
+from functools import cache
 
 from swiss_grounding.db.connection import connect
 from swiss_grounding.evals.consistency import Answer
@@ -21,7 +21,7 @@ def hit_search(service: SearchService) -> Callable[[str, tuple[str, ...]], Hit]:
 
 def answer_search(service: SearchService, database_url: str) -> Callable[[str, tuple[str, ...]], Answer]:
     """The top citation keyed by translation group and anchor, so language versions of one text agree."""
-    @lru_cache(maxsize=None)
+    @cache
     def group_of(document_id: int) -> str | None:
         with connect(database_url) as conn:
             row = conn.execute("select translation_group_id from corpus.document where id = %s",
