@@ -32,7 +32,10 @@ sources:
                    # future, which the legacy fetcher took for the one in force); this connector keeps
                    # current and scheduled apart: chemical risk reduction, animal welfare, road
                    # signals, tax harmonisation, higher-education funding
-                   "814.81", "455.1", "741.21", "642.14", "414.20"]
+                   "814.81", "455.1", "741.21", "642.14", "414.20",
+                   # needed by the case benchmark (2026-09-25): second homes (HO-09) and appliance
+                   # energy labels (EN-10)
+                   "702", "730.02"]
 
   # ---------------- Federal: citizen portal and offices ----------------
   - id: ch_ch
