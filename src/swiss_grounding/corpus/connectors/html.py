@@ -3,11 +3,13 @@ import re
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
+from pathlib import Path
 from urllib.parse import urldefrag, urlparse
 
 import httpx
 from protego import Protego
 
+from swiss_grounding.corpus.artifacts import save_artifact
 from swiss_grounding.corpus.connectors.crawl_queue import CrawlQueue
 from swiss_grounding.corpus.connectors.html_meta import work_key
 from swiss_grounding.corpus.connectors.html_page import CrawledPage, parse_crawled_page
@@ -23,19 +25,27 @@ from swiss_grounding.corpus.models import (
     KnownState,
     ParsedDocument,
     SourceSpec,
+    content_hash,
 )
 
 logger = logging.getLogger(__name__)
 
 SKIP_SUFFIXES = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".zip", ".xml", ".json", ".ics", ".csv",
                  ".docx", ".doc", ".xlsx", ".xls", ".mp4", ".mp3")
+# The skipped files that could hold content (#11): an in-scope link to one is reported as skipped, so a
+# source whose rules sit in a .docx does not look fully covered. Images and media are never counted, nor
+# .xml and .json, which are mostly feeds and sitemaps.
+ATTACHMENT_SUFFIXES = (".zip", ".ics", ".csv", ".docx", ".doc", ".xlsx", ".xls")
 DEFAULT_MAX_PAGES = 300
 DEFAULT_MAX_PDFS = 50
 _DENY_ALL_ROBOTS = "User-agent: *\nDisallow: /\n"
 # RFC 9309 leaves an unbounded Crawl-delay unpoliced; we cap it so one host cannot stall a whole
 # run. A host that genuinely needs longer belongs on a lower max_pages/schedule, not a longer wait.
 MAX_CRAWL_DELAY_SECONDS = 30.0
-ROBOTS_USER_AGENT = "*"  # matches robots_verdict's/HtmlConnector's own can_fetch calls
+# The product token of `corpus_user_agent` (config.py). RFC 9309: a crawler obeys the group naming it
+# and falls back to `*` only when no group does. The full browser-style UA string would also match a
+# `User-agent: Mozilla` group, so the token is passed, not the header value.
+ROBOTS_USER_AGENT = "swiss-grounding"
 
 
 def _robots_root(url: str) -> str:
@@ -149,13 +159,22 @@ def _matches(url: str, patterns: tuple[re.Pattern[str], ...]) -> bool:
     return any(p.search(url) for p in patterns)
 
 
+def _attachment_suffix(url: str) -> str | None:
+    path = urlparse(url).path.lower()
+    return next((s for s in ATTACHMENT_SUFFIXES if path.endswith(s)), None)
+
+
 class HtmlConnector:
+    """`data_dir` is where a source with `config.keep_html` keeps each page's raw HTML (#12); without
+    it, no page is kept."""
+
     def __init__(self, http: httpx.Client, policy: CrawlPolicy, sleep: Callable[[float], None] = time.sleep,
-                 throttle: HostThrottle | None = None):
+                 throttle: HostThrottle | None = None, data_dir: Path | str | None = None):
         self._http = http
         self._policy = policy
         self._sleep = sleep
         self._throttle = throttle or SHARED_THROTTLE
+        self._data_dir = data_dir
         self._robots: dict[str, Protego] = {}
         self._delays: dict[str, float] = {}
         self._warned_hosts: set[str] = set()
@@ -185,6 +204,9 @@ class HtmlConnector:
             self._robots[root] = parser
             self._delays[root] = host_delay(max(self._policy.delay_seconds, min_delay),
                                             parser.crawl_delay(ROBOTS_USER_AGENT), root)
+            if parser.crawl_delay(ROBOTS_USER_AGENT) is not None:
+                # The PDF connector shares the throttle but not this cache: pass the promise on.
+                self._throttle.require(root, self._delays[root])
         return self._robots[root].can_fetch(url, ROBOTS_USER_AGENT)
 
     @staticmethod
@@ -215,10 +237,11 @@ class HtmlConnector:
         def accept(url: str) -> bool:
             return not queue.is_known_or_queued(url) and self._crawlable(url, prefixes, pdf_patterns, deny)
 
+        rewrite = cfg.get("sitemap_rewrite")
         seeds = collect_sitemap_urls(self._http, tuple(cfg["sitemap_urls"]), tuple(cfg.get("sitemap_include", ())),
                                      limit, accept=accept, fetchable=lambda u: self._robots_allow(u, min_delay),
                                      before=lambda u: self._before(u, min_delay), throttle=self._throttle,
-                                     sleep=self._sleep)
+                                     sleep=self._sleep, rewrite=(rewrite["from"], rewrite["to"]) if rewrite else None)
         for url in seeds.urls:
             queue.add(url)
         return list(seeds.errors)
@@ -245,15 +268,25 @@ class HtmlConnector:
         # Pages inside the prefixes that must never be fetched, e.g. a gazette's personal-data rubrics.
         deny = tuple(re.compile(p) for p in cfg.get("deny_patterns", ()))
         min_delay = float(cfg.get("delay_seconds", 0.0))
-        queue = CrawlQueue(cfg["start_urls"], known)
+        queue = CrawlQueue(cfg.get("start_urls", ()), known)
         errors = self._seed_from_sitemaps(cfg, queue, max_pages, prefixes, pdf_patterns, min_delay, deny)
-        crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)),
-                              tuple(cfg.get("pdf_allow_prefixes", prefixes)))
+        pdf_prefixes = tuple(cfg.get("pdf_allow_prefixes", prefixes))
+        crawl = _CrawlResults(spec, int(cfg.get("max_pdfs", DEFAULT_MAX_PDFS)), pdf_prefixes,
+                              pdf_allowed=lambda u: self._robots_allow(u, min_delay),
+                              html_dir=self._data_dir if cfg.get("keep_html") else None)
         crawl.errors.extend(errors)
+        for entry in cfg.get("pdf_urls", ()):
+            # PDFs no crawlable page links to (#56). Listed first, so they are the last to lose out to max_pdfs.
+            crawl.add_pdf(entry["url"], entry.get("title_hint", ""), spec.languages[0], listed=True)
         pages = 0
         while pages < max_pages and (item := queue.pop()) is not None:
             url, conditional = item
-            if url in queue.seen or not self._allowed(url, prefixes, min_delay, deny):
+            # A known PDF sits in the revisit queue too; one matched by pdf_link_patterns has no .pdf
+            # suffix to stop it, and it is the PDF connector's to re-check, not a page.
+            if url in queue.seen or not self._crawlable(url, prefixes, pdf_patterns, deny):
+                continue
+            if not self._robots_allow(url, min_delay):
+                crawl.skip(url, "robots")
                 continue
             queue.seen.add(url)
             pages += 1
@@ -263,7 +296,15 @@ class HtmlConnector:
                 crawl.errors.append((url, f"fetch failed: {exc}"))
                 continue
             final = self._settle(url, str(response.url), response.status_code, queue, known, prefixes, crawl, deny)
-            if final is None or "html" not in response.headers.get("content-type", "text/html").lower():
+            if final is None:
+                continue
+            media_type = response.headers.get("content-type", "text/html").split(";")[0].strip().lower()
+            if "html" not in media_type:  # a link whose suffix did not say so
+                if "pdf" in media_type and crawl.in_pdf_scope(final):
+                    # A /download/12345 route serving a PDF (#11): the PDF connector fetches it again as one.
+                    crawl.add_pdf(final, "", spec.languages[0])
+                else:
+                    crawl.skip(final, f"type {media_type or 'missing'}")
                 continue
             try:
                 page = parse_crawled_page(response.text, final, spec, pdf_patterns)
@@ -271,14 +312,25 @@ class HtmlConnector:
                 logger.warning("parse failed for %s: %r", final, exc)
                 crawl.errors.append((final, f"parse failed: {exc!r}"))
                 continue
+            if page.soft_404:
+                # Handled like an HTTP error: reported, not stored, its links not followed. A known page
+                # is not withdrawn on the strength of a title match; it stays until a real 404/410.
+                crawl.errors.append((final, f"soft 404: title {page.soft_404!r}"))
+                continue
             for alt_lang, href in page.alternates.items():
                 # Language versions jump the queue, ahead of the page's own links (which often
                 # include the language switcher): only pages crawled in the same run are grouped.
                 if alt_lang in spec.languages and self._crawlable(href, prefixes, pdf_patterns, deny):
                     queue.add(href, front=True)
+            if page.canonical and page.canonical != final and self._crawlable(page.canonical, prefixes,
+                                                                              pdf_patterns, deny):
+                queue.add(page.canonical, front=True)  # so an alias can be told apart from its canonical
             for link in page.links:
                 if self._crawlable(link, prefixes, pdf_patterns, deny):
                     queue.add(link)
+                elif ((suffix := _attachment_suffix(link)) and self._in_prefixes(link, prefixes + pdf_prefixes)
+                      and not _matches(link, deny)):
+                    crawl.skip(link, suffix)
             crawl.record(final, page, response)
         return crawl.result()
 
@@ -310,12 +362,17 @@ class HtmlConnector:
 
 
 class _CrawlResults:
-    """What one run collects: emitted documents, their alternates for grouping, PDFs, errors."""
+    """What one run collects: emitted documents, their alternates for grouping, PDFs, errors, and
+    what was found but deliberately not fetched (skipped)."""
 
-    def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...]):
+    def __init__(self, spec: SourceSpec, max_pdfs: int, pdf_prefixes: tuple[str, ...],
+                 pdf_allowed: Callable[[str], bool] = lambda url: True, html_dir: Path | str | None = None):
         self._spec = spec
         self._max_pdfs = max_pdfs
         self._pdf_prefixes = pdf_prefixes
+        self._pdf_allowed = pdf_allowed
+        self._html_dir = html_dir
+        self._pdfs_refused: set[str] = set()
         self.pending: list[ParsedDocument] = []
         self.alternates_by_url: dict[str, dict[str, str]] = {}
         self.page_languages: dict[str, str] = {}
@@ -323,26 +380,97 @@ class _CrawlResults:
         self.unchanged: list[str] = []
         self.gone: dict[str, None] = {}
         self.errors: list[tuple[str, str]] = []
+        self.skipped: dict[str, str] = {}
+        self.canonicals: dict[str, str | None] = {}
+        self._raw_html: dict[str, bytes] = {}  # only with html_dir; held until result() drops aliases
+
+    def skip(self, url: str, reason: str) -> None:
+        self.skipped.setdefault(url, reason)
+
+    def in_pdf_scope(self, url: str) -> bool:
+        return any(url.startswith(p) for p in self._pdf_prefixes)
+
+    def add_pdf(self, pdf_url: str, title_hint: str, language: str, listed: bool = False) -> None:
+        """Hand a PDF to the PDF connector once: inside pdf_allow_prefixes, allowed by robots.txt, and
+        within max_pdfs. One outside the prefixes is reported only when the manifest listed it
+        (config.pdf_urls); a link found on a page is simply out of scope."""
+        if pdf_url in self.pdfs or pdf_url in self._pdfs_refused:
+            return
+        if not self.in_pdf_scope(pdf_url):
+            if listed:
+                self._pdfs_refused.add(pdf_url)
+                self.errors.append((pdf_url, "PDF outside pdf_allow_prefixes"))
+            return
+        if len(self.pdfs) >= self._max_pdfs:
+            self.skip(pdf_url, "max_pdfs")
+            return
+        # Refused before it is counted, so a PDF we may not fetch never takes the place of one we may.
+        if not self._pdf_allowed(pdf_url):
+            # A rule, not a failure: as a quarantine entry it would count as failed and never clear.
+            self._pdfs_refused.add(pdf_url)
+            self.skip(pdf_url, "robots")
+            return
+        self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=language, title_hint=title_hint,
+                                           source_id=self._spec.id)
 
     def record(self, final: str, page: CrawledPage, response: httpx.Response) -> None:
         if not page.emit:
             return
         self.alternates_by_url[final] = dict(page.alternates)
         self.page_languages[final] = page.language
+        self.canonicals[final] = page.canonical
         for pdf_url, text in page.pdf_links:
-            if (len(self.pdfs) < self._max_pdfs and pdf_url not in self.pdfs
-                    and any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
-                self.pdfs[pdf_url] = DiscoveredPdf(url=pdf_url, language=page.language,
-                                                   title_hint=text or page.title_hint, source_id=self._spec.id)
+            self.add_pdf(pdf_url, text or page.title_hint, page.language)
         if page.sections:
-            self.pending.append(ParsedDocument(
+            doc = ParsedDocument(
                 source_id=self._spec.id, url=final, language=page.language, work_key="", title=page.title,
                 sections=page.sections, published_at=page.published, modified_at=page.modified,
                 retrieved_via=self._spec.retrieved_via, etag=response.headers.get("etag"),
-                last_modified=response.headers.get("last-modified")))
+                last_modified=response.headers.get("last-modified"))
+            if self._html_dir is not None:
+                self._raw_html[final] = response.content  # written in result(), once aliases are gone
+            self.pending.append(doc)
+
+    def _drop_canonical_aliases(self) -> None:
+        """Drop a page that names another page as canonical when that page was stored in this run
+        with the same text, and names itself (or nothing) as canonical (#27). The canonical link
+        alone is not enough: sites point language versions, or page 2 of a list, at one canonical
+        URL, and those hold other text. Both stay documents then, as before.
+
+        A translation that names the alias names its canonical page from then on, so the German
+        page listing the French alias is still grouped with the French canonical page."""
+        by_url = {doc.url: doc for doc in self.pending}
+        canonical_of: dict[str, str] = {}
+        for doc in self.pending:
+            canonical = self.canonicals.get(doc.url)
+            target = by_url.get(canonical) if canonical and canonical != doc.url else None
+            if (target is not None and self.canonicals.get(target.url) in (None, target.url)
+                    and target.language == doc.language and content_hash(target) == content_hash(doc)):
+                canonical_of[doc.url] = target.url
+                self.skip(doc.url, "duplicate of canonical")
+        self.pending = [doc for doc in self.pending if doc.url not in canonical_of]
+        for url in canonical_of:  # an alias left in would join its canonical's translation group as a
+            self.alternates_by_url.pop(url, None)  # second page of the same language, and break it
+            self.page_languages.pop(url, None)
+            self._raw_html.pop(url, None)
+        for alternates in self.alternates_by_url.values():
+            for lang, href in alternates.items():
+                alternates[lang] = canonical_of.get(urldefrag(href)[0], href)
+
+    def _save_raw_html(self) -> None:
+        """Keep each stored page's raw HTML (config.keep_html, #12). Named by the text's hash, not the
+        markup's: a page whose markup changes on every fetch (a token, a timestamp) keeps one file per
+        version of its text."""
+        self.pending = [replace(doc, artifact_path=save_artifact(self._html_dir, self._spec.id, doc.url,
+                                                                 self._raw_html[doc.url], ".html",
+                                                                 version=content_hash(doc)))
+                        if doc.url in self._raw_html else doc for doc in self.pending]
 
     def result(self) -> ConnectorResult:
+        self._drop_canonical_aliases()
+        self._save_raw_html()
         keys = _language_groups(self.alternates_by_url, self.page_languages)
         documents = tuple(replace(doc, work_key=keys.get(doc.url, work_key(doc.url, {}))) for doc in self.pending)
         return ConnectorResult(documents=documents, unchanged_urls=tuple(self.unchanged),
-                               gone_urls=tuple(self.gone), errors=tuple(self.errors), pdfs=tuple(self.pdfs.values()))
+                               gone_urls=tuple(self.gone), errors=tuple(self.errors), pdfs=tuple(self.pdfs.values()),
+                               skipped=tuple(self.skipped.items()))

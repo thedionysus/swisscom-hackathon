@@ -7,10 +7,12 @@ from datetime import date
 from pathlib import Path
 
 import httpx
+from protego import Protego
 
 from swiss_grounding.corpus.artifacts import save_artifact
 from swiss_grounding.corpus.chunker import MAX_CHARS
 from swiss_grounding.corpus.connectors.fedlex_akn import parse_akn
+from swiss_grounding.corpus.connectors.html import ROBOTS_USER_AGENT, load_robots
 from swiss_grounding.corpus.models import ConnectorResult, KnownState, ParsedDocument, SourceSpec
 
 log = logging.getLogger(__name__)
@@ -55,6 +57,28 @@ SELECT DISTINCT ?abstract ?dateApplicability ?dateEndApplicability ?title ?fileU
 # query, which needs every consolidation ever published, ended or not.
 IN_FORCE_FILTER = 'FILTER(!bound(?dateEndApplicability) || ?dateEndApplicability >= "%(today)s"^^xsd:date)'
 ATTEMPTS = 3
+# SPARQL returns file URLs under fedlex.data.admin.ch/filestore/, which that host's robots.txt
+# disallows for every crawler. www.fedlex.admin.ch serves the same files (byte-identical, checked
+# 2026-09-24 on SR 704 and SR 741.21) and its robots.txt allows /filestore/. Downloads use that host;
+# the document's identity is its page URL (`_page_url`), so it does not change.
+DATA_FILESTORE = "https://fedlex.data.admin.ch/filestore/"
+WWW_FILESTORE = "https://www.fedlex.admin.ch/filestore/"
+
+
+class RobotsDisallowed(Exception):
+    """The act file's host forbids fetching it in robots.txt; reported as an error, never fetched."""
+
+
+def _root(url: str) -> str:
+    parts = httpx.URL(url)
+    return f"{parts.scheme}://{parts.host}"
+
+
+def download_url(file_url: str) -> str:
+    """Where an act file is fetched from: the robots-allowed www host for filestore URLs."""
+    if file_url.startswith(DATA_FILESTORE):
+        return WWW_FILESTORE + file_url[len(DATA_FILESTORE):]
+    return file_url
 
 
 def choose_consolidations(rows: list[dict], today: date) -> tuple[dict | None, dict | None]:
@@ -94,11 +118,14 @@ def _mark_split_paragraphs(docs: list[ParsedDocument]) -> list[ParsedDocument]:
 
 class FedlexConnector:
     def __init__(self, http: httpx.Client, today: Callable[[], date], data_dir: Path | str,
-                 sleep: Callable[[float], None] = time.sleep):
+                 sleep: Callable[[float], None] = time.sleep, respect_robots: bool = True):
         self._http = http
         self._today = today
         self._data_dir = data_dir
         self._sleep = sleep
+        self._respect_robots = respect_robots
+        self._robots: dict[str, Protego] = {}
+        self._robots_problems: dict[str, str] = {}
 
     def _with_retry[T](self, call: Callable[[], T]) -> T:
         for attempt in range(1, ATTEMPTS + 1):
@@ -212,7 +239,33 @@ class FedlexConnector:
             documents.extend(_mark_split_paragraphs(sr_documents))
         return ConnectorResult(documents=tuple(documents), unchanged_urls=tuple(unchanged), errors=tuple(errors))
 
-    def _fetch_xml(self, url: str) -> str:
+    def _robots_allow(self, url: str) -> bool:
+        if not self._respect_robots:
+            return True
+        root = _root(url)
+        if root not in self._robots:
+            # A robots.txt that could not be read disallows the whole host; one bad answer must not cost
+            # every act file of the run, so it is read again before that verdict sticks.
+            for attempt in range(1, ATTEMPTS + 1):
+                parser, problem = load_robots(self._http, root)
+                if problem is None or attempt == ATTEMPTS:
+                    break
+                self._sleep(attempt * 1.0)
+            self._robots[root] = parser
+            if problem:
+                self._robots_problems[root] = problem
+        return self._robots[root].can_fetch(url, ROBOTS_USER_AGENT)
+
+    def _fetch_xml(self, file_url: str) -> str:
+        url = download_url(file_url)
+        if not self._robots_allow(url):
+            problem = self._robots_problems.get(_root(url))
+            raise RobotsDisallowed(f"{url} robots.txt unavailable ({problem})" if problem
+                                   else f"{url} disallowed by robots.txt")
         response = self._http.get(url, follow_redirects=True, timeout=60)
         response.raise_for_status()
+        # Both Fedlex hosts answer a file that is not there with 200 and their HTML app page.
+        media_type = response.headers.get("content-type", "").split(";")[0].strip().lower()
+        if media_type == "text/html":
+            raise ValueError(f"{url} is not an act file (content-type {media_type})")
         return response.text

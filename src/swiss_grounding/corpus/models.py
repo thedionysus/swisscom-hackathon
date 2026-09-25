@@ -81,6 +81,7 @@ class ConnectorResult:
     gone_urls: tuple[str, ...] = ()
     errors: tuple[tuple[str, str], ...] = ()      # (url, reason)
     pdfs: tuple[DiscoveredPdf, ...] = ()
+    skipped: tuple[tuple[str, str], ...] = ()     # (url, reason): found, deliberately not fetched or stored
 
 
 @dataclass(frozen=True)

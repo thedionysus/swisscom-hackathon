@@ -140,7 +140,8 @@ Sources are entries in `manifests/declared-scope.yaml`. Each entry has:
 language, with its current consolidation and, when one exists, the next scheduled one. English is
 optional: an act without an English version is not an error.
 
-**`html`** needs `config.start_urls` and `config.allow_prefixes`. Optional keys:
+**`html`** needs `config.allow_prefixes` and `config.start_urls` (which a source listing only
+`pdf_urls` may leave out). Optional keys:
 
 | Key | Meaning |
 |---|---|
@@ -149,9 +150,16 @@ optional: an act without an English version is not an error.
 | `language_links_selector` | CSS selector of the site's language switcher, when the pages carry no hreflang links. |
 | `content_selector` | CSS selector of the content area, when the page has no usable `<main>`. |
 | `pdf_allow_prefixes`, `pdf_link_patterns`, `max_pdfs` | Which linked PDFs to download (default: under `allow_prefixes`, at most 50). |
+| `pdf_urls` | `[{url, title_hint?}]`: PDFs no page links to. They take the source's first language, must pass `pdf_allow_prefixes` and robots.txt, and count against `max_pdfs`. |
+| `json_link_attributes` | `[{selector, attribute}]`: elements whose attribute holds JSON with the page's document links, such as i-web's `{selector: "table.icms-dt", attribute: "data-entities"}`. URLs and `<a href>` inside the JSON are checked like any PDF link. |
 | `delay_seconds` | A longer delay between requests for this site. |
+| `keep_html` | `true` keeps each page's raw HTML under `data/raw/<source>/`, one file per version of its text, and records it as the document's `artifact_path`. Off by default: turn it on only where the source's terms allow keeping a copy. |
+| `max_pdf_bytes` | A larger (or smaller) size limit for this source's PDFs (default 30,000,000). |
+| `sitemap_rewrite` | `{from, to}`: a URL prefix to replace in every child sitemap and page a sitemap lists, for an index that names an internal host (`{from: "http://ne-prod-admin.ne.ch/", to: "https://www.ne.ch/"}`). |
+| `ca_bundle` | Path of a PEM file (a relative one from the manifest's directory) trusted for this source's hosts on top of the default CA store: for a host with an incomplete certificate chain, name its missing intermediate. `json` sources take it too. If the file is missing, `check-manifest` reports it and `fetch` leaves that source out. |
 
-Two sources may not have overlapping URL prefixes; loading the manifest fails if they do.
+Two sources may not have overlapping URL prefixes, every start URL must lie inside `allow_prefixes`, and
+a config key the connector does not know is rejected; loading the manifest fails otherwise.
 
 Then:
 
@@ -188,7 +196,10 @@ versions whose start date has arrived.
 | Consolidation that starts in the future | Stored as `scheduled`. It becomes `current` on its start date, at the end of a later `fetch`, and the version it replaces is retired then. |
 | One language of a Fedlex act changed | Every language version of that act is downloaded again, so articles and paragraphs stay aligned across languages. |
 | Page returns 404 or 410, or a known URL now redirects elsewhere | The document becomes `withdrawn`. |
+| Page returns 200 but its `<title>` or h1 says it is an error page ("Seite nicht gefunden", "Page introuvable", "Error 404") | Not stored, its links not followed, and quarantined as a fetch error. A document stored earlier at that URL is not withdrawn. |
 | URL already owned by another source | Left alone and counted as a duplicate. |
+| Page whose `<link rel="canonical">` names another page of the source, stored in the same run with the same text | Not stored a second time; counted as `skipped[duplicate of canonical]`. A document stored earlier under the alias URL is left as it is. |
+| In-scope link to a `.docx`, `.xlsx`, `.csv`, `.zip` or `.ics` file, a PDF beyond `max_pdfs`, a page or PDF that robots.txt disallows, or a page answering with a type that is neither HTML nor PDF | Not fetched or stored, but counted per reason in the fetch report: `skipped[.docx]=3 skipped[max_pdfs]=12 skipped[robots]=4`. These are not failures and are not quarantined. A link without a `.pdf` suffix that answers with a PDF is handed to the PDF connector. |
 
 After `fetch`, `corpus run` only works on what is new. A chunk whose text did not change keeps its
 description, topics and boilerplate verdict from the earlier version. A vector is reused whenever the

@@ -1,3 +1,7 @@
+import json
+from html import escape as html_escape
+from pathlib import Path
+
 import httpx
 import pytest
 
@@ -69,6 +73,8 @@ def test_robots_disallow_is_respected_only_when_switched_on():
     off = HtmlConnector(_client(robots), CrawlPolicy(False, 0)).run(_spec(), known={})
     assert "https://www.x.ch/de/hund" not in {d.url for d in on.documents}
     assert "https://www.x.ch/de/hund" in {d.url for d in off.documents}
+    assert on.skipped == (("https://www.x.ch/de/hund", "robots"),) and on.errors == ()
+    assert off.skipped == ()
 
 
 def test_robots_file_is_not_requested_when_switched_off():
@@ -448,6 +454,9 @@ def test_connector_uses_the_hosts_crawl_delay_for_its_own_throttling():
         def wait(self, url, delay, sleep):
             waits.append(delay)
 
+        def require(self, url, delay):
+            pass
+
     pages = {"https://www.be.ch/de/": PAGES["https://www.x.ch/de/"]}
     spec = SourceSpec(id="be", name="BE", publisher="BE", authority="official_info", level="cantonal",
                       extent_id="CH-BE", connector="html", tier=1, languages=("de",),
@@ -466,6 +475,9 @@ def test_config_delay_seconds_raises_the_hosts_minimum_delay():
         def wait(self, url, delay, sleep):
             waits.append(delay)
 
+        def require(self, url, delay):
+            pass
+
     pages = {"https://www.scuol.net/de/": PAGES["https://www.x.ch/de/"].replace("x.ch", "scuol.net")}
     spec = SourceSpec(id="scuol", name="Scuol", publisher="Scuol", authority="official_info", level="municipal",
                       extent_id="CH-GR-3762", connector="html", tier=1, languages=("de",),
@@ -474,3 +486,311 @@ def test_config_delay_seconds_raises_the_hosts_minimum_delay():
     client = _client(pages=pages)
     HtmlConnector(client, CrawlPolicy(True, 0.5), throttle=RecordingThrottle()).run(spec, known={})
     assert 3.0 in waits
+
+
+# --- robots.txt: our own group, PDFs, Crawl-delay carried to PDF downloads ------------------------
+
+def test_robots_group_for_our_own_name_wins_over_the_star_group():
+    """RFC 9309: a crawler obeys the group naming it and only falls back to `*`. Here the site lets
+    swiss-grounding in while shutting out everyone else, so the pages are ours to fetch."""
+    robots = "User-agent: swiss-grounding\nAllow: /\n\nUser-agent: *\nDisallow: /\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert {d.url for d in result.documents} == set(PAGES)
+
+
+def test_robots_group_for_our_own_name_can_disallow_what_star_allows():
+    robots = "User-agent: swiss-grounding\nDisallow: /de/hund\n\nUser-agent: *\nAllow: /\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert "https://www.x.ch/de/hund" not in {d.url for d in result.documents}
+
+
+def test_pdf_link_disallowed_by_robots_is_counted_as_skipped_not_as_a_failure():
+    """A robots.txt refusal is a rule, not a failure: as a quarantine entry it never cleared (#51 audit)."""
+    robots = "User-agent: *\nDisallow: /de/merkblatt.pdf\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert result.pdfs == ()
+    assert result.skipped == (("https://www.x.ch/de/merkblatt.pdf", "robots"),)
+    assert result.errors == ()
+
+
+def test_pdf_link_is_queued_when_robots_is_switched_off():
+    robots = "User-agent: *\nDisallow: /de/merkblatt.pdf\n"
+    result = HtmlConnector(_client(robots), CrawlPolicy(False, 0)).run(_spec(), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.x.ch/de/merkblatt.pdf"]
+
+
+def test_disallowed_pdfs_do_not_use_up_max_pdfs():
+    """A PDF we may not fetch must not take the place of one we may."""
+    pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+      <a href="/de/intern.pdf">Intern</a><a href="/de/merkblatt.pdf">Merkblatt</a></main></body></html>"""}
+    robots = "User-agent: *\nDisallow: /de/intern.pdf\n"
+    result = HtmlConnector(_client(robots, pages=pages), CrawlPolicy(True, 0)).run(_spec(max_pdfs=1), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.x.ch/de/merkblatt.pdf"]
+
+
+def test_robots_crawl_delay_also_spaces_the_pdf_downloads(tmp_path):
+    """The Crawl-delay the HTML connector reads is a promise to the host, so the PDF connector
+    (sharing the throttle) keeps it too instead of its own 0.5 s."""
+    from swiss_grounding.corpus.connectors.pdf import PdfConnector
+
+    sample = (Path(__file__).parents[2] / "fixtures" / "sample.pdf").read_bytes()
+    pages = dict(PAGES)
+    client = _client("User-agent: *\nCrawl-delay: 5\n", pages=pages)
+    clock = {"now": 0.0}
+    throttle = HostThrottle(clock=lambda: clock["now"])
+    result = HtmlConnector(client, CrawlPolicy(True, 0), sleep=lambda s: None, throttle=throttle).run(
+        _spec(), known={})
+
+    pdf_client = httpx.Client(transport=httpx.MockTransport(
+        lambda r: httpx.Response(200, content=sample, headers={"content-type": "application/pdf"})))
+    pdf_sleeps: list[float] = []
+    PdfConnector(pdf_client, data_dir=tmp_path, sleep=pdf_sleeps.append, delay_seconds=0.5,
+                 throttle=throttle).run_pdfs(_spec(), result.pdfs, known={})
+    assert pdf_sleeps and min(pdf_sleeps) >= 5.0
+
+
+# --- found, deliberately not fetched (#11) -------------------------------------------------------
+
+def test_attachment_links_in_scope_are_reported_as_skipped():
+    """A .docx/.xlsx link is never fetched, but the run says so. Images, feeds and sitemaps (.xml,
+    .json) and links outside the source's prefixes are not counted: they were never candidates."""
+    pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+      <a href="/de/gebuehren.docx">Gebühren</a><a href="/de/liste.XLSX">Liste</a><a href="/de/liste.XLSX">again</a>
+      <a href="/de/foto.jpg">Foto</a><a href="https://elsewhere.ch/x.docx">x</a><a href="/de/news.xml">RSS</a>
+      <a href="/de/sitemap.json">Sitemap</a><a href="https://www.x.ch/dam/tarif.csv">Tarif</a></main></body></html>"""}
+    spec = _spec(pdf_allow_prefixes=["https://www.x.ch/dam/"])
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(spec, known={})
+    assert sorted(result.skipped) == [("https://www.x.ch/dam/tarif.csv", ".csv"),
+                                      ("https://www.x.ch/de/gebuehren.docx", ".docx"),
+                                      ("https://www.x.ch/de/liste.XLSX", ".xlsx")]
+
+
+def test_pdfs_beyond_max_pdfs_are_reported_as_skipped():
+    pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+      <a href="/de/a.pdf">A</a><a href="/de/b.pdf">B</a><a href="/de/c.pdf">C</a><a href="/de/b.pdf">B again</a>
+      </main></body></html>"""}
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(_spec(max_pdfs=1), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.x.ch/de/a.pdf"]
+    assert result.skipped == (("https://www.x.ch/de/b.pdf", "max_pdfs"), ("https://www.x.ch/de/c.pdf", "max_pdfs"))
+
+
+def test_in_scope_link_answering_with_a_non_html_type_is_reported_as_skipped():
+    """The suffix lies: /de/download/1 serves a spreadsheet. It is not parsed, and the run says so."""
+    xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
+        if url == "https://www.x.ch/de/":
+            return httpx.Response(200, text="""<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+              <a href="/de/download/1">Liste</a></main></body></html>""", headers={"content-type": "text/html"})
+        if url == "https://www.x.ch/de/download/1":
+            return httpx.Response(200, content=b"PK\x03\x04", headers={"content-type": f"{xlsx}; charset=binary"})
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    result = HtmlConnector(client, CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert result.skipped == (("https://www.x.ch/de/download/1", f"type {xlsx}"),)
+    assert result.errors == ()
+
+
+def _download_route(content_type: str):
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
+        if url == "https://www.x.ch/de/":
+            return httpx.Response(200, text="""<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+              <a href="/de/download/12345">Merkblatt</a></main></body></html>""", headers={"content-type": "text/html"})
+        if url == "https://www.x.ch/de/download/12345":
+            return httpx.Response(200, content=b"%PDF-1.4", headers={"content-type": content_type})
+        return httpx.Response(404)
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def test_in_scope_link_answering_with_a_pdf_is_handed_to_the_pdf_connector():
+    """#11's /download/12345 case: no .pdf suffix, no pdf_link_patterns, but the answer is a PDF."""
+    result = HtmlConnector(_download_route("application/pdf"), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert [(p.url, p.language) for p in result.pdfs] == [("https://www.x.ch/de/download/12345", "de")]
+    assert result.skipped == ()
+
+
+def test_a_pdf_answer_outside_pdf_allow_prefixes_is_reported_as_skipped():
+    spec = _spec(pdf_allow_prefixes=["https://www.x.ch/dam/"])
+    result = HtmlConnector(_download_route("application/pdf"), CrawlPolicy(True, 0)).run(spec, known={})
+    assert result.pdfs == ()
+    assert result.skipped == (("https://www.x.ch/de/download/12345", "type application/pdf"),)
+
+
+# --- soft 404 (#20) ---------------------------------------------------------------------------------
+
+def test_error_page_served_with_200_is_reported_not_stored_and_its_links_not_followed():
+    """www.ch.ch/en/ once served its error page with 200; it was stored as a current document (#20)."""
+    pages = dict(PAGES)
+    pages["https://www.x.ch/de/"] = """<html lang="de"><head><title>Error Page (404)</title></head><body><main>
+      <h1>Seite nicht gefunden</h1><p>Die Seite existiert nicht.</p><a href="/de/hund">Hund</a></main></body></html>"""
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert result.documents == ()
+    assert [(url, reason.split(":")[0]) for url, reason in result.errors] == [("https://www.x.ch/de/", "soft 404")]
+
+
+# --- canonical alias (#27) ------------------------------------------------------------------------
+
+_THEME = """<html lang="fr"><head><link rel="canonical" href="{canonical}"></head><body><main>
+  <h1>Environnement urbain</h1><p>{text}</p></main></body></html>"""
+
+
+def _geneva(pages, start="https://www.g.ch/themes/env"):
+    spec = SourceSpec(id="g", name="G", publisher="G", authority="official_info", level="municipal",
+                      extent_id="CH-GE-6621", connector="html", tier=1, languages=("fr",),
+                      config={"start_urls": [start],
+                              "allow_prefixes": ["https://www.g.ch/themes/", "https://www.g.ch/fr/themes/"]})
+    return HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(spec, known={})
+
+
+def test_alias_whose_canonical_holds_the_same_text_is_not_a_second_document():
+    """ge_ville (#27): /themes/x and /fr/themes/x serve one page; the alias names the other as canonical."""
+    canonical = "https://www.g.ch/fr/themes/env"
+    result = _geneva({
+        "https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Les parcs de la ville."),
+        canonical: _THEME.format(canonical=canonical, text="Les parcs de la ville."),
+    })
+    assert [d.url for d in result.documents] == [canonical]
+    assert result.skipped == (("https://www.g.ch/themes/env", "duplicate of canonical"),)
+
+
+_BILINGUAL = """<html lang="{lang}"><head><link rel="canonical" href="{canonical}">
+  <link rel="alternate" hreflang="de" href="https://www.g.ch/de/themes/umwelt">
+  <link rel="alternate" hreflang="fr" href="{fr}"></head><body><main><h1>{title}</h1><p>{text}</p></main></body></html>"""
+
+
+def _bilingual_run(tmp_path=None):
+    """The German page names the French alias as its translation; the alias names its canonical."""
+    alias, canonical = "https://www.g.ch/themes/env", "https://www.g.ch/fr/themes/env"
+    french = {"lang": "fr", "title": "Environnement", "text": "Les parcs."}
+    pages = {
+        "https://www.g.ch/de/themes/umwelt": _BILINGUAL.format(lang="de", canonical="https://www.g.ch/de/themes/umwelt",
+                                                               fr=alias, title="Umwelt", text="Die Parks."),
+        alias: _BILINGUAL.format(canonical=canonical, fr=alias, **french),
+        canonical: _BILINGUAL.format(canonical=canonical, fr=canonical, **french),
+    }
+    spec = SourceSpec(id="g", name="G", publisher="G", authority="official_info", level="municipal",
+                      extent_id="CH-GE-6621", connector="html", tier=1, languages=("de", "fr"),
+                      config={"start_urls": ["https://www.g.ch/de/themes/umwelt"], "keep_html": tmp_path is not None,
+                              "allow_prefixes": ["https://www.g.ch/de/themes/", "https://www.g.ch/themes/",
+                                                 "https://www.g.ch/fr/themes/"]})
+    result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0), data_dir=tmp_path).run(spec, known={})
+    return {d.url: d for d in result.documents}, result
+
+
+def test_a_translation_that_names_the_alias_is_grouped_with_the_canonical_page():
+    """Dropping the alias must not cost the German page its French translation (audit of PR #77)."""
+    by_url, result = _bilingual_run()
+    assert set(by_url) == {"https://www.g.ch/de/themes/umwelt", "https://www.g.ch/fr/themes/env"}
+    assert by_url["https://www.g.ch/de/themes/umwelt"].work_key == by_url["https://www.g.ch/fr/themes/env"].work_key
+    assert result.skipped == (("https://www.g.ch/themes/env", "duplicate of canonical"),)
+
+
+def test_the_dropped_alias_leaves_no_raw_html_file(tmp_path):
+    by_url, _ = _bilingual_run(tmp_path)
+    kept = {Path(d.artifact_path) for d in by_url.values()}
+    assert set((tmp_path / "raw" / "g").iterdir()) == kept
+
+
+def test_page_whose_canonical_holds_other_text_stays_a_document():
+    """A list's page 2 often names page 1 as canonical; its items are not page 1's."""
+    canonical = "https://www.g.ch/fr/themes/env"
+    result = _geneva({
+        "https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Page 2 : autres parcs."),
+        canonical: _THEME.format(canonical=canonical, text="Page 1 : les parcs."),
+    })
+    assert sorted(d.url for d in result.documents) == [canonical, "https://www.g.ch/themes/env"]
+    assert result.skipped == ()
+
+
+@pytest.mark.parametrize("canonical", ["https://www.g.ch/fr/themes/missing", "https://elsewhere.ch/themes/env"])
+def test_page_is_kept_when_its_canonical_is_not_stored_in_the_same_run(canonical):
+    result = _geneva({"https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Les parcs.")})
+    assert [d.url for d in result.documents] == ["https://www.g.ch/themes/env"]
+
+
+# --- raw HTML kept on request (#12) ---------------------------------------------------------------
+
+def test_raw_html_is_kept_only_for_a_source_that_asks_for_it(tmp_path):
+    result = HtmlConnector(_client(), CrawlPolicy(True, 0), data_dir=tmp_path).run(_spec(), known={})
+    assert all(d.artifact_path is None for d in result.documents)
+    assert not (tmp_path / "raw").exists()
+
+    result = HtmlConnector(_client(), CrawlPolicy(True, 0), data_dir=tmp_path).run(_spec(keep_html=True), known={})
+    hund = next(d for d in result.documents if d.url == "https://www.x.ch/de/hund")
+    assert Path(hund.artifact_path).read_text() == PAGES["https://www.x.ch/de/hund"]
+    assert Path(hund.artifact_path).parent == tmp_path / "raw" / "x"
+
+
+def test_kept_html_is_one_file_per_text_version_not_per_fetch(tmp_path):
+    """Markup that changes on every fetch (a token, a timestamp) is the same document version."""
+    def run(stamp: str, text: str) -> str:
+        pages = {"https://www.x.ch/de/": f"""<html lang="de"><head><meta name="csrf" content="{stamp}"></head>
+          <body><main><h1>Start</h1><p>{text}</p></main></body></html>"""}
+        result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0), data_dir=tmp_path).run(
+            _spec(keep_html=True), known={})
+        return result.documents[0].artifact_path
+
+    first, again, changed = run("t1", "Alt."), run("t2", "Alt."), run("t3", "Neu.")
+    assert first == again and changed != first
+    assert Path(first).exists() and Path(changed).exists()
+
+
+# --- a fixed list of PDF URLs, and PDF links inside JSON attributes (#56) ------------------------
+
+def _pdf_only_spec(**config):
+    base = {"allow_prefixes": ["https://www.gl.ch/"], "pdf_allow_prefixes": ["https://www.gl.ch/public/"],
+            "pdf_urls": [{"url": "https://www.gl.ch/public/wegleitung.pdf", "title_hint": "Wegleitung 2025"},
+                         {"url": "https://www.gl.ch/public/tarif.pdf"},
+                         {"url": "https://www.gl.ch/intern/liste.pdf"}]}
+    base.update(config)
+    return SourceSpec(id="gl", name="GL", publisher="GL", authority="official_info", level="cantonal",
+                      extent_id="CH-GL", connector="html", tier=2, languages=("de", "fr"), config=base)
+
+
+def test_pdf_urls_are_handed_over_without_a_linking_page():
+    seen: list[str] = []
+    result = HtmlConnector(_client(pages={}, seen=seen), CrawlPolicy(True, 0)).run(_pdf_only_spec(), known={})
+    assert [(p.url, p.title_hint, p.language) for p in result.pdfs] == [
+        ("https://www.gl.ch/public/wegleitung.pdf", "Wegleitung 2025", "de"),
+        ("https://www.gl.ch/public/tarif.pdf", "", "de")]
+    assert result.errors == (("https://www.gl.ch/intern/liste.pdf", "PDF outside pdf_allow_prefixes"),)
+    assert seen == ["https://www.gl.ch/robots.txt"]
+
+
+def test_pdf_urls_obey_robots_and_count_against_max_pdfs():
+    robots = "User-agent: *\nDisallow: /public/wegleitung.pdf\n"
+    result = HtmlConnector(_client(robots, pages={}), CrawlPolicy(True, 0)).run(
+        _pdf_only_spec(max_pdfs=0), known={})
+    assert result.pdfs == ()
+    assert result.skipped == (("https://www.gl.ch/public/wegleitung.pdf", "max_pdfs"),
+                              ("https://www.gl.ch/public/tarif.pdf", "max_pdfs"))
+    result = HtmlConnector(_client(robots, pages={}), CrawlPolicy(True, 0)).run(_pdf_only_spec(), known={})
+    assert [p.url for p in result.pdfs] == ["https://www.gl.ch/public/tarif.pdf"]
+    assert result.skipped == (("https://www.gl.ch/public/wegleitung.pdf", "robots"),)
+
+
+def test_pdfs_in_a_json_attribute_are_handed_over_and_a_known_one_is_never_fetched_as_a_page():
+    """i-web tables (#56): the /_doc/<id> links sit only inside data-entities. A /_doc/ URL stored by
+    an earlier run is known, but it is a PDF: the page crawl must not download it again."""
+    entities = json.dumps({"data": [{"_dokumentList": '<a href="/_doc/4351168">743.1 Abfallreglement</a>'}]})
+    pages = {"https://www.thun.ch/reglementeverordnungen": f"""<html lang="de"><body><main><h1>Reglemente</h1>
+      <p>Alle Reglemente.</p><table class="icms-dt" data-entities="{html_escape(entities)}"></table>
+      </main></body></html>"""}
+    spec = SourceSpec(id="thun", name="Thun", publisher="Thun", authority="municipal_law", level="municipal",
+                      extent_id="CH-BE-942", connector="html", tier=2, languages=("de",),
+                      config={"start_urls": ["https://www.thun.ch/reglementeverordnungen"],
+                              "allow_prefixes": ["https://www.thun.ch/"], "pdf_link_patterns": [r"/_doc/\d+"],
+                              "json_link_attributes": [{"selector": "table.icms-dt", "attribute": "data-entities"}]})
+    seen: list[str] = []
+    known = {"https://www.thun.ch/_doc/4355560": KnownState(None, None, "h")}
+    result = HtmlConnector(_client(pages=pages, seen=seen), CrawlPolicy(True, 0)).run(spec, known=known)
+    assert [(p.url, p.title_hint) for p in result.pdfs] == [("https://www.thun.ch/_doc/4351168",
+                                                             "743.1 Abfallreglement")]
+    assert "https://www.thun.ch/_doc/4355560" not in seen

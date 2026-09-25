@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import pytest
 
@@ -161,6 +162,110 @@ def test_rejects_invalid_site_adaptation_keys(tmp_path, old, new, message):
     path = tmp_path / "m.yaml"
     config = SITE_CONFIG.replace(old, new)
     assert config != SITE_CONFIG
+    path.write_text(MANIFEST.replace(BERN_CONFIG, config))
+    with pytest.raises(ValueError, match=message):
+        load_manifest(path)
+
+
+PDF_URLS = ('config: {allow_prefixes: ["https://www.bern.ch/"], '
+            'pdf_urls: [{url: "https://www.bern.ch/a.pdf", title_hint: "Tarif"}, {url: "https://www.bern.ch/b.pdf"}], '
+            'json_link_attributes: [{selector: "table.icms-dt", attribute: "data-entities"}]}')
+
+
+def test_accepts_pdf_urls_without_start_urls_and_json_link_attributes(tmp_path):
+    """#56: a source can be a fixed list of PDFs, with no page to start from."""
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, PDF_URLS))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["pdf_urls"][0] == {"url": "https://www.bern.ch/a.pdf", "title_hint": "Tarif"}
+
+
+@pytest.mark.parametrize(("old", "new", "message"), [
+    ('pdf_urls: [{url: "https://www.bern.ch/a.pdf", title_hint: "Tarif"}, {url: "https://www.bern.ch/b.pdf"}], ',
+     "", "start_urls"),
+    ('{url: "https://www.bern.ch/b.pdf"}', '"https://www.bern.ch/b.pdf"', "pdf_urls"),
+    ('{url: "https://www.bern.ch/b.pdf"}', '{url: "/b.pdf"}', "pdf_urls"),
+    ('{url: "https://www.bern.ch/b.pdf"}', '{url: "https://www.bern.ch/b.pdf", title: "B"}', "pdf_urls"),
+    ('title_hint: "Tarif"', "title_hint: 3", "pdf_urls"),
+    ('selector: "table.icms-dt"', 'selector: "table.icms-dt["', "json_link_attributes"),
+    (', attribute: "data-entities"', "", "json_link_attributes"),
+])
+def test_rejects_invalid_pdf_urls_and_json_link_attributes(tmp_path, old, new, message):
+    config = PDF_URLS.replace(old, new)
+    assert config != PDF_URLS
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, config))
+    with pytest.raises(ValueError, match=message):
+        load_manifest(path)
+
+
+def test_the_declared_manifest_loads():
+    manifest = load_manifest(Path(__file__).parents[3] / "manifests" / "declared-scope.yaml")
+    assert len(manifest.sources) > 200
+
+
+def test_rejects_a_start_url_outside_allow_prefixes(tmp_path):
+    """The crawl would skip it silently (#57)."""
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, BERN_CONFIG.replace('start_urls: ["https://www.bern.ch/"]',
+                                                                      'start_urls: ["https://bern.ch/"]')))
+    with pytest.raises(ValueError, match=r"start_urls.*https://bern\.ch/.*allow_prefixes"):
+        load_manifest(path)
+
+
+@pytest.mark.parametrize(("connector_config", "key"), [
+    (BERN_CONFIG.replace("}", ", max_page: 5}"), "max_page"),
+    (BERN_CONFIG.replace("}", ", sitemap_url: [\"https://www.bern.ch/sitemap.xml\"]}"), "sitemap_url"),
+])
+def test_rejects_an_unknown_config_key(tmp_path, connector_config, key):
+    """A misspelled key was silently ignored (#57)."""
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, connector_config))
+    with pytest.raises(ValueError, match=f"unknown config key.*{key}"):
+        load_manifest(path)
+
+
+def test_rejects_an_unknown_fedlex_config_key(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace('config: {sr_numbers: ["220"]}', 'config: {sr_numbers: ["220"], sr: ["210"]}'))
+    with pytest.raises(ValueError, match="unknown config key"):
+        load_manifest(path)
+
+
+FETCH_KEYS = BERN_CONFIG.replace("}", ', ca_bundle: "certs/ag.pem", max_pdf_bytes: 50000000, keep_html: true, '
+                                      'sitemap_rewrite: {from: "http://admin.bern.ch/", to: "https://www.bern.ch/"}}')
+
+
+def test_a_relative_ca_bundle_is_taken_from_the_manifests_directory(tmp_path):
+    folder = tmp_path / "manifests"
+    folder.mkdir()
+    path = folder / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, BERN_CONFIG.replace("}", ', ca_bundle: "certs/ag.pem"}')))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["ca_bundle"] == str(folder / "certs" / "ag.pem")
+    path.write_text(MANIFEST.replace(BERN_CONFIG, BERN_CONFIG.replace("}", ', ca_bundle: "/etc/ssl/ag.pem"}')))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["ca_bundle"] == "/etc/ssl/ag.pem"
+
+
+def test_accepts_the_per_source_fetch_keys(tmp_path):
+    path = tmp_path / "m.yaml"
+    path.write_text(MANIFEST.replace(BERN_CONFIG, FETCH_KEYS))
+    [spec] = select_sources(load_manifest(path), tier=2, source_ids=("bern_city",))
+    assert spec.config["sitemap_rewrite"] == {"from": "http://admin.bern.ch/", "to": "https://www.bern.ch/"}
+
+
+@pytest.mark.parametrize(("old", "new", "message"), [
+    ('ca_bundle: "certs/ag.pem"', 'ca_bundle: ""', "ca_bundle"),
+    ("max_pdf_bytes: 50000000", "max_pdf_bytes: 0", "max_pdf_bytes"),
+    ("keep_html: true", 'keep_html: "yes"', "keep_html"),
+    ('to: "https://www.bern.ch/"', 'to: "/"', "sitemap_rewrite"),
+    ('from: "http://admin.bern.ch/", ', "", "sitemap_rewrite"),
+])
+def test_rejects_invalid_per_source_fetch_keys(tmp_path, old, new, message):
+    config = FETCH_KEYS.replace(old, new)
+    assert config != FETCH_KEYS
+    path = tmp_path / "m.yaml"
     path.write_text(MANIFEST.replace(BERN_CONFIG, config))
     with pytest.raises(ValueError, match=message):
         load_manifest(path)

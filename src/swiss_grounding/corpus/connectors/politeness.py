@@ -14,11 +14,19 @@ from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
+import httpx
+
 DEFAULT_RETRY_SECONDS = 30.0
 MAX_RETRY_SECONDS = 120.0
 MAX_HOST_DELAY_SECONDS = 30.0
 RETRY_ATTEMPTS = 3
 _BACKOFF_STATUSES = frozenset({429, 503})
+# Transport failures worth another attempt: the server dropped a connection it had accepted
+# (www.gerichte-zh.ch, 2 of 3 attempts on 2026-09-23). A connection that cannot be made at all -- a
+# certificate or DNS failure, a refused or timed-out connect -- does not go away on a retry, and a read
+# timeout would hold the crawl for three timeouts, so neither is retried.
+_RETRY_TRANSPORT_ERRORS = (httpx.RemoteProtocolError, httpx.ReadError)
+TRANSPORT_RETRY_SECONDS = 2.0
 
 
 class HostThrottle:
@@ -56,6 +64,14 @@ class HostThrottle:
                 if remaining > 0:
                     sleep(remaining)
             self._last[host] = self._clock()
+
+    def require(self, url: str, delay: float) -> None:
+        """Make `delay` a floor for every later request to `url`'s host, whichever connector sends
+        it: a robots.txt Crawl-delay read while crawling pages also binds that host's PDF downloads.
+        Never lowers a floor `backoff` has already raised."""
+        host = urlparse(url).netloc.lower()
+        with self._guard:
+            self._min_delay[host] = max(self._min_delay.get(host, 0.0), delay)
 
     def backoff(self, url: str, retry_after: float, sleep: Callable[[float], None] = time.sleep) -> None:
         """After a 429/503: sleep `retry_after` seconds via this host's own slot (so every other
@@ -116,11 +132,20 @@ def request_with_backoff(url: str, throttle: HostThrottle, before: Callable[[str
     qualify. On 429/503, sleeps for Retry-After via the host's own throttle slot (so every thread
     on that host waits) and raises the host's delay for the rest of the run, then retries. The
     last response is returned once attempts run out or a non-429/503 status comes back.
+    A dropped connection is retried after sleeping TRANSPORT_RETRY_SECONDS times the attempt number,
+    without raising the host's delay: it is a flaky connection, not a request to slow down. The last
+    attempt's exception propagates.
     """
     result = None
     for attempt in range(1, attempts + 1):
         before(url)
-        result = send()
+        try:
+            result = send()
+        except _RETRY_TRANSPORT_ERRORS:
+            if attempt == attempts:
+                raise
+            sleep(TRANSPORT_RETRY_SECONDS * attempt)
+            continue
         if result.status_code not in _BACKOFF_STATUSES or attempt == attempts:
             return result
         throttle.backoff(url, parse_retry_after(result.headers.get("retry-after")), sleep)

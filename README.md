@@ -251,7 +251,7 @@ prebuilt database):
 
 | Path | Contents |
 |---|---|
-| `data/raw/<source>/` | The raw Fedlex XML and downloaded PDFs, named by a hash of the URL. HTML pages are not stored raw, only their parsed text. |
+| `data/raw/<source>/` | The raw Fedlex XML and downloaded PDFs, named by a hash of the URL plus a hash of the version, so a changed file never overwrites the one an older version points at. HTML pages are stored raw only for sources with `keep_html: true`; otherwise only their parsed text is kept. |
 | `data/ocr/<source>/` | Images of PDF pages with too little text, waiting for OCR. |
 | `data/batches/` | Batch API input files and a log of submitted batches. |
 | `data/dump/` | Database parts downloaded by `setup`. Always `<repository root>/data/dump`, whatever `DATA_DIR` is. `dump export` writes new parts to `<repository root>/dist/`. |
@@ -331,6 +331,7 @@ See the tables below for every setting's default and purpose.
 | `CORPUS_INDEXES` | `bge-m3` | Embedding indexes to build. Add `openai-3l` to also pay for the OpenAI index. |
 | `EMBEDDING_BACKEND` | `fake` | Set to `sentence_transformers` to build the local bge-m3 index. |
 | `RESPECT_ROBOTS` | `true` | Obey robots.txt while crawling. Keep it on unless a source's terms were checked. |
+| `ROBOTS_API_EXCEPTIONS` | `false` | Opt-in: a `json` source whose manifest entry gives a `robots_exception_reason` is fetched even where robots.txt disallows its documented API. Each such request is logged. |
 | `CRAWL_DELAY_SECONDS`, `FETCH_TIMEOUT_SECONDS` | `0.5`, `20` | Minimum delay between requests to one host (robots.txt and the manifest can raise it), and the HTTP timeout. |
 | `DATA_DIR` | `data` | Where raw files, page images and batch files go. |
 | `CORPUS_CHAT_TOKENS_PER_FILE`, `CORPUS_EMBED_TOKENS_PER_FILE` | `2000000` | Input tokens per Batch API file. Set to the account's enqueued-token limit. |

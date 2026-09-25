@@ -57,6 +57,18 @@ def _clean(root: Tag, tags: tuple[str, ...] = DROP_TAGS) -> Tag:
     return root
 
 
+def _drop_captions(root: Tag) -> None:
+    """Drop every <figcaption> that labels an image the corpus never keeps: typically a photo credit
+    ("© Thierry Parel / Ville de Genève"), which would otherwise become a section of its own. The
+    <figure> itself stays -- CMSes also wrap tables in one -- and so does the caption of a figure
+    holding a table, since that caption titles the table. <time> stays too: it carries dates in text.
+    """
+    for caption in root.find_all("figcaption"):
+        figure = caption.find_parent("figure")
+        if figure is None or figure.find("table") is None:
+            caption.decompose()
+
+
 def _is_hidden(tag: Tag) -> bool:
     """True for a heading that is in the DOM but never shown to a sighted visitor: a `hidden`
     attribute, `aria-hidden="true"`, an inline `display:none`/`visibility:hidden` style, or a
@@ -181,6 +193,7 @@ def html_to_page(html: str, url: str, default_language: str, content_selector: s
     _clean(root, _NON_HEADER_DROP_TAGS)  # drop nav/footer/etc. first so their h1s can't win
     title = _title(soup, root)  # ... then look for the title, while a <header> is still there
     _clean(root, _HEADER_DROP_TAGS)  # now drop <header> too, before splitting into sections
+    _drop_captions(root)
     # A hidden heading nested inside a non-descended container (e.g. a breadcrumb nav's sr-only
     # <h2>) would otherwise still be serialised to markdown as part of that container's buffered
     # text (walk() only special-cases a heading it meets directly). Remove every hidden heading

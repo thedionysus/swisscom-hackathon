@@ -2,6 +2,7 @@ from io import BytesIO
 from pathlib import Path
 
 import httpx
+import pytest
 from pypdf import PdfWriter
 
 from swiss_grounding.corpus.connectors.pdf import MAX_PDF_BYTES, PdfConnector, parse_pdf
@@ -15,6 +16,15 @@ SPEC = SourceSpec(id="x", name="X", publisher="X", authority="official_info", le
 def _blank_pdf(width: float = 595, height: float = 842) -> bytes:
     writer = PdfWriter()
     writer.add_blank_page(width=width, height=height)
+    out = BytesIO()
+    writer.write(out)
+    return out.getvalue()
+
+
+def _titled_pdf(title: str) -> bytes:
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    writer.add_metadata({"/Title": title})
     out = BytesIO()
     writer.write(out)
     return out.getvalue()
@@ -131,6 +141,20 @@ def test_connector_downloads_and_parses(tmp_path):
     assert len(result.documents) == 1 and result.documents[0].title
 
 
+def test_a_changed_pdf_gets_a_new_artifact_and_the_old_bytes_stay(tmp_path):
+    """#12: the superseded version's artifact_path must keep pointing at the bytes it was parsed from."""
+    other = _text_pdf("A different version of the same leaflet, with enough text to skip OCR entirely.")
+    runs = []
+    for body in (SAMPLE, other):
+        client = httpx.Client(transport=httpx.MockTransport(
+            lambda r, body=body: httpx.Response(200, content=body, headers={"content-type": "application/pdf"})))
+        result = PdfConnector(client, data_dir=tmp_path, sleep=lambda s: None).run_pdfs(
+            SPEC, [DiscoveredPdf("https://x.ch/a.pdf", "de", "Merkblatt", "x")], known={})
+        runs.append(result.documents[0].artifact_path)
+    assert runs[0] != runs[1]
+    assert Path(runs[0]).read_bytes() == SAMPLE and Path(runs[1]).read_bytes() == other
+
+
 def test_known_pdf_answering_404_is_reported_gone(tmp_path):
     client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404)))
     known = {"https://x.ch/gone.pdf": KnownState(etag=None, last_modified=None, content_hash="h")}
@@ -165,6 +189,45 @@ def test_download_aborts_past_max_bytes_via_content_length(tmp_path):
         SPEC, [DiscoveredPdf("https://x.ch/huge.pdf", "de", "Huge", "x")], known={})
     assert result.documents == ()
     assert any("larger than" in reason for _, reason in result.errors)
+
+
+def test_max_pdf_bytes_is_a_per_source_limit(tmp_path):
+    """TI's Istruzioni_PF_2025.pdf is 43.7 MB, over the 30 MB default (#57)."""
+    def run(config, content_length):
+        client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(
+            200, content=SAMPLE, headers={"content-type": "application/pdf", "content-length": str(content_length)})))
+        spec = SourceSpec(id="ti", name="TI", publisher="TI", authority="official_info", level="cantonal",
+                          extent_id="CH-TI", connector="html", tier=1, languages=("it",), config=config)
+        return PdfConnector(client, data_dir=tmp_path, sleep=lambda s: None).run_pdfs(
+            spec, [DiscoveredPdf("https://www4.ti.ch/istruzioni.pdf", "it", "Istruzioni", "ti")], known={})
+
+    assert run({}, 43_700_000).errors == (("https://www4.ti.ch/istruzioni.pdf", f"PDF larger than {MAX_PDF_BYTES} bytes"),)
+    raised = run({"max_pdf_bytes": 50_000_000}, 43_700_000)
+    assert not any("larger than" in reason for _, reason in raised.errors)
+    assert run({"max_pdf_bytes": 100}, len(SAMPLE)).errors == (
+        ("https://www4.ti.ch/istruzioni.pdf", "PDF larger than 100 bytes"),)
+
+
+@pytest.mark.parametrize("meta", ["Leer", "Microsoft Word - Tarif.docx", "Ferienplan_2026.indd", "Tarife 2026.xlsx",
+                                  "_ERZIEHUNGSDIREKTION_", "Untitled", "Dokument1"])
+def test_a_file_or_template_name_in_the_metadata_gives_way_to_the_link_text(tmp_path, meta):
+    """Run 3 (#57): of 21 saved PDFs with a metadata title, 11 were junk like these."""
+    doc = parse_pdf(_titled_pdf(meta), url="https://www.jura.ch/tarif.pdf", language="fr",
+                    title_hint="Tarif des avances, émoluments et débours", source_id="x", artifact_path="t",
+                    ocr_dir=tmp_path)
+    assert doc.title == "Tarif des avances, émoluments et débours"
+
+
+def test_a_real_metadata_title_still_wins_over_a_link_text_that_is_a_file_name(tmp_path):
+    doc = parse_pdf(_titled_pdf("Richtlinien über das Austrittsverfahren"), url="https://x.ch/_doc/3720704",
+                    language="de", title_hint="311.8.pdf", source_id="x", artifact_path="t", ocr_dir=tmp_path)
+    assert doc.title == "Richtlinien über das Austrittsverfahren"
+
+
+def test_the_file_name_fallback_is_url_decoded(tmp_path):
+    doc = parse_pdf(_blank_pdf(), url="https://www.ai.ch/Schulferien%20202627-203031.pdf", language="de",
+                    title_hint="", source_id="x", artifact_path="t", ocr_dir=tmp_path)
+    assert doc.title == "Schulferien 202627-203031.pdf"
 
 
 def test_response_that_is_not_a_pdf_is_rejected(tmp_path):

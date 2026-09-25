@@ -95,6 +95,63 @@ def test_apertus_client_does_not_retry_by_default(monkeypatch):
     assert captured["max_retries"] == 0
 
 
+def test_check_manifest_probes_nothing_for_a_source_with_only_pdf_urls():
+    import httpx
+
+    from swiss_grounding.cli import corpus_source_commands as cs
+    from swiss_grounding.corpus.manifest import SourceEntry
+
+    entry = SourceEntry(id="gl", name="GL", publisher="GL", authority="official_info", level="cantonal",
+                        extent_id="CH-GL", connector="html", tier=2, languages=("de",),
+                        config={"allow_prefixes": ["https://www.gl.ch/"],
+                                "pdf_urls": [{"url": "https://www.gl.ch/a.pdf"}]})
+    http = httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(500)))
+    assert cs._check_html(http, entry, respect_robots=True) == 0
+
+
+def _aargau(source_id="ag", **config):
+    from swiss_grounding.corpus.models import SourceSpec
+    base = {"start_urls": ["https://www.schulen-aargau.ch/regelschule/ferien"],
+            "allow_prefixes": ["https://www.schulen-aargau.ch/regelschule/"],
+            "pdf_allow_prefixes": ["https://media.schulen-aargau.ch/ferienplan"]}
+    return SourceSpec(id=source_id, name="AG", publisher="AG", authority="official_info", level="cantonal",
+                      extent_id="CH-AG", connector="html", tier=2, languages=("de",), config={**base, **config})
+
+
+def test_a_source_whose_ca_bundle_is_missing_is_left_out_with_one_line(capsys):
+    """A missing PEM file costs its own source, not the whole fetch, and no traceback."""
+    import certifi
+
+    from swiss_grounding.cli import corpus_source_commands as cs
+    sources = [_aargau(ca_bundle="/nowhere/ag.pem"), _aargau("bl"), _aargau("zh", ca_bundle=certifi.where())]
+    assert [s.id for s in cs.with_readable_ca_bundles(sources)] == ["bl", "zh"]
+    assert capsys.readouterr().out == "ag: config.ca_bundle '/nowhere/ag.pem' is not a file\n"
+
+
+def test_a_ca_bundle_mounts_its_own_tls_transport_on_every_host_of_the_source():
+    """www.schulen-aargau.ch serves an incomplete certificate chain (#57): its source names the
+    missing intermediate, which is trusted for that source's hosts only."""
+    import certifi
+
+    from swiss_grounding.cli import corpus_source_commands as cs
+    mounts = cs.tls_mounts([_aargau(ca_bundle=certifi.where()), _aargau()])
+    assert sorted(mounts) == ["https://media.schulen-aargau.ch", "https://www.schulen-aargau.ch"]
+
+
+def test_a_missing_ca_bundle_fails_before_any_request():
+    from swiss_grounding.cli import corpus_source_commands as cs
+    with pytest.raises(ValueError, match="ca_bundle"):
+        cs.tls_mounts([_aargau(ca_bundle="certs/does-not-exist.pem")])
+
+
+def test_readme_documents_both_robots_settings_with_their_defaults():
+    """The brief (p. 9) asks for the robots.txt settings and their defaults in the README (#57)."""
+    from pathlib import Path
+    readme = (Path(__file__).parents[2] / "README.md").read_text(encoding="utf-8")
+    assert "| `RESPECT_ROBOTS` | `true` |" in readme
+    assert "| `ROBOTS_API_EXCEPTIONS` | `false` |" in readme
+
+
 def test_sync_workers_is_apertus_workers_under_apertus_and_sync_workers_otherwise():
     apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k", apertus_workers=5)
     openai = _settings(corpus_llm_provider="openai", openai_api_key="k")
