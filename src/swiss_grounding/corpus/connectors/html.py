@@ -23,6 +23,7 @@ from swiss_grounding.corpus.models import (
     KnownState,
     ParsedDocument,
     SourceSpec,
+    content_hash,
 )
 
 logger = logging.getLogger(__name__)
@@ -300,6 +301,9 @@ class HtmlConnector:
                 # include the language switcher): only pages crawled in the same run are grouped.
                 if alt_lang in spec.languages and self._crawlable(href, prefixes, pdf_patterns, deny):
                     queue.add(href, front=True)
+            if page.canonical and page.canonical != final and self._crawlable(page.canonical, prefixes,
+                                                                              pdf_patterns, deny):
+                queue.add(page.canonical, front=True)  # so an alias can be told apart from its canonical
             for link in page.links:
                 if self._crawlable(link, prefixes, pdf_patterns, deny):
                     queue.add(link)
@@ -355,6 +359,7 @@ class _CrawlResults:
         self.gone: dict[str, None] = {}
         self.errors: list[tuple[str, str]] = []
         self.skipped: dict[str, str] = {}
+        self.canonicals: dict[str, str | None] = {}
 
     def skip(self, url: str, reason: str) -> None:
         self.skipped.setdefault(url, reason)
@@ -364,6 +369,7 @@ class _CrawlResults:
             return
         self.alternates_by_url[final] = dict(page.alternates)
         self.page_languages[final] = page.language
+        self.canonicals[final] = page.canonical
         for pdf_url, text in page.pdf_links:
             if (pdf_url in self.pdfs or pdf_url in self._pdfs_refused
                     or not any(pdf_url.startswith(p) for p in self._pdf_prefixes)):
@@ -385,7 +391,27 @@ class _CrawlResults:
                 retrieved_via=self._spec.retrieved_via, etag=response.headers.get("etag"),
                 last_modified=response.headers.get("last-modified")))
 
+    def _drop_canonical_aliases(self) -> None:
+        """Drop a page that names another page as canonical when that page was stored in this run
+        with the same text, and names itself (or nothing) as canonical (#27). The canonical link
+        alone is not enough: sites point language versions, or page 2 of a list, at one canonical
+        URL, and those hold other text. Both stay documents then, as before."""
+        by_url = {doc.url: doc for doc in self.pending}
+        aliases = set()
+        for doc in self.pending:
+            canonical = self.canonicals.get(doc.url)
+            target = by_url.get(canonical) if canonical and canonical != doc.url else None
+            if (target is not None and self.canonicals.get(target.url) in (None, target.url)
+                    and target.language == doc.language and content_hash(target) == content_hash(doc)):
+                aliases.add(doc.url)
+                self.skip(doc.url, "duplicate of canonical")
+        self.pending = [doc for doc in self.pending if doc.url not in aliases]
+        for url in aliases:  # an alias left in would join its canonical's translation group as a
+            self.alternates_by_url.pop(url, None)  # second page of the same language, and break it
+            self.page_languages.pop(url, None)
+
     def result(self) -> ConnectorResult:
+        self._drop_canonical_aliases()
         keys = _language_groups(self.alternates_by_url, self.page_languages)
         documents = tuple(replace(doc, work_key=keys.get(doc.url, work_key(doc.url, {}))) for doc in self.pending)
         return ConnectorResult(documents=documents, unchanged_urls=tuple(self.unchanged),

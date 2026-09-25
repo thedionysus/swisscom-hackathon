@@ -599,3 +599,45 @@ def test_error_page_served_with_200_is_reported_not_stored_and_its_links_not_fol
     result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(_spec(), known={})
     assert result.documents == ()
     assert [(url, reason.split(":")[0]) for url, reason in result.errors] == [("https://www.x.ch/de/", "soft 404")]
+
+
+# --- canonical alias (#27) ------------------------------------------------------------------------
+
+_THEME = """<html lang="fr"><head><link rel="canonical" href="{canonical}"></head><body><main>
+  <h1>Environnement urbain</h1><p>{text}</p></main></body></html>"""
+
+
+def _geneva(pages, start="https://www.g.ch/themes/env"):
+    spec = SourceSpec(id="g", name="G", publisher="G", authority="official_info", level="municipal",
+                      extent_id="CH-GE-6621", connector="html", tier=1, languages=("fr",),
+                      config={"start_urls": [start],
+                              "allow_prefixes": ["https://www.g.ch/themes/", "https://www.g.ch/fr/themes/"]})
+    return HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(spec, known={})
+
+
+def test_alias_whose_canonical_holds_the_same_text_is_not_a_second_document():
+    """ge_ville (#27): /themes/x and /fr/themes/x serve one page; the alias names the other as canonical."""
+    canonical = "https://www.g.ch/fr/themes/env"
+    result = _geneva({
+        "https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Les parcs de la ville."),
+        canonical: _THEME.format(canonical=canonical, text="Les parcs de la ville."),
+    })
+    assert [d.url for d in result.documents] == [canonical]
+    assert result.skipped == (("https://www.g.ch/themes/env", "duplicate of canonical"),)
+
+
+def test_page_whose_canonical_holds_other_text_stays_a_document():
+    """A list's page 2 often names page 1 as canonical; its items are not page 1's."""
+    canonical = "https://www.g.ch/fr/themes/env"
+    result = _geneva({
+        "https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Page 2 : autres parcs."),
+        canonical: _THEME.format(canonical=canonical, text="Page 1 : les parcs."),
+    })
+    assert sorted(d.url for d in result.documents) == [canonical, "https://www.g.ch/themes/env"]
+    assert result.skipped == ()
+
+
+@pytest.mark.parametrize("canonical", ["https://www.g.ch/fr/themes/missing", "https://elsewhere.ch/themes/env"])
+def test_page_is_kept_when_its_canonical_is_not_stored_in_the_same_run(canonical):
+    result = _geneva({"https://www.g.ch/themes/env": _THEME.format(canonical=canonical, text="Les parcs.")})
+    assert [d.url for d in result.documents] == ["https://www.g.ch/themes/env"]

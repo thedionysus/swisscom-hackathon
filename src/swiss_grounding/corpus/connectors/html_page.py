@@ -47,6 +47,7 @@ class CrawledPage:
     published: date | None
     modified: date | None
     soft_404: str | None = None  # the <title> or h1 that marks an error page served with 200
+    canonical: str | None = None  # <link rel="canonical">, absolute, without its fragment
 
 
 def _soft_404(*titles: str) -> str | None:
@@ -78,4 +79,4 @@ def parse_crawled_page(html: str, final: str, spec: SourceSpec,
     return CrawledPage(language=lang, emit=emit, title=title, title_hint=page.title, sections=tuple(sections),
                        alternates=dict(meta.alternates), links=extract_links(html, base_url=final),
                        pdf_links=meta.pdf_links, published=meta.published, modified=meta.modified,
-                       soft_404=_soft_404(meta.title, page.title))
+                       soft_404=_soft_404(meta.title, page.title), canonical=meta.canonical)
