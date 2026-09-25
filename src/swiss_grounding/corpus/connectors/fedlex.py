@@ -69,6 +69,11 @@ class RobotsDisallowed(Exception):
     """The act file's host forbids fetching it in robots.txt; reported as an error, never fetched."""
 
 
+def _root(url: str) -> str:
+    parts = httpx.URL(url)
+    return f"{parts.scheme}://{parts.host}"
+
+
 def download_url(file_url: str) -> str:
     """Where an act file is fetched from: the robots-allowed www host for filestore URLs."""
     if file_url.startswith(DATA_FILESTORE):
@@ -120,6 +125,7 @@ class FedlexConnector:
         self._sleep = sleep
         self._respect_robots = respect_robots
         self._robots: dict[str, Protego] = {}
+        self._robots_problems: dict[str, str] = {}
 
     def _with_retry[T](self, call: Callable[[], T]) -> T:
         for attempt in range(1, ATTEMPTS + 1):
@@ -236,16 +242,30 @@ class FedlexConnector:
     def _robots_allow(self, url: str) -> bool:
         if not self._respect_robots:
             return True
-        parts = httpx.URL(url)
-        root = f"{parts.scheme}://{parts.host}"
+        root = _root(url)
         if root not in self._robots:
-            self._robots[root], _problem = load_robots(self._http, root)
+            # A robots.txt that could not be read disallows the whole host; one bad answer must not cost
+            # every act file of the run, so it is read again before that verdict sticks.
+            for attempt in range(1, ATTEMPTS + 1):
+                parser, problem = load_robots(self._http, root)
+                if problem is None or attempt == ATTEMPTS:
+                    break
+                self._sleep(attempt * 1.0)
+            self._robots[root] = parser
+            if problem:
+                self._robots_problems[root] = problem
         return self._robots[root].can_fetch(url, ROBOTS_USER_AGENT)
 
     def _fetch_xml(self, file_url: str) -> str:
         url = download_url(file_url)
         if not self._robots_allow(url):
-            raise RobotsDisallowed(f"{url} disallowed by robots.txt")
+            problem = self._robots_problems.get(_root(url))
+            raise RobotsDisallowed(f"{url} robots.txt unavailable ({problem})" if problem
+                                   else f"{url} disallowed by robots.txt")
         response = self._http.get(url, follow_redirects=True, timeout=60)
         response.raise_for_status()
+        # Both Fedlex hosts answer a file that is not there with 200 and their HTML app page.
+        media_type = response.headers.get("content-type", "").split(";")[0].strip().lower()
+        if media_type == "text/html":
+            raise ValueError(f"{url} is not an act file (content-type {media_type})")
         return response.text
