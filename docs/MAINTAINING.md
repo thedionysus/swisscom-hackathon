@@ -151,6 +151,7 @@ optional: an act without an English version is not an error.
 | `pdf_urls` | `[{url, title_hint?}]`: PDFs no page links to. They take the source's first language, must pass `pdf_allow_prefixes` and robots.txt, and count against `max_pdfs`. |
 | `json_link_attributes` | `[{selector, attribute}]`: elements whose attribute holds JSON with the page's document links, such as i-web's `{selector: "table.icms-dt", attribute: "data-entities"}`. URLs and `<a href>` inside the JSON are checked like any PDF link. |
 | `delay_seconds` | A longer delay between requests for this site. |
+| `keep_html` | `true` keeps each page's raw HTML under `data/raw/<source>/`, one file per version of its text, and records it as the document's `artifact_path`. Off by default: turn it on only where the source's terms allow keeping a copy. |
 
 Two sources may not have overlapping URL prefixes; loading the manifest fails if they do.
 

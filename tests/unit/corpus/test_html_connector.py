@@ -645,6 +645,33 @@ def test_page_is_kept_when_its_canonical_is_not_stored_in_the_same_run(canonical
     assert [d.url for d in result.documents] == ["https://www.g.ch/themes/env"]
 
 
+# --- raw HTML kept on request (#12) ---------------------------------------------------------------
+
+def test_raw_html_is_kept_only_for_a_source_that_asks_for_it(tmp_path):
+    result = HtmlConnector(_client(), CrawlPolicy(True, 0), data_dir=tmp_path).run(_spec(), known={})
+    assert all(d.artifact_path is None for d in result.documents)
+    assert not (tmp_path / "raw").exists()
+
+    result = HtmlConnector(_client(), CrawlPolicy(True, 0), data_dir=tmp_path).run(_spec(keep_html=True), known={})
+    hund = next(d for d in result.documents if d.url == "https://www.x.ch/de/hund")
+    assert Path(hund.artifact_path).read_text() == PAGES["https://www.x.ch/de/hund"]
+    assert Path(hund.artifact_path).parent == tmp_path / "raw" / "x"
+
+
+def test_kept_html_is_one_file_per_text_version_not_per_fetch(tmp_path):
+    """Markup that changes on every fetch (a token, a timestamp) is the same document version."""
+    def run(stamp: str, text: str) -> str:
+        pages = {"https://www.x.ch/de/": f"""<html lang="de"><head><meta name="csrf" content="{stamp}"></head>
+          <body><main><h1>Start</h1><p>{text}</p></main></body></html>"""}
+        result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0), data_dir=tmp_path).run(
+            _spec(keep_html=True), known={})
+        return result.documents[0].artifact_path
+
+    first, again, changed = run("t1", "Alt."), run("t2", "Alt."), run("t3", "Neu.")
+    assert first == again and changed != first
+    assert Path(first).exists() and Path(changed).exists()
+
+
 # --- a fixed list of PDF URLs, and PDF links inside JSON attributes (#56) ------------------------
 
 def _pdf_only_spec(**config):

@@ -177,7 +177,7 @@ def fetch_cmd(manifest: Annotated[Path, typer.Option("--manifest")],
         policy = CrawlPolicy(respect_robots=settings.respect_robots, delay_seconds=settings.crawl_delay_seconds)
         connectors = {"fedlex": FedlexConnector(http, swiss_today, settings.data_dir,
                                                 respect_robots=settings.respect_robots),
-                      "html": HtmlConnector(http, policy),
+                      "html": HtmlConnector(http, policy, data_dir=settings.data_dir),
                       "json": JsonConnector(http, policy, robots_api_exceptions=settings.robots_api_exceptions)}
         pdf = PdfConnector(http, settings.data_dir, delay_seconds=settings.crawl_delay_seconds)
         report = run_fetch(settings.database_url, specs, connectors, pdf, now=lambda: datetime.now(tz=UTC),
