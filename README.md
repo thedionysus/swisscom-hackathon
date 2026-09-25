@@ -17,24 +17,32 @@ replies, are in [`docs/diagrams/`](docs/diagrams/README.md).
 
 ## What it covers
 
-The `swiss_scope` tool returns this text, and the server repeats it whenever a question is not covered.
-The six cantons and seven municipalities below are the floor: at start, the server adds every canton and
-municipality its database holds current passages for, searches them, and names them in this text and in
-its instructions. A canton with more than ten added municipalities is named with a count. For the
-prebuilt database the text reads:
+**The full scope declaration is in [`SCOPE.md`](SCOPE.md).** It lists what the server answers, by level
+and topic, what it refuses and with which status, and how to write evaluation questions against it.
+It describes the latest corpus, release
+[`corpus-full-sources-described-2026-09-25`](https://github.com/thedionysus/swisscom-hackathon/releases/tag/corpus-full-sources-described-2026-09-25):
+252 sources, 44,897 documents, 270,835 searchable passages, all described and embedded.
 
-> Covered: federal information for all of Switzerland; cantonal information for Zurich, Bern,
-> Vaud, Geneva, Ticino and Graubünden; municipal services for Zürich, Bern, Lausanne, Genève,
-> Lugano, Chur and Scuol; lookups for health insurance premiums, public transport connections, the
-> reference interest rate. Not covered: places outside Switzerland; computed amounts such as tax
-> bills or pensions (the official rules and calculators are cited instead); looking up a specific
-> company in the commercial register (how the register works is covered); live weather forecasts,
-> statistics and geodata (MeteoSwiss hazard guidance is covered); cantonal and municipal rules
-> outside the named cantons and municipalities.
+In short:
 
-The sources behind it are listed in [`manifests/declared-scope.yaml`](manifests/declared-scope.yaml):
-Fedlex (federal law in German, French, Italian and English), ch.ch, federal offices, the six cantons'
-administration sites and the seven municipalities' sites.
+- **Federal, for all of Switzerland:** federal law (Fedlex, de/fr/it/en), ch.ch and the federal offices
+  (social insurance, labour, migration, health insurance, tenancy, VAT and companies, customs, road
+  traffic, votes, natural hazards).
+- **Cantons, deep:** Zurich, Bern, Vaud, Geneva, Ticino, Graubünden. **Less deep:** the other 20
+  cantons, mostly taxes, road traffic, courts, dogs and school holidays.
+- **Municipalities:** Zürich, Bern, Lausanne, Genève, Lugano, Chur, Scuol; about 110 communes of
+  canton Fribourg; waste collection dates for St. Gallen and Basel.
+- **Lookups:** health insurance premiums 2026 by municipality, public transport connections, the
+  reference interest rate; federal Parliament and votes through the zbern.ch tools.
+- **Languages:** questions in German, French, Italian, English or Romansh.
+- **Not covered:** places outside Switzerland; computed personal amounts (tax bills, pensions);
+  looking up a specific company; live weather, statistics and geodata. A question about a cantonal or
+  municipal matter that names no place is answered `needs_location`.
+
+The `swiss_scope` tool returns the same scope as text. At start the server adds every canton and
+municipality its database holds passages for, so the text depends on which dump is loaded. The six
+cantons and seven municipalities above are always named. A canton with more than ten added
+municipalities is named with a count.
 
 The challenge's five sample questions, and what the server returned for them on 2026-09-25 against
 the local corpus, with translation switched off:
