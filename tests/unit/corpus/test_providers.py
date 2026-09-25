@@ -201,3 +201,26 @@ def test_apertus_unparseable_reply_keeps_the_billed_usage():
     with pytest.raises(ReplyError) as exc:
         llm.complete(TASK)
     assert exc.value.usage == Usage(100, 20) and exc.value.finish_reason == "stop"
+
+
+def test_the_pacer_spaces_starts_by_the_tighter_token_budget():
+    from swiss_grounding.corpus.providers import RequestPacer
+    now = [100.0]
+    slept = []
+
+    def sleep(seconds):
+        slept.append(round(seconds, 3))
+        now[0] += seconds
+    pacer = RequestPacer(60_000, 6_000, clock=lambda: now[0], sleep=sleep)
+    for _ in range(3):
+        pacer.wait(1_000, 300)       # output is tighter: 300 of 100 per second = 3 s apart
+    assert slept == [3.0, 3.0]
+
+
+def test_an_unpaced_pacer_never_sleeps():
+    from swiss_grounding.corpus.providers import RequestPacer
+    slept = []
+    pacer = RequestPacer(0.0, 0.0, clock=lambda: 5.0, sleep=slept.append)
+    pacer.wait(1_000, 300)
+    pacer.wait(1_000, 300)
+    assert slept == []

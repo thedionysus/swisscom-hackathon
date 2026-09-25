@@ -1,4 +1,6 @@
 import json
+import threading
+import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Protocol
@@ -220,7 +222,34 @@ class AnthropicLLM:
             raise ReplyError(f"unparseable reply: {exc}", usage, getattr(response, "stop_reason", None)) from exc
 
 
-APERTUS_TEMPERATURE = 0.2   # descriptions and labels want steady wording, not variety
+APERTUS_TEMPERATURE = 0.2
+CHARS_PER_TOKEN_ESTIMATE = 3   # conservative for German/French/Italian, as budget.CHARS_PER_TOKEN   # descriptions and labels want steady wording, not variety
+
+
+class RequestPacer:
+    """Spaces request starts across threads so the gateway's per-minute budgets hold: each start books its
+    input tokens and its output cap (the Swisscom gateway counts max_tokens against the output budget when
+    the call starts). Without it a direct run fires its next call as soon as a 429 returns, and nearly
+    every call is rejected. A budget of 0 is not paced."""
+
+    def __init__(self, input_per_minute: float, output_per_minute: float, clock: Callable[[], float] = time.monotonic,
+                 sleep: Callable[[float], None] = time.sleep):
+        self._rates = (input_per_minute / 60.0, output_per_minute / 60.0)
+        self._clock, self._sleep = clock, sleep
+        self._next = 0.0
+        self._lock = threading.Lock()
+
+    def _cost(self, input_tokens: int, output_tokens: int) -> float:
+        in_rate, out_rate = self._rates
+        return max(input_tokens / in_rate if in_rate > 0 else 0.0, output_tokens / out_rate if out_rate > 0 else 0.0)
+
+    def wait(self, input_tokens: int, output_tokens: int) -> None:
+        with self._lock:
+            start = max(self._clock(), self._next)
+            self._next = start + self._cost(input_tokens, output_tokens)
+        delay = start - self._clock()
+        if delay > 0:
+            self._sleep(delay)
 
 
 class ApertusLLM:
@@ -229,18 +258,20 @@ class ApertusLLM:
     AnthropicLLM). `max_retries` also covers 429s from the 5 requests/s limit."""
 
     def __init__(self, api_key: str, *, base_url: str, model: str, timeout_seconds: float = 60.0,
-                 max_retries: int = 2, client=None):
+                 max_retries: int = 2, tokens_per_minute: tuple[float, float] = (0.0, 0.0), client=None):
         if client is None:
             from openai import OpenAI
             client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout_seconds, max_retries=max_retries)
         self._client = client
         self.model = model
+        self._pacer = RequestPacer(*tokens_per_minute)
 
     def chat_body(self, task: LlmTask) -> dict:
         return {"model": self.model, "messages": chat_messages(task), "response_format": {"type": "json_object"},
                 "max_tokens": task.max_output_tokens, "temperature": APERTUS_TEMPERATURE}
 
     def complete(self, task: LlmTask) -> tuple[dict, Usage]:
+        self._pacer.wait(len(task.system + task.user) // CHARS_PER_TOKEN_ESTIMATE, task.max_output_tokens)
         response = self._client.chat.completions.create(**self.chat_body(task))
         choice = response.choices[0]
         usage = Usage(response.usage.prompt_tokens, response.usage.completion_tokens)

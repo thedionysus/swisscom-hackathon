@@ -7,7 +7,8 @@ def apertus_llm(settings: Settings, *, timeout_seconds: float | None = None, max
     if not settings.apertus_api_key:
         raise ValueError("APERTUS_API_KEY is not set")
     return ApertusLLM(settings.apertus_api_key, base_url=settings.apertus_base_url, model=settings.apertus_model,
-                      timeout_seconds=timeout_seconds or settings.apertus_timeout_seconds, max_retries=max_retries)
+                      timeout_seconds=timeout_seconds or settings.apertus_timeout_seconds, max_retries=max_retries,
+                      tokens_per_minute=(settings.apertus_input_tokens_per_minute, settings.apertus_output_tokens_per_minute))
 
 
 def eval_model(settings: Settings) -> str:
