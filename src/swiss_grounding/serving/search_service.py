@@ -26,7 +26,7 @@ from swiss_grounding.serving.passages import best_passage
 from swiss_grounding.serving.places import PlaceOutcome, Resolver, place_outcomes
 from swiss_grounding.serving.relevance import Relevance, feature_vector
 from swiss_grounding.serving.reranker import Reranker, passage_text
-from swiss_grounding.serving.scope import scope_statement
+from swiss_grounding.serving.scope import DECLARED, Scope, scope_statement
 from swiss_grounding.serving.status import decide, pre_search, uncovered_levels
 from swiss_grounding.serving.translation import (
     NoTranslator,
@@ -105,11 +105,14 @@ class SearchService:
     translator: Translator = field(default_factory=NoTranslator)
     query_langs: tuple[str, ...] = ()
     translate_citations: bool = True
+    # The cantons and municipalities searched below the federal level; build_search_service reads them
+    # from the corpus (issue #59).
+    scope: Scope = DECLARED
 
     def search(self, request: SearchRequest) -> SearchResponse:
         if not request.question.strip():
             return SearchResponse("invalid_request", (), message=EMPTY_QUESTION, field="question")
-        outcomes = place_outcomes(request.question, request.locations, self.resolver, self.tree)
+        outcomes = place_outcomes(request.question, request.locations, self.resolver, self.tree, self.scope)
         decided = [pre_search(o) for o in outcomes]
         query = self._embed(request) if any(d is None for d in decided) else None
         cache: RerankCache = {}   # reranker scores, shared by the places of one request
@@ -117,7 +120,7 @@ class SearchService:
                        for o, d in zip(outcomes, decided, strict=True))
         status = overall_status([p.status for p in places])
         needs_scope = any(p.status in ("no_evidence", "outside_scope") for p in places)
-        return SearchResponse(status, places, scope=scope_statement() if needs_scope else "")
+        return SearchResponse(status, places, scope=scope_statement(self.scope) if needs_scope else "")
 
     def _embed(self, request: SearchRequest) -> _Query:
         lang = detect_language(request.question)
@@ -203,7 +206,7 @@ class SearchService:
 
     def scored_for_eval(self, request: SearchRequest) -> list[tuple[tuple[float, ...], str]]:
         """(features, citation key) of every scored group, for every place of the request; evals only."""
-        outcomes = [o for o in place_outcomes(request.question, request.locations, self.resolver, self.tree)
+        outcomes = [o for o in place_outcomes(request.question, request.locations, self.resolver, self.tree, self.scope)
                     if pre_search(o) is None]
         if not outcomes:
             return []

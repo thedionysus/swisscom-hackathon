@@ -17,11 +17,12 @@ from typing import Annotated, Any, Literal
 
 import anyio
 import httpx
+import psycopg
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import Field
 
-from swiss_grounding.app import build_search_service
+from swiss_grounding.app import build_search_service, load_location_tree
 from swiss_grounding.config import Settings
 from swiss_grounding.db.connection import connect
 from swiss_grounding.lookups.connections import find_connections
@@ -32,7 +33,7 @@ from swiss_grounding.serving.call_log import CallRecord, record_call
 from swiss_grounding.serving.documents import get_document
 from swiss_grounding.serving.models import LANGS, MAX_LIMIT, MAX_LOCATIONS, NOTICE, SearchRequest
 from swiss_grounding.serving.places import place_outcomes
-from swiss_grounding.serving.scope import scope_statement
+from swiss_grounding.serving.scope import DECLARED, Scope, load_scope, scope_statement
 from swiss_grounding.serving.search_service import SearchService
 from swiss_grounding.serving.status import pre_search
 
@@ -42,12 +43,27 @@ LIVE = ToolAnnotations(readOnlyHint=True, idempotentHint=False, openWorldHint=Tr
 MAX_QUESTION_CHARS = 2000
 MODEL_LOAD_TIMEOUT_SECONDS = 600
 INTERNAL_ERROR = "The server hit an internal error answering this call. Try again; if it persists, say so."
-INSTRUCTIONS = (
-    "Swiss public information: federal law and federal offices, six cantons, seven cities, and three lookups. "
-    "Search in the user's own language; pass every place the user names in `locations`. Cite the URLs you are "
-    "given and never invent one. When a tool says a question is outside scope, tell the user it is not covered. "
-    + scope_statement()
-)
+
+
+def instructions(scope: Scope = DECLARED) -> str:
+    return (
+        f"Swiss public information: federal law and federal offices, {len(scope.cantons)} cantons, "
+        f"{len(scope.municipalities)} municipalities, and three lookups. "
+        "Search in the user's own language; pass every place the user names in `locations`. Cite the URLs you "
+        "are given and never invent one. When a tool says a question is outside scope, tell the user it is not "
+        "covered. " + scope_statement(scope)
+    )
+
+
+def startup_scope(settings: Settings) -> Scope:
+    """The scope quoted in the instructions, read once at start. The declared floor when the database cannot be
+    reached yet; searches still use the scope the search service reads when it is built."""
+    try:
+        with connect(settings.database_url, connect_timeout=5) as conn:
+            return load_scope(conn, load_location_tree(conn))
+    except psycopg.OperationalError:
+        log.warning("database not reachable at start; the instructions quote the declared scope only")
+        return DECLARED
 
 
 def _encode(value: Any) -> Any:
@@ -91,9 +107,10 @@ class LazyService:
 
 
 def build_server(settings: Settings) -> FastMCP:
+    scope = startup_scope(settings)
     lazy = LazyService(lambda: build_search_service(settings))
     models = anyio.CapacityLimiter(1)
-    mcp = FastMCP("swiss-grounding", instructions=INSTRUCTIONS)
+    mcp = FastMCP("swiss-grounding", instructions=instructions(scope))
 
     async def timed(tool: str, fn: Callable[[], dict], *, uses_models: bool = False) -> str:
         started = perf_counter()
@@ -183,7 +200,7 @@ def build_server(settings: Settings) -> FastMCP:
     @mcp.tool(annotations=READ_ONLY)
     async def swiss_scope() -> str:
         """What this server covers and what it does not. Quote it when telling a user a question is not covered."""
-        return await timed("swiss_scope", lambda: {"status": "results", "scope": scope_statement()})
+        return await timed("swiss_scope", lambda: {"status": "results", "scope": scope_statement(scope)})
 
     def _municipality(service: SearchService, text: str) -> tuple[str | None, dict | None]:
         [outcome] = place_outcomes("", (text,), service.resolver, service.tree)
@@ -245,5 +262,5 @@ def build_server(settings: Settings) -> FastMCP:
     parliament = zbern.from_settings(settings)
     if parliament is not None:
         parliament.prime()
-        zbern.attach(mcp, parliament, INSTRUCTIONS)
+        zbern.attach(mcp, parliament, instructions(scope))
     return mcp
