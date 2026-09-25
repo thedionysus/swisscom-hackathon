@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chunking and alignment · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Ingestion · 05</p>
+    <h1>Chunking and alignment</h1>
+    <p class="lede">Every passage keeps its section&#x27;s breadcrumb and anchor, its order in the document, and a hash of its text (the image digest for a scanned page). Legal abbreviations such as Art., Abs., lit. and Ziff. never count as a sentence end. The law example is real: Art. 336c OR is split into three paragraphs in all four languages.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="chunking-alignment-title chunking-alignment-desc">
+<title id="chunking-alignment-title">Chunking and alignment: how sections become passages</title>
+<desc id="chunking-alignment-desc">Law is cut by article or, when an article is long, by paragraph in every language so the language versions stay aligned; web sections and PDF text pages are cut by size into overlapping windows; scanned PDF pages become empty passages that OCR fills later.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="1200" height="196" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">LAW · FEDLEX</text>
+<rect x="40" y="252" width="1200" height="196" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="270" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">WEB SECTION</text>
+<rect x="40" y="464" width="1200" height="176" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="482" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">PDF PAGE</text>
+<!-- arrows -->
+<path d="M 258,138 L 290,138" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 602,138 L 634,138" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 834,138 L 866,138" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 258,350 L 290,350" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 602,350 L 634,350" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 834,350 L 866,350" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 258,558 L 290,558" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 602,558 L 634,558" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 834,558 L 866,558" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="58" y="76" width="200" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="58" y="76" width="200" height="124" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="66" y="82" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="80" y="90.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LAW</text>
+<text x="158" y="131.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Art. 336c OR</text>
+<text x="158" y="145" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">4 language versions</text>
+<text x="158" y="157.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one article section per</text>
+<text x="158" y="170.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">language, paragraphs kept</text>
+<rect x="290" y="76" width="312" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="290" y="76" width="312" height="124" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="298" y="82" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="314" y="90.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RULE</text>
+<text x="446" y="124.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cut by article</text>
+<text x="446" y="138.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">≤ 1,800 characters: one passage</text>
+<text x="446" y="151.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">longer in any language: one per</text>
+<text x="446" y="164.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">paragraph, in every language;</text>
+<text x="446" y="177.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a paragraph &gt; 3,000: windows</text>
+<rect x="634" y="76" width="200" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="634" y="76" width="200" height="124" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="734" y="111.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Passages</text>
+<text x="734" y="125" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">de · art_336_c/para_1</text>
+<text x="734" y="137" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fr · art_336_c/para_1</text>
+<text x="734" y="149" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">it · art_336_c/para_1</text>
+<text x="734" y="161" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">en · art_336_c/para_1</text>
+<text x="734" y="173" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">… para_2, para_3</text>
+<rect x="866" y="76" width="340" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="866" y="76" width="340" height="124" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<rect x="874" y="82" width="36" height="12" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="892" y="90.5" fill="#d52b1e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ALIGN</text>
+<text x="1036" y="125" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">One translation group</text>
+<text x="1036" y="138.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">same group + same align_key</text>
+<text x="1036" y="151.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">the same paragraph in every language:</text>
+<text x="1036" y="164.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">counted once at search time, and the</text>
+<text x="1036" y="177.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">other versions corroborate it</text>
+<rect x="58" y="288" width="200" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="58" y="288" width="200" height="124" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="66" y="294" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="82" y="302.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HTML</text>
+<text x="158" y="343.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Web page</text>
+<text x="158" y="357" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">sections at h1–h4</text>
+<text x="158" y="369.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Markdown text per section;</text>
+<text x="158" y="382.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">tables and lists never split</text>
+<rect x="290" y="288" width="312" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="290" y="288" width="312" height="124" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="298" y="294" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="314" y="302.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RULE</text>
+<text x="446" y="336.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cut by size</text>
+<text x="446" y="350.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">≤ 1,800 characters: one passage</text>
+<text x="446" y="363.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">longer: windows of ≤ 1,800, cut at</text>
+<text x="446" y="376.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a sentence end past the middle,</text>
+<text x="446" y="389.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">150 characters overlap</text>
+<rect x="634" y="288" width="200" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="634" y="288" width="200" height="124" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="734" y="335.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Passages</text>
+<text x="734" y="349" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fr:3</text>
+<text x="734" y="361" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fr:4#0</text>
+<text x="734" y="373" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fr:4#1</text>
+<rect x="866" y="288" width="340" height="124" rx="6" fill="#f5f5f5"/>
+<rect x="866" y="288" width="340" height="124" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="874" y="294" width="36" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="892" y="302.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GROUP</text>
+<text x="1036" y="336.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Language versions</text>
+<text x="1036" y="350.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">pages that list each other share a</text>
+<text x="1036" y="363.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">group, but their sections do not</text>
+<text x="1036" y="376.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">align: repeats are removed when</text>
+<text x="1036" y="389.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">citing (see 20)</text>
+<rect x="58" y="500" width="200" height="116" rx="6" fill="#f5f5f5"/>
+<rect x="58" y="500" width="200" height="116" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="66" y="506" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="80" y="514.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PDF</text>
+<text x="158" y="551.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">PDF pages</text>
+<text x="158" y="565" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">read with pypdf</text>
+<text x="158" y="577.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">text page: ≥ 80 characters</text>
+<text x="158" y="590.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">scanned page: an image</text>
+<rect x="290" y="500" width="312" height="116" rx="6" fill="#f5f5f5"/>
+<rect x="290" y="500" width="312" height="116" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="298" y="506" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="314" y="514.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RULE</text>
+<text x="446" y="544.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cut by page</text>
+<text x="446" y="558.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a text page is cut like a web</text>
+<text x="446" y="571.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">section, key lang:pN, anchor page=N;</text>
+<text x="446" y="584.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a scanned page gives one empty</text>
+<text x="446" y="597.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">passage with needs_ocr</text>
+<rect x="634" y="500" width="200" height="116" rx="6" fill="#f5f5f5"/>
+<rect x="634" y="500" width="200" height="116" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="734" y="549.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Passages</text>
+<text x="734" y="563" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">de:p1</text>
+<text x="734" y="575" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">de:p2  needs_ocr</text>
+<rect x="866" y="500" width="340" height="116" rx="6" fill="#f5f5f5"/>
+<rect x="866" y="500" width="340" height="116" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="874" y="506" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="888" y="514.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">OCR</text>
+<text x="1036" y="551" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Filled by OCR later</text>
+<text x="1036" y="565.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">corpus ocr writes the text;</text>
+<text x="1036" y="578.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">the document&#x27;s extraction</text>
+<text x="1036" y="591.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">becomes ocr (see 06)</text>
+<!-- annotations -->
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">input or rule</text>
+<rect x="215.8" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="215.8" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="239.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">passages with their align_key</text>
+<rect x="411.7" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="411.7" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="435.7" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">what keeps languages aligned</text>
+<line x1="602.6" y1="691.1" x2="626.6" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="636.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">flow</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/corpus/chunker.py</code> · <code>src/swiss_grounding/corpus/connectors/fedlex.py</code> · <code>src/swiss_grounding/corpus/persist.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anatomy of a passage · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Storage · 11</p>
+    <h1>Anatomy of a passage</h1>
+    <p class="lede">Every field of one corpus.chunk row, grouped by what it is for, with the values of a real passage: the first paragraph of Art. 336c of the Code of Obligations (SR 220) in German, as stored in the local corpus on 25 September 2026. The document&#x27;s fields are joined when a search reads the passage; its vectors live in corpus.emb_bge_m3. authority comes from the source: only Fedlex is law, and Schweizer Wanderwege is the one institutional source. On that day this passage had no description yet.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="passage-anatomy-title passage-anatomy-desc">
+<title id="passage-anatomy-title">Anatomy of a passage: one corpus.chunk row</title>
+<desc id="passage-anatomy-desc">The fields of one passage grouped by purpose: identity and position, content, where it applies and who says it, and lifecycle, each with the value of a real passage, the first paragraph of Art. 336c of the Code of Obligations in German, and the same paragraph&#x27;s French, Italian and English versions. Beside it, the document fields a search joins, the passage&#x27;s vectors, and its breadcrumb and text as stored.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="600" height="488" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="56" y="88" width="568" height="122" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="68" y="106" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">IDENTITY AND POSITION</text>
+<rect x="56" y="218" width="568" height="92" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="68" y="236" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">CONTENT</text>
+<rect x="56" y="318" width="568" height="92" rx="8" fill="rgba(213,43,30,0.03)" stroke="rgba(213,43,30,0.35)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<text x="68" y="336" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">WHERE IT APPLIES · WHO SAYS IT</text>
+<rect x="56" y="418" width="568" height="92" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="68" y="436" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">LIFECYCLE</text>
+<rect x="40" y="552" width="600" height="88" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="570" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SAME ALIGN_KEY IN FOUR LANGUAGES</text>
+<text x="265.4" y="570" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">one translation group</text>
+<rect x="672" y="376" width="568" height="264" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="684" y="394" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">THE EXAMPLE AS STORED</text>
+<text x="827" y="394" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">Art. 336c OR, paragraph 1 · de</text>
+<!-- arrows -->
+<path d="M 640,136 L 672,136" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 672,300 L 640,300" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="672" y="40" width="568" height="184" rx="6" fill="#f5f5f5"/>
+<rect x="672" y="40" width="568" height="184" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="672" y="248" width="568" height="104" rx="6" fill="#f5f5f5"/>
+<rect x="672" y="248" width="568" height="104" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<!-- annotations -->
+<text x="56" y="64" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">corpus.chunk</text>
+<text x="154" y="63" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.08em">ONE ROW PER PASSAGE AND LANGUAGE</text>
+<text x="504" y="63" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">EXAMPLE VALUES</text>
+<line x1="40" y1="76" x2="640" y2="76" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="68" y="124" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">id · language</text>
+<text x="208" y="124" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the key; one partition per language</text>
+<text x="504" y="124" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">16541 · de</text>
+<text x="68" y="139" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">document_id</text>
+<text x="208" y="139" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">its document; deleted with it</text>
+<text x="504" y="139" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">36</text>
+<text x="68" y="154" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">translation_group_id</text>
+<text x="208" y="154" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the same work in every language</text>
+<text x="504" y="154" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">g_ad8928ecbb05378f</text>
+<text x="68" y="169" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">align_key</text>
+<text x="208" y="169" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the same in every language of a law article</text>
+<text x="504" y="169" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">art_336_c/para_1</text>
+<text x="68" y="184" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">ordinal · anchor</text>
+<text x="208" y="184" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">position in the document · URL fragment</text>
+<text x="504" y="184" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">478 · art_336_c</text>
+<text x="68" y="199" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">breadcrumb[]</text>
+<text x="208" y="199" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the headings above it, from the top down</text>
+<text x="504" y="199" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">5 headings</text>
+<text x="68" y="254" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">text</text>
+<text x="208" y="254" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">≤ 1,800 characters; a law paragraph up to 3,000</text>
+<text x="504" y="254" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">1,375 characters</text>
+<text x="68" y="269" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">description</text>
+<text x="208" y="269" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">≤ 600 characters per language, gpt-5-nano</text>
+<text x="504" y="269" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">not written yet</text>
+<text x="68" y="284" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">topics[]</text>
+<text x="208" y="284" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">≤ 3 of 20; stored, but not used by search</text>
+<text x="504" y="284" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">{work}</text>
+<text x="68" y="299" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">tsv</text>
+<text x="208" y="299" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">keywords: breadcrumb A, description B, text C</text>
+<text x="504" y="299" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">german stemming</text>
+<text x="68" y="354" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">extent_id</text>
+<text x="208" y="354" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the jurisdiction, copied from the source</text>
+<text x="504" y="354" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">CH</text>
+<text x="68" y="369" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">authority</text>
+<text x="208" y="369" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">copied from the source; only Fedlex is law</text>
+<text x="208" y="384" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">federal_law · cantonal_law · municipal_law ·</text>
+<text x="208" y="399" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">official_info · institutional</text>
+<text x="504" y="369" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">federal_law</text>
+<text x="68" y="454" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">status</text>
+<text x="208" y="454" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">current, scheduled, superseded or withdrawn;</text>
+<text x="208" y="469" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">boilerplate is never described or cited</text>
+<text x="504" y="454" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">current</text>
+<text x="68" y="484" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">chunk_hash</text>
+<text x="208" y="484" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">sha256 of the text; image digest if scanned</text>
+<text x="504" y="484" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">0cc16263…</text>
+<text x="68" y="499" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">needs_ocr · ocr_image</text>
+<text x="208" y="499" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">a scanned page waiting for OCR, its image</text>
+<text x="504" y="499" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">false · null</text>
+<rect x="56" y="578" width="76" height="20" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="94" y="592" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">de · 16541</text>
+<rect x="144" y="578" width="76" height="20" rx="4" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="182" y="592" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">fr · 18215</text>
+<rect x="232" y="578" width="76" height="20" rx="4" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="270" y="592" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">it · 19889</text>
+<rect x="320" y="578" width="165" height="20" rx="4" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="402.5" y="592" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">en · 21563 · not authentic</text>
+<text x="56" y="622" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">A search counts the four once; the others corroborate the one it cites (05).</text>
+<text x="688" y="64" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">corpus.document</text>
+<text x="1228" y="63" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.08em">JOINED WHEN SEARCHED</text>
+<line x1="672" y1="76" x2="1240" y2="76" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="688" y="96" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">url</text>
+<text x="856" y="96" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">https://www.fedlex.admin.ch/eli/cc/27/317_321_377/20260101/de</text>
+<text x="688" y="112" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">title</text>
+<text x="856" y="112" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">Bundesgesetz vom 30. März 1911 betreffend die Ergänzung …</text>
+<text x="688" y="128" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">publisher</text>
+<text x="856" y="128" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">Swiss Federal Chancellery</text>
+<text x="688" y="144" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">identifier</text>
+<text x="856" y="144" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">SR 220; swiss_get_document finds acts by it</text>
+<text x="688" y="160" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">is_authentic</text>
+<text x="856" y="160" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">true; English Fedlex versions are not authentic</text>
+<text x="688" y="176" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">valid_from · valid_to</text>
+<text x="856" y="176" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">2026-01-01 · 2026-09-30; the next version is scheduled</text>
+<text x="688" y="192" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">modified_at · fetched_at</text>
+<text x="856" y="192" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">null · 2026-09-23</text>
+<text x="688" y="208" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">extraction</text>
+<text x="856" y="208" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">native</text>
+<text x="688" y="272" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">corpus.emb_bge_m3</text>
+<text x="1228" y="271" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.08em">KEY (CHUNK_ID, LANGUAGE)</text>
+<line x1="672" y1="284" x2="1240" y2="284" stroke="rgba(45,49,66,0.14)" stroke-width="0.8"/>
+<text x="688" y="304" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">text_hash</text>
+<text x="856" y="304" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">sha256 of breadcrumb + description + text, ≤ 12,000 chars</text>
+<text x="688" y="320" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">embedding</text>
+<text x="856" y="320" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">1,024 dense dimensions; HNSW index, cosine distance</text>
+<text x="688" y="336" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">sparse</text>
+<text x="856" y="336" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">top 1,000 of 250,002 vocabulary terms; inner product</text>
+<text x="688" y="420" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">breadcrumb[]</text>
+<text x="792" y="420" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">SR 220 Bundesgesetz vom 30. März 1911 betreffend die Ergänzung des</text>
+<text x="792" y="435" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Schweizerischen Zivilgesetzbuches (Fünfter Teil: Obligationenrecht)</text>
+<text x="792" y="450" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">› Zweite Abteilung: Die einzelnen Vertragsverhältnisse</text>
+<text x="792" y="465" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">› Zehnter Titel: Der Arbeitsvertrag</text>
+<text x="792" y="480" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">› Erster Abschnitt: Der Einzelarbeitsvertrag</text>
+<text x="792" y="495" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">› Art. 336c</text>
+<text x="688" y="526" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">text</text>
+<text x="792" y="526" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">1 Nach Ablauf der Probezeit darf der Arbeitgeber das Arbeitsverhältnis</text>
+<text x="792" y="541" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">nicht kündigen:</text>
+<text x="792" y="556" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">a. während die andere Partei schweizerischen obligatorischen Militär-</text>
+<text x="792" y="571" fill="#2d3142" font-size="10" font-family="'Geist', sans-serif">oder Schutzdienst oder schweizerischen Zivildienst leistet, …</text>
+<text x="688" y="604" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace" font-weight="500">description</text>
+<text x="792" y="604" fill="#7a8399" font-size="10" font-family="'Geist', sans-serif">empty on 25 September 2026: not described yet</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">the passage: corpus.chunk</text>
+<rect x="275.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="275.4" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="299.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">table joined or keyed to it</text>
+<line x1="461.3" y1="691.1" x2="485.3" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="495.3" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">foreign key</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/corpus/schema.sql</code> · <code>src/swiss_grounding/corpus/chunker.py</code> · <code>src/swiss_grounding/corpus/persist.py</code> · <code>src/swiss_grounding/corpus/describe.py</code> · <code>src/swiss_grounding/corpus/embed.py</code> · <code>src/swiss_grounding/serving/candidates.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

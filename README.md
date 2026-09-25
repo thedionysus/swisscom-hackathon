@@ -12,7 +12,8 @@ repository and `gh auth login` before you start.
 
 Maintaining the data (adding sources, refreshing, publishing a new database) is described in
 [`docs/MAINTAINING.md`](docs/MAINTAINING.md). Measuring answer quality is described in
-[`docs/EVALUATION.md`](docs/EVALUATION.md).
+[`docs/EVALUATION.md`](docs/EVALUATION.md). Diagrams of the whole system, from ingestion to the tool
+replies, are in [`docs/diagrams/`](docs/diagrams/README.md).
 
 ## What it covers
 

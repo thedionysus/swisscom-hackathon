@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anatomy of a swiss_search reply · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Architecture · 28</p>
+    <h1>Anatomy of a swiss_search reply</h1>
+    <p class="lede">Every field of a swiss_search reply, nested as in the JSON. When places disagree, the overall status is the first of results, outside_scope, needs_location, source_unavailable, no_evidence and invalid_request that any place has. scope is an empty string and field is null unless they apply. Two replies are shorter: error carries only status, message and notice, and the invalid_request for a malformed as_of adds field.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="reply-anatomy-title reply-anatomy-desc">
+<title id="reply-anatomy-title">Anatomy of a swiss_search reply</title>
+<desc id="reply-anatomy-desc">Nested boxes: the reply holds status, message, scope, notice and field and a list of places; each place holds its status, resolved location, message, coverage and uncovered levels and a list of citations; each citation holds the passage, its translation, where it is, its language, publisher and authority, jurisdiction and tier, relevance, corroboration, dates and extraction. Below, the seven statuses and what the client should do for each.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<rect x="40" y="40" width="1200" height="460" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.18)" stroke-width="0.8"/>
+<text x="52" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">REPLY</text>
+<text x="92.6" y="58" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">JSON text, one per swiss_search call</text>
+<rect x="56" y="144" width="1168" height="344" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.18)" stroke-width="0.8"/>
+<text x="68" y="162" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">PLACES[]</text>
+<text x="127.8" y="162" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">one per location sent (at most 3), or one for the question</text>
+<rect x="72" y="272" width="1136" height="204" rx="8" fill="rgba(213,43,30,0.03)" stroke="rgba(213,43,30,0.35)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<text x="84" y="290" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">CITATIONS[]</text>
+<text x="163" y="290" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">only with status results · most relevant first · at most limit (default 8)</text>
+<rect x="40" y="520" width="1200" height="124" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="538" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">STATUS</text>
+<text x="99" y="538" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">overall and per place · what the client should do</text>
+<line x1="212.9" y1="554" x2="212.9" y2="630" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<line x1="379.7" y1="554" x2="379.7" y2="630" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<line x1="546.6" y1="554" x2="546.6" y2="630" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<line x1="713.4" y1="554" x2="713.4" y2="630" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<line x1="880.3" y1="554" x2="880.3" y2="630" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<line x1="1047.1" y1="554" x2="1047.1" y2="630" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<!-- arrows -->
+<!-- labels -->
+<!-- nodes -->
+<!-- annotations -->
+<text x="60" y="84" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">status</tspan></text>
+<text x="60" y="98" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">overall: </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">results</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> if a place has it,</tspan></text>
+<text x="60" y="111" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">else </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">outside_scope</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, else</tspan></text>
+<text x="60" y="124" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">needs_location</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, …</tspan></text>
+<text x="287.2" y="84" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">message</tspan></text>
+<text x="287.2" y="98" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">notes, such as “Only the first</tspan></text>
+<text x="287.2" y="111" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">three places were searched”</tspan></text>
+<text x="514.4" y="84" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">scope</tspan></text>
+<text x="514.4" y="98" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the scope statement when a place</tspan></text>
+<text x="514.4" y="111" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">is </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">no_evidence</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> or </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">outside_scope</tspan></text>
+<text x="514.4" y="124" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">empty otherwise</tspan></text>
+<text x="741.6" y="84" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">notice</tspan></text>
+<text x="741.6" y="98" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">“Retrieved public information from</tspan></text>
+<text x="741.6" y="111" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">Swiss sources. Not legal advice.”</tspan></text>
+<text x="968.8" y="84" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">field</tspan></text>
+<text x="968.8" y="98" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the parameter at fault, only for</tspan></text>
+<text x="968.8" y="111" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">invalid_request</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">; null otherwise</tspan></text>
+<text x="76" y="186" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">place</tspan></text>
+<text x="76" y="200" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">as sent, or as found in the question; null without one</tspan></text>
+<text x="452" y="186" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">status</tspan></text>
+<text x="452" y="200" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">this place&#x27;s status (see below)</tspan></text>
+<text x="828" y="186" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">location_id · location_label</tspan></text>
+<text x="828" y="200" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the resolved place and its German label</tspan></text>
+<text x="76" y="224" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">message</tspan></text>
+<text x="76" y="238" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">what to tell the user about this place</tspan></text>
+<text x="452" y="224" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">coverage[{extent_id, label, documents}]</tspan></text>
+<text x="452" y="238" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">documents at each level of the searched path</tspan></text>
+<text x="828" y="224" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">uncovered_levels</tspan></text>
+<text x="828" y="238" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">cantonal</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> and/or </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">municipal</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> when outside the declared scope</tspan></text>
+<text x="92" y="312" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">passage</tspan></text>
+<text x="92" y="326" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">≤ 600 characters, verbatim as published</tspan></text>
+<text x="92" y="352" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">translated_passage · translation_language</tspan></text>
+<text x="92" y="366" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">published in another language: answer</tspan></text>
+<text x="92" y="379" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">from it, but quote and cite </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">passage</tspan></text>
+<text x="92" y="400" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">url · anchor</tspan></text>
+<text x="92" y="414" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">where the passage is published</tspan></text>
+<text x="92" y="440" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">title · breadcrumb</tspan></text>
+<text x="92" y="454" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the page and the headings above it</tspan></text>
+<text x="368" y="312" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">document_id · chunk_id</tspan></text>
+<text x="368" y="326" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">pass them to </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">swiss_get_document</tspan></text>
+<text x="368" y="352" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">language · other_languages</tspan></text>
+<text x="368" y="366" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">its language and its other versions</tspan></text>
+<text x="368" y="392" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">publisher · authority</tspan></text>
+<text x="368" y="406" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">federal_law</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">cantonal_law</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">,</tspan></text>
+<text x="368" y="419" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">municipal_law</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">official_info</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">,</tspan></text>
+<text x="368" y="432" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">institutional</tspan></text>
+<text x="644" y="312" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">extent_id · extent_label</tspan></text>
+<text x="644" y="326" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the jurisdiction it applies to</tspan></text>
+<text x="644" y="352" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">tier</tspan></text>
+<text x="644" y="366" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">0 = the deepest level searched: the asked</tspan></text>
+<text x="644" y="379" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">place when its level is covered; +1 per</tspan></text>
+<text x="644" y="392" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">level up to CH; null without a place</tspan></text>
+<text x="644" y="413" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">relevance</tspan></text>
+<text x="644" y="427" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">0 to 1, rounded to 4 decimals</tspan></text>
+<text x="920" y="312" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">corroboration · corroboration_basis</tspan></text>
+<text x="920" y="326" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the other binding language versions</tspan></text>
+<text x="920" y="339" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">were found too</tspan></text>
+<text x="920" y="360" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">versions_diverge</tspan></text>
+<text x="920" y="374" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">those versions disagree on validity dates</tspan></text>
+<text x="920" y="400" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">valid_from · modified_at · fetched_at</tspan></text>
+<text x="920" y="414" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">applies from · last changed · fetched</tspan></text>
+<text x="920" y="440" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">extraction</tspan></text>
+<text x="920" y="454" xml:space="preserve"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">native</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">, </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">pdf_text</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> or </tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">ocr</tspan></text>
+<text x="56" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">results</tspan></text>
+<text x="56" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">answer from the passages</tspan></text>
+<text x="56" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">and cite their URLs</tspan></text>
+<text x="222.9" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">needs_location</tspan></text>
+<text x="222.9" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">ask for the municipality,</tspan></text>
+<text x="222.9" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">or which place was meant,</tspan></text>
+<text x="222.9" y="604" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">then search again</tspan></text>
+<text x="389.7" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">outside_scope</tspan></text>
+<text x="389.7" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">say it is not covered;</tspan></text>
+<text x="389.7" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">for a foreign place,</tspan></text>
+<text x="389.7" y="604" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">suggest other sources</tspan></text>
+<text x="556.6" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">no_evidence</tspan></text>
+<text x="556.6" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">say so; the scope field</tspan></text>
+<text x="556.6" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">says what is covered</tspan></text>
+<text x="723.4" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">source_unavailable</tspan></text>
+<text x="723.4" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">lookups only: say the</tspan></text>
+<text x="723.4" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">source is unavailable; do</tspan></text>
+<text x="723.4" y="604" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">not answer from memory</tspan></text>
+<text x="890.3" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">invalid_request</tspan></text>
+<text x="890.3" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">fix the request</tspan></text>
+<text x="890.3" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">(</tspan><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">field</tspan><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75"> names the</tspan></text>
+<text x="890.3" y="604" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">parameter)</tspan></text>
+<text x="1057.1" y="564" xml:space="preserve" font-weight="500"><tspan font-family="'Geist Mono', monospace" font-size="9" fill="#2d3142">error</tspan></text>
+<text x="1057.1" y="578" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">the server failed</tspan></text>
+<text x="1057.1" y="591" xml:space="preserve"><tspan font-family="'Geist', sans-serif" font-size="10" fill="#4f5d75">internally: retry once</tspan></text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.18)" stroke-width="0.8"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">JSON object</text>
+<rect x="205.9" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.03)" stroke="rgba(213,43,30,0.45)" stroke-width="0.8" stroke-dasharray="3,2"/>
+<text x="229.9" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">the evidence: quote passage, cite url</text>
+<text x="441.4" y="694" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">name</text>
+<text x="471.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">field</text>
+<text x="524.6" y="694" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">[]</text>
+<text x="543.7" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">list</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/serving/models.py</code> · <code>src/swiss_grounding/serving/search_service.py</code> · <code>src/swiss_grounding/serving/status.py</code> · <code>src/swiss_grounding/mcp_server/server.py</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR, descriptions and embeddings · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Ingestion · 06</p>
+    <h1>OCR, descriptions and embeddings</h1>
+    <p class="lede">The enrich stage of corpus run. Descriptions are written in each language the text exists in and are part of both the embedded text and the keyword index. Embeddings run locally with bge-m3; the OpenAI index is opt-in, paid, and left out of the published dump.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="describe-embed-title describe-embed-desc">
+<title id="describe-embed-title">OCR, descriptions and embeddings</title>
+<desc id="describe-embed-desc">Live passages are checked for repeated boilerplate, scanned pages are transcribed, documents and passages are described by language models, and the embedded text of breadcrumb, description and text is turned into dense and sparse vectors and a keyword index, one per language.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<!-- arrows -->
+<path d="M 248,132 L 288,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 496,132 L 536,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 744,132 L 784,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 992,132 L 1032,132" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1094.4,200 L 1094.4,256 Q 1094.4,264 1086.4,264 L 174,264 Q 166,264 166,272 L 166,376" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 1177.6,200 L 1177.6,376" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 292,415.2 L 308,415.2 Q 316,415.2 316,407.2 L 316,368 Q 316,360 324,360 L 340,360" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 292,448.8 L 308,448.8 Q 316,448.8 316,456.8 L 316,496 Q 316,504 324,504 L 340,504" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 548,360 L 564,360 Q 572,360 572,368 L 572,407.2 Q 572,415.2 580,415.2 L 596,415.2" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M 548,504 L 564,504 Q 572,504 572,496 L 572,456.8 Q 572,448.8 580,448.8 L 596,448.8" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="40" y="64" width="208" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="64" width="208" height="136" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="48" y="70" width="36" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="66" y="78.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CHUNK</text>
+<text x="144" y="132" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Live passages</text>
+<text x="144" y="145.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">current or scheduled</text>
+<text x="144" y="158.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">from every fetched source</text>
+<rect x="288" y="64" width="208" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="288" y="64" width="208" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="296" y="70" width="32" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="312" y="78.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FREE</text>
+<text x="392" y="118.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Repeated text</text>
+<text x="392" y="132.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">same text in ≥ 3 pages of</text>
+<text x="392" y="145.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one source: boilerplate,</text>
+<text x="392" y="158.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">never described or cited;</text>
+<text x="392" y="171.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">law is exempt</text>
+<rect x="536" y="64" width="208" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="536" y="64" width="208" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="544" y="70" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="558" y="78.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+<text x="640" y="119.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Read scanned pages</text>
+<text x="640" y="133" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">gpt-5-mini, vision</text>
+<text x="640" y="145" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">CORPUS_OCR_BUDGET_USD</text>
+<text x="640" y="157.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">writes the page&#x27;s text;</text>
+<text x="640" y="170.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">extraction becomes ocr</text>
+<rect x="784" y="64" width="208" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="784" y="64" width="208" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="792" y="70" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="806" y="78.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+<text x="888" y="112.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Describe documents</text>
+<text x="888" y="126" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">gpt-5-mini</text>
+<text x="888" y="138.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one call per translation</text>
+<text x="888" y="151.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">group: title and excerpt</text>
+<text x="888" y="164.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">per language → description</text>
+<text x="888" y="177.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">per language, ≤ 3 topics</text>
+<rect x="1032" y="64" width="208" height="136" rx="6" fill="#f5f5f5"/>
+<rect x="1032" y="64" width="208" height="136" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="1040" y="70" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="1054" y="78.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+<text x="1136" y="112.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Describe passages</text>
+<text x="1136" y="126" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">gpt-5-nano</text>
+<text x="1136" y="138.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">one call per aligned passage,</text>
+<text x="1136" y="151.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">all languages together:</text>
+<text x="1136" y="164.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">≤ 600-character description,</text>
+<text x="1136" y="177.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">≤ 3 of 20 topics, boilerplate?</text>
+<rect x="40" y="376" width="252" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="376" width="252" height="112" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.2"/>
+<rect x="48" y="382" width="32" height="12" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="64" y="390.5" fill="#d52b1e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TEXT</text>
+<text x="166" y="419.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">The embedded text</text>
+<text x="166" y="433" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">breadcrumb › … + description</text>
+<text x="166" y="445" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">+ text, ≤ 12,000 characters</text>
+<text x="166" y="457.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">its sha256 (text_hash) decides</text>
+<text x="166" y="470.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">when a passage is embedded again</text>
+<rect x="340" y="304" width="208" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="340" y="304" width="208" height="112" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="348" y="310" width="36" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="366" y="318.5" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LOCAL</text>
+<text x="444" y="354" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">bge-m3</text>
+<text x="444" y="367.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">dense: 1,024 dimensions</text>
+<text x="444" y="379.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">sparse: top 1,000 terms</text>
+<text x="444" y="392.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">Apple GPU or CPU, no key</text>
+<rect x="340" y="448" width="208" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="340" y="448" width="208" height="112" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="348" y="454" width="40" height="12" rx="2" fill="none" stroke="#7a8399" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="368" y="462.5" fill="#7a8399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">OPENAI</text>
+<text x="444" y="498" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">text-embedding-3-large</text>
+<text x="444" y="511.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">3,072 dims, halfvec</text>
+<text x="444" y="523.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">if listed in CORPUS_INDEXES</text>
+<text x="444" y="536.2" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">not in the published dump</text>
+<rect x="596" y="376" width="208" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="596" y="376" width="208" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="604" y="382" width="32" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="620" y="390.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HNSW</text>
+<text x="700" y="419.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Vector indexes</text>
+<text x="700" y="433" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">corpus.emb_bge_m3</text>
+<text x="700" y="445" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">one per language partition</text>
+<text x="700" y="457.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">cosine for dense vectors,</text>
+<text x="700" y="470.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">inner product for sparse</text>
+<rect x="1032" y="376" width="208" height="112" rx="6" fill="#f5f5f5"/>
+<rect x="1032" y="376" width="208" height="112" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<rect x="1040" y="382" width="28" height="12" rx="2" fill="none" stroke="#4f5d75" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="1054" y="390.5" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TSV</text>
+<text x="1136" y="419.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Keyword index</text>
+<text x="1136" y="433" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">breadcrumb A · description B</text>
+<text x="1136" y="445" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">· text C</text>
+<text x="1136" y="457.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">per-language stemming,</text>
+<text x="1136" y="470.8" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" text-anchor="middle">a generated column</text>
+<!-- annotations -->
+<text x="852" y="548" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">An unchanged passage keeps its</text>
+<text x="852" y="566" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">description, and an unchanged</text>
+<text x="852" y="584" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">embedded text keeps its vector (15).</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">stored</text>
+<rect x="181.1" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="181.1" y="685" width="16" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="205.1" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">step</text>
+<rect x="253" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="253" y="685" width="16" height="10" rx="2" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1"/>
+<text x="277" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">what search reads</text>
+<rect x="389.3" y="685" width="16" height="10" rx="2" fill="#f5f5f5"/>
+<rect x="389.3" y="685" width="16" height="10" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="413.3" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">opt-in, paid</text>
+<line x1="500.8" y1="691.1" x2="524.8" y2="691.1" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+<text x="534.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">flow</text>
+<line x1="582.6" y1="691.1" x2="606.6" y2="691.1" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<text x="616.6" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">optional path</text>
+</svg>
+
+    <footer>
+      <p>Code: <code>src/swiss_grounding/corpus/describe.py</code> · <code>src/swiss_grounding/corpus/ocr.py</code> · <code>src/swiss_grounding/corpus/embed.py</code> · <code>src/swiss_grounding/corpus/providers.py</code> · <code>src/swiss_grounding/corpus/schema.sql</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

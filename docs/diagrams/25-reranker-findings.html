@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reranker findings · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Models and configuration · 25</p>
+    <h1>Reranker findings</h1>
+    <p class="lede">Why the scorer and the hardware settings look the way they do. Within one language the cross-encoder separates relevant from irrelevant passages sharply, but it scores the same article in another language as if it were irrelevant; on a CPU the large model is about ten times slower. Measured on 23 and 24 September 2026 on an Apple M1 Pro with 16 GB; the numbers are in docs/EVALUATION.md.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="reranker-findings-title reranker-findings-desc">
+<title id="reranker-findings-title">Reranker findings: language bias and speed</title>
+<desc id="reranker-findings-desc">Left, bge-reranker-v2-m3 scores for the German question Kündigungsfrist Mietwohnung: Art. 266c OR in German 0.978, the same article in French 0.020 (highlighted) and in Italian 0.117, and the wrong-topic Art. 335c OR 0.013. Right, seconds to rerank 30 pairs on an Apple M1 Pro: bge-reranker-v2-m3 takes 2.7 s on MPS at 512 tokens (2.4 s in fp16), 1.5 s at 256, 12.3 s on the CPU at 512 (highlighted) and 4.5 s at 256; mmarco-mMiniLMv2-L12 takes 1.2 s on the CPU. Below, six changes that followed.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<line x1="248" y1="100" x2="248" y2="300" stroke="#4f5d75" stroke-width="1"/>
+<line x1="248" y1="300" x2="568" y2="300" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="248" y1="300" x2="248" y2="304" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="408" y1="300" x2="408" y2="304" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="568" y1="300" x2="568" y2="304" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="896" y1="100" x2="896" y2="300" stroke="#4f5d75" stroke-width="1"/>
+<line x1="896" y1="300" x2="1166.6" y2="300" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="896" y1="300" x2="896" y2="304" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="1006" y1="300" x2="1006" y2="304" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="1116" y1="300" x2="1116" y2="304" stroke="#bfc0c0" stroke-width="1"/>
+<rect x="40" y="356" width="1200" height="264" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="52" y="374" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">WHAT FOLLOWED</text>
+<text x="143.8" y="374" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace">in the code today</text>
+<!-- arrows -->
+<!-- labels -->
+<!-- nodes -->
+<g><title>German question «Kündigungsfrist Mietwohnung» · Art. 266c OR, German, the matching article: 0.978</title><rect x="40" y="103" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 248,111 H 557 Q 561,111 561,115 V 127 Q 561,131 557,131 H 248 Z" fill="#9aa0ad"/><text x="40" y="119" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">Art. 266c OR, German</text><text x="40" y="133" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the matching article</text><text x="569" y="124.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">0.978</text></g>
+<g><title>German question «Kündigungsfrist Mietwohnung» · Art. 266c CO, French, the same article: 0.020</title><rect x="40" y="153" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 248,161 H 250.4 Q 254.4,161 254.4,165 V 177 Q 254.4,181 250.4,181 H 248 Z" fill="#d52b1e"/><text x="40" y="169" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="600">Art. 266c CO, French</text><text x="40" y="183" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the same article</text><text x="262.4" y="174.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">0.020</text></g>
+<g><title>German question «Kündigungsfrist Mietwohnung» · Art. 266c CO, Italian, the same article: 0.117</title><rect x="40" y="203" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 248,211 H 281.4 Q 285.4,211 285.4,215 V 227 Q 285.4,231 281.4,231 H 248 Z" fill="#9aa0ad"/><text x="40" y="219" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">Art. 266c CO, Italian</text><text x="40" y="233" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the same article</text><text x="293.4" y="224.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">0.117</text></g>
+<g><title>German question «Kündigungsfrist Mietwohnung» · Art. 335c OR, German, employment notice, wrong topic: 0.013</title><rect x="40" y="253" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 248,261 H 248.2 Q 252.2,261 252.2,265 V 277 Q 252.2,281 248.2,281 H 248 Z" fill="#9aa0ad"/><text x="40" y="269" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">Art. 335c OR, German</text><text x="40" y="283" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">employment notice, wrong topic</text><text x="260.2" y="274.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">0.013</text></g>
+<g><title>30 pairs · bge-reranker-v2-m3, Apple MPS · 512 tokens: 2.7 s</title><rect x="664" y="98" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 896,106 H 951.4 Q 955.4,106 955.4,110 V 122 Q 955.4,126 951.4,126 H 896 Z" fill="#9aa0ad"/><text x="664" y="114" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">bge-reranker-v2-m3</text><text x="664" y="128" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Apple MPS · 512 tokens</text><text x="963.4" y="119.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">2.7 s</text><text x="999.3" y="119.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">(2.4 s in fp16)</text></g>
+<g><title>30 pairs · bge-reranker-v2-m3, Apple MPS · 256 tokens: 1.5 s</title><rect x="664" y="138" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 896,146 H 925 Q 929,146 929,150 V 162 Q 929,166 925,166 H 896 Z" fill="#9aa0ad"/><text x="664" y="154" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">bge-reranker-v2-m3</text><text x="664" y="168" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Apple MPS · 256 tokens</text><text x="937" y="159.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">1.5 s</text></g>
+<g><title>30 pairs · bge-reranker-v2-m3, CPU · 512 tokens: 12.3 s</title><rect x="664" y="178" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 896,186 H 1162.6 Q 1166.6,186 1166.6,190 V 202 Q 1166.6,206 1162.6,206 H 896 Z" fill="#d52b1e"/><text x="664" y="194" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="600">bge-reranker-v2-m3</text><text x="664" y="208" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">CPU · 512 tokens</text><text x="1174.6" y="199.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">12.3 s</text></g>
+<g><title>30 pairs · bge-reranker-v2-m3, CPU · 256 tokens: 4.5 s</title><rect x="664" y="218" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 896,226 H 991 Q 995,226 995,230 V 242 Q 995,246 991,246 H 896 Z" fill="#9aa0ad"/><text x="664" y="234" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">bge-reranker-v2-m3</text><text x="664" y="248" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">CPU · 256 tokens</text><text x="1003" y="239.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">4.5 s</text></g>
+<g><title>30 pairs · mmarco-mMiniLMv2-L12, CPU · 512 tokens: 1.2 s</title><rect x="664" y="258" width="576" height="36" fill="#2d3142" fill-opacity="0"/><path d="M 896,266 H 918.4 Q 922.4,266 922.4,270 V 282 Q 922.4,286 918.4,286 H 896 Z" fill="#9aa0ad"/><text x="664" y="274" fill="#2d3142" font-size="11" font-family="'Geist', sans-serif" font-weight="500">mmarco-mMiniLMv2-L12</text><text x="664" y="288" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">CPU · 512 tokens</text><text x="930.4" y="279.5" fill="#2d3142" font-size="9" font-family="'Geist Mono', monospace">1.2 s</text></g>
+<!-- annotations -->
+<text x="40" y="56" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">bge-reranker-v2-m3 scores for a German question</text>
+<text x="40" y="74" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">«Kündigungsfrist Mietwohnung» against four passages · 0 irrelevant, 1 relevant</text>
+<text x="248" y="316" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">0</text>
+<text x="408" y="316" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">0.5</text>
+<text x="568" y="316" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1</text>
+<text x="664" y="56" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Time to rerank 30 question–passage pairs</text>
+<text x="664" y="74" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">seconds · pairs of up to about 500 tokens · Apple M1 Pro, 16 GB</text>
+<text x="896" y="316" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">0 s</text>
+<text x="1006" y="316" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">5 s</text>
+<text x="1116" y="316" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">10 s</text>
+<text x="344" y="160" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">The same article in French</text>
+<text x="344" y="178" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">scores like the wrong topic.</text>
+<text x="1056" y="240" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">On the CPU the large model</text>
+<text x="1056" y="258" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">takes ten times as long as</text>
+<text x="1056" y="276" fill="#4f5d75" font-size="14" font-family="'Instrument Serif', 'Noto Serif', serif" font-style="italic">the small one.</text>
+<text x="40" y="336" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace">Measured on 23 and 24 September 2026 on an Apple M1 Pro with 16 GB, with sentence-transformers&#x27; CrossEncoder · docs/EVALUATION.md</text>
+<text x="64" y="404" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Score in the passage&#x27;s language</text>
+<text x="64" y="424" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">A passage is reranked against the question in its own</text>
+<text x="64" y="438" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">language, using the translation where one exists; a group</text>
+<text x="64" y="452" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">is represented by its question-language version. An Italian</text>
+<text x="64" y="466" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">question showed the same bias: 0.821 Italian, 0.139 German,</text>
+<text x="64" y="480" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">0.012 French.</text>
+<text x="464" y="404" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Place is a filter, not a score</text>
+<text x="464" y="424" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">The place is applied before scoring. For «vacanzas d&#x27;atun</text>
+<text x="464" y="438" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Scuol» the Scuol calendar scored 0.998 in Romansh and 0.997</text>
+<text x="464" y="452" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">in German, yet the Zürich calendar still scored 0.436.</text>
+<text x="864" y="404" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Small model on a CPU</text>
+<text x="864" y="424" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">On a CPU the large model is about ten times slower, so a</text>
+<text x="864" y="438" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">CPU machine uses mmarco-mMiniLMv2-L12 with 20 candidates</text>
+<text x="864" y="452" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">of at most 256 tokens; a GPU or Apple MPS machine keeps</text>
+<text x="864" y="466" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">bge-reranker-v2-m3 with 30 of up to 512 tokens.</text>
+<text x="64" y="520" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Blend in the retrieval rank</text>
+<text x="64" y="540" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">The reranker alone put a wrong page (0.45) above the right</text>
+<text x="64" y="554" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Vaud passage (0.29). The provisional score is half the</text>
+<text x="64" y="568" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">reranker score plus half of 1 ÷ retrieval rank, and puts</text>
+<text x="64" y="582" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the Vaud page first (0.69). Below 0.20 the reranker score is</text>
+<text x="64" y="596" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">kept, so a question with nothing relevant still abstains.</text>
+<text x="464" y="520" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">Strip Markdown emphasis</text>
+<text x="464" y="540" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Emphasis such as «**12** **mois**» lowered the right</text>
+<text x="464" y="554" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">passage&#x27;s score. It is stripped before reranking, which</text>
+<text x="464" y="568" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">raised that passage from 0.29 to 0.37.</text>
+<text x="864" y="520" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif" font-weight="600">No Romansh translation target</text>
+<text x="864" y="540" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">Weak Romansh passages scored 0.95 against a Romansh</text>
+<text x="864" y="554" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">translation of the question and pushed the right German</text>
+<text x="864" y="568" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">page out of the top five. Romansh is still searched with</text>
+<text x="864" y="582" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">the multilingual embedding, but no longer translated into.</text>
+<line x1="40" y1="668" x2="1240" y2="668" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+<text x="40" y="694" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="99.4" y="685" width="16" height="10" rx="2" fill="#d52b1e"/>
+<text x="123.4" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">the measurement that changed the design</text>
+<rect x="344.8" y="685" width="16" height="10" rx="2" fill="#9aa0ad"/>
+<text x="368.8" y="694" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">other measurements</text>
+</svg>
+    <table>
+      <caption>bge-reranker-v2-m3 scores, measured 23-24 September 2026</caption>
+      <thead><tr><th>Question</th><th>Passage</th><th>Score</th></tr></thead>
+      <tbody>
+<tr><td>DE «Kündigungsfrist Mietwohnung»</td><td>Art. 266c OR, German</td><td>0.978</td></tr>
+<tr><td>same</td><td>Art. 266c CO, French (the same article)</td><td>0.020</td></tr>
+<tr><td>same</td><td>Art. 266c CO, Italian (the same article)</td><td>0.117</td></tr>
+<tr><td>same</td><td>Art. 335c OR, employment notice (wrong topic)</td><td>0.013</td></tr>
+<tr><td>IT «termine di disdetta appartamento»</td><td>Art. 266c, Italian / German / French</td><td>0.821 / 0.139 / 0.012</td></tr>
+<tr><td>RM «vacanzas d&#x27;atun Scuol»</td><td>Scuol calendar, Romansh / German</td><td>0.998 / 0.997</td></tr>
+<tr><td>same</td><td>Zürich calendar, German</td><td>0.436</td></tr>
+<tr><td>FR «permis de conduire Vaud»</td><td>Vaud page, French</td><td>0.997</td></tr>
+<tr><td>DE «Rundfunkbeitrag Konstanz»</td><td>five unrelated Swiss passages</td><td>all 0.000</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <caption>Time to rerank 30 question–passage pairs, Apple M1 Pro 16 GB</caption>
+      <thead><tr><th>Model</th><th>Device</th><th>Max tokens</th><th>30 pairs</th></tr></thead>
+      <tbody>
+<tr><td>bge-reranker-v2-m3</td><td>Apple MPS</td><td>512</td><td>2.7 s (2.4 s in fp16)</td></tr>
+<tr><td>bge-reranker-v2-m3</td><td>Apple MPS</td><td>256</td><td>1.5 s</td></tr>
+<tr><td>bge-reranker-v2-m3</td><td>CPU</td><td>512</td><td>12.3 s</td></tr>
+<tr><td>bge-reranker-v2-m3</td><td>CPU</td><td>256</td><td>4.5 s</td></tr>
+<tr><td>mmarco-mMiniLMv2-L12</td><td>CPU</td><td>512</td><td>1.2 s</td></tr>
+      </tbody>
+    </table>
+    <footer>
+      <p>Code: <code>src/swiss_grounding/serving/reranker.py</code> · <code>src/swiss_grounding/serving/relevance.py</code> · <code>src/swiss_grounding/serving/search_service.py</code> · <code>src/swiss_grounding/config.py</code> · <code>docs/EVALUATION.md</code></p>
+      <p>Drawn 2026-09-25 from the code on branch feat/diagrams.</p>
+    </footer>
+  </main>
+</body>
+</html>

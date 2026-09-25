@@ -3,7 +3,9 @@
 This guide is for the person who runs the server and maintains its data: building the corpus,
 adding sources, refreshing them, loading lookup data and publishing the prebuilt database that
 `setup` downloads. Everything here uses the `swiss-grounding` command from the repository root.
-Settings are described in the README's Configuration section.
+Settings are described in the README's Configuration section. The steps are drawn in
+[`docs/diagrams/`](diagrams/README.md): the build in 01–07, the stored data in 08–12, refreshing in 13–15,
+and the release in 30.
 
 ## Rules of thumb
 
