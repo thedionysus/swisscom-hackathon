@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     apertus_timeout_seconds: float = 60.0
     # Direct calls only (no Batch API): parallel workers for corpus runs, sized under the 5 requests/s limit.
     apertus_workers: int = 3
+    # Retries per corpus call. 0: retried 429s crawled (30 tasks took 27 min, against 11 s without retries,
+    # measured 2026-09-25); a failed task stays undescribed and the next round takes it again.
+    apertus_max_retries: int = 0
     # Which model writes eval labels and generated questions.
     eval_llm_provider: Literal["openai", "anthropic", "apertus"] = "openai"
     # Embedding indexes the pipeline builds (CORPUS_INDEXES, comma-separated). bge-m3 is local and free;

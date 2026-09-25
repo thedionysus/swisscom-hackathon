@@ -163,7 +163,7 @@ def _llm(settings: Settings):
     if settings.corpus_llm_provider == "anthropic":
         return AnthropicLLM(settings.anthropic_api_key, settings.corpus_anthropic_model)
     if settings.corpus_llm_provider == "apertus":
-        return apertus_llm(settings, max_retries=DIRECT_MAX_RETRIES)
+        return apertus_llm(settings, max_retries=settings.apertus_max_retries)
     return _FakeCorpusLLM()
 
 
