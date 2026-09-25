@@ -96,8 +96,10 @@ Items marked **TBD** are still being settled by the team.
     after start waits until the models are loaded.
 12. **robots.txt and terms of use:** `RESPECT_ROBOTS`, default `true`: the crawler obeys robots.txt.
     `ROBOTS_API_EXCEPTIONS`, default `false`: fetch a documented API that robots.txt blocks, for
-    sources whose manifest gives a reason. Both apply when building the corpus; the running server
-    crawls nothing.
+    sources whose manifest gives a reason. Both apply when building the corpus. At question time
+    the server makes live requests to three public sources, which these settings do not cover: the BWO
+    reference-rate page, the transport.opendata.ch API and the GeoAdmin API. On 2026-09-25 none of
+    their robots.txt files disallowed these requests.
 13. **Parallel use:** over HTTP, one server handles several conversations at the same time. `swiss_search`
     calls use the models one at a time and queue; the other tools run in parallel. Over stdio, each
     conversation starts its own server process. Start: the server answers the MCP handshake within
