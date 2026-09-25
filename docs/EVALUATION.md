@@ -77,6 +77,34 @@ What each step does:
 - **`serving stats`** prints p50 and p95 latency, the abstention rate and the empty-result rate per
   tool, from the call log of every served tool call.
 
+Beyond the gates, `eval golden` also prints, each with a 95% interval (Wilson for rates, bootstrap for
+means): hit@1 and MRR@5 over the expected sources; the false-answer rate (answered where a refusal or
+question back was expected) and the false-abstention rate (the reverse), with the full status
+confusion matrix; leakage@5, the share of top-5 citations from outside the asked place's path; lang_match@1,
+whether the top citation is in the question's language; and p50/p95 latency. Every metric is broken
+down by level, language, area and canton. `--compare evals/golden/runs/<run>.json` prints the deltas
+against a recorded run and the probes that flipped.
+
+Three more commands need no model spend:
+
+- **`eval tools`** runs the probes whose `tool` is not `swiss_search` (lookups, `swiss_get_document`,
+  `swiss_scope`, the `zbern_*` tools) with their `args`, and checks `contains` strings and a numeric
+  `value` at `value_path` within `tolerance`. zbern probes are skipped without `ZBERN_MCP_TOKEN`.
+- **`eval robustness`** asks every `results` probe again lowercased, without diacritics, with one
+  typo, with and without filler words and without the question mark, and reports status agreement,
+  top-1 agreement, top-5 Jaccard and recall@5 per perturbation.
+- **`eval consistency`** compares probes sharing a `group` (one question in several languages): same
+  status, and the same text (translation group and anchor) as top citation.
+
+`tests/integration/test_mcp_contract.py` checks the served tool list (descriptions, input schemas),
+that invalid input returns `invalid_request`, and that cited URLs exist in the corpus.
+
+Which database is measured matters. `swiss_grounding` (`corpus-latest`, bge-m3) holds only the six
+cantons of the original scope; the probes for other cantons and the Fribourg communes need
+`swiss_grounding_run3` (`DATABASE_URL=.../swiss_grounding_run3 SERVING_INDEX=openai-3l`, which embeds
+each question with OpenAI). On run3 `serving.premium` is empty, so run `eval tools` against
+`swiss_grounding` or import the premiums first.
+
 `eval judge` is a separate cross-model check. It answers the probes marked `judge: true` in
 `evals/probes/` with four models through the MCP server (`evals/judge/mcp.json`) and grades them with
 `evals/judge/rubric.md` for jurisdiction confusion, authority mix-ups, outdated rules, the wrong
@@ -101,7 +129,14 @@ prebuilt database.
 
 ## Results so far
 
-No golden-set run has been recorded in the repository, and no relevance model has been fitted.
+No relevance model has been fitted.
+
+`eval golden --split all` on 2026-09-25 against `swiss_grounding` (six cantons only, 67 probes):
+status accuracy 0.63 [0.51, 0.73], recall@5 0.41, hit@1 0.22, MRR@5 0.30, false-answer rate 0.33,
+false-abstention rate 0.35, leakage@5 0.00, p50 latency 2.6 s. Federal probes reach 1.00 status
+accuracy and 0.69 recall; cantonal (0.48) and municipal (0.47) pull it down, and every probe outside
+the six cantons fails as `outside_scope` because that database has no passages there, which is expected.
+`eval tools`: 17 of 17.
 
 Faithfulness, measured on 2026-09-24 with `claude-sonnet-5` answering the holdout probes:
 
