@@ -106,11 +106,13 @@ class LazyService:
         return self._service
 
 
-def build_server(settings: Settings) -> FastMCP:
+def build_server(settings: Settings, *, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
+    """`host` and `port` apply to the HTTP transport only. On a loopback host the MCP SDK turns on
+    DNS rebinding protection; on any other host (0.0.0.0 in a container) it stays off."""
     scope = startup_scope(settings)
     lazy = LazyService(lambda: build_search_service(settings))
     models = anyio.CapacityLimiter(1)
-    mcp = FastMCP("swiss-grounding", instructions=instructions(scope))
+    mcp = FastMCP("swiss-grounding", instructions=instructions(scope), host=host, port=port)
 
     async def timed(tool: str, fn: Callable[[], dict], *, uses_models: bool = False) -> str:
         started = perf_counter()

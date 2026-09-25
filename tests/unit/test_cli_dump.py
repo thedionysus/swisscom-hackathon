@@ -156,3 +156,36 @@ def test_install_shared_key_is_optional(tmp_path, monkeypatch):
     env.write_text("DATABASE_URL=x\n")
     assert serving_commands.install_shared_key(_Settings(), env) is False
     assert env.read_text() == "DATABASE_URL=x\n"
+
+
+def test_ensure_env_file_copies_the_example(tmp_path):
+    (tmp_path / ".env.example").write_text("DATABASE_URL=postgresql://x\n")
+    assert serving_commands.ensure_env_file(tmp_path) is True
+    assert (tmp_path / ".env").read_text() == "DATABASE_URL=postgresql://x\n"
+
+
+def test_ensure_env_file_keeps_an_existing_env(tmp_path):
+    (tmp_path / ".env.example").write_text("DATABASE_URL=postgresql://x\n")
+    (tmp_path / ".env").write_text("SUPERTEXT_API_KEY=mine\n")
+    assert serving_commands.ensure_env_file(tmp_path) is False
+    assert (tmp_path / ".env").read_text() == "SUPERTEXT_API_KEY=mine\n"
+
+
+def test_serve_passes_host_and_port_to_the_server(monkeypatch):
+    from swiss_grounding.mcp_server import server as server_module
+
+    seen = {}
+
+    class FakeServer:
+        def run(self, transport):
+            seen["transport"] = transport
+
+    def fake_build(settings, *, host, port):
+        seen.update(host=host, port=port)
+        return FakeServer()
+
+    monkeypatch.setattr(server_module, "build_server", fake_build)
+    monkeypatch.setattr(main, "load_settings", lambda: None)
+    result = CliRunner().invoke(main.app, ["serve", "--transport", "http", "--host", "0.0.0.0", "--port", "9000"])
+    assert result.exit_code == 0, result.output
+    assert seen == {"host": "0.0.0.0", "port": 9000, "transport": "streamable-http"}
