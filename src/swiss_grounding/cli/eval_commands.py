@@ -227,6 +227,7 @@ def label_cmd(confirm_spend: bool = typer.Option(
 
     from swiss_grounding.app import build_search_service
     from swiss_grounding.corpus.budget import ensure_within, record_spend
+    from swiss_grounding.corpus.llm_factory import eval_model
     from swiss_grounding.evals.golden_models import load_golden
     from swiss_grounding.evals.golden_runner import citation_key
     from swiss_grounding.evals.labels import LABEL_KIND, judge_pairs, sample_for_review
@@ -234,10 +235,11 @@ def label_cmd(confirm_spend: bool = typer.Option(
     from swiss_grounding.serving.relevance import ProvisionalRelevance
 
     settings = load_settings()
-    llm, model = _eval_llm_or_exit(settings)
+    model = eval_model(settings)
     if not confirm_spend:
         typer.echo(f"This calls {model} (about 1,500 pairs). Re-run with --confirm-spend.", err=True)
         raise typer.Exit(code=1)
+    llm, model = _eval_llm_or_exit(settings)
     # Threshold 0 so pairs below the provisional threshold are judged too: the fitted model must learn
     # where abstention is decided. Top `top` per place, plus a random sample of the ranks below.
     service = replace(build_search_service(settings, today=_today), relevance=ProvisionalRelevance(0.0))
@@ -304,13 +306,15 @@ def generate_cmd(confirm_spend: bool = typer.Option(
     import json
 
     from swiss_grounding.corpus.budget import ensure_within, record_spend
+    from swiss_grounding.corpus.llm_factory import eval_model
     from swiss_grounding.evals.generate import GENERATE_KIND, SAMPLE_SQL, generate_questions
 
     settings = load_settings()
-    llm, model = _eval_llm_or_exit(settings)
+    model = eval_model(settings)
     if not confirm_spend:
         typer.echo(f"This calls {model}. Re-run with --confirm-spend.", err=True)
         raise typer.Exit(code=1)
+    llm, model = _eval_llm_or_exit(settings)
     with connect(settings.database_url) as conn:
         chunks = conn.execute(SAMPLE_SQL, {"seed": GENERATE_SEED, "per_stratum": per_stratum}).fetchall()
         ensure_within(conn, estimate=0.0005 * len(chunks), total_cap=settings.corpus_budget_usd,

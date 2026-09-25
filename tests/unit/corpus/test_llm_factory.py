@@ -1,7 +1,7 @@
 import pytest
 
 from swiss_grounding.config import Settings
-from swiss_grounding.corpus.llm_factory import apertus_llm, eval_llm
+from swiss_grounding.corpus.llm_factory import apertus_llm, eval_llm, eval_model
 from swiss_grounding.corpus.providers import AnthropicLLM, ApertusLLM, OpenAILLM
 
 
@@ -32,3 +32,9 @@ def test_eval_llm_can_be_anthropic():
 def test_eval_llm_names_the_missing_key():
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
         eval_llm(_settings(openai_api_key=None))
+
+
+def test_eval_model_needs_no_keys_and_matches_eval_llm():
+    assert eval_model(_settings(openai_api_key=None)) == "gpt-5-mini"
+    assert eval_model(_settings(eval_llm_provider="apertus", apertus_api_key=None)) == "swiss-ai/Apertus-v1.5-70B"
+    assert eval_model(_settings(eval_llm_provider="anthropic", anthropic_api_key=None)) == "claude-haiku-4-5-20251001"
