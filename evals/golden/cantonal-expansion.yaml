@@ -1,0 +1,185 @@
+version: 2026-09-24.1
+probes:
+  - id: g-cant2-ag-dog-tax
+    question: Wie hoch ist die Hundetaxe im Kanton Aargau?
+    locations: [Kanton Aargau]
+    language: de
+    area: taxes
+    level: cantonal
+    split: dev
+    note: >-
+      Dog tax mapped to area taxes (no dogs area). Verified in corpus: ag.ch/de/themen/landwirtschaft-tiere/
+      heim-und-nutztiere/hunde, "Die Hundetaxe beträgt jährlich 120 Franken für jeden Hund. Davon gehen 20
+      Franken an den Kanton, über den Rest können die Gemeinden verfügen."
+    expect: {status: results, sources: [heim-und-nutztiere/hunde], key_fact: "The Aargau dog tax is CHF 120 per dog per year, of which CHF 20 goes to the canton and the rest to the municipality."}
+  - id: g-cant2-lu-foreign-licence
+    question: How long can I drive with my foreign driving licence after moving to the canton of Lucerne?
+    locations: [Luzern]
+    language: en
+    area: driving
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: strassenverkehrsamt.lu.ch/.../spezielle_fuehrerausweise/auslaendischer_fuehrerausweis,
+      "Motorfahrzeugführer/innen aus dem Ausland dürfen in der Schweiz während 12 Monaten seit Einreisedatum
+      Motorfahrzeuge führen, wenn sie einen gültigen nationalen Führerausweis besitzen." The rule is federal,
+      but the Luzern page is the expected cantonal citation.
+    expect: {status: results, sources: [auslaendischer_fuehrerausweis], key_fact: "A valid foreign licence may be used for 12 months from the date of entry; after that it must be exchanged."}
+  - id: g-cant2-zg-commute-deduction
+    question: Kann ich im Kanton Zug die Fahrkosten zum Arbeitsort von den Steuern abziehen?
+    locations: [Kanton Zug]
+    language: de
+    area: taxes
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus: wissen.zg.ch/steuerbuch/.../fahrkosten-zum-arbeitsort/grundsaetzliches-zu-fahrkosten-zum-arbeitsort,
+      "Geltend gemacht werden können die notwendigen Fahrkosten zwischen Wohn- und Arbeitsort, sofern der
+      steuerpflichtigen Person nicht zugemutet werden kann, den Weg zwischen Wohnung und Arbeitsort zu Fuss
+      zurückzulegen."
+    expect: {status: results, sources: [wissen.zg.ch/steuerbuch], key_fact: "Necessary commuting costs between home and work are deductible when the person cannot reasonably walk to work."}
+  - id: g-cant2-tg-dangerous-dog
+    question: Welche Haftpflichtversicherung brauche ich im Thurgau für einen Hund einer potenziell gefährlichen Rasse?
+    locations: [Kanton Thurgau]
+    language: de
+    area: permits
+    level: cantonal
+    split: holdout
+    note: >-
+      Dog-keeping permit mapped to area permits. Verified in corpus: veterinaeramt.tg.ch/faq/hundewesen.html,
+      the permit application for a potentially dangerous breed requires "Police der Haftpflichtversicherung mit
+      einer Deckungssumme von mindestens drei Millionen Franken" plus a character test and SKN theory course.
+    expect: {status: results, sources: [veterinaeramt.tg.ch/faq/hundewesen], key_fact: "The permit requires liability insurance with cover of at least CHF 3 million (plus a temperament test and proof of dog knowledge)."}
+  - id: g-cant2-bl-summer-holidays
+    question: Wann sind im Schuljahr 2026/2027 die Sommerferien im Kanton Basel-Landschaft?
+    locations: [Basel-Landschaft]
+    language: de
+    area: school_holidays
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus: data.bl.ch/explore/assets/13350/#2026%2F2027-Sommerferien, "Sommerferien im Schuljahr
+      2026/2027 an den Schulen des Kantons Basel-Landschaft: vom 2027-07-03 bis 2027-08-15."
+    expect: {status: results, sources: [data.bl.ch/explore/assets/13350], key_fact: "Summer holidays 2026/27 in Basel-Landschaft run from 3 July to 15 August 2027."}
+  - id: g-cant2-fr-christmas-holidays
+    question: Quand commencent les vacances de Noël 2026 dans les écoles du canton de Fribourg?
+    locations: [Canton de Fribourg]
+    language: fr
+    area: school_holidays
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: fr.ch/dfac/vacances-scolaires, "Vacances de Noël | 21 décembre 2026 | 1 janvier 2027
+      (inclus) | École obligatoire – calendrier majoritaire."
+    expect: {status: results, sources: [fr.ch/dfac/vacances-scolaires], key_fact: "Christmas holidays run from 21 December 2026 to 1 January 2027 (majority calendar)."}
+  - id: g-cant2-ne-school-start
+    question: Quelle est la date de la rentrée scolaire 2026 dans le canton de Neuchâtel?
+    locations: [Canton de Neuchâtel]
+    language: fr
+    area: school_holidays
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus: ne.ch/themes/scolarite-et-formation/calendrier-et-vacances-scolaires, "Rentrée scolaire
+      | Lundi 17 août 2026."
+    expect: {status: results, sources: [calendrier-et-vacances-scolaires], key_fact: "School starts on Monday 17 August 2026."}
+  - id: g-cant2-bs-rent-conciliation
+    question: Kostet ein Schlichtungsverfahren bei Mietstreitigkeiten in Basel-Stadt etwas?
+    locations: [Basel-Stadt]
+    language: de
+    area: housing
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: bs.ch/regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten/schlichtungsverfahren,
+      "Das Verfahren vor der Schlichtungsbehörde ist rasch, einfach und grundsätzlich kostenlos. Das
+      Schlichtungsverfahren wird durch das Schlichtungsgesuch eingeleitet."
+    expect: {status: results, sources: [schlichtungsstelle-fuer-mietstreitigkeiten], key_fact: "The conciliation procedure for rental disputes is in principle free of charge and starts with a conciliation request."}
+  - id: g-cant2-ai-dog-tax
+    question: Wie hoch ist die Hundesteuer in Appenzell Innerrhoden?
+    locations: [Appenzell Innerrhoden]
+    language: de
+    area: taxes
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus (the passage sits on the ar.ch dog-tax page, tagged CH-AR): ar.ch/verwaltung/.../hunde/hundesteuer,
+      "Die Hundesteuern betragen Fr. 80.- pro Hund (landwirtschaftliche Hofhunde Fr. 50.-), und für jeden
+      weiteren Hund desselben Halters Fr. 160.-. In Appenzell Innerrhoden werden die Hundesteuern durch die
+      Bezirksverwaltungen erhoben." A correct answer must not give the AR rate (Fr. 120). Watch for the AI
+      probe being answered from an AR-tagged page or returning no_evidence because of the extent tag.
+    expect: {status: results, sources: [hunde/hundesteuer], key_fact: "In Appenzell Innerrhoden the dog tax is CHF 80 per dog (farm dogs CHF 50, each further dog CHF 160), collected by the district administrations."}
+  - id: g-cant2-vs-licence-exchange-fee
+    question: Combien coûte l'échange d'un permis de conduire étranger en Valais?
+    locations: [Valais]
+    language: fr
+    area: driving
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: vs.ch/web/scn/permis-de-conduire-etranger, "CHF 70.-- pour le traitement de la demande
+      d'échange; CHF 53.50 pour la délivrance d'un permis de conduire suisse; ... CHF 90.-- à CHF 180.-- pour la
+      course de contrôle."
+    expect: {status: results, sources: [vs.ch/web/scn/permis-de-conduire-etranger], key_fact: "CHF 70 for processing the exchange plus CHF 53.50 for issuing the Swiss licence (control drive CHF 90-180 if required)."}
+  - id: g-cant2-sg-exam-other-canton
+    question: Was kostet die Bewilligung, um die Führerprüfung als St. Galler in einem anderen Kanton abzulegen?
+    locations: [Kanton St. Gallen]
+    language: de
+    area: driving
+    level: cantonal
+    split: dev
+    note: >-
+      Verified in corpus: sg.ch/verkehr/strassenverkehr/lernfahrausweise/fuehrerpruefung_kontrollfahrt.html,
+      "Bitte füllen Sie das Gesuch zum Ablegen der Führerprüfung in einem anderen Kanton aus ... Für die
+      Bewilligung wird Ihnen eine Gebühr von Fr. 20.– in Rechnung gestellt."
+    expect: {status: results, sources: [fuehrerpruefung_kontrollfahrt], key_fact: "The permit to take the driving test in another canton costs CHF 20 and does not guarantee a slot there."}
+  - id: g-cant2-ju-legal-aid
+    question: Puis-je obtenir un avocat gratuit dans le canton du Jura si je n'ai pas les moyens?
+    locations: [Canton du Jura]
+    language: fr
+    area: law
+    level: cantonal
+    split: holdout
+    note: >-
+      Verified in corpus: jura.ch/fr/Autorites/JUST/Avocats/Avocats.html, "Les personnes qui ne disposent pas de
+      ressources suffisantes pour rémunérer les services d'un avocat peuvent solliciter l'assistance judiciaire
+      gratuite, pour autant que la démarche qu'elles désirent entreprendre ne paraisse pas d'emblée vouée à
+      l'échec."
+    expect: {status: results, sources: [JUST/Avocats], key_fact: "People without sufficient means can request free legal aid, provided the case is not bound to fail from the outset."}
+  - id: g-cant2-gl-vehicle-tax
+    question: Wie hoch ist die Motorfahrzeugsteuer im Kanton Glarus?
+    locations: [Kanton Glarus]
+    language: de
+    area: driving
+    level: cantonal
+    split: holdout
+    note: >-
+      Data gap in a covered canton. All 13 current CH-GL documents are gl.ch Schlichtungsbehörde pages and the
+      Glarus Nord holiday plan (`select source_id,url from corpus.document where status='current' and
+      extent_id='CH-GL'`); no Glarus road-traffic or vehicle-tax page exists. Vehicle tax is cantonal, so a
+      federal passage cannot answer it, and another canton's rate must not be cited.
+    expect: {status: no_evidence}
+  - id: g-cant2-placeless-child-deduction
+    question: How much is the child deduction for cantonal income tax?
+    language: en
+    area: taxes
+    level: none
+    split: dev
+    note: >-
+      No place given. Cantonal child deductions differ per canton (e.g. the TG, SO, LU, ZG Steuerbücher each set
+      their own), and the question explicitly asks about cantonal tax, so the federal DBG deduction is not the
+      answer. With many cantons now covered the server must ask which canton rather than pick one.
+    expect: {status: needs_location}
+  - id: g-cant2-multi-ag-ar-dog-tax
+    question: Wie hoch ist die Hundesteuer im Aargau und in Appenzell Ausserrhoden?
+    locations: [Kanton Aargau, Appenzell Ausserrhoden]
+    language: de
+    area: taxes
+    level: cantonal
+    split: dev
+    note: >-
+      Two newly covered cantons, each with its own page. Verified in corpus: ag.ch .../heim-und-nutztiere/hunde,
+      "Die Hundetaxe beträgt jährlich 120 Franken für jeden Hund"; ar.ch .../hunde/hundesteuer, "Die jährliche
+      Hundesteuer beträgt Fr. 120 pro Hund. Für jeden weiteren Hund desselben Halters Fr. 240." Each place must
+      be answered from its own canton's page.
+    expect: {status: results, place_statuses: [results, results], sources: [heim-und-nutztiere/hunde, hunde/hundesteuer], key_fact: "Aargau: CHF 120 per dog per year; Appenzell Ausserrhoden: CHF 120 per dog, CHF 240 for each further dog."}
