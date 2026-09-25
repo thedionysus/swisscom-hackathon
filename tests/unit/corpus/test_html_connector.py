@@ -548,12 +548,12 @@ def test_robots_crawl_delay_also_spaces_the_pdf_downloads(tmp_path):
 # --- found, deliberately not fetched (#11) -------------------------------------------------------
 
 def test_attachment_links_in_scope_are_reported_as_skipped():
-    """A .docx/.xlsx link is never fetched, but the run says so. Images and links outside the
-    source's prefixes are not counted: they were never candidates."""
+    """A .docx/.xlsx link is never fetched, but the run says so. Images, feeds and sitemaps (.xml,
+    .json) and links outside the source's prefixes are not counted: they were never candidates."""
     pages = {"https://www.x.ch/de/": """<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
       <a href="/de/gebuehren.docx">Gebühren</a><a href="/de/liste.XLSX">Liste</a><a href="/de/liste.XLSX">again</a>
-      <a href="/de/foto.jpg">Foto</a><a href="https://elsewhere.ch/x.docx">x</a>
-      <a href="https://www.x.ch/dam/tarif.csv">Tarif</a></main></body></html>"""}
+      <a href="/de/foto.jpg">Foto</a><a href="https://elsewhere.ch/x.docx">x</a><a href="/de/news.xml">RSS</a>
+      <a href="/de/sitemap.json">Sitemap</a><a href="https://www.x.ch/dam/tarif.csv">Tarif</a></main></body></html>"""}
     spec = _spec(pdf_allow_prefixes=["https://www.x.ch/dam/"])
     result = HtmlConnector(_client(pages=pages), CrawlPolicy(True, 0)).run(spec, known={})
     assert sorted(result.skipped) == [("https://www.x.ch/dam/tarif.csv", ".csv"),
@@ -589,6 +589,34 @@ def test_in_scope_link_answering_with_a_non_html_type_is_reported_as_skipped():
     result = HtmlConnector(client, CrawlPolicy(True, 0)).run(_spec(), known={})
     assert result.skipped == (("https://www.x.ch/de/download/1", f"type {xlsx}"),)
     assert result.errors == ()
+
+
+def _download_route(content_type: str):
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /\n")
+        if url == "https://www.x.ch/de/":
+            return httpx.Response(200, text="""<html lang="de"><body><main><h1>Start</h1><p>Text.</p>
+              <a href="/de/download/12345">Merkblatt</a></main></body></html>""", headers={"content-type": "text/html"})
+        if url == "https://www.x.ch/de/download/12345":
+            return httpx.Response(200, content=b"%PDF-1.4", headers={"content-type": content_type})
+        return httpx.Response(404)
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def test_in_scope_link_answering_with_a_pdf_is_handed_to_the_pdf_connector():
+    """#11's /download/12345 case: no .pdf suffix, no pdf_link_patterns, but the answer is a PDF."""
+    result = HtmlConnector(_download_route("application/pdf"), CrawlPolicy(True, 0)).run(_spec(), known={})
+    assert [(p.url, p.language) for p in result.pdfs] == [("https://www.x.ch/de/download/12345", "de")]
+    assert result.skipped == ()
+
+
+def test_a_pdf_answer_outside_pdf_allow_prefixes_is_reported_as_skipped():
+    spec = _spec(pdf_allow_prefixes=["https://www.x.ch/dam/"])
+    result = HtmlConnector(_download_route("application/pdf"), CrawlPolicy(True, 0)).run(spec, known={})
+    assert result.pdfs == ()
+    assert result.skipped == (("https://www.x.ch/de/download/12345", "type application/pdf"),)
 
 
 # --- soft 404 (#20) ---------------------------------------------------------------------------------

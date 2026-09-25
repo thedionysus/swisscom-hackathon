@@ -33,8 +33,9 @@ logger = logging.getLogger(__name__)
 SKIP_SUFFIXES = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".zip", ".xml", ".json", ".ics", ".csv",
                  ".docx", ".doc", ".xlsx", ".xls", ".mp4", ".mp3")
 # The skipped files that could hold content (#11): an in-scope link to one is reported as skipped, so a
-# source whose rules sit in a .docx does not look fully covered. Images and media are never counted.
-ATTACHMENT_SUFFIXES = (".zip", ".xml", ".json", ".ics", ".csv", ".docx", ".doc", ".xlsx", ".xls")
+# source whose rules sit in a .docx does not look fully covered. Images and media are never counted, nor
+# .xml and .json, which are mostly feeds and sitemaps.
+ATTACHMENT_SUFFIXES = (".zip", ".ics", ".csv", ".docx", ".doc", ".xlsx", ".xls")
 DEFAULT_MAX_PAGES = 300
 DEFAULT_MAX_PDFS = 50
 _DENY_ALL_ROBOTS = "User-agent: *\nDisallow: /\n"
@@ -295,8 +296,12 @@ class HtmlConnector:
             if final is None:
                 continue
             media_type = response.headers.get("content-type", "text/html").split(";")[0].strip().lower()
-            if "html" not in media_type:
-                crawl.skip(final, f"type {media_type or 'missing'}")  # a link whose suffix did not say so
+            if "html" not in media_type:  # a link whose suffix did not say so
+                if "pdf" in media_type and crawl.in_pdf_scope(final):
+                    # A /download/12345 route serving a PDF (#11): the PDF connector fetches it again as one.
+                    crawl.add_pdf(final, "", spec.languages[0])
+                else:
+                    crawl.skip(final, f"type {media_type or 'missing'}")
                 continue
             try:
                 page = parse_crawled_page(response.text, final, spec, pdf_patterns)
@@ -379,13 +384,16 @@ class _CrawlResults:
     def skip(self, url: str, reason: str) -> None:
         self.skipped.setdefault(url, reason)
 
+    def in_pdf_scope(self, url: str) -> bool:
+        return any(url.startswith(p) for p in self._pdf_prefixes)
+
     def add_pdf(self, pdf_url: str, title_hint: str, language: str, listed: bool = False) -> None:
         """Hand a PDF to the PDF connector once: inside pdf_allow_prefixes, allowed by robots.txt, and
         within max_pdfs. One outside the prefixes is reported only when the manifest listed it
         (config.pdf_urls); a link found on a page is simply out of scope."""
         if pdf_url in self.pdfs or pdf_url in self._pdfs_refused:
             return
-        if not any(pdf_url.startswith(p) for p in self._pdf_prefixes):
+        if not self.in_pdf_scope(pdf_url):
             if listed:
                 self._pdfs_refused.add(pdf_url)
                 self.errors.append((pdf_url, "PDF outside pdf_allow_prefixes"))
