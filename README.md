@@ -315,6 +315,7 @@ Every setting comes from the environment or `.env`. The ones that matter:
 | `CORPUS_INDEXES` | `bge-m3` | Embedding indexes to build. Add `openai-3l` to also pay for the OpenAI index. |
 | `EMBEDDING_BACKEND` | `fake` | Set to `sentence_transformers` to build the local bge-m3 index. |
 | `RESPECT_ROBOTS` | `true` | Obey robots.txt while crawling. Keep it on unless a source's terms were checked. |
+| `ROBOTS_API_EXCEPTIONS` | `false` | Opt-in: a `json` source whose manifest entry gives a `robots_exception_reason` is fetched even where robots.txt disallows its documented API. Each such request is logged. |
 | `CRAWL_DELAY_SECONDS`, `FETCH_TIMEOUT_SECONDS` | `0.5`, `20` | Minimum delay between requests to one host (robots.txt and the manifest can raise it), and the HTTP timeout. |
 | `DATA_DIR` | `data` | Where raw files, page images and batch files go. |
 | `CORPUS_CHAT_TOKENS_PER_FILE`, `CORPUS_EMBED_TOKENS_PER_FILE` | `2000000` | Input tokens per Batch API file. Set to the account's enqueued-token limit. |

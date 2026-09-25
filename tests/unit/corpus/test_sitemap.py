@@ -44,6 +44,31 @@ def test_sitemap_429_is_retried_after_retry_after():
     assert 2.0 in sleeps
 
 
+def test_rewrite_moves_child_sitemaps_and_pages_to_the_public_host():
+    """www.ne.ch's index lists its children on http://ne-prod-admin.ne.ch/, which does not resolve (#57)."""
+    bodies = {
+        "https://www.ne.ch/sitemap.xml": b"""<sitemapindex>
+          <sitemap><loc>http://ne-prod-admin.ne.ch/sitemap.xml?page=1</loc></sitemap></sitemapindex>""",
+        "https://www.ne.ch/sitemap.xml?page=1": b"""<urlset>
+          <url><loc>http://ne-prod-admin.ne.ch/themes/impots</loc></url>
+          <url><loc>https://www.ne.ch/themes/animaux</loc></url></urlset>""",
+    }
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(str(request.url))
+        body = bodies.get(str(request.url))
+        return httpx.Response(200, content=body) if body else httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    seeds = collect_sitemap_urls(client, ["https://www.ne.ch/sitemap.xml"], [], 10, accept=lambda u: True,
+                                 fetchable=lambda u: True, before=lambda u: None, throttle=HostThrottle(),
+                                 sleep=lambda s: None, rewrite=("http://ne-prod-admin.ne.ch/", "https://www.ne.ch/"))
+    assert requested == ["https://www.ne.ch/sitemap.xml", "https://www.ne.ch/sitemap.xml?page=1"]
+    assert seeds.urls == ("https://www.ne.ch/themes/impots", "https://www.ne.ch/themes/animaux")
+    assert seeds.errors == ()
+
+
 def test_sitemap_three_429s_become_an_error():
     calls = {"n": 0}
 

@@ -9,6 +9,21 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from swiss_grounding.corpus.models import SourceSpec
 
+# Every config key a connector reads (connectors/html.py and html_page.py, json_api.py, fedlex.py), plus
+# `ca_bundle`, read when the HTTP client is built. Any other key is a typo the connector would ignore.
+_COMMON_KEYS = frozenset({"delay_seconds", "ca_bundle"})
+CONFIG_KEYS = {
+    "fedlex": frozenset({"sr_numbers"}),
+    "html": _COMMON_KEYS | {
+        "start_urls", "allow_prefixes", "max_pages", "sitemap_urls", "sitemap_include", "sitemap_rewrite",
+        "language_links_selector", "content_selector", "deny_patterns", "pdf_allow_prefixes", "pdf_link_patterns",
+        "max_pdfs", "max_pdf_bytes", "pdf_urls", "json_link_attributes", "keep_html"},
+    "json": _COMMON_KEYS | {
+        "url", "paging", "records_path", "id_template", "title_template", "text_template", "html_path",
+        "url_template", "url_replace", "cite_url", "published_path", "modified_path", "breadcrumbs", "max_records",
+        "robots_exception_reason"},
+}
+
 
 class SourceEntry(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -27,12 +42,20 @@ class SourceEntry(BaseModel):
 
     @model_validator(mode="after")
     def _connector_config(self) -> "SourceEntry":
+        unknown = sorted(set(self.config) - CONFIG_KEYS[self.connector])
+        if unknown:
+            raise ValueError(f"source {self.id}: unknown config key(s) for the {self.connector} connector: {unknown}")
+        _check_fetch_keys(self.id, self.config)
         if self.connector == "html":
             if not self.config.get("allow_prefixes"):
                 raise ValueError(f"source {self.id}: html connector needs config.allow_prefixes")
             if not self.config.get("start_urls") and not self.config.get("pdf_urls"):
                 raise ValueError(f"source {self.id}: html connector needs config.start_urls (or config.pdf_urls)")
             _check_site_adaptations(self.id, self.config)
+            prefixes = tuple(_string_list(self.id, self.config, "allow_prefixes"))
+            outside = [u for u in _string_list(self.id, self.config, "start_urls") if not u.startswith(prefixes)]
+            if outside:  # the crawl would skip them without a word
+                raise ValueError(f"source {self.id}: config.start_urls {outside} are outside config.allow_prefixes")
         if self.connector == "fedlex" and not self.config.get("sr_numbers"):
             raise ValueError(f"source {self.id}: fedlex connector needs config.sr_numbers")
         if self.connector == "json":
@@ -54,6 +77,24 @@ def _string_list(source_id: str, config: dict[str, Any], key: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(v, str) and v for v in value):
         raise ValueError(f"source {source_id}: config.{key} must be a list of non-empty strings")
     return value
+
+
+def _check_fetch_keys(source_id: str, config: dict[str, Any]) -> None:
+    """Per-source fetch settings (#57, #12): a CA bundle for a host with an incomplete certificate chain,
+    a larger PDF size limit, raw HTML kept, and a sitemap index that names an internal host."""
+    bundle = config.get("ca_bundle")
+    if bundle is not None and (not isinstance(bundle, str) or not bundle.strip()):
+        raise ValueError(f"source {source_id}: config.ca_bundle must be the path of a PEM file")
+    size = config.get("max_pdf_bytes")
+    if size is not None and (isinstance(size, bool) or not isinstance(size, int) or size < 1):
+        raise ValueError(f"source {source_id}: config.max_pdf_bytes must be an integer >= 1")
+    if not isinstance(config.get("keep_html", False), bool):
+        raise ValueError(  # noqa: TRY004 - pydantic turns only ValueError into a validation error
+            f"source {source_id}: config.keep_html must be true or false")
+    rewrite = config.get("sitemap_rewrite")
+    if rewrite is not None and (not isinstance(rewrite, dict) or set(rewrite) != {"from", "to"} or not all(
+            isinstance(v, str) and v.startswith(("http://", "https://")) for v in rewrite.values())):
+        raise ValueError(f"source {source_id}: config.sitemap_rewrite must be {{from, to}}, two absolute URL prefixes")
 
 
 def _check_delay_seconds(source_id: str, config: dict[str, Any]) -> None:

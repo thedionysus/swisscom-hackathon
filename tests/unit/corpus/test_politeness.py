@@ -3,6 +3,7 @@ import threading
 import time
 
 import httpx
+import pytest
 
 from swiss_grounding.corpus.connectors.politeness import (
     DEFAULT_RETRY_SECONDS,
@@ -143,6 +144,51 @@ def test_three_429s_return_the_last_failing_response_without_a_fourth_attempt():
     result = request_with_backoff("https://a.ch/x", throttle, lambda u: None, send, clock.sleep)
     assert result.status_code == 429
     assert calls["n"] == 3
+
+
+def test_a_dropped_connection_is_retried_after_a_backoff():
+    """www.gerichte-zh.ch dropped the connection in 2 of 3 attempts on 2026-09-23 (#57)."""
+    clock = FakeClock()
+    throttle = HostThrottle(clock=clock)
+    calls = {"n": 0}
+
+    def send():
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
+        return FetchResult(200, httpx.Headers())
+
+    result = request_with_backoff("https://www.gerichte-zh.ch/x", throttle, lambda u: None, send, clock.sleep)
+    assert result.status_code == 200
+    assert calls["n"] == 3
+    assert clock.sleeps == [2.0, 4.0]
+
+
+def test_a_connection_error_on_every_attempt_is_raised_after_the_last_one():
+    calls = {"n": 0}
+
+    def send():
+        calls["n"] += 1
+        raise httpx.ConnectError("connection refused")
+
+    clock = FakeClock()
+    with pytest.raises(httpx.ConnectError):
+        request_with_backoff("https://a.ch/x", HostThrottle(clock=clock), lambda u: None, send, clock.sleep)
+    assert calls["n"] == 3
+
+
+def test_a_read_timeout_is_not_retried():
+    """A server too slow to answer within the timeout is not asked twice more."""
+    calls = {"n": 0}
+
+    def send():
+        calls["n"] += 1
+        raise httpx.ReadTimeout("timed out")
+
+    clock = FakeClock()
+    with pytest.raises(httpx.ReadTimeout):
+        request_with_backoff("https://a.ch/x", HostThrottle(clock=clock), lambda u: None, send, clock.sleep)
+    assert calls["n"] == 1
 
 
 def test_required_delay_is_a_floor_for_every_caller_of_the_host():

@@ -86,14 +86,20 @@ def _entries(body: bytes) -> tuple[list[str], list[str]]:
 def collect_sitemap_urls(http: httpx.Client, sitemap_urls: Sequence[str], include: Sequence[str], limit: int,
                          accept: Callable[[str], bool], fetchable: Callable[[str], bool],
                          before: Callable[[str], None], throttle: HostThrottle,
-                         sleep: Callable[[float], None] = time.sleep) -> SitemapSeeds:
+                         sleep: Callable[[float], None] = time.sleep,
+                         rewrite: tuple[str, str] | None = None) -> SitemapSeeds:
     """Page URLs from `sitemap_urls` matching any `include` regex (all when empty) and `accept`.
 
     `fetchable` gates each sitemap request (robots.txt); `before(url)` is the per-host politeness
     wait, run before every attempt (`request_with_backoff` backs off and retries a sitemap request
     that answers 429/503, up to RETRY_ATTEMPTS, via the shared `throttle`).
+    `rewrite` is a (from, to) prefix pair applied to every child sitemap and page URL listed, for an
+    index that names an internal host: www.ne.ch lists its children on http://ne-prod-admin.ne.ch/.
     Unreadable sitemaps become errors; the crawl continues without them.
     """
+    def moved(url: str) -> str:
+        return rewrite[1] + url[len(rewrite[0]):] if rewrite and url.startswith(rewrite[0]) else url
+
     patterns = [re.compile(p) for p in include]
     queue = deque(sitemap_urls)
     visited: set[str] = set()
@@ -124,8 +130,8 @@ def collect_sitemap_urls(http: httpx.Client, sitemap_urls: Sequence[str], includ
         except _Unreadable as exc:
             errors.append((sitemap, str(exc)))
             continue
-        queue.extend(children)
-        for url in pages:
+        queue.extend(moved(child) for child in children)
+        for url in map(moved, pages):
             if url not in found and (not patterns or any(p.search(url) for p in patterns)) and accept(url):
                 found[url] = None
                 if len(found) >= limit:
