@@ -87,7 +87,7 @@ def init_cmd() -> None:
 def _check_html(http: httpx.Client, entry, respect_robots: bool) -> int:
     problems = 0
     selector = entry.config.get("language_links_selector")
-    for url in entry.config["start_urls"]:
+    for url in entry.config.get("start_urls", ()):  # a source of pdf_urls only has none
         try:
             response = http.get(url, follow_redirects=True)
         except httpx.HTTPError as exc:

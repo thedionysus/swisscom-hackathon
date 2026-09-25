@@ -95,6 +95,20 @@ def test_apertus_client_retries_up_to_the_direct_call_limit(monkeypatch):
     assert captured["max_retries"] == cc.DIRECT_MAX_RETRIES
 
 
+def test_check_manifest_probes_nothing_for_a_source_with_only_pdf_urls():
+    import httpx
+
+    from swiss_grounding.cli import corpus_source_commands as cs
+    from swiss_grounding.corpus.manifest import SourceEntry
+
+    entry = SourceEntry(id="gl", name="GL", publisher="GL", authority="official_info", level="cantonal",
+                        extent_id="CH-GL", connector="html", tier=2, languages=("de",),
+                        config={"allow_prefixes": ["https://www.gl.ch/"],
+                                "pdf_urls": [{"url": "https://www.gl.ch/a.pdf"}]})
+    http = httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(500)))
+    assert cs._check_html(http, entry, respect_robots=True) == 0
+
+
 def test_sync_workers_is_apertus_workers_under_apertus_and_sync_workers_otherwise():
     apertus = _settings(corpus_llm_provider="apertus", apertus_api_key="k", apertus_workers=5)
     openai = _settings(corpus_llm_provider="openai", openai_api_key="k")

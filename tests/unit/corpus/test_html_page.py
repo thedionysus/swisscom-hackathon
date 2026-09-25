@@ -58,6 +58,36 @@ def test_ordinary_page_mentioning_404_or_not_found_is_not_an_error_page(head, h1
     assert parse_crawled_page(html, "https://www.be.ch/de/x", _spec(), pdf_patterns=()).soft_404 is None
 
 
+_NEUCHATEL = """<html lang="fr"><head>
+  <link rel="alternate" hreflang="fr" href="https://www.neuchatelville.ch/fr/votre-commune/reglementation">
+  <link rel="alternate" hreflang="de" href="https://www.neuchatelville.ch/votre-commune/reglementation">
+  </head><body><main><h1>Réglementation</h1><p>Règlements communaux.</p>
+  <a href="/fileadmin/sites/ne_ville/fichiers/votre_commune/reglementation/12_21_A_interChiens.pdf">Chiens</a>
+  </main></body></html>"""
+
+
+def _neuchatel_spec(languages):
+    return SourceSpec(id="ne", name="NE", publisher="NE", authority="municipal_law", level="municipal",
+                      extent_id="CH-NE-6458", connector="html", tier=2, languages=languages,
+                      config={"start_urls": ["https://www.neuchatelville.ch/votre-commune/reglementation"],
+                              "allow_prefixes": ["https://www.neuchatelville.ch/votre-commune/reglementation"]})
+
+
+def test_html_lang_wins_when_a_language_link_names_the_page_in_an_undeclared_language():
+    """www.neuchatelville.ch (#56): <html lang="fr">, but its hreflang links call it the German
+    version. The source declares only French, so the page and its 79 PDFs were dropped."""
+    page = parse_crawled_page(_NEUCHATEL, "https://www.neuchatelville.ch/votre-commune/reglementation",
+                              _neuchatel_spec(("fr",)), pdf_patterns=())
+    assert (page.language, page.emit) == ("fr", True)
+    assert len(page.pdf_links) == 1
+
+
+def test_language_link_still_wins_when_the_source_declares_both_languages():
+    page = parse_crawled_page(_NEUCHATEL, "https://www.neuchatelville.ch/votre-commune/reglementation",
+                              _neuchatel_spec(("fr", "de")), pdf_patterns=())
+    assert (page.language, page.emit) == ("de", True)
+
+
 def test_marker_stripping_does_not_touch_ordinary_bracketed_text():
     html = """<html lang="de"><body><main><h1>T</h1>
     <p>Siehe Anhang [1] für Details. Das ist [wichtig].</p>

@@ -1,6 +1,6 @@
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
@@ -23,6 +23,8 @@ LANGUAGE_NAMES = {
     "rumantsch": "rm", "romansh": "rm", "rätoromanisch": "rm", "romanche": "rm", "romancio": "rm",
 }
 _PATH_LANGUAGE = re.compile(r"^/([a-z]{2})(?:/|$)", re.IGNORECASE)
+# A JSON string that is a link: an absolute URL or an absolute path, with no whitespace.
+_URL_OR_PATH = re.compile(r"^(?:https?://|/)\S*$", re.IGNORECASE)
 # Nuxt's payload serialiser wraps reactive state as ["Reactive", <index>] and the like.
 _NUXT_WRAPPERS = ("Reactive", "ShallowReactive", "Ref", "ShallowRef")
 
@@ -152,14 +154,57 @@ def _is_pdf_link(target: str, patterns: Sequence[re.Pattern[str]]) -> bool:
     return target.lower().split("?")[0].endswith(".pdf") or any(p.search(target) for p in patterns)
 
 
+def _json_strings(value: Any) -> Iterator[str]:
+    """Every string inside a parsed JSON value, in document order (iterative: no recursion limit)."""
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            yield item
+        elif isinstance(item, dict):
+            stack.extend(reversed(list(item.values())))
+        elif isinstance(item, list):
+            stack.extend(reversed(item))
+
+
+def _json_attribute_links(soup: BeautifulSoup, url: str,
+                          attributes: Sequence[Mapping[str, str]]) -> list[tuple[str, str]]:
+    """(absolute URL, link text) from attributes that hold JSON, such as i-web's
+    `<table class="icms-dt" data-entities="…">` or stadt-zuerich.ch's `<stzh-datatable rows="…">`.
+
+    A string that is a URL or an absolute path is a link without text; a string holding an HTML
+    fragment gives each of its `<a href>` with the anchor text (i-web's `_dokumentList`). An attribute
+    that is not valid JSON gives nothing.
+    """
+    found: list[tuple[str, str]] = []
+    for spec in attributes:
+        for element in soup.select(spec["selector"]):
+            raw = element.get(spec["attribute"])
+            try:
+                data = json.loads(raw) if isinstance(raw, str) else None
+            except (ValueError, RecursionError):
+                continue
+            for text in _json_strings(data):
+                text = text.strip()
+                if _URL_OR_PATH.match(text):
+                    found.append((_absolute(url, text), ""))
+                elif "href" in text:
+                    for a in BeautifulSoup(text, "lxml").find_all("a", href=True):
+                        found.append((_absolute(url, a["href"]), " ".join(a.get_text(" ").split())))
+    return found
+
+
 def page_meta(html: str, url: str, language_links_selector: str | None = None,
-              pdf_link_patterns: Sequence[str | re.Pattern[str]] = ()) -> PageMeta:
+              pdf_link_patterns: Sequence[str | re.Pattern[str]] = (),
+              json_link_attributes: Sequence[Mapping[str, str]] = ()) -> PageMeta:
     """Alternates, canonical, dates and PDF links of one page.
 
     Alternates come from hreflang first; languages hreflang does not give are filled in from the
     links matched by `language_links_selector` (a site's language switcher), then from the
     federal new-CMS Nuxt payload. Only corpus languages (LANGUAGES) are kept.
     `pdf_link_patterns` (regexes on absolute URLs) mark links as PDFs beyond the .pdf suffix.
+    PDF links come from `<a href>`, and also from the JSON held by `json_link_attributes`
+    (`[{selector, attribute}]`), for CMSes that list their documents only there.
     """
     soup = BeautifulSoup(html, "lxml")
     alternates = _hreflang_alternates(soup, url)
@@ -191,6 +236,9 @@ def page_meta(html: str, url: str, language_links_selector: str | None = None,
         target = _absolute(url, a["href"])
         if _is_pdf_link(target, patterns):
             pdfs.setdefault(target, " ".join(a.get_text(" ").split()))
+    for target, text in _json_attribute_links(soup, url, json_link_attributes):
+        if _is_pdf_link(target, patterns) and not pdfs.get(target):
+            pdfs[target] = text
     title = " ".join(soup.title.get_text(" ").split()) if soup.title else ""
     return PageMeta(alternates=alternates, canonical=canonical, published=published, modified=modified,
                     pdf_links=tuple(pdfs.items()), title=title)

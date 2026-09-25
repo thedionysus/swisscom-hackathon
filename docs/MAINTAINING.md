@@ -138,7 +138,8 @@ Sources are entries in `manifests/declared-scope.yaml`. Each entry has:
 language, with its current consolidation and, when one exists, the next scheduled one. English is
 optional: an act without an English version is not an error.
 
-**`html`** needs `config.start_urls` and `config.allow_prefixes`. Optional keys:
+**`html`** needs `config.allow_prefixes` and `config.start_urls` (which a source listing only
+`pdf_urls` may leave out). Optional keys:
 
 | Key | Meaning |
 |---|---|
@@ -147,6 +148,8 @@ optional: an act without an English version is not an error.
 | `language_links_selector` | CSS selector of the site's language switcher, when the pages carry no hreflang links. |
 | `content_selector` | CSS selector of the content area, when the page has no usable `<main>`. |
 | `pdf_allow_prefixes`, `pdf_link_patterns`, `max_pdfs` | Which linked PDFs to download (default: under `allow_prefixes`, at most 50). |
+| `pdf_urls` | `[{url, title_hint?}]`: PDFs no page links to. They take the source's first language, must pass `pdf_allow_prefixes` and robots.txt, and count against `max_pdfs`. |
+| `json_link_attributes` | `[{selector, attribute}]`: elements whose attribute holds JSON with the page's document links, such as i-web's `{selector: "table.icms-dt", attribute: "data-entities"}`. URLs and `<a href>` inside the JSON are checked like any PDF link. |
 | `delay_seconds` | A longer delay between requests for this site. |
 
 Two sources may not have overlapping URL prefixes; loading the manifest fails if they do.

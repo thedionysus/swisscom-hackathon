@@ -61,10 +61,15 @@ def parse_crawled_page(html: str, final: str, spec: SourceSpec,
     # language" -- both would otherwise read as the default.
     page = html_to_page(html, url=final, default_language="", content_selector=cfg.get("content_selector"))
     meta = page_meta(html, final, language_links_selector=cfg.get("language_links_selector"),
-                     pdf_link_patterns=pdf_patterns)
+                     pdf_link_patterns=pdf_patterns, json_link_attributes=cfg.get("json_link_attributes", ()))
     self_lang = next((lang for lang, href in meta.alternates.items()
                       if urldefrag(href)[0] == urldefrag(final)[0]), None)
-    declared = self_lang or (page.language or None)
+    html_lang = page.language or None
+    declared = self_lang or html_lang
+    if self_lang and html_lang and self_lang not in spec.languages and html_lang in spec.languages:
+        # A language link can misname the page: www.neuchatelville.ch's French page lists itself as the
+        # German version. When only <html lang> names a language the source declares, it wins (#56).
+        declared = html_lang
     if declared is None:
         lang, emit = spec.languages[0], True
     else:

@@ -28,9 +28,10 @@ class SourceEntry(BaseModel):
     @model_validator(mode="after")
     def _connector_config(self) -> "SourceEntry":
         if self.connector == "html":
-            for key in ("start_urls", "allow_prefixes"):
-                if not self.config.get(key):
-                    raise ValueError(f"source {self.id}: html connector needs config.{key}")
+            if not self.config.get("allow_prefixes"):
+                raise ValueError(f"source {self.id}: html connector needs config.allow_prefixes")
+            if not self.config.get("start_urls") and not self.config.get("pdf_urls"):
+                raise ValueError(f"source {self.id}: html connector needs config.start_urls (or config.pdf_urls)")
             _check_site_adaptations(self.id, self.config)
         if self.connector == "fedlex" and not self.config.get("sr_numbers"):
             raise ValueError(f"source {self.id}: fedlex connector needs config.sr_numbers")
@@ -81,10 +82,40 @@ def _check_site_adaptations(source_id: str, config: dict[str, Any]) -> None:
         selector = config[key]
         if not isinstance(selector, str) or not selector.strip():
             raise ValueError(f"source {source_id}: config.{key} must be a non-empty CSS selector")
-        try:
-            soupsieve.compile(selector)
-        except soupsieve.SelectorSyntaxError as exc:
-            raise ValueError(f"source {source_id}: config.{key} is not a valid CSS selector: {selector!r}") from exc
+        _check_selector(source_id, key, selector)
+    _check_pdf_urls(source_id, config.get("pdf_urls", []))
+    _check_json_link_attributes(source_id, config.get("json_link_attributes", []))
+
+
+def _check_selector(source_id: str, key: str, selector: str) -> None:
+    try:
+        soupsieve.compile(selector)
+    except soupsieve.SelectorSyntaxError as exc:
+        raise ValueError(f"source {source_id}: config.{key} is not a valid CSS selector: {selector!r}") from exc
+
+
+def _check_pdf_urls(source_id: str, entries: Any) -> None:
+    """`pdf_urls: [{url, title_hint?}]`: PDFs handed to the PDF connector without a linking page (#56)."""
+    problem = f"source {source_id}: config.pdf_urls must be a list of {{url, title_hint?}} with an absolute url"
+    if not isinstance(entries, list):
+        raise ValueError(problem)  # noqa: TRY004 - pydantic turns only ValueError into a validation error
+    for entry in entries:
+        if (not isinstance(entry, dict) or set(entry) - {"url", "title_hint"}
+                or not isinstance(entry.get("url"), str) or not entry["url"].startswith(("http://", "https://"))
+                or not isinstance(entry.get("title_hint", ""), str)):
+            raise ValueError(problem)
+
+
+def _check_json_link_attributes(source_id: str, entries: Any) -> None:
+    """`json_link_attributes: [{selector, attribute}]`: elements whose attribute holds JSON with links (#56)."""
+    problem = f"source {source_id}: config.json_link_attributes must be a list of {{selector, attribute}}"
+    if not isinstance(entries, list):
+        raise ValueError(problem)  # noqa: TRY004 - pydantic turns only ValueError into a validation error
+    for entry in entries:
+        if (not isinstance(entry, dict) or set(entry) != {"selector", "attribute"}
+                or not all(isinstance(v, str) and v.strip() for v in entry.values())):
+            raise ValueError(problem)
+        _check_selector(source_id, "json_link_attributes", entry["selector"])
 
 
 JSON_PAGING_STYLES = ("none", "offset", "page", "next")
