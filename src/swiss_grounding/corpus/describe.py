@@ -141,11 +141,24 @@ def _group_versions(conn: psycopg.Connection, gid: str) -> tuple[list[dict], dic
     return docs, versions
 
 
-def build_doc_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> list[LlmTask]:
+def known_source_ids(conn: psycopg.Connection) -> set[str]:
+    return {r["id"] for r in conn.execute("select id from corpus.source").fetchall()}
+
+
+def validate_sources(conn: psycopg.Connection, sources: Sequence[str]) -> None:
+    unknown = sorted(set(sources) - known_source_ids(conn))
+    if unknown:
+        raise ValueError(f"unknown source ids: {unknown}")
+
+
+def build_doc_tasks(conn: psycopg.Connection, model: str, limit: int | None,
+                    sources: Sequence[str] = ()) -> list[LlmTask]:
+    source_filter = " and d.source_id = any(%s)" if sources else ""
+    params = (list(sources), limit) if sources else (limit,)
     groups = conn.execute(
         "select g.id from corpus.translation_group g where g.description_by_lang = '{}'::jsonb and exists "
-        f"(select 1 from corpus.document d where d.translation_group_id = g.id and d.status in {LIVE}) "
-        "order by g.id limit %s", (limit,)).fetchall()
+        f"(select 1 from corpus.document d where d.translation_group_id = g.id and d.status in {LIVE}{source_filter}) "
+        "order by g.id limit %s", params).fetchall()
     tasks = []
     for group in groups:
         docs, versions = _group_versions(conn, group["id"])
@@ -166,17 +179,28 @@ _PENDING_CHUNKS = """
 select distinct on (c.translation_group_id, c.status, c.align_key, c.language)
        c.id, c.language, c.translation_group_id, c.status, c.align_key, c.breadcrumb, c.text, c.topics
 from corpus.chunk c join corpus.translation_group g on g.id = c.translation_group_id
-where c.status in {live} and c.description = '' and c.text <> ''{doc_condition}
+where c.status in {live} and c.description = '' and c.text <> ''{doc_condition}{source_condition}
 order by c.translation_group_id, c.status, c.align_key, c.language, c.document_id desc
 """
 _DOC_DESCRIBED = " and g.description_by_lang <> '{}'::jsonb"
-PENDING_CHUNKS = _PENDING_CHUNKS.format(live=LIVE, doc_condition=_DOC_DESCRIBED)
-PROJECTED_CHUNKS = _PENDING_CHUNKS.format(live=LIVE, doc_condition="")
+_SOURCE_FILTERED = " and exists (select 1 from corpus.document d where d.id = c.document_id and d.source_id = any(%s))"
+PENDING_CHUNKS = _PENDING_CHUNKS.format(live=LIVE, doc_condition=_DOC_DESCRIBED, source_condition="")
+PROJECTED_CHUNKS = _PENDING_CHUNKS.format(live=LIVE, doc_condition="", source_condition="")
 # Input tokens a document description adds to a chunk prompt, for groups not yet described.
 PROJECTED_DOC_DESCRIPTION_TOKENS = 85
 
 
-def _chunk_rows(conn: psycopg.Connection, pending_sql: str, limit: int | None) -> list[dict]:
+def _pending_chunks_sql(sources: Sequence[str]) -> str:
+    return _PENDING_CHUNKS.format(live=LIVE, doc_condition=_DOC_DESCRIBED,
+                                  source_condition=_SOURCE_FILTERED if sources else "")
+
+
+def _chunk_rows(conn: psycopg.Connection, pending_sql: str, limit: int | None,
+                sources: Sequence[str] = ()) -> list[dict]:
+    params: list = [CHUNK_TEXT_CHARS]
+    if sources:
+        params.append(list(sources))
+    params.append(limit)
     return conn.execute(
         "select p.translation_group_id as gid, p.status, p.align_key, g.description_by_lang as doc, "
         "jsonb_object_agg(p.language, jsonb_build_object('breadcrumb', p.breadcrumb, 'text', left(p.text, %s))) as v, "
@@ -184,11 +208,13 @@ def _chunk_rows(conn: psycopg.Connection, pending_sql: str, limit: int | None) -
         "(array_agg(to_jsonb(p.topics) order by p.language))[1] as prior "
         f"from ({pending_sql}) p join corpus.translation_group g on g.id = p.translation_group_id "
         "group by p.translation_group_id, p.status, p.align_key, g.description_by_lang "
-        "order by p.translation_group_id, p.align_key limit %s", (CHUNK_TEXT_CHARS, limit)).fetchall()
+        "order by p.translation_group_id, p.align_key limit %s", tuple(params)).fetchall()
 
 
-def build_chunk_tasks(conn: psycopg.Connection, model: str, limit: int | None) -> list[LlmTask]:
-    return [_chunk_task(r, model) for r in _chunk_rows(conn, PENDING_CHUNKS, limit)]
+def build_chunk_tasks(conn: psycopg.Connection, model: str, limit: int | None,
+                      sources: Sequence[str] = ()) -> list[LlmTask]:
+    pending_sql = _pending_chunks_sql(sources) if sources else PENDING_CHUNKS
+    return [_chunk_task(r, model) for r in _chunk_rows(conn, pending_sql, limit, sources)]
 
 
 def project_chunk_tasks(conn: psycopg.Connection, model: str, batch: bool = True) -> tuple[int, float]:

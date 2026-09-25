@@ -9,6 +9,7 @@ from swiss_grounding.corpus.describe import (
     mark_repeated_furniture,
     run_chunk_descriptions,
     run_doc_descriptions,
+    validate_sources,
 )
 from swiss_grounding.corpus.models import ParsedDocument, ParsedSection, SourceSpec
 from swiss_grounding.corpus.persist import persist_document, upsert_source
@@ -311,3 +312,33 @@ def test_chunk_tasks_are_projected_before_documents_are_described(corpus_db):
         assert build_chunk_tasks(conn, model="gpt-5-nano", limit=None) == []
         count, usd = project_chunk_tasks(conn, model="gpt-5-nano")
     assert count == 1 and usd > 0
+
+
+# --- --source filter ---------------------------------------------------------------------------------
+
+def test_doc_tasks_with_a_source_only_cover_groups_with_a_live_document_of_that_source(corpus_db):
+    with connect(corpus_db) as conn:
+        _seed(conn)              # one fedlex group
+        _seed_city_pages(conn, 2)  # two city groups
+        assert len(build_doc_tasks(conn, model="gpt-5-mini", limit=None)) == 3
+        assert len(build_doc_tasks(conn, model="gpt-5-mini", limit=None, sources=("fedlex",))) == 1
+        assert len(build_doc_tasks(conn, model="gpt-5-mini", limit=None, sources=("city",))) == 2
+        assert len(build_doc_tasks(conn, model="gpt-5-mini", limit=None, sources=("fedlex", "city"))) == 3
+
+
+def test_chunk_tasks_with_a_source_only_cover_chunks_of_documents_of_that_source(corpus_db):
+    with connect(corpus_db) as conn:
+        _seed(conn)                  # one aligned de+fr chunk pair
+        _seed_city_pages(conn, 1)    # one own-content chunk + one footer chunk
+        _describe_groups(conn)
+        assert len(build_chunk_tasks(conn, model="gpt-5-nano", limit=None)) == 3
+        assert len(build_chunk_tasks(conn, model="gpt-5-nano", limit=None, sources=("fedlex",))) == 1
+        assert len(build_chunk_tasks(conn, model="gpt-5-nano", limit=None, sources=("city",))) == 2
+
+
+def test_validate_sources_refuses_an_unknown_id(corpus_db):
+    with connect(corpus_db) as conn:
+        _seed(conn)
+        with pytest.raises(ValueError, match="rubbish"):
+            validate_sources(conn, ("fedlex", "rubbish"))
+        validate_sources(conn, ("fedlex",))  # known source: no error

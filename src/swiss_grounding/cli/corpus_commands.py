@@ -8,6 +8,7 @@ The unpaid commands (init, check-manifest, fetch, status, batches) live in `corp
 """
 from collections.abc import Callable, Sequence
 from pathlib import Path
+from typing import Annotated
 
 import psycopg
 import typer
@@ -39,6 +40,7 @@ from swiss_grounding.corpus.describe import (
     project_chunk_tasks,
     run_chunk_descriptions,
     run_doc_descriptions,
+    validate_sources,
 )
 from swiss_grounding.corpus.embed import (
     build_vector_indexes,
@@ -511,9 +513,10 @@ def ocr_cmd(pilot: int = typer.Option(0, "--pilot", help="Sync OCR of N pages, t
 # --- describe ---------------------------------------------------------------------------------------
 
 def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, dry_run: bool,
-                  fit_budget: bool = False) -> dict[str, int]:
+                  fit_budget: bool = False, sources: Sequence[str] = ()) -> dict[str, int]:
     """One describe pass (`docs` or `chunks`). Returns done/failed/skipped/refused, refused being the tasks
-    left for lack of budget (only with fit_budget; otherwise a stage over the cap raises BudgetExceeded)."""
+    left for lack of budget (only with fit_budget; otherwise a stage over the cap raises BudgetExceeded).
+    With `sources`, both passes are limited to documents from those sources."""
     task_model = settings.corpus_doc_model if what == "docs" else settings.corpus_chunk_model
     priced = _priced_model(settings, task_model)
     run_fn = run_doc_descriptions if what == "docs" else run_chunk_descriptions
@@ -522,10 +525,11 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
     if not dry_run:
         _resume_chat(settings, DESCRIBE_KINDS[what], run_fn, priced)
     with connect(settings.database_url) as conn:
+        validate_sources(conn, sources)
         if not dry_run:     # before either pass: doc excerpts and chunk tasks both leave furniture out
             typer.echo(f"marked {mark_repeated_furniture(conn)} repeated furniture chunk(s) as boilerplate")
             conn.commit()
-        tasks = (build_doc_tasks if what == "docs" else build_chunk_tasks)(conn, task_model, limit)
+        tasks = (build_doc_tasks if what == "docs" else build_chunk_tasks)(conn, task_model, limit, sources)
         typer.echo(f"{what}: {len(tasks)} tasks, estimate {usd(estimate_describe(tasks, priced, batch=batch_price))} "
                    f"({_price_label(priced, batch_price)})")
         if dry_run or not tasks:
@@ -550,6 +554,8 @@ def _describe_one(settings: Settings, what: str, sync: bool, limit: int | None, 
 def describe_cmd(what: str = typer.Option(..., "--what", help="docs, chunks, or all (docs then chunks)"),
                  sync: bool = typer.Option(False, "--sync"), limit: int | None = typer.Option(None, "--limit"),
                  dry_run: bool = typer.Option(False, "--dry-run"),
+                 source: Annotated[list[str] | None, typer.Option(
+                     "--source", help="Repeatable; limits doc and chunk tasks to these sources.")] = None,
                  allow_fake: bool = typer.Option(False, "--allow-fake", help=ALLOW_FAKE_HELP)) -> None:
     """Document descriptions (per translation group), then chunk descriptions, with topics."""
     if what not in ("docs", "chunks", "all"):
@@ -557,8 +563,12 @@ def describe_cmd(what: str = typer.Option(..., "--what", help="docs, chunks, or 
     settings = load_settings()
     if not dry_run:
         _guard_fake(settings, settings.corpus_llm_provider == "fake", allow_fake, "describe")
-    for step in (("docs", "chunks") if what == "all" else (what,)):
-        _describe_one(settings, step, sync, limit, dry_run)
+    sources = tuple(source or ())
+    try:
+        for step in (("docs", "chunks") if what == "all" else (what,)):
+            _describe_one(settings, step, sync, limit, dry_run, sources=sources)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     if what == "all" and dry_run:
         typer.echo("note: chunk tasks exist only for groups that already have a document description")
 
