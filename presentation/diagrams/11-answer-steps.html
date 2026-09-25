@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How one question is answered · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · jury deck · slide 11</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="answer-steps-title answer-steps-desc">
+<title id="answer-steps-title">How one question is answered</title>
+<desc id="answer-steps-desc">Six steps: find where the question is about, recognise its language, search in four languages at once, let an AI model judge each passage, decide whether to answer, ask for the place or say it is not covered, and cite the evidence with a quote and link, translated if needed. The examples follow the Vaud driving-licence question.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<!-- arrows -->
+<path d="M 408,256 L 456,256" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 824,256 L 872,256" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 1056,336 L 1056,364 Q 1056,372 1048,372 L 232,372 Q 224,372 224,380 L 224,408" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 408,488 L 456,488" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 824,488 L 872,488" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="40" y="176" width="368" height="160" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="176" width="368" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="48" y="182" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="70" y="192.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 1</text>
+<text x="224" y="218.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Where is it about?</text>
+<text x="224" y="236" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">finds the place: a town, a canton,</text>
+<text x="224" y="252" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">or all of Switzerland</text>
+<rect x="456" y="176" width="368" height="160" rx="6" fill="#f5f5f5"/>
+<rect x="456" y="176" width="368" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="464" y="182" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="486" y="192.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 2</text>
+<text x="640" y="218.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Which language?</text>
+<text x="640" y="236" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">recognised from the question&#x27;s</text>
+<text x="640" y="252" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">most common words</text>
+<rect x="872" y="176" width="368" height="160" rx="6" fill="#f5f5f5"/>
+<rect x="872" y="176" width="368" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="880" y="182" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="902" y="192.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 3</text>
+<text x="1056" y="218.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Search in four languages</text>
+<text x="1056" y="236" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">the question is translated, then</text>
+<text x="1056" y="252" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">searched in every language at once</text>
+<rect x="40" y="408" width="368" height="160" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="408" width="368" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="48" y="414" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="70" y="424.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 4</text>
+<text x="224" y="450.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Read and judge each passage</text>
+<text x="224" y="468" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">an AI model scores how well</text>
+<text x="224" y="484" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">each passage answers</text>
+<rect x="456" y="408" width="368" height="160" rx="6" fill="#f5f5f5"/>
+<rect x="456" y="408" width="368" height="160" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.6"/>
+<rect x="464" y="414" width="44" height="16" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="486" y="424.9" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 5</text>
+<text x="640" y="450.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Decide</text>
+<text x="640" y="468" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">answer, ask for the place,</text>
+<text x="640" y="484" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">or say it is not covered</text>
+<rect x="872" y="408" width="368" height="160" rx="6" fill="#f5f5f5"/>
+<rect x="872" y="408" width="368" height="160" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="880" y="414" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="902" y="424.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 6</text>
+<text x="1056" y="450.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cite the evidence</text>
+<text x="1056" y="468" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">a quote and its link,</text>
+<text x="1056" y="484" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">translated if needed</text>
+<!-- annotations -->
+<text x="40" y="52" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SWISS GROUNDING · ANSWERING</text>
+<text x="40" y="100" fill="#2d3142" font-size="40" font-family="'Instrument Serif', 'Noto Serif', serif">How one question is answered</text>
+<text x="40" y="132" fill="#4f5d75" font-size="16" font-family="'Geist', sans-serif">Six steps between a question and a cited answer, shown for the Vaud driving-licence question.</text>
+<text x="224" y="312" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">e.g. the canton of Vaud</text>
+<text x="640" y="312" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">e.g. French</text>
+<text x="1056" y="312" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">French, German, Italian, English</text>
+<text x="224" y="544" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">a score from 0 to 1 for each</text>
+<text x="640" y="544" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">e.g. answer</text>
+<text x="1056" y="544" fill="#7a8399" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">e.g. vd.ch, « un délai de 12 mois »</text>
+</svg>
+  </main>
+</body>
+</html>

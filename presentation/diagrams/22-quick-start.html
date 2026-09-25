@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>From clone to running server · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · jury deck · slide 22</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="quick-start-title quick-start-desc">
+<title id="quick-start-title">From clone to running server</title>
+<desc id="quick-start-desc">Five commands from a fresh clone: copy the settings, start the database, install, run setup (which downloads, verifies and restores the database, installs the shared keys and downloads the models) and serve; then connect a client. Needs Docker with 6 GB of memory, about 15 GB of disk, uv and gh.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<!-- zones -->
+<!-- arrows -->
+<path d="M 248,244 L 288,244" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 496,244 L 536,244" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 744,244 L 784,244" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 992,244 L 1032,244" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<!-- labels -->
+<!-- nodes -->
+<rect x="40" y="184" width="208" height="200" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="184" width="208" height="200" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="48" y="190" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="70" y="200.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 1</text>
+<text x="144" y="226.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Settings</text>
+<text x="144" y="244" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">copies the example</text>
+<text x="144" y="260" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">settings; no key needed</text>
+<rect x="288" y="184" width="208" height="200" rx="6" fill="#f5f5f5"/>
+<rect x="288" y="184" width="208" height="200" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="296" y="190" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="318" y="200.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 2</text>
+<text x="392" y="226.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Database</text>
+<text x="392" y="244" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">starts PostgreSQL with</text>
+<text x="392" y="260" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">pgvector in Docker</text>
+<rect x="536" y="184" width="208" height="200" rx="6" fill="#f5f5f5"/>
+<rect x="536" y="184" width="208" height="200" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="544" y="190" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="566" y="200.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 3</text>
+<text x="640" y="226.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Install</text>
+<text x="640" y="244" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">Python packages and</text>
+<text x="640" y="260" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">the model libraries</text>
+<rect x="784" y="184" width="208" height="200" rx="6" fill="#f5f5f5"/>
+<rect x="784" y="184" width="208" height="200" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.6"/>
+<rect x="792" y="190" width="44" height="16" rx="2" fill="none" stroke="#d52b1e" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="814" y="200.9" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 4</text>
+<text x="888" y="226.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Set up</text>
+<text x="888" y="244" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">downloads, verifies and</text>
+<text x="888" y="260" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">restores the database,</text>
+<text x="888" y="276" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">installs shared keys,</text>
+<text x="888" y="292" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">downloads the models</text>
+<rect x="1032" y="184" width="208" height="200" rx="6" fill="#f5f5f5"/>
+<rect x="1032" y="184" width="208" height="200" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="1040" y="190" width="44" height="16" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
+<text x="1062" y="200.9" fill="#2d3142" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP 5</text>
+<text x="1136" y="226.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Serve</text>
+<text x="1136" y="244" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="middle">starts the MCP server</text>
+<rect x="40" y="440" width="784" height="144" rx="6" fill="#f5f5f5"/>
+<rect x="40" y="440" width="784" height="144" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="56" y="466.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">Then connect a client</text>
+<text x="56" y="484" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="start">for Claude Code; Claude Desktop and clients over HTTP work too</text>
+<rect x="872" y="440" width="368" height="144" rx="6" fill="#f5f5f5"/>
+<rect x="872" y="440" width="368" height="144" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="888" y="466.4" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">What you need</text>
+<text x="888" y="484" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="start">Docker with at least 6 GB of memory</text>
+<text x="888" y="500" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="start">about 15 GB of free disk</text>
+<text x="888" y="516" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="start">uv, the Python package manager</text>
+<text x="888" y="532" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="start">gh, logged in with access to the</text>
+<text x="888" y="548" fill="#4f5d75" font-size="12" font-family="'Geist', sans-serif" text-anchor="start">private repository</text>
+<!-- annotations -->
+<text x="40" y="52" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" font-weight="500" letter-spacing="0.18em">SWISS GROUNDING · QUICK START</text>
+<text x="40" y="100" fill="#2d3142" font-size="40" font-family="'Instrument Serif', 'Noto Serif', serif">From clone to running server</text>
+<text x="40" y="132" fill="#4f5d75" font-size="16" font-family="'Geist', sans-serif">Five commands and no API key. Setup restores the prebuilt database.</text>
+<path d="M 52,324 H 236 Q 240,324 240,328 V 368 Q 240,372 236,372 H 52 Q 48,372 48,368 V 328 Q 48,324 52,324 Z" fill="rgba(45,49,66,0.06)"/>
+<text x="60" y="352" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">cp .env.example .env</text>
+<path d="M 300,324 H 484 Q 488,324 488,328 V 368 Q 488,372 484,372 H 300 Q 296,372 296,368 V 328 Q 296,324 300,324 Z" fill="rgba(45,49,66,0.06)"/>
+<text x="308" y="352" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">docker compose up -d db</text>
+<path d="M 548,324 H 732 Q 736,324 736,328 V 368 Q 736,372 732,372 H 548 Q 544,372 544,368 V 328 Q 544,324 548,324 Z" fill="rgba(45,49,66,0.06)"/>
+<text x="556" y="352" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">uv sync --extra embed</text>
+<path d="M 796,324 H 980 Q 984,324 984,328 V 368 Q 984,372 980,372 H 796 Q 792,372 792,368 V 328 Q 792,324 796,324 Z" fill="rgba(45,49,66,0.06)"/>
+<text x="804" y="344" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">uv run swiss-grounding</text>
+<text x="804" y="360" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">setup</text>
+<path d="M 1044,324 H 1228 Q 1232,324 1232,328 V 368 Q 1232,372 1228,372 H 1044 Q 1040,372 1040,368 V 328 Q 1040,324 1044,324 Z" fill="rgba(45,49,66,0.06)"/>
+<text x="1052" y="344" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">uv run swiss-grounding</text>
+<text x="1052" y="360" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">serve</text>
+<path d="M 60,524 H 804 Q 808,524 808,528 V 560 Q 808,564 804,564 H 60 Q 56,564 56,560 V 528 Q 56,524 60,524 Z" fill="rgba(45,49,66,0.06)"/>
+<text x="68" y="548" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace">claude mcp add swiss-grounding --scope user -- uv --directory &quot;$(pwd)&quot; run swiss-grounding serve</text>
+</svg>
+  </main>
+</body>
+</html>
