@@ -24,11 +24,10 @@ published database, which `setup` does not install, follow [`docs/USING-A-RELEAS
 > 271,000 chunks, every document and chunk described, and every chunk embedded with its description.
 > Ignore the older releases `corpus-latest` and `corpus-run3-cleaned-2026-09-25`.
 >
-> `swiss-grounding setup` still installs `corpus-latest`, so do not use it to get the data. Follow
-> [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md) instead: it downloads and checks this release,
-> restores it into its own database `swiss_grounding_full`, and starts the server on it with
-> `SERVING_INDEX=openai-3l`. This database has only OpenAI vectors, so the server needs an
-> `OPENAI_API_KEY`. Where the steps below differ from that guide, the guide wins.
+> `swiss-grounding setup` still installs `corpus-latest`, which is not the data to evaluate. Steps 4 and 5
+> below download and check this release, restore it into its own database `swiss_grounding_full`, and
+> start the server on it with `SERVING_INDEX=openai-3l`. This database has only OpenAI vectors, so the
+> server needs an `OPENAI_API_KEY`.
 
 Items marked **TBD** are still being settled by the team.
 
@@ -40,24 +39,42 @@ Items marked **TBD** are still being settled by the team.
    published for arm64 and amd64), and the GitHub CLI `gh`. There is no prebuilt server image: the
    server runs from source, on CPU on Linux arm64.
 4. **Setup**, from the repository root, without prompts once `GH_TOKEN` holds a token (or `gh auth
-   login` has run) for an account with read access to this private repository:
+   login` has run) for an account with read access to this private repository. Run all of it, in order:
 
    ```bash
    uv sync --extra embed           # Python dependencies, including torch and the model libraries
-   uv run swiss-grounding setup    # creates .env, starts the Docker database, downloads, verifies
-                                   # and restores the database, downloads bge-m3 and the reranker
+   uv run swiss-grounding setup    # creates .env, starts the Docker database, downloads bge-m3 and the
+                                   # reranker; it also restores the OLD corpus-latest, which is not evaluated
+
+   # The database to evaluate: download, check and restore it into its own database
+   gh release download corpus-full-sources-described-2026-09-25 \
+     --repo thedionysus/swisscom-hackathon --dir data/full-dump
+   cat data/full-dump/swiss_grounding-full-described-2026-09-25.dump.part* \
+     > data/full-dump/swiss_grounding-full-described-2026-09-25.dump
+   (cd data/full-dump && shasum -a 256 -c swiss_grounding-full-described-2026-09-25.dump.sha256)  # must print OK
+   docker compose exec -T db createdb -U swiss swiss_grounding_full
+   docker compose exec -T db pg_restore -U swiss -d swiss_grounding_full --no-owner \
+     < data/full-dump/swiss_grounding-full-described-2026-09-25.dump
+
+   # Point the server at it (set these in every shell or MCP config that starts the server)
+   export DATABASE_URL=postgresql://swiss:swiss@localhost:5433/swiss_grounding_full
+   export SERVING_INDEX=openai-3l
+   export OPENAI_API_KEY=sk-...
+   uv run swiss-grounding serving init   # prints "serving schema ready"
    ```
 
    If `setup` and the server run in a container and Docker runs outside it (the Docker socket mounted
-   into the container), `localhost:5433` does not reach the database. Export
-   `DATABASE_URL=postgresql://swiss:swiss@host.docker.internal:5433/swiss_grounding` before `setup`
-   and before starting the server; it overrides the value in `.env`.
+   into the container), `localhost:5433` does not reach the database: use `host.docker.internal:5433`
+   in `DATABASE_URL` instead.
 
    Needs about 15 GB of free disk and 6 GB of memory for Docker. Time: **TBD** (measured on an
    Apple silicon Mac).
-5. **Start command:** `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
+5. **Start command**, with the three variables from step 4 set:
+   `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
    `HF_HUB_OFFLINE=1 uv run swiss-grounding serve --transport http --host 0.0.0.0 --port 8000` for HTTP.
-   The Docker database must be running (`docker compose up -d db` after a restart).
+   Without them the server serves the old `corpus-latest` database, which is not the one to evaluate.
+   The Docker database must be running (`docker compose up -d db` after a restart). An MCP client
+   config passes them in `env`, as shown in [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md).
 6. **Prebuilt data:** the database to evaluate is the release
    `corpus-full-sources-described-2026-09-25`, a PostgreSQL dump (documents, chunks, descriptions,
    OpenAI `text-embedding-3-large` vectors) in parts, restored and checked as described in
@@ -66,8 +83,8 @@ Items marked **TBD** are still being settled by the team.
    reranker from Hugging Face. Rebuilding the corpus from the sources (crawl, OCR, descriptions,
    embeddings) is described in [`docs/MAINTAINING.md`](docs/MAINTAINING.md); the crawl alone takes
    hours, and descriptions need an LLM key.
-7. **Credentials:** on the evaluated database the server needs `OPENAI_API_KEY`; it starts and answers
-   without the others. `DATABASE_URL` points at the
+7. **Credentials:** `OPENAI_API_KEY` is **required**: without it the evaluated database cannot
+   be searched. The server starts and answers without the others. `DATABASE_URL` points at the
    Docker database and comes from `.env.example`; it is not a secret.
 
    | Variable | What it is for | Without it |
