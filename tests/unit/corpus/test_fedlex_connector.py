@@ -256,3 +256,60 @@ def test_robots_is_not_read_when_switched_off(tmp_path):
     result = connector.run(SPEC, known={})
     assert len(result.documents) == 1
     assert not any(u.endswith("/robots.txt") for u in seen)
+
+
+def _robots_sequence_transport(robots_answers, file_response, seen):
+    """robots.txt answers in turn from `robots_answers` (the last one repeats); act files get `file_response`."""
+    answers = list(robots_answers)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if request.method == "POST":
+            german = "ENG" not in request.content.decode()
+            return httpx.Response(200, json={"results": {"bindings": [_binding("2025-07-01", DATA_FILE)] if german else []}})
+        seen.append(url)
+        if url.endswith("/robots.txt"):
+            return answers.pop(0) if len(answers) > 1 else answers[0]
+        return file_response
+    return httpx.MockTransport(handler)
+
+
+def test_a_robots_txt_that_fails_once_is_fetched_again(tmp_path):
+    """One 503 on the www host's robots.txt must not cost the whole Fedlex run."""
+    seen: list[str] = []
+    transport = _robots_sequence_transport([httpx.Response(503), httpx.Response(200, text="User-agent: *\nAllow: /\n")],
+                                           httpx.Response(200, text=XML), seen)
+    sleeps: list[float] = []
+    connector = FedlexConnector(httpx.Client(transport=transport), today=lambda: date(2026, 9, 24),
+                                data_dir=tmp_path, sleep=sleeps.append)
+    result = connector.run(SPEC, known={})
+    assert result.errors == ()
+    assert len(result.documents) == 1
+    assert sum(u.endswith("/robots.txt") for u in seen) == 2
+
+
+def test_a_robots_txt_that_stays_unreachable_names_the_real_reason(tmp_path):
+    seen: list[str] = []
+    transport = _robots_sequence_transport([httpx.Response(503)], httpx.Response(200, text=XML), seen)
+    connector = FedlexConnector(httpx.Client(transport=transport), today=lambda: date(2026, 9, 24),
+                                data_dir=tmp_path, sleep=lambda s: None)
+    result = connector.run(SPEC, known={})
+    assert result.documents == ()
+    assert WWW_FILE not in seen
+    [(_, message)] = result.errors
+    assert message == f"RobotsDisallowed: {WWW_FILE} robots.txt unavailable (HTTP 503)"
+
+
+def test_an_html_page_served_instead_of_the_act_file_is_an_error(tmp_path):
+    """Both Fedlex hosts answer a missing file with 200 and their HTML app page."""
+    seen: list[str] = []
+    transport = _robots_sequence_transport(
+        [httpx.Response(200, text="User-agent: *\nAllow: /\n")],
+        httpx.Response(200, text="<html><body>app</body></html>", headers={"content-type": "text/html;charset=UTF-8"}),
+        seen)
+    connector = FedlexConnector(httpx.Client(transport=transport), today=lambda: date(2026, 9, 24),
+                                data_dir=tmp_path, sleep=lambda s: None)
+    result = connector.run(SPEC, known={})
+    assert result.documents == ()
+    [(_, message)] = result.errors
+    assert message == f"ValueError: {WWW_FILE} is not an act file (content-type text/html)"
