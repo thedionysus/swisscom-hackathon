@@ -167,8 +167,8 @@ def test_describe_docs_marks_repeated_furniture_before_building_doc_tasks(corpus
                 AHV, NOW)
     built = []
 
-    def spy(conn, model, limit):
-        tasks = build_doc_tasks(conn, model, limit)
+    def spy(conn, model, limit, sources=()):
+        tasks = build_doc_tasks(conn, model, limit, sources)
         built.extend(tasks)
         return tasks
     monkeypatch.setattr(corpus_commands, "build_doc_tasks", spy)
@@ -177,6 +177,42 @@ def test_describe_docs_marks_repeated_furniture_before_building_doc_tasks(corpus
     assert len(built) == 3 and not any("Bundesgasse" in t.user for t in built)
     with connect(corpus_db) as conn:
         assert conn.execute("select count(*) as n from corpus.chunk where status = 'boilerplate'").fetchone()["n"] == 3
+
+
+def test_describe_source_limits_the_dry_run_estimate_to_that_source(corpus_db):
+    _seed_law(corpus_db)
+    with connect(corpus_db) as conn:
+        upsert_source(conn, AHV)
+        persist_document(conn, ParsedDocument(
+            source_id="ahv", url="https://ahv/0", language="de", work_key="html:0", title="Seite",
+            sections=(ParsedSection("de:0", ("Seite",), None, "Eigener Inhalt."),)), AHV, NOW)
+    result = _invoke("describe", "--what", "docs", "--dry-run", "--source", "fedlex")
+    assert result.exit_code == 0, result.output
+    assert "docs: 1 tasks" in result.output
+
+
+def test_describe_unknown_source_is_refused(corpus_db):
+    _seed_law(corpus_db)
+    result = _invoke("describe", "--what", "docs", "--dry-run", "--source", "bogus")
+    assert result.exit_code != 0
+    assert "bogus" in result.output
+
+
+def test_describe_source_is_repeatable_and_unions_sources(corpus_db, monkeypatch):
+    _no_openai(monkeypatch)
+    _seed_law(corpus_db)
+    with connect(corpus_db) as conn:
+        upsert_source(conn, AHV)
+        persist_document(conn, ParsedDocument(
+            source_id="ahv", url="https://ahv/0", language="de", work_key="html:0", title="Seite",
+            sections=(ParsedSection("de:0", ("Seite",), None, "Eigener Inhalt."),)), AHV, NOW)
+    result = _invoke("describe", "--what", "docs", "--sync", "--source", "fedlex", "--source", "ahv")
+    assert result.exit_code == 0, result.output
+    with connect(corpus_db) as conn:
+        described = conn.execute(
+            "select count(*) as n from corpus.translation_group where description_by_lang <> '{}'::jsonb"
+        ).fetchone()["n"]
+    assert described == 2
 
 
 def test_fake_ocr_and_embed_spend_nothing(corpus_db, monkeypatch, tmp_path):

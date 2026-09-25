@@ -296,6 +296,7 @@ uv run swiss-grounding corpus ocr                                  # the rest, i
 uv run swiss-grounding corpus describe --what docs --limit 5 --sync
 uv run swiss-grounding corpus describe --what docs
 uv run swiss-grounding corpus describe --what chunks               # repeat until it reports 0 tasks
+uv run swiss-grounding corpus describe --what docs --source bazg --source bk_votes  # limit to these sources
 uv run swiss-grounding corpus embed                                # every configured index
 uv run swiss-grounding corpus index
 ```
