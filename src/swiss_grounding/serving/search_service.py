@@ -23,7 +23,7 @@ from swiss_grounding.serving.models import (
     overall_status,
 )
 from swiss_grounding.serving.passages import best_passage
-from swiss_grounding.serving.places import PlaceOutcome, Resolver, place_outcomes
+from swiss_grounding.serving.places import PlaceOutcome, Resolver, place_outcomes, place_text
 from swiss_grounding.serving.relevance import Relevance, feature_vector
 from swiss_grounding.serving.reranker import Reranker, passage_text
 from swiss_grounding.serving.scope import DECLARED, Scope, scope_statement
@@ -143,9 +143,11 @@ class SearchService:
 
     def _place(self, o: PlaceOutcome, q: _Query, cache: RerankCache) -> PlaceResult:
         path, local = self._scope_path(o)
+        # The keyword arms leave out where the question names a local place: both extent filters
+        # restrict to them. CH is not one; every chunk is Swiss, and "Swiss" is a topic word too.
         arm = ArmQuery(q.request.question, q.lang, q.vec, q.sparse, q.request.translations, q.translation_vecs,
                        path, local, q.request.as_of, self.rerank_candidates, self.rerank_candidates,
-                       self.local_quota if local else 0)
+                       self.local_quota if local else 0, place_text(self.tree, o, local))
         with connect(self.database_url) as conn:
             cands = gather_candidates(conn, arm, index=self.index, ef_search=self.ef_search)
             keys = list(dict.fromkeys((c.translation_group_id, c.align_key) for c in cands))
@@ -217,7 +219,7 @@ class SearchService:
         path, local = self._scope_path(outcome)
         arm = ArmQuery(request.question, q.lang, q.vec, q.sparse, request.translations, q.translation_vecs, path,
                        local, request.as_of, self.rerank_candidates, self.rerank_candidates,
-                       self.local_quota if local else 0)
+                       self.local_quota if local else 0, place_text(self.tree, outcome, local))
         with connect(self.database_url) as conn:
             cands = gather_candidates(conn, arm, index=self.index, ef_search=self.ef_search)
             versions = aligned_versions(conn, list(dict.fromkeys((c.translation_group_id, c.align_key)
