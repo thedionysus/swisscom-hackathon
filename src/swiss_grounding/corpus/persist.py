@@ -1,8 +1,8 @@
 """Write parsed documents and their chunks: versions, supersede, fetch state, quarantine.
 
 Rules:
-1. Same URL, same content hash: touch `last_seen_at`; a status change (scheduled -> current) is applied
-   in place. Outcome `unchanged`.
+1. Same URL, same content hash: touch `last_seen_at`, and take the new `artifact_path` when the fetch
+   wrote one; a status change (scheduled -> current) is applied in place. Outcome `unchanged`.
 2. Same URL, different hash: the old row is superseded by a new row. Outcome `modified`.
 3. A new dated (`valid_from` set) `current` version retires the `current` and `scheduled` rows of the
    same translation group, language and source that start no later than it. Undated documents
@@ -202,7 +202,10 @@ def persist_document(conn: psycopg.Connection, doc: ParsedDocument, spec: Source
                  (gid, doc.work_key))
     digest = content_hash(doc)
     if live and live["content_hash"] == digest:
-        conn.execute("update corpus.document set last_seen_at = %s where id = %s", (now, live["id"]))
+        # A re-fetch that wrote a file (version-safe names, keep_html) may have named it differently from
+        # the row's; the row follows it. A fetch that wrote none keeps the row's own path.
+        conn.execute("update corpus.document set last_seen_at = %s, artifact_path = coalesce(%s, artifact_path) "
+                     "where id = %s", (now, doc.artifact_path, live["id"]))
         if live["status"] != doc.status:
             _set_status(conn, [live["id"]], doc.status)
             if _retires_group_peers(doc):
