@@ -20,12 +20,19 @@ _MARKER_LINE = re.compile(
 
 _BLANK_RUN = re.compile(r"\n{3,}")
 # An error page served with 200 (a "soft 404", #20), recognised by its <title> or its h1 only: body text
-# can discuss a missing page. "404" alone is not enough ("Art. 404 OR"); it must stand alone or next to
-# an error word.
-_SOFT_404 = re.compile(
-    r"not found|seite (?:wurde )?nicht gefunden|page (?:introuvable|non trouvée)|pagina non trovata"
-    r"|^\W*404\W*$|\b(?:error|fehler|erreur|errore)\W+(?:page\W+)?\(?404\b|\b404\W+(?:error|fehler|erreur|errore)\b",
-    re.IGNORECASE)
+# can discuss a missing page. A part of the title (split at " | ", " - ", ":") must consist of nothing
+# but error wording: "Error Page (404)", "404 Not Found", "Seite nicht gefunden", "Fehler 404". A title
+# that only contains such words -- "Linie 404 – Fehler im Fahrplan", "Why is my address not found?",
+# "Art. 404 OR" -- is an ordinary page. Each word is read one way only ("page" is an error word, never
+# part of a phrase), and a part longer than _SOFT_404_MAX_CHARS is never an error title, so the match
+# cannot backtrack for long.
+_ERROR_WORD = r"(?:error|fehler|erreur|errore|oops|page|seite|document|file)"
+_ERROR_PHRASE = (r"(?:404|not\W+found|(?:die\W+)?seite\W+(?:wurde\W+)?nicht\W+gefunden"
+                 r"|page\W+(?:introuvable|non\W+trouv[ée]e)|pagina\W+non\W+trovata)")
+_SOFT_404 = re.compile(rf"^\W*(?:{_ERROR_WORD}\W+)*{_ERROR_PHRASE}(?:\W+(?:{_ERROR_WORD}|{_ERROR_PHRASE}))*\W*$",
+                       re.IGNORECASE)
+_SOFT_404_MAX_CHARS = 60
+_TITLE_PARTS = re.compile(r"\s+[|–—-]\s+|\s*[|:]\s*")
 
 
 def _strip_cms_markers(text: str) -> str:
@@ -51,7 +58,8 @@ class CrawledPage:
 
 
 def _soft_404(*titles: str) -> str | None:
-    return next((t for t in titles if t and _SOFT_404.search(t)), None)
+    return next((t for t in titles if t and any(len(part) <= _SOFT_404_MAX_CHARS and _SOFT_404.match(part)
+                                                for part in _TITLE_PARTS.split(t))), None)
 
 
 def parse_crawled_page(html: str, final: str, spec: SourceSpec,

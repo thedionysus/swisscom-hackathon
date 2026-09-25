@@ -41,6 +41,9 @@ def test_typo3search_comments_and_bracket_runs_are_stripped_from_section_text():
     ("<title>404 - Page not found</title>", ""),
     ("<title>Fehler 404</title>", ""),
     ("", "404"),
+    ("<title>Erreur 404 - Page introuvable</title>", ""),
+    ("<title>Stadt Bern | 404 Not Found</title>", ""),
+    ("<title>Oops! Page not found</title>", ""),
 ])
 def test_error_page_served_with_200_is_recognised_by_its_title_or_h1(head, h1):
     html = f"""<html lang="de"><head>{head}</head><body><main>{f"<h1>{h1}</h1>" if h1 else ""}
@@ -52,10 +55,21 @@ def test_error_page_served_with_200_is_recognised_by_its_title_or_h1(head, h1):
     ("<title>Art. 404 OR</title>", "Art. 404 OR – Widerruf und Kündigung", "<p>Der Auftrag kann jederzeit ...</p>"),
     ("<title>Buslinie 404</title>", "Buslinie 404", "<p>Fahrplan.</p>"),
     ("<title>Hilfe</title>", "Hilfe", "<p>Was tun, wenn eine Seite nicht gefunden wird? Page not found?</p>"),
+    # Flagged by the first pattern (audit of PR #77): the words appear, but the page is not an error page.
+    ("<title>Help</title>", "Help: Why is my address not found?", "<p>Check the spelling.</p>"),
+    ("<title>Fundbüro</title>", "Not found? Contact the lost property office", "<p>Opening hours.</p>"),
+    ("<title>Linie 404 – Fehler im Fahrplan</title>", "Linie 404", "<p>Korrigierter Fahrplan.</p>"),
+    ("<title>Richtlinie 2018/404 Fehler</title>", "Richtlinie", "<p>Text der Richtlinie.</p>"),
 ])
 def test_ordinary_page_mentioning_404_or_not_found_is_not_an_error_page(head, h1, body):
     html = f'<html lang="de"><head>{head}</head><body><main><h1>{h1}</h1>{body}</main></body></html>'
     assert parse_crawled_page(html, "https://www.be.ch/de/x", _spec(), pdf_patterns=()).soft_404 is None
+
+
+def test_a_long_title_of_repeated_error_words_is_checked_without_backtracking():
+    """A pattern that could read "page not found" two ways took exponential time on this title."""
+    from swiss_grounding.corpus.connectors.html_page import _SOFT_404
+    assert _SOFT_404.match("page not found " * 100 + "x") is None
 
 
 _NEUCHATEL = """<html lang="fr"><head>
