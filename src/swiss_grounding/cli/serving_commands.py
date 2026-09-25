@@ -1,5 +1,6 @@
 """`serving`, `lookups`, `dump` and `setup` commands."""
 import json as _json_module
+import shutil
 import subprocess
 import time
 from dataclasses import asdict
@@ -214,6 +215,17 @@ def install_shared_key(settings, env_path: Path) -> bool:
     return True
 
 
+def ensure_env_file(root: Path) -> bool:
+    """Copy `.env.example` to `.env` when there is no `.env` yet, so `setup` needs no manual step.
+    An existing `.env` is never touched. Returns whether it was created."""
+    env, example = root / ".env", root / ".env.example"
+    if env.exists() or not example.exists():
+        return False
+    shutil.copyfile(example, env)
+    typer.echo(".env created from .env.example")
+    return True
+
+
 @dump_app.command("publish-key")
 def publish_key_cmd() -> None:
     """Upload SUPERTEXT_API_KEY and ZBERN_MCP_TOKEN from your .env to the private release, for everyone's `setup`."""
@@ -237,6 +249,7 @@ def publish_key_cmd() -> None:
 
 def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do not pre-download models")) -> None:
     """Download the prebuilt database, verify it, restore it, and pre-download the local models."""
+    ensure_env_file(repo_root())
     settings = load_settings()
     directory = dump_dir()
     directory.mkdir(parents=True, exist_ok=True)

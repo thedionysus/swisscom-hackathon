@@ -187,11 +187,15 @@ def query_cmd(
 
 
 @app.command("serve")
-def serve_cmd(transport: str = typer.Option("stdio", "--transport", help="stdio or http")) -> None:
+def serve_cmd(
+    transport: str = typer.Option("stdio", "--transport", help="stdio or http"),
+    host: str = typer.Option("127.0.0.1", "--host", help="HTTP only: address to listen on; 0.0.0.0 in a container"),
+    port: int = typer.Option(8000, "--port", help="HTTP only: port to listen on"),
+) -> None:
     """Start the MCP server."""
     from swiss_grounding.mcp_server.server import build_server
 
-    server = build_server(load_settings())
+    server = build_server(load_settings(), host=host, port=port)
     if transport == "stdio":
         server.run(transport="stdio")
     elif transport == "http":

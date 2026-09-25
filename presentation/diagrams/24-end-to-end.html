@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One question, end to end · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+    table { margin-top: 1.5rem; border-collapse: collapse; font-size: 0.8rem; min-width: 60%; }
+    caption { text-align: left; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em;
+              text-transform: uppercase; color: var(--color-soft); padding-bottom: 0.5rem; }
+    th, td { text-align: left; padding: 0.35rem 1rem 0.35rem 0; border-bottom: 1px solid var(--color-rule); }
+    th { font-weight: 600; }
+    td:nth-child(n+3), th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · jury deck · slide 24</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="end-to-end-title end-to-end-desc">
+<title id="end-to-end-title">One question, end to end</title>
+<desc id="end-to-end-desc">A sequence for the Vaud driving-licence question: the user asks the assistant, which calls swiss_search with the place Vaud; the server resolves the place, gets the question&#x27;s vector from OpenAI, searches Vaud and Switzerland in the database, reranks the 30 candidates locally and returns the vd.ch passage with its link, which the assistant quotes in its answer.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker><marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker><marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker></defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<line x1="120" y1="212" x2="120" y2="652" stroke="rgba(45,49,66,0.25)" stroke-width="1" stroke-dasharray="4,4"/>
+<line x1="360" y1="212" x2="360" y2="652" stroke="rgba(45,49,66,0.25)" stroke-width="1" stroke-dasharray="4,4"/>
+<line x1="640" y1="212" x2="640" y2="652" stroke="rgba(45,49,66,0.25)" stroke-width="1" stroke-dasharray="4,4"/>
+<line x1="900" y1="212" x2="900" y2="652" stroke="rgba(45,49,66,0.25)" stroke-width="1" stroke-dasharray="4,4"/>
+<line x1="1140" y1="212" x2="1140" y2="652" stroke="rgba(45,49,66,0.25)" stroke-width="1" stroke-dasharray="4,4"/>
+<path d="M 120,268 L 354,268" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 360,312 L 634,312" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 640,396 L 894,396" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 900,428 L 646,428" fill="none" stroke="#4f5d75" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 640,472 L 1134,472" fill="none" stroke="#4f5d75" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M 1140,504 L 646,504" fill="none" stroke="#4f5d75" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 640,600 L 366,600" fill="none" stroke="#4f5d75" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<path d="M 360,640 L 126,640" fill="none" stroke="#4f5d75" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+<rect x="125.0" y="245" width="224" height="18" rx="2" fill="#f5f5f5"/>
+<text x="237.0" y="258" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">« Échanger mon permis… Vaud ? »</text>
+<rect x="403.0" y="289" width="188" height="18" rx="2" fill="#f5f5f5"/>
+<text x="497.0" y="302" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">swiss_search · place: Vaud</text>
+<rect x="719.0" y="373" width="96" height="18" rx="2" fill="#f5f5f5"/>
+<text x="767.0" y="386" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">the question</text>
+<rect x="709.0" y="405" width="128" height="18" rx="2" fill="#f5f5f5"/>
+<text x="773.0" y="418" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">its search vector</text>
+<rect x="795.0" y="449" width="184" height="18" rx="2" fill="#f5f5f5"/>
+<text x="887.0" y="462" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">search Vaud + Switzerland</text>
+<rect x="815.0" y="481" width="156" height="18" rx="2" fill="#f5f5f5"/>
+<text x="893.0" y="494" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">30 candidate passages</text>
+<rect x="395.0" y="577" width="216" height="18" rx="2" fill="#f5f5f5"/>
+<text x="503.0" y="590" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">results · vd.ch passage + link</text>
+<rect x="165.0" y="617" width="156" height="18" rx="2" fill="#f5f5f5"/>
+<text x="243.0" y="630" fill="#4f5d75" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="middle">answer, quoting vd.ch</text>
+<rect x="28" y="164" width="184" height="48" rx="6" fill="#f5f5f5"/><rect x="28" y="164" width="184" height="48" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+<text x="120.0" y="193.0" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">You</text>
+<rect x="268" y="164" width="184" height="48" rx="6" fill="#f5f5f5"/><rect x="268" y="164" width="184" height="48" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="360.0" y="193.0" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">AI assistant</text>
+<rect x="548" y="164" width="184" height="48" rx="6" fill="#f5f5f5"/><rect x="548" y="164" width="184" height="48" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.6"/>
+<text x="640.0" y="193.0" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Swiss Grounding</text>
+<rect x="808" y="164" width="184" height="48" rx="6" fill="#f5f5f5"/><rect x="808" y="164" width="184" height="48" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+<text x="900.0" y="193.0" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">OpenAI</text>
+<rect x="1048" y="164" width="184" height="48" rx="6" fill="#f5f5f5"/><rect x="1048" y="164" width="184" height="48" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+<text x="1140.0" y="193.0" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Database</text>
+<rect x="652" y="328" width="232" height="32" rx="6" fill="#f5f5f5"/><rect x="652" y="328" width="232" height="32" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<text x="664" y="349" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif">1  finds the place: Vaud, Switzerland</text>
+<rect x="652" y="520" width="232" height="32" rx="6" fill="#f5f5f5"/><rect x="652" y="520" width="232" height="32" rx="6" fill="rgba(213,43,30,0.08)" stroke="#d52b1e" stroke-width="1.6"/>
+<text x="664" y="541" fill="#2d3142" font-size="12" font-family="'Geist', sans-serif">2  reranker scores; decides: answer</text>
+<text x="40" y="52" fill="#4f5d75" font-size="8" font-weight="500" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.18em">SWISS GROUNDING · ONE QUESTION</text>
+<text x="40" y="100" fill="#2d3142" font-size="40" font-weight="400" font-family="'Instrument Serif', 'Noto Serif', serif" text-anchor="start">One question, end to end</text>
+<text x="40" y="132" fill="#4f5d75" font-size="16" font-weight="400" font-family="'Geist', sans-serif" text-anchor="start">Challenge question 2, from the user&#x27;s words to a cited answer.</text>
+<text x="40" y="692" fill="#7a8399" font-size="12" font-weight="400" font-family="'Geist', sans-serif" text-anchor="start">Run 3 corpus, 25 September 2026: the vd.ch pages come first, then ch.ch. Translation, when on, happens before the search.</text>
+</svg>
+  </main>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Jev batch, end to end · Swiss Grounding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f5f5;
+      --color-ink: #2d3142;
+      --color-muted: #4f5d75;
+      --color-soft: #7a8399;
+      --color-accent: #d52b1e;
+      --color-rule: rgba(45,49,66,0.12);
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', 'Noto Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1280px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+               text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+         letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lede { max-width: 68ch; color: var(--color-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    footer { margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-rule);
+             font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-soft); line-height: 1.7; }
+    footer code { font-family: var(--font-mono); color: var(--color-muted); }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Swiss Grounding · Jev · Sequence · 34</p>
+    <h1>One Jev batch, end to end</h1>
+    <p class="lede">A batch from the one-hour run. The runner reads the chunks once, shuffles them and sends 30 passages per request. Most requests were first refused at capacity (503 or 429) and retried after the gateway's retry-after; an answered request returns one probability per passage, which the runner appends to a JSONL file.</p>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="jev-sequence-title jev-sequence-desc">
+  <title id="jev-sequence-title">One Jev batch, end to end</title>
+  <desc id="jev-sequence-desc">Sequence showing the Jev runner reading chunks from Postgres, sending a batch of 30 passages through Vercel's AI Gateway to TypeSafe, retrying when TypeSafe is at capacity, and appending the returned verdicts to a result file.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#d52b1e"/></marker>
+    <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+  <!-- alt fragment frame (drawn first) -->
+  <rect x="40" y="292" width="888" height="264" rx="4" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.22)" stroke-width="1"/>
+  <rect x="40" y="292" width="40" height="16" rx="2" fill="#f5f5f5" stroke="rgba(45,49,66,0.22)" stroke-width="1"/>
+  <text x="60" y="304" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">ALT</text>
+  <text x="52" y="324" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[at capacity]</text>
+  <line x1="48" y1="448" x2="920" y2="448" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="52" y="468" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[answered]</text>
+
+  <!-- Lifelines -->
+  <line x1="160" y1="96" x2="160" y2="616" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="400" y1="96" x2="400" y2="616" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="640" y1="96" x2="640" y2="616" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="880" y1="96" x2="880" y2="616" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="1120" y1="96" x2="1120" y2="616" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Activation bars -->
+  <rect x="156" y="120" width="8" height="480" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+  <rect x="636" y="228" width="8" height="304" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+  <rect x="876" y="260" width="8" height="240" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+
+  <!-- Messages -->
+  <line x1="164" y1="128" x2="400" y2="128" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect x="248" y="108" width="64" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="280" y="117" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">READ CHUNKS</text>
+
+  <line x1="400" y1="160" x2="164" y2="160" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <rect x="244" y="140" width="72" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="280" y="149" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">305,352 ROWS</text>
+
+  <path d="M 164,184 H 188 Q 196,184 196,192 V 196 Q 196,204 188,204 H 168" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect x="204" y="188" width="68" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="238" y="197" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">BATCH OF 30</text>
+
+  <line x1="164" y1="236" x2="636" y2="236" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+  <rect x="248" y="216" width="64" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="280" y="225" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">POST BATCH</text>
+
+  <line x1="644" y1="268" x2="876" y2="268" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+  <rect x="724" y="248" width="72" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="760" y="257" fill="#2e5aa8" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TYPESAFE 1ST</text>
+
+  <line x1="876" y1="348" x2="644" y2="348" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <rect x="732" y="328" width="56" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="760" y="337" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">503 / 429</text>
+
+  <line x1="636" y1="380" x2="164" y2="380" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <rect x="248" y="360" width="64" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="280" y="369" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">RETRY-AFTER</text>
+
+  <path d="M 164,404 H 188 Q 196,404 196,412 V 416 Q 196,424 188,424 H 168" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect x="204" y="408" width="68" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="238" y="417" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">WAIT, RETRY</text>
+
+  <line x1="876" y1="492" x2="644" y2="492" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <rect x="732" y="472" width="56" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="760" y="481" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">30 SCORES</text>
+
+  <line x1="636" y1="524" x2="164" y2="524" stroke="#d52b1e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+  <rect x="244" y="504" width="72" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="280" y="513" fill="#d52b1e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">200 VERDICTS</text>
+
+  <line x1="164" y1="580" x2="1120" y2="580" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect x="964" y="560" width="72" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="1000" y="569" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">APPEND JSONL</text>
+
+  <!-- Actors (drawn last so they sit on top of lifeline starts) -->
+  <rect x="80" y="40" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="80" y="40" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <text x="160" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Jev runner</text>
+  <text x="160" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">run_parallel.py</text>
+
+  <rect x="320" y="40" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="320" y="40" width="160" height="56" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+  <text x="400" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Postgres</text>
+  <text x="400" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">swiss_grounding</text>
+
+  <rect x="560" y="40" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="560" y="40" width="160" height="56" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+  <text x="640" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">AI Gateway</text>
+  <text x="640" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">vercel.sh</text>
+
+  <rect x="800" y="40" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="800" y="40" width="160" height="56" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+  <text x="880" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">TypeSafe · Jev</text>
+  <text x="880" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">typesafe-ai</text>
+
+  <rect x="1040" y="40" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="1040" y="40" width="160" height="56" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+  <text x="1120" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Result files</text>
+  <text x="1120" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">raw_*.jsonl</text>
+
+  <!-- Editorial aside -->
+  <text x="944" y="356" fill="#4f5d75" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">340 of 580 batches</text>
+  <text x="944" y="372" fill="#4f5d75" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">needed a retry in</text>
+  <text x="944" y="388" fill="#4f5d75" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">the one-hour run.</text>
+
+  <!-- Legend -->
+  <line x1="40" y1="644" x2="1240" y2="644" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+  <text x="40" y="672" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+  <line x1="128" y1="668" x2="156" y2="668" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="164" y="672" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">LOCAL CALL</text>
+  <line x1="264" y1="668" x2="292" y2="668" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+  <text x="300" y="672" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">HTTPS CALL</text>
+  <line x1="400" y1="668" x2="428" y2="668" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text x="436" y="672" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">RETURN</text>
+  <line x1="512" y1="668" x2="540" y2="668" stroke="#d52b1e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+  <text x="548" y="672" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">ANSWERED BATCH</text>
+</svg>
+
+    <footer>
+      <p>Details: <code>docs/JEV-INTEGRATION.md</code> · endpoint: <code>https://ai-gateway.vercel.sh/typesafe/v1/systemone</code></p>
+      <p>Drawn 2026-09-25 from the one-hour run logs. The runner is a research script outside the repository.</p>
+    </footer>
+  </main>
+</body>
+</html>

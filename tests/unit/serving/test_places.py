@@ -77,3 +77,16 @@ def test_three_places_give_three_outcomes():
     r = StubResolver({"Scuol": resolved(SCUOL), "Basel": resolved(BASEL)})
     kinds = [o.kind for o in place_outcomes("q", ("Scuol", "Basel", "Lindau (Bodensee)"), r, TREE)]
     assert kinds == ["resolved", "resolved", "unresolved"]
+
+
+def test_bare_argument_the_question_calls_a_canton_resolves_as_the_canton():
+    r = StubResolver({"Basel": resolved(BASEL), "Kanton Basel": resolved(BS)})
+    [o] = place_outcomes("Tax calculator for a company in the Canton of Basel?", ("Basel",), r, TREE)
+    assert o.resolved.location.id == "CH-BS"
+    [o] = place_outcomes("Tax office in Basel?", ("Basel",), r, TREE)
+    assert o.resolved.location.id == "CH-BS-2701"
+
+
+def test_question_naming_two_places_gives_two_outcomes():
+    outcomes = place_outcomes("Umzug von Scuol nach Basel: wer bewilligt?", (), StubResolver({}), TREE)
+    assert [o.resolved.location.id for o in outcomes] == ["CH-GR-3762", "CH-BS-2701"]

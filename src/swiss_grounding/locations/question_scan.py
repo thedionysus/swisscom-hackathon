@@ -7,7 +7,7 @@ names, so single-word candidates must clear several guards before they count.
 """
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from swiss_grounding.locations.models import Level, Location, ResolvedLocation
 from swiss_grounding.locations.tree import LocationTree
@@ -18,6 +18,14 @@ AMBIGUOUS_ABBREVIATION_LENGTH = 2
 PUNCTUATION = ".,;:!?()[]{}\"'«»„“”‚‘’"
 SENTENCE_ENDERS = (".", "?", "!")
 METHOD = "alias_in_question"
+# In prose, a number in this range is a year ("on 1 June 2024"), not a postal code, unless a place
+# name stands right next to it ("2024 La Grande Béroche").
+YEARS = range(1900, 2100)
+# Words before a name that make it the canton: "Canton of Zug" is the canton, not the town of Zug.
+CANTON_MARKERS = (
+    ("kanton",), ("canton",), ("cantone",), ("chantun",),
+    ("canton", "of"), ("canton", "de"), ("canton", "du"), ("cantone", "di"), ("cantone", "del"),
+)
 
 
 @dataclass(frozen=True)
@@ -61,6 +69,28 @@ def _drop_contained(matches: Sequence[_AliasMatch]) -> tuple[_AliasMatch, ...]:
     )
 
 
+def _canton_marked(words: Sequence[str], start: int) -> bool:
+    before = tuple(w.lower() for w in words[max(0, start - 2):start])
+    return any(before[len(before) - len(m):] == m for m in CANTON_MARKERS if len(m) <= len(before))
+
+
+def _apply_canton_markers(
+    matches: Sequence[_AliasMatch], words: Sequence[str],
+) -> tuple[_AliasMatch, ...]:
+    """A name a canton shares with a town ("Zug") means the canton after a canton marker."""
+    out = []
+    for m in matches:
+        cantons = tuple(n for n in m.nodes if n.level is Level.CANTON)
+        if cantons and len(cantons) < len(m.nodes) and _canton_marked(words, m.start):
+            m = replace(m, nodes=cantons)
+        out.append(m)
+    return tuple(out)
+
+
+def _next_to_a_match(match: _AliasMatch, others: Sequence[_AliasMatch]) -> bool:
+    return any(o.start == match.end or o.end == match.start for o in others)
+
+
 def _is_sentence_initial(raw: Sequence[str], index: int) -> bool:
     return index == 0 or raw[index - 1].endswith(SENTENCE_ENDERS)
 
@@ -83,6 +113,8 @@ def _accept_unigram(
     """Guards against ordinary prose words that happen to be aliases."""
     word = match.text
     if word.isdigit():
+        if prose and int(word) in YEARS:
+            return len(word) == PLZ_LENGTH and _next_to_a_match(match, others)
         return len(word) == PLZ_LENGTH
     if len(word) == AMBIGUOUS_ABBREVIATION_LENGTH:
         return False
@@ -153,7 +185,7 @@ def resolve_from_question(
     the part it recognised.
     """
     raw, words = _tokenize(question)
-    kept = _keep(tree, _drop_contained(_alias_matches(tree, words)), raw, prose)
+    kept = _kept_matches(tree, raw, words, prose)
     if not kept:
         return None
     if not prose and not _fully_covered(words, kept):
@@ -162,7 +194,33 @@ def resolve_from_question(
     path = tree.path(best.nodes[0].id)
     if any(all(n.id not in path for n in m.nodes) for m in kept):
         return None
+    return _resolved(tree, best)
+
+
+def places_in_question(
+    tree: LocationTree, question: str, limit: int = 3,
+) -> tuple[ResolvedLocation, ...]:
+    """Every place a question names, in question order: the most specific match on each
+    root-to-node path. "From Vaud to Zürich" gives Vaud and Zürich; "Wiedikon, Zurich" gives
+    Wiedikon only."""
+    raw, words = _tokenize(question)
+    kept = _kept_matches(tree, raw, words, True)
+    chosen: list[_AliasMatch] = []
+    for m in sorted(kept, key=lambda m: -len(tree.path(m.nodes[0].id))):
+        if not any(n.id in tree.path(c.nodes[0].id) for c in chosen for n in m.nodes):
+            chosen.append(m)
+    return tuple(_resolved(tree, m) for m in sorted(chosen, key=lambda m: m.start)[:limit])
+
+
+def _kept_matches(
+    tree: LocationTree, raw: Sequence[str], words: Sequence[str], prose: bool,
+) -> tuple[_AliasMatch, ...]:
+    matches = _apply_canton_markers(_drop_contained(_alias_matches(tree, words)), words)
+    return _keep(tree, matches, raw, prose)
+
+
+def _resolved(tree: LocationTree, match: _AliasMatch) -> ResolvedLocation:
     return ResolvedLocation(
-        location=best.nodes[0], path=path, method=METHOD,
-        input_text=best.text, alternatives=tuple(best.nodes[1:]),
+        location=match.nodes[0], path=tree.path(match.nodes[0].id), method=METHOD,
+        input_text=match.text, alternatives=tuple(match.nodes[1:]),
     )

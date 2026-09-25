@@ -113,6 +113,22 @@ KINDS: tuple[PlaceDependentKind, ...] = (
 )
 
 
+# A street named without its municipality: Bahnhofstrasse or Rue de la Gare exist in many communes.
+# Case-sensitive: "chemin de fer", "via Zürich" and "Strassenverkehrsamt" are not streets.
+STREET = re.compile(
+    r"\b\w+(?:strasse|straße|gasse)\b"
+    r"|\b(?:[Rr]ue|[Aa]venue|[Cc]hemin|[Rr]oute)\s+"
+    r"(?:de la\s+|de l['’]|des\s+|du\s+|de\s+)?[A-ZÀ-Ý]\w*"
+    r"|\b(?:Via|Viale|Vicolo)\s+[A-ZÀ-Ý]\w*"
+    r"|\b[A-Z]\w+\s+(?:Street|Road)\b")
+
+
+def street_named(question: str) -> str | None:
+    """The street a question names, if any: without a place it could be in any municipality."""
+    m = STREET.search(question or "")
+    return m.group(0) if m else None
+
+
 def place_dependent_kind(question: str) -> PlaceDependentKind | None:
     """The first kind whose words the question uses, or None when the question is not on the list."""
     if not question or not question.strip():

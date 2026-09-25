@@ -11,6 +11,7 @@ from swiss_grounding.locations.geoadmin import GeoAdminClient
 from swiss_grounding.locations.repository import load_tree
 from swiss_grounding.locations.resolver import LocationResolver
 from swiss_grounding.locations.tree import LocationTree
+from swiss_grounding.lookups.robots import RobotsCache, robots_transport
 from swiss_grounding.retrieval.embedder import build_embedder
 from swiss_grounding.retrieval.query_core import QueryCore
 from swiss_grounding.retrieval.rerank import RerankWeights
@@ -97,7 +98,9 @@ def build_search_service(settings: Settings, today: Callable[[], date] = date.to
     if settings.query_embedder == "fake":
         log.warning("QUERY_EMBEDDER=fake: query vectors are meaningless; use only in tests")
     device = "cpu" if settings.reranker_model == "overlap" else detect_device()
-    geo = GeoAdminClient.from_settings(settings.geoadmin_base_url, settings.geoadmin_timeout_seconds)
+    robots = RobotsCache(settings.corpus_user_agent, settings.geoadmin_timeout_seconds) if settings.respect_robots else None
+    geo = GeoAdminClient.from_settings(settings.geoadmin_base_url, settings.geoadmin_timeout_seconds,
+                                       transport=robots_transport(robots))
     reranker = build_reranker(settings, device)
     candidates = settings.rerank_candidates_cpu if device == "cpu" else settings.rerank_candidates
     return SearchService(
