@@ -71,7 +71,9 @@ What each step does:
   `claude-sonnet-5`) through the running server, using `evals/judge/mcp-http.json`, and has
   `claude-fable-5-1` grade each answer with `evals/judge/faithfulness.md`. It needs the `claude` CLI,
   writes `evals/judge/faithfulness.jsonl` and skips ids already in it. Errors and unparsed verdicts
-  count as failures.
+  count as failures. `--model apertus` (and `apertus` in `eval judge --models`) answers with Apertus
+  instead of `claude -p`: it calls the running HTTP server's tools itself, so start
+  `swiss-grounding serve --transport http` first. The judge stays `claude-fable-5-1`.
 - **`serving stats`** prints p50 and p95 latency, the abstention rate and the empty-result rate per
   tool, from the call log of every served tool call.
 

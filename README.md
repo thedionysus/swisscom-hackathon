@@ -284,6 +284,8 @@ Every setting comes from the environment or `.env`. The ones that matter:
 |---|---|---|
 | `DATABASE_URL` | required | The database; `.env.example` points at the Docker one. |
 | `SUPERTEXT_API_KEY` | unset | Translate questions and cited passages. Installed by `setup`. Costs Supertext credit per search. |
+| `TRANSLATOR` | `supertext` | `supertext` (needs `SUPERTEXT_API_KEY`), `apertus` or `none` for question and citation translation. |
+| `SUPERTEXT_TIMEOUT_SECONDS`, `APERTUS_TRANSLATE_TIMEOUT_SECONDS` | `8`, `8` | HTTP timeout for each translation call, per translator. |
 | `TRANSLATE_QUERY_LANGUAGES` | `de,fr,it,en` | Languages the question is translated into. Romansh is off: the reranker over-scores weak Romansh passages against a Romansh query. |
 | `TRANSLATE_CITATIONS` | `true` | Translate cited passages into the question's language. |
 | `ZBERN_MCP_TOKEN` | unset | Turns on the `zbern_*` tools. Installed by `setup`. |
@@ -297,8 +299,12 @@ Every setting comes from the environment or `.env`. The ones that matter:
 
 | Setting | Default | Purpose |
 |---|---|---|
-| `CORPUS_LLM_PROVIDER` | `fake` | `openai` or `anthropic` for OCR and descriptions. `fake` is for tests; paid commands refuse to write with it. |
+| `CORPUS_LLM_PROVIDER` | `fake` | `openai`, `anthropic` or `apertus` for OCR and descriptions. `fake` is for tests; paid commands refuse to write with it. |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | unset | The key for the chosen provider. |
+| `APERTUS_API_KEY` | — | Key for Apertus on Swisscom's Swiss AI Platform. Needed by any setting below set to `apertus`. |
+| `APERTUS_BASE_URL` | Swiss {ai} Weeks endpoint | The subscription's Production URL ending in `/v1`. |
+| `APERTUS_MODEL` | `swiss-ai/Apertus-v1.5-70B` | Model id sent to that endpoint. |
+| `EVAL_LLM_PROVIDER` | `openai` | `openai`, `anthropic` or `apertus`: writes `eval label` verdicts and `eval generate` questions. |
 | `CORPUS_BUDGET_USD`, `CORPUS_OCR_BUDGET_USD` | `100`, `10` | Hard spending cap, and the OCR share of it. |
 | `CORPUS_INDEXES` | `bge-m3` | Embedding indexes to build. Add `openai-3l` to also pay for the OpenAI index. |
 | `EMBEDDING_BACKEND` | `fake` | Set to `sentence_transformers` to build the local bge-m3 index. |
