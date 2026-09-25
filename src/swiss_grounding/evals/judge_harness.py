@@ -129,7 +129,7 @@ def _question_text(probe: Probe) -> str:
     return f"{probe.question} (location: {probe.location})" if probe.location else probe.question
 
 
-def _apertus_answer(question: str) -> tuple[list[str], str]:
+def _apertus_answer(question: str, mcp_config: Path) -> tuple[list[str], str]:
     from openai import OpenAI
 
     from swiss_grounding.config import load_settings
@@ -140,13 +140,17 @@ def _apertus_answer(question: str) -> tuple[list[str], str]:
         raise RuntimeError("APERTUS_API_KEY is not set")
     client = OpenAI(api_key=settings.apertus_api_key, base_url=settings.apertus_base_url,
                     timeout=settings.apertus_timeout_seconds)
+    try:
+        mcp_url = mcp_http_url(mcp_config)
+    except ValueError:            # a stdio config (e.g. run_case's MCP_CONFIG); Apertus needs HTTP
+        mcp_url = mcp_http_url(MCP_HTTP_CONFIG)
     return answer_with_tools(question, client=client, model=settings.apertus_model,
-                             mcp_url=mcp_http_url(MCP_HTTP_CONFIG), system=ANSWER_SYSTEM)
+                             mcp_url=mcp_url, system=ANSWER_SYSTEM)
 
 
 def _answer(question: str, model: str, mcp_config: Path) -> tuple[list[str], str]:
     if model == APERTUS:
-        return _apertus_answer(question)
+        return _apertus_answer(question, mcp_config)
     return extract_tool_results(_claude(question, model, mcp=True, stream=True, mcp_config=mcp_config))
 
 
