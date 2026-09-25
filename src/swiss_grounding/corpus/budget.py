@@ -8,6 +8,9 @@ PRICES: dict[str, tuple[float, float]] = {
     # Anthropic sync fallback, stated at half its list price like the rows above (sync x2 = $1 / $5).
     "claude-haiku-4-5-20251001": (0.5, 2.5),
     "claude-haiku-4-5": (0.5, 2.5),
+    # Swiss {ai} Weeks hackathon key: no charge; the gateway caps it at 10M input and 2.5M output tokens.
+    # Replace with Swisscom's per-token price when running on a paid subscription.
+    "swiss-ai/Apertus-v1.5-70B": (0.0, 0.0),
 }
 SYNC_MULTIPLIER = 2.0
 CHARS_PER_TOKEN = 3          # conservative for German/French/Italian

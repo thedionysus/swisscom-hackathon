@@ -1,15 +1,19 @@
 import json
+from types import SimpleNamespace
 
 import pytest
 
 from swiss_grounding.corpus.providers import (
     INDEXES,
+    ApertusLLM,
     FakeEmbeddings,
     FakeLLM,
     OpenAILLM,
+    ReplyError,
     Usage,
     extract_json,
 )
+from swiss_grounding.corpus.runner import LlmTask
 
 
 def test_index_registry_matches_the_schema():
@@ -154,3 +158,46 @@ def test_anthropic_llm_raises_reply_error_but_keeps_billed_usage():
         llm.complete(LlmTask("t", "claude-x", "s", "u"))
     assert exc_info.value.usage == Usage(21, 4)
     assert exc_info.value.finish_reason == "end_turn"
+
+
+class _FakeChat:
+    def __init__(self, content: str):
+        self.calls: list[dict] = []
+        self._content = content
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
+
+    def _create(self, **body):
+        self.calls.append(body)
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=SimpleNamespace(content=self._content), finish_reason="stop")],
+            usage=SimpleNamespace(prompt_tokens=100, completion_tokens=20))
+
+
+TASK = LlmTask(custom_id="c", model="gpt-5-nano", system="sys", user="hello", max_output_tokens=300)
+
+
+def test_apertus_sends_its_own_model_json_mode_and_max_tokens():
+    fake = _FakeChat('{"ok": true}')
+    llm = ApertusLLM("k", base_url="https://x/v1", model="swiss-ai/Apertus-v1.5-70B", client=fake)
+    reply, usage = llm.complete(TASK)
+    [body] = fake.calls
+    assert body["model"] == "swiss-ai/Apertus-v1.5-70B"
+    assert body["response_format"] == {"type": "json_object"} and body["max_tokens"] == 300
+    assert "reasoning_effort" not in body and "max_completion_tokens" not in body
+    assert body["messages"] == [{"role": "system", "content": "sys"}, {"role": "user", "content": "hello"}]
+    assert reply == {"ok": True} and usage == Usage(100, 20)
+
+
+def test_apertus_sends_an_image_as_image_url():
+    fake = _FakeChat('{"text": "x"}')
+    llm = ApertusLLM("k", base_url="https://x/v1", model="m", client=fake)
+    llm.complete(LlmTask(custom_id="ocr|1", model="m", system="s", user="u", image_png_b64="QUJD"))
+    content = fake.calls[0]["messages"][1]["content"]
+    assert content[1] == {"type": "image_url", "image_url": {"url": "data:image/png;base64,QUJD"}}
+
+
+def test_apertus_unparseable_reply_keeps_the_billed_usage():
+    llm = ApertusLLM("k", base_url="https://x/v1", model="m", client=_FakeChat("not json"))
+    with pytest.raises(ReplyError) as exc:
+        llm.complete(TASK)
+    assert exc.value.usage == Usage(100, 20) and exc.value.finish_reason == "stop"
