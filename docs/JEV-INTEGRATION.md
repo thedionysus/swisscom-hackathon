@@ -4,7 +4,7 @@ Jev is TypeSafe's model for typed judgments: it answers yes/no or pick-one quest
 probability, and writes no text. It was called through Vercel's AI Gateway (`typesafe-ai/jev`). Every use
 tested here runs offline, over the corpus or over eval results, so the search path stays keyless. It was
 explored on 2026-09-25 and is not part of the code: integrating it is future work, left out for lack of time.
-The goal is answer quality.
+The goal is answer quality. Diagrams: [architecture](diagrams/32-jev-architecture.html), [deployment](diagrams/33-jev-deployment.html) and [one batch end to end](diagrams/34-jev-sequence.html).
 
 ## Where we tested Jev
 
@@ -12,7 +12,7 @@ The goal is answer quality.
 |---|---|---|---|---|
 | Chunk cleaning | Is this chunk real content or page furniture? | 75 hand-labelled municipal chunks; 9,990 random live chunks | Separates junk from content with AUC 0.98. At a cut-off of 0.8: 26 of 35 junk chunks caught, 0 of 40 content chunks lost. In the corpus, 13 of 15 flagged chunks read were junk | Fix the cut-off on a fresh labelled sample, then mark flagged chunks `boilerplate` |
 | Data cleaning (dates) | Which date is the page's "as of" date, and which its "valid from"? | 30-document pilot, two labellers | "As of": 13 of 14 picks right, 13 of 15 found. "Valid from": 4 of 8 right | Run the prepared 150-document test; show the date on citations, not as a filter |
-| Categorization (topics) | Which of the 20 topics is the chunk about? | 30-chunk pilot; 75 municipal chunks | 0.88 precision on content chunks; 0.91/0.91 on municipal chunks (in-sample). Junk chunks get topics too | Only once search reads topics; today it does not (`README.md:279`) |
+| Categorization (topics) | Which of the 20 topics is the chunk about? | 30-chunk pilot; 75 municipal chunks | 0.88 precision on content chunks; 0.91/0.91 on municipal chunks (in-sample). Junk chunks get topics too | Only once search reads topics; today it does not (`README.md:280`) |
 | Place logic | Does this federal passage leave the answer to the canton or commune? | 150 labelled federal passages; 7,410 random live federal chunks | F1 0.88, against 0.17 for the current regex. In the corpus, 14 of 15 regex-only flags read were wrong; 11 of 14 Jev-only flags were right | Fix the regex (below), then store a Jev flag per federal chunk and read it instead |
 | Answer checking | Does the evidence support each claim of an answer? | 41 claims from the stored faithfulness answers, plus 19 planted wrong claims | 59 of 60 as labelled; 19 of 19 planted claims caught; no false alarm on the 39 supported claims | Keep the judge's claim list, then add Jev as a second verdict per claim |
 

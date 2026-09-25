@@ -261,3 +261,31 @@ How answer quality is measured. The loop turns labelled dev citations into a fit
 ![Evaluation loop](31-evaluation-loop.png)
 
 [HTML](31-evaluation-loop.html) · code: [`docs/EVALUATION.md`](../../docs/EVALUATION.md) · [`src/swiss_grounding/cli/eval_commands.py`](../../src/swiss_grounding/cli/eval_commands.py) · [`evals/fit.py`](../../evals/fit.py) · [`evals/metrics.py`](../../evals/metrics.py) · [`evals/labels.py`](../../evals/labels.py) · [`src/swiss_grounding/serving/relevance.py`](../../src/swiss_grounding/serving/relevance.py)
+
+## Jev (future work, not in the code)
+
+These three show the Jev tests of 2026-09-25; nothing in them is in the code yet. Each has an SVG export instead of a PNG.
+
+### 32 · Jev integration
+
+Where Jev fits. It runs offline, over the corpus and over the stored eval answers, and writes verdicts; search keeps running without a key. Five questions were tested: chunk cleaning, dates, topics, place logic and answer checking. Storing the verdicts and reading the place flag in swiss_search is proposed, not built.
+
+![Jev integration](32-jev-architecture.svg)
+
+[HTML](32-jev-architecture.html) · details: [`docs/JEV-INTEGRATION.md`](../JEV-INTEGRATION.md) · code it would touch: [`src/swiss_grounding/serving/place_dependent.py`](../../src/swiss_grounding/serving/place_dependent.py) · [`src/swiss_grounding/evals/judge_harness.py`](../../src/swiss_grounding/evals/judge_harness.py)
+
+### 33 · Where the Jev run executes
+
+The one-hour run. The runner on the laptop reads the corpus read-only from Postgres in Docker, sends 30 passages per HTTPS request to Vercel's AI Gateway and appends the verdicts to JSONL files. The gateway tries typesafe-ai first; the digitalocean route returned 503 on every attempt in the logs checked. TypeSafe's capacity is the limit.
+
+![Where the Jev run executes](33-jev-deployment.svg)
+
+[HTML](33-jev-deployment.html) · details: [`docs/JEV-INTEGRATION.md`](../JEV-INTEGRATION.md) · [`docker-compose.yml`](../../docker-compose.yml)
+
+### 34 · One Jev batch, end to end
+
+A batch from the one-hour run. Most requests were first refused at capacity (503 or 429) and retried after the gateway's retry-after; 340 of the 580 answered batches needed a retry. An answered request returns one probability per passage.
+
+![One Jev batch, end to end](34-jev-sequence.svg)
+
+[HTML](34-jev-sequence.html) · details: [`docs/JEV-INTEGRATION.md`](../JEV-INTEGRATION.md)
