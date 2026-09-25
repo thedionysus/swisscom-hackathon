@@ -182,3 +182,30 @@ def test_translator_is_supertext_only_with_a_key(monkeypatch):
     assert build_translator(Settings(_env_file=None)).name == "none"
     monkeypatch.setenv("SUPERTEXT_API_KEY", "k")
     assert build_translator(Settings(_env_file=None)).name == "supertext"
+
+
+def test_apertus_defaults_point_at_the_hackathon_endpoint(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    from swiss_grounding.config import Settings
+    s = Settings(_env_file=None)
+    assert s.apertus_base_url == "https://api.swisscom.com/products/swiss-ai-weeks/apertus-1.5-70b/v1"
+    assert s.apertus_model == "swiss-ai/Apertus-v1.5-70B"
+    assert s.eval_llm_provider == "openai" and s.translator == "supertext"
+
+
+def test_apertus_corpus_provider_needs_a_key(monkeypatch):
+    import pytest
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.delenv("APERTUS_API_KEY", raising=False)
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="APERTUS_API_KEY"):
+        Settings(_env_file=None, corpus_llm_provider="apertus")
+
+
+def test_apertus_translator_needs_a_key(monkeypatch):
+    import pytest
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.delenv("APERTUS_API_KEY", raising=False)
+    from swiss_grounding.config import Settings
+    with pytest.raises(ValueError, match="APERTUS_API_KEY"):
+        Settings(_env_file=None, translator="apertus")
