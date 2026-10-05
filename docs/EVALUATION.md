@@ -99,11 +99,11 @@ Three more commands need no model spend:
 `tests/integration/test_mcp_contract.py` checks the served tool list (descriptions, input schemas),
 that invalid input returns `invalid_request`, and that cited URLs exist in the corpus.
 
-Which database is measured matters. `swiss_grounding` (`corpus-latest`, bge-m3) holds only the six
-cantons of the original scope; the probes for other cantons and the Fribourg communes need
-`swiss_grounding_run3` (`DATABASE_URL=.../swiss_grounding_run3 SERVING_INDEX=openai-3l`, which embeds
-each question with OpenAI). On run3 `serving.premium` is empty, so run `eval tools` against
-`swiss_grounding` or import the premiums first.
+Which database is measured matters. `setup` restores the release
+`corpus-full-sources-described-2026-09-25` into `swiss_grounding`: all 26 cantons and the Fribourg
+communes, every passage described, served with `SERVING_INDEX=openai-3l` (the default, which embeds each
+question with OpenAI). The release carries no premium data (`serving.premium` is empty), so load the
+premiums before `eval tools` (see "Health insurance premiums" in [`MAINTAINING.md`](MAINTAINING.md)).
 
 `eval judge` is a separate cross-model check. It answers the probes marked `judge: true` in
 `evals/probes/` with four models through the MCP server (`evals/judge/mcp.json`) and grades them with

@@ -190,7 +190,7 @@ Which model runs at each stage, and where. Building the corpus pays for OCR and 
 
 ### 23 · Serving settings
 
-What the server decides from its settings when it starts. Without keys nothing is translated, no parliament tools are listed and the question is embedded locally with bge-m3; the Run 3 release has only OpenAI vectors, so it is served with SERVING_INDEX=openai-3l and OPENAI_API_KEY. The hardware picks the reranker, and the reranker decides which fitted relevance model may be used; until one is fitted, the provisional score applies. Every setting comes from the environment or .env, except HF_HUB_OFFLINE.
+What the server decides from its settings when it starts. Without the shared keys nothing is translated and no parliament tools are listed. The prebuilt database has only OpenAI vectors, so the server embeds each question with OpenAI (SERVING_INDEX=openai-3l, the default) and needs OPENAI_API_KEY. The hardware picks the reranker, and the reranker decides which fitted relevance model may be used; until one is fitted, the provisional score applies. Every setting comes from the environment or .env, except HF_HUB_OFFLINE.
 
 ![Serving settings](23-serving-settings.png)
 

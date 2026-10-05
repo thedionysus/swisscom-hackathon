@@ -85,7 +85,8 @@ def test_cli_help_works_even_when_repo_root_would_fail(monkeypatch):
 
 
 class _Settings:
-    dump_release_tag = "corpus-latest"
+    dump_release_tag = "corpus-full-sources-described-2026-09-25"
+    shared_key_release_tag = "corpus-latest"
     dump_release_repo = "thedionysus/swisscom-hackathon"
     supertext_api_key = "k-123"
     zbern_mcp_token = None
@@ -189,3 +190,69 @@ def test_serve_passes_host_and_port_to_the_server(monkeypatch):
     result = CliRunner().invoke(main.app, ["serve", "--transport", "http", "--host", "0.0.0.0", "--port", "9000"])
     assert result.exit_code == 0, result.output
     assert seen == {"host": "0.0.0.0", "port": 9000, "transport": "streamable-http"}
+
+
+def test_publish_key_uploads_to_the_shared_key_release(tmp_path, monkeypatch):
+    seen = {}
+    monkeypatch.setattr(serving_commands, "load_settings", lambda: _Settings())
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands.subprocess, "run", lambda cmd, **kw: seen.setdefault("cmd", cmd))
+    serving_commands.publish_key_cmd()
+    assert seen["cmd"][:4] == ["gh", "release", "upload", "corpus-latest"]
+
+
+def test_install_shared_key_reads_the_shared_key_release(tmp_path, monkeypatch):
+    seen = {}
+
+    class Failed:
+        returncode = 1
+
+    def fake_run(cmd, **kwargs):
+        seen["cmd"] = cmd
+        return Failed()
+
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands.subprocess, "run", fake_run)
+    serving_commands.install_shared_key(_Settings(), tmp_path / ".env")
+    assert seen["cmd"][:4] == ["gh", "release", "download", "corpus-latest"]
+
+
+def test_setup_keeps_a_folder_per_release_and_downloads_the_parts_its_manifest_names(tmp_path, monkeypatch):
+    import json
+
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        if "corpus.manifest.json" in cmd:
+            folder = pathlib.Path(cmd[cmd.index("--dir") + 1])
+            (folder / "corpus.manifest.json").write_text(json.dumps({"parts": [
+                {"name": "full.dump.part00", "bytes": 1, "sha256": "a"},
+                {"name": "full.dump.part01", "bytes": 1, "sha256": "b"}]}))
+
+    def fake_join(folder, manifest, target):
+        target.write_text("joined")
+        return target
+
+    class Keyless(_Settings):
+        serving_index = "openai-3l"
+        openai_api_key = None
+        database_url = "postgresql://x/y"
+
+    monkeypatch.setattr(serving_commands, "repo_root", lambda: tmp_path)
+    monkeypatch.setattr(serving_commands, "dump_dir", lambda: tmp_path / "dump")
+    monkeypatch.setattr(serving_commands, "load_settings", lambda: Keyless())
+    monkeypatch.setattr(serving_commands.subprocess, "run", fake_run)
+    monkeypatch.setattr(serving_commands, "verify_parts", lambda folder, manifest: None)
+    monkeypatch.setattr(serving_commands, "join_parts", fake_join)
+    monkeypatch.setattr(serving_commands, "_compose", lambda *args, **kwargs: None)
+    monkeypatch.setattr(serving_commands, "apply_serving_schema", lambda url: None)
+    monkeypatch.setattr(serving_commands, "install_shared_key", lambda settings, env: False)
+    serving_commands.setup_cmd(skip_models=True)
+
+    folder = str(tmp_path / "dump" / "corpus-full-sources-described-2026-09-25")
+    manifest_call, parts_call = calls
+    assert manifest_call[manifest_call.index("--dir") + 1] == folder and "--clobber" in manifest_call
+    assert parts_call[parts_call.index("--dir") + 1] == folder and "--skip-existing" in parts_call
+    assert [parts_call[i + 1] for i, arg in enumerate(parts_call) if arg == "--pattern"] == [
+        "full.dump.part00", "full.dump.part01"]
