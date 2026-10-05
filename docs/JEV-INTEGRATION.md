@@ -2,7 +2,7 @@
 
 Jev is TypeSafe's model for typed judgments: it answers yes/no or pick-one questions about a passage with a
 probability, and writes no text. It was called through Vercel's AI Gateway (`typesafe-ai/jev`). Every use
-tested here runs offline, over the corpus or over eval results, so the search path stays keyless. It was
+tested here runs offline, over the corpus or over eval results, so the search path is unchanged. It was
 explored on 2026-09-25 and is not part of the code: integrating it is future work, left out for lack of time.
 The goal is answer quality. Diagrams: [architecture](diagrams/32-jev-architecture.html), [deployment](diagrams/33-jev-deployment.html) and [one batch end to end](diagrams/34-jev-sequence.html).
 

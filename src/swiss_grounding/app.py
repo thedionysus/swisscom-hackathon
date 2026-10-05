@@ -55,6 +55,10 @@ def build_query_provider(settings: Settings):
     if settings.query_embedder == "fake":
         return FakeEmbeddings(FAKE_QUERY_DIM)
     if settings.serving_index == "openai-3l":
+        # Checked here rather than when settings load: commands that never search need no key.
+        if not settings.openai_api_key:
+            raise ValueError("OPENAI_API_KEY is required to serve with SERVING_INDEX=openai-3l (the default); "
+                             "add it to .env")
         return OpenAIEmbeddings(settings.openai_api_key)
     return LocalBgeM3()
 

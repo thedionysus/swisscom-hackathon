@@ -13,8 +13,8 @@ repository and `gh auth login` before you start.
 Maintaining the data (adding sources, refreshing, publishing a new database) is described in
 [`docs/MAINTAINING.md`](docs/MAINTAINING.md). Measuring answer quality is described in
 [`docs/EVALUATION.md`](docs/EVALUATION.md). Diagrams of the whole system, from ingestion to the tool
-replies, are in [`docs/diagrams/`](docs/diagrams/README.md). To run the server and the tests on the newest
-published database, which `setup` does not install, follow [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md).
+replies, are in [`docs/diagrams/`](docs/diagrams/README.md). To keep your own database and restore a
+release next to it, follow [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md).
 
 ## Evaluation quick start
 
@@ -24,10 +24,8 @@ published database, which `setup` does not install, follow [`docs/USING-A-RELEAS
 > 271,000 chunks, every document and chunk described, and every chunk embedded with its description.
 > Ignore the older releases `corpus-latest` and `corpus-run3-cleaned-2026-09-25`.
 >
-> `swiss-grounding setup` still installs `corpus-latest`, which is not the data to evaluate. Steps 4 and 5
-> below download and check this release, restore it into its own database `swiss_grounding_full`, and
-> start the server on it with `SERVING_INDEX=openai-3l`. This database has only OpenAI vectors, so the
-> server needs an `OPENAI_API_KEY`.
+> `swiss-grounding setup` installs this release. The database has only OpenAI vectors, so the server
+> needs an `OPENAI_API_KEY`.
 
 Items marked **TBD** are still being settled by the team.
 
@@ -43,24 +41,10 @@ Items marked **TBD** are still being settled by the team.
 
    ```bash
    uv sync --extra embed           # Python dependencies, including torch and the model libraries
-   uv run swiss-grounding setup    # creates .env, starts the Docker database, downloads bge-m3 and the
-                                   # reranker; it also restores the OLD corpus-latest, which is not evaluated
-
-   # The database to evaluate: download, check and restore it into its own database
-   gh release download corpus-full-sources-described-2026-09-25 \
-     --repo thedionysus/swisscom-hackathon --dir data/full-dump
-   cat data/full-dump/swiss_grounding-full-described-2026-09-25.dump.part* \
-     > data/full-dump/swiss_grounding-full-described-2026-09-25.dump
-   (cd data/full-dump && shasum -a 256 -c swiss_grounding-full-described-2026-09-25.dump.sha256)  # must print OK
-   docker compose exec -T db createdb -U swiss swiss_grounding_full
-   docker compose exec -T db pg_restore -U swiss -d swiss_grounding_full --no-owner \
-     < data/full-dump/swiss_grounding-full-described-2026-09-25.dump
-
-   # Point the server at it (set these in every shell or MCP config that starts the server)
-   export DATABASE_URL=postgresql://swiss:swiss@localhost:5433/swiss_grounding_full
-   export SERVING_INDEX=openai-3l
-   export OPENAI_API_KEY=sk-...
-   uv run swiss-grounding serving init   # prints "serving schema ready"
+   cp .env.example .env            # skip if you already have a .env
+   # then add OPENAI_API_KEY=sk-... to .env: every question is embedded with text-embedding-3-large
+   uv run swiss-grounding setup    # starts the Docker database; downloads, checks and restores
+                                   # corpus-full-sources-described-2026-09-25; downloads the reranker
    ```
 
    If `setup` and the server run in a container and Docker runs outside it (the Docker socket mounted
@@ -69,18 +53,15 @@ Items marked **TBD** are still being settled by the team.
 
    Needs about 15 GB of free disk and 6 GB of memory for Docker. Time: **TBD** (measured on an
    Apple silicon Mac).
-5. **Start command**, with the three variables from step 4 set:
-   `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
+5. **Start command:** `HF_HUB_OFFLINE=1 uv run swiss-grounding serve` for stdio, or
    `HF_HUB_OFFLINE=1 uv run swiss-grounding serve --transport http --host 0.0.0.0 --port 8000` for HTTP.
-   Without them the server serves the old `corpus-latest` database, which is not the one to evaluate.
-   The Docker database must be running (`docker compose up -d db` after a restart). An MCP client
-   config passes them in `env`, as shown in [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md).
+   The server reads `OPENAI_API_KEY` from `.env`. The Docker database must be running
+   (`docker compose up -d db` after a restart).
 6. **Prebuilt data:** the database to evaluate is the release
    `corpus-full-sources-described-2026-09-25`, a PostgreSQL dump (documents, chunks, descriptions,
-   OpenAI `text-embedding-3-large` vectors) in parts, restored and checked as described in
-   [`docs/USING-A-RELEASE.md`](docs/USING-A-RELEASE.md). The older `corpus-latest` dump (bge-m3
-   vectors, about 900 MB) is what `setup` downloads; it is not the one to evaluate. `setup` also downloads the models `BAAI/bge-m3` and the
-   reranker from Hugging Face. Rebuilding the corpus from the sources (crawl, OCR, descriptions,
+   OpenAI `text-embedding-3-large` vectors) in 25 parts of 150 MiB. `setup` downloads it, checks every
+   part's checksum and restores it into the Docker database. It also downloads the reranker from
+   Hugging Face. Rebuilding the corpus from the sources (crawl, OCR, descriptions,
    embeddings) is described in [`docs/MAINTAINING.md`](docs/MAINTAINING.md); the crawl alone takes
    hours, and descriptions need an LLM key.
 7. **Credentials:** `OPENAI_API_KEY` is **required**: without it the evaluated database cannot
@@ -91,7 +72,7 @@ Items marked **TBD** are still being settled by the team.
    |---|---|---|
    | `SUPERTEXT_API_KEY` | Translates questions into the other languages, and cited passages into the question's language | No translation: searches in other languages use vectors only |
    | `ZBERN_MCP_TOKEN` | The `zbern_*` tools: Swiss Parliament and federal popular votes, from zbern.ch | The `zbern_*` tools are not listed |
-   | `OPENAI_API_KEY` | Embeds every question for the evaluated database (`SERVING_INDEX=openai-3l`) | That database cannot be searched |
+   | `OPENAI_API_KEY` | Embeds every question: the database has only OpenAI vectors | The server cannot search |
    | `GH_TOKEN` | Downloads the database from the private release | Run `gh auth login` instead |
 
    The values reach the organisers through their secure channel, never through the repository.
@@ -185,42 +166,47 @@ the local corpus, with translation switched off:
 | 4 | *Cura èn las vacanzas d'atun 2026 per la scola da Scuol?* (Romansh) | `swiss_search` finds Scuol in the question and answers `results` with one citation, a scuol.net services page in Romansh. The cited passage holds no holiday dates. |
 | 5 | *Rundfunkbeitrag nach meinem Umzug nach Konstanz?* | With `locations=["Konstanz"]`: `outside_scope`, because Konstanz is not a Swiss municipality the server recognises. Without a location argument: `no_evidence`. |
 
-## Quick start (no API key)
+## Quick start
 
 Requirements:
 
 - **Docker**, with at least 6 GB of memory and about 15 GB of free disk for the database and the models.
 - **`uv`**, the Python package manager.
 - **The GitHub CLI `gh`**, logged in as an account with access to this repository (`gh auth login`).
+- **An OpenAI API key** in `.env` (`OPENAI_API_KEY`). The database has only OpenAI vectors, so every
+  question is embedded with `text-embedding-3-large`.
 
 Steps, from the repository root:
 
 ```bash
-cp .env.example .env                  # points at the Docker database; no key needed to serve (setup does this too)
+cp .env.example .env                  # points at the Docker database (setup does this too); add OPENAI_API_KEY
 docker compose up -d db
-uv sync --extra embed                 # torch, bge-m3 and the reranker libraries
-uv run swiss-grounding setup          # download, verify and restore the database; download the models
+uv sync --extra embed                 # torch and the reranker libraries
+uv run swiss-grounding setup          # download, verify and restore the database; download the reranker
 uv run swiss-grounding serving ask "Échanger mon permis étranger, Vaud?" -l Vaud   # smoke test, prints JSON
 uv run swiss-grounding serve          # the MCP server over stdio
 ```
 
-`setup` downloads the database parts from the `corpus-latest` release, checks each part's checksum,
-restores the database into the Docker container and creates the serving tables. It prints how long the
-restore took. If the release carries the team's shared keys, it writes them into `.env`: the Supertext
-translation key and the zbern.ch token. Without them, translation and the parliament tools stay off.
-Finally it downloads bge-m3 and the reranker; `--skip-models` leaves that for the first start.
+`setup` downloads the database parts from the release `corpus-full-sources-described-2026-09-25`
+(`DUMP_RELEASE_TAG`) into `data/dump/<release>/`, checks each part's checksum, restores the database into
+the Docker container and creates the serving tables. It prints how long the restore took. It then writes
+the team's shared keys into `.env` when the release `corpus-latest` (`SHARED_KEY_RELEASE_TAG`) carries
+them: the Supertext translation key and the zbern.ch token. Without them, translation and the parliament
+tools stay off. Finally it downloads the reranker and, when `OPENAI_API_KEY` is set, checks the query
+embedder; `--skip-models` leaves that for the first start.
 
 After `setup` has run once, set `HF_HUB_OFFLINE=1` so the model libraries stop checking the Hugging
 Face Hub at every start. The server does not read it from `.env`: export it in the shell that starts
 the server, or put it under `"env"` in the MCP client's config.
 
-`setup` keeps every file already in `data/dump/`, including the dump's manifest. After a new release,
-delete `data/dump/` before running `setup` again, or it restores the older database.
+Each release gets its own folder under `data/dump/`, and `setup` always fetches the release's manifest
+anew, so a download of an earlier release never gets in the way. Parts already in the folder are kept;
+a wrong one fails the checksum.
 
 Things to know about the running server:
 
 - **The first call waits for the models.** The server answers the client's handshake at once and
-  loads bge-m3 and the reranker in the background. A `swiss_search` or `swiss_premium` call that
+  loads the reranker in the background. A `swiss_search` or `swiss_premium` call that
   arrives before they are loaded waits, up to 10 minutes.
 - **Place names are checked with GeoAdmin.** A name that is not in the local location tree is looked
   up on `api3.geo.admin.ch` at question time. If that service is unreachable, such a name is treated
@@ -393,7 +379,7 @@ prebuilt database):
 | `data/raw/<source>/` | The raw Fedlex XML and downloaded PDFs, named by a hash of the URL. HTML pages are not stored raw, only their parsed text. |
 | `data/ocr/<source>/` | Images of PDF pages with too little text, waiting for OCR. |
 | `data/batches/` | Batch API input files and a log of submitted batches. |
-| `data/dump/` | Database parts downloaded by `setup`. Always `<repository root>/data/dump`, whatever `DATA_DIR` is. `dump export` writes new parts to `<repository root>/dist/`. |
+| `data/dump/` | Database parts downloaded by `setup`, one folder per release (`data/dump/<release>/`). Always under `<repository root>/data/dump`, whatever `DATA_DIR` is. `dump export` writes new parts to `<repository root>/dist/`. |
 
 **Database** (PostgreSQL 16 with pgvector, in Docker on port 5433):
 
@@ -426,10 +412,8 @@ Every setting comes from the environment or `.env`. The ones that matter:
 
 | You want to… | Settings | Needs |
 |---|---|---|
-| Serve with the default index | `SERVING_INDEX=bge-m3` (default) | No key. `setup` downloads bge-m3 and the reranker (`BAAI/bge-m3`, `BAAI/bge-reranker-v2-m3`, roughly 2.3 GB each on Hugging Face; the CPU fallback `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` is smaller). |
-| Serve with the OpenAI index | `SERVING_INDEX=openai-3l` | `OPENAI_API_KEY` — every question is embedded with `text-embedding-3-large` — plus a database with OpenAI vectors (the prebuilt `corpus-latest` dump has none). The reranker still runs locally either way. |
-| Restore the prebuilt database | `setup` (default `DUMP_RELEASE_TAG=corpus-latest`, bge-m3 vectors) | `gh auth login` with access to this repository; `setup` downloads the release with `gh release download`. |
-| Use the Run 3 pre-release corpus | `DUMP_RELEASE_TAG=corpus-run3-cleaned-2026-09-25`, `SERVING_INDEX=openai-3l` | Same `gh auth login`, plus `OPENAI_API_KEY`: that release carries only `openai-3l` vectors, no bge-m3. |
+| Serve (default) | `SERVING_INDEX=openai-3l` (default) | `OPENAI_API_KEY`: every question is embedded with `text-embedding-3-large`. The reranker runs locally; `setup` downloads it (`BAAI/bge-reranker-v2-m3`, roughly 2.3 GB on Hugging Face; the CPU fallback `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` is smaller). |
+| Restore the prebuilt database | `setup` (default `DUMP_RELEASE_TAG=corpus-full-sources-described-2026-09-25`) | `gh auth login` with access to this repository; `setup` downloads the release with `gh release download`. |
 | Translate questions and citations | `TRANSLATOR=supertext` or `apertus` | `SUPERTEXT_API_KEY` or `APERTUS_API_KEY` (`setup` installs the team's Supertext key if the release carries it). |
 | Use the zbern parliament tools | `ZBERN_MCP_TOKEN` set | `ZBERN_MCP_TOKEN` (also installed by `setup` when the release carries it). |
 | Build or extend the corpus | `CORPUS_LLM_PROVIDER=openai\|anthropic\|apertus`, `CORPUS_INDEXES` | The matching key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY` or `APERTUS_API_KEY`); `OPENAI_API_KEY` again if `CORPUS_INDEXES` includes `openai-3l`. |
@@ -450,7 +434,7 @@ See the tables below for every setting's default and purpose.
 | `ZBERN_MCP_TOKEN` | unset | Turns on the `zbern_*` tools. Installed by `setup`. |
 | `ZBERN_MCP_URL` | `https://mcp.zbern.ch/mcp` | Set it empty to turn the zbern tools off. |
 | `ZBERN_MCP_EXCLUDE` | the four raw-SQL tools | zbern tools not to serve. |
-| `SERVING_INDEX` | `bge-m3` | `openai-3l` searches the OpenAI index instead, which needs `OPENAI_API_KEY` for every question. The prebuilt database has no OpenAI vectors, so this only works on a corpus built with `openai-3l`. |
+| `SERVING_INDEX` | `openai-3l` | The vector table that is searched. The prebuilt database has only OpenAI vectors, so the server needs `OPENAI_API_KEY`. |
 | `RERANKER_MODEL` | `auto` | `auto` picks by hardware; or a model name. |
 | `HF_HUB_OFFLINE` | unset | Set to `1` after `setup` to stop model update checks. Read from the environment only, not from `.env`. |
 
@@ -476,7 +460,8 @@ See the tables below for every setting's default and purpose.
 | `CORPUS_DIRECT_WORKERS` | `0` | Direct API calls run beside the Batch API while describing. Faster, at twice the batch price. |
 | `CORPUS_INDEX_PARALLEL_WORKERS` | `0` | Parallel workers for building vector indexes. Needs the Docker shared memory set in `docker-compose.yml`. |
 | `CORPUS_DOC_MODEL`, `CORPUS_CHUNK_MODEL`, `CORPUS_OCR_MODEL`, `CORPUS_ANTHROPIC_MODEL` | `gpt-5-mini`, `gpt-5-nano`, `gpt-5-mini`, `claude-haiku-4-5-20251001` | Models per task. |
-| `DUMP_RELEASE_REPO`, `DUMP_RELEASE_TAG` | `thedionysus/swisscom-hackathon`, `corpus-latest` | Where `setup` downloads the database from. |
+| `DUMP_RELEASE_REPO`, `DUMP_RELEASE_TAG` | `thedionysus/swisscom-hackathon`, `corpus-full-sources-described-2026-09-25` | Where `setup` downloads the database from. |
+| `SHARED_KEY_RELEASE_TAG` | `corpus-latest` | The release that carries the shared keys: `setup` reads them there, `dump publish-key` writes them there. |
 
 Candidate counts, the local quota, reranker limits, timeouts and service URLs can be tuned too; see
 `src/swiss_grounding/config.py`.

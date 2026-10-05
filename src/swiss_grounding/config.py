@@ -85,10 +85,12 @@ class Settings(BaseSettings):
     )
     data_dir: str = "data"
 
-    # Serving track. Keyless by default: bge-m3 embeds the question locally.
+    # Serving track. SERVING_INDEX picks the vector table that is searched. The published database
+    # (DUMP_RELEASE_TAG) has OpenAI vectors only, so by default the question is embedded with
+    # text-embedding-3-large; the server needs OPENAI_API_KEY when it builds its query embedder.
     # Deliberately separate from the legacy EMBEDDING_BACKEND (default "fake"): serving never uses
     # fake query vectors unless a test asks for them with QUERY_EMBEDDER=fake.
-    serving_index: Literal["bge-m3", "openai-3l"] = "bge-m3"
+    serving_index: Literal["bge-m3", "openai-3l"] = "openai-3l"
     query_embedder: Literal["auto", "fake"] = "auto"
     # "auto" picks by hardware: bge-reranker-v2-m3 on MPS/CUDA, the small model on CPU.
     reranker_model: str = "auto"
@@ -121,9 +123,13 @@ class Settings(BaseSettings):
     transport_base_url: str = "https://transport.opendata.ch/v1"
     reference_rate_url: str = "https://www.bwo.admin.ch/de/referenzzinssatz"
     lookup_timeout_seconds: float = 8.0
-    # The dump is a release asset of our private repository, downloaded with `gh`.
+    # The dump is a release asset of our private repository, downloaded with `gh`: every source, every
+    # document and chunk described, OpenAI vectors made from breadcrumb + description + text.
     dump_release_repo: str = "thedionysus/swisscom-hackathon"
-    dump_release_tag: str = "corpus-latest"
+    dump_release_tag: str = "corpus-full-sources-described-2026-09-25"
+    # The shared keys (translation, zbern token) live on their own release, so a new data release
+    # needs no copy of them: `dump publish-key` writes there and `setup` reads there.
+    shared_key_release_tag: str = "corpus-latest"
 
     # Swiss Parliament tools from the hosted zbern.ch MCP server. On once ZBERN_MCP_TOKEN is present (`setup`
     # installs it from the private release); set ZBERN_MCP_URL empty to turn the tools off.
@@ -187,12 +193,6 @@ class Settings(BaseSettings):
                                        ("TRANSLATOR", self.translator == "apertus")) if on]
         if users and not self.apertus_api_key:
             raise ValueError(f"APERTUS_API_KEY is required when {' and '.join(users)}=apertus")
-        return self
-
-    @model_validator(mode="after")
-    def _openai_serving_needs_key(self) -> "Settings":
-        if self.serving_index == "openai-3l" and not self.openai_api_key:
-            raise ValueError("OPENAI_API_KEY is required when SERVING_INDEX=openai-3l")
         return self
 
 

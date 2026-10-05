@@ -23,6 +23,7 @@ FAKE_BACKENDS = {
     "CORPUS_LLM_PROVIDER": "fake",
     "CORPUS_INDEXES": "bge-m3",
     "QUERY_EMBEDDER": "fake",
+    "SERVING_INDEX": "bge-m3",   # the serving fixtures seed this index's table
     "RERANKER_MODEL": "overlap",
     "ZBERN_MCP_URL": "",         # never proxy the zbern server from a test
 }

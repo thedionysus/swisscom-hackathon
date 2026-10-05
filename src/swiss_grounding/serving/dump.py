@@ -8,10 +8,10 @@ from pathlib import Path
 PART_BYTES = 150 * 1024 * 1024
 MANIFEST_NAME = "corpus.manifest.json"
 CHUNK = 1024 * 1024
-# Table data left out of the default dump: legacy public-schema tables, the OpenAI vectors (optional asset),
-# and per-installation logs.
+# Table data left out of the dump: legacy public-schema tables and per-installation logs. The OpenAI vectors
+# are included: the server searches them by default (SERVING_INDEX=openai-3l).
 EXCLUDE_DATA = ("public.chunk", "public.document", "public.document_change", "public.eval_run",
-                "corpus.emb_openai_3l*", "serving.call_log", "serving.lookup_cache")
+                "serving.call_log", "serving.lookup_cache")
 
 
 def _sha256(path: Path) -> str:

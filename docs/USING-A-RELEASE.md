@@ -1,10 +1,9 @@
 # Running the server and the tests on a published database
 
-This guide is for collaborators on `thedionysus/swisscom-hackathon`. It restores a database published as a
-GitHub release next to your own, then runs the MCP server and the golden tests on it. Every command runs from
-the repository root.
-
-`swiss-grounding setup` installs the older `corpus-latest` release. Use this guide for the newest data:
+This guide is for collaborators on `thedionysus/swisscom-hackathon`. `swiss-grounding setup` installs the
+newest release into your `swiss_grounding` database. This guide restores a release **next to** your own
+database instead, as `swiss_grounding_full`, for example to compare two databases or to keep data you built
+yourself. Then it runs the MCP server and the golden tests on it. Every command runs from the repository root.
 
 | Release | Contents |
 |---|---|
@@ -52,8 +51,8 @@ docker compose exec -T db pg_restore -U swiss -d swiss_grounding_full --no-owner
   < data/full-dump/swiss_grounding-full-described-2026-09-25.dump
 ```
 
-This takes about two minutes. Your own `swiss_grounding` database is not changed. Do not use
-`swiss-grounding setup` for this release, because it restores `corpus-latest` over `swiss_grounding`.
+This takes about two minutes. Your own `swiss_grounding` database is not changed; `setup` would restore the
+release over it instead.
 
 ## 4. Point the server at the new database
 

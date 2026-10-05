@@ -434,17 +434,19 @@ so use keys dedicated to this project.
 
 ```bash
 uv run swiss-grounding dump export
-gh release upload corpus-latest dist/* --clobber --repo thedionysus/swisscom-hackathon
+gh release create corpus-<what>-<YYYY-MM-DD> dist/* --repo thedionysus/swisscom-hackathon --title "<title>"
 ```
 
 `dump export` writes the database to `dist/` in parts of 150 MiB, with a manifest of their checksums,
-and prints the exact `gh` command. The first time, create the release with
-`gh release create corpus-latest dist/* --repo thedionysus/swisscom-hackathon --title "Prebuilt corpus"`
-instead. The dump leaves out the
-data of `public.chunk`, `public.document`, `public.document_change` and `public.eval_run` (the earlier
-pipeline's content), the OpenAI vectors (`--openai` writes them to a separate `openai.dump`, which
-`setup` does not restore), the call log and the lookup cache. Everything else is included: the location
-tree, the corpus with its descriptions and bge-m3 vectors, and the premium tables.
+and prints the `gh` command. Publish each database as a new release, then set the default of
+`DUMP_RELEASE_TAG` in `src/swiss_grounding/config.py` to its tag: that is what `setup` installs. `setup`
+reads the part names from the manifest and keeps each release in its own folder under `data/dump/`.
+
+The dump leaves out the data of `public.chunk`, `public.document`, `public.document_change` and
+`public.eval_run` (the earlier pipeline's content), the call log and the lookup cache. Everything else is
+included: the location tree, the corpus with its descriptions and OpenAI vectors, and the premium tables.
+The shared keys stay on `corpus-latest` (`SHARED_KEY_RELEASE_TAG`); a new database release does not
+need them.
 
 When a new dump has fewer parts than the old one, delete the extra old parts from the release.
 `setup` keeps every file already in `data/dump/`, including the manifest, so a collaborator who ran it

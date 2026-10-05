@@ -148,9 +148,8 @@ def _compose(*args: str, stdout=None) -> None:
 
 
 @dump_app.command("export")
-def dump_export_cmd(out: Path | None = DUMP_OUT_OPTION,
-                    openai: bool = typer.Option(False, "--openai", help="also export the OpenAI vectors")) -> None:
-    """Write the default dump (no OpenAI vectors) split into release-sized parts, plus a manifest."""
+def dump_export_cmd(out: Path | None = DUMP_OUT_OPTION) -> None:
+    """Write the database dump, OpenAI vectors included, split into release-sized parts, plus a manifest."""
     out = out or repo_root() / "dist"
     out.mkdir(parents=True, exist_ok=True)
     excludes = [f"--exclude-table-data={t}" for t in EXCLUDE_DATA]
@@ -160,21 +159,20 @@ def dump_export_cmd(out: Path | None = DUMP_OUT_OPTION,
     (out / "corpus.dump").unlink()
     manifest = build_manifest(parts, meta={"created_at": datetime.now(UTC).isoformat(), "kind": "default"})
     (out / MANIFEST_NAME).write_text(_json_module.dumps(manifest, indent=2))
-    if openai:
-        with (out / "openai.dump").open("wb") as f:
-            _compose("exec", "-T", "db", "pg_dump", *DB_ARGS, "-Fc", "--data-only", "-t", "corpus.emb_openai_3l*",
-                     stdout=f)
-    typer.echo(f"{len(parts)} parts and {MANIFEST_NAME} in {out}. Publish them to the private repository:\n"
-               f"  gh release create corpus-latest {out}/* --repo thedionysus/swisscom-hackathon "
-               f"--title 'Prebuilt corpus' --notes 'Restore with: uv run swiss-grounding setup'\n"
-               f"  (or `gh release upload corpus-latest {out}/* --clobber` to replace an existing one)")
+    typer.echo(f"{len(parts)} parts and {MANIFEST_NAME} in {out}. Publish them as a new release of the private "
+               f"repository, for example:\n"
+               f"  gh release create corpus-<what>-<YYYY-MM-DD> {out}/* --repo thedionysus/swisscom-hackathon "
+               f"--title '<title>' --notes 'Restore with: uv run swiss-grounding setup'\n"
+               f"then set the default of DUMP_RELEASE_TAG in config.py to that tag, so `setup` installs it.")
 
 
-def _gh_download(settings, pattern: str) -> None:
-    """Download release assets of our private repository. `gh` uses the caller's GitHub login, so only
-    people with access to the repository (the team and the evaluators we invite) can download."""
+def _gh_download(settings, directory: Path, *patterns: str, clobber: bool = False) -> None:
+    """Download release assets of our private repository into `directory`. `gh` uses the caller's GitHub
+    login, so only people with access to the repository (the team and the evaluators we invite) can
+    download. Existing files are kept unless `clobber`."""
+    selected = [arg for pattern in patterns for arg in ("--pattern", pattern)]
     _run(["gh", "release", "download", settings.dump_release_tag, "--repo", settings.dump_release_repo,
-          "--pattern", pattern, "--dir", str(dump_dir()), "--skip-existing"])
+          *selected, "--dir", str(directory), "--clobber" if clobber else "--skip-existing"])
 
 
 def _run(cmd: list[str], what: str = "download the prebuilt database") -> None:
@@ -196,7 +194,7 @@ def install_shared_key(settings, env_path: Path) -> bool:
     `setup`. Returns whether a key was installed."""
     asset = dump_dir() / SECRETS_ASSET
     asset.unlink(missing_ok=True)
-    result = subprocess.run(["gh", "release", "download", settings.dump_release_tag, "--repo",
+    result = subprocess.run(["gh", "release", "download", settings.shared_key_release_tag, "--repo",
                              settings.dump_release_repo, "--pattern", SECRETS_ASSET, "--dir", str(dump_dir())],
                             capture_output=True, text=True, check=False)
     if result.returncode != 0 or not asset.exists():
@@ -238,12 +236,12 @@ def publish_key_cmd() -> None:
     asset = dump_dir() / SECRETS_ASSET
     asset.write_text(shared_env_text(values), encoding="utf-8")
     try:
-        _run(["gh", "release", "upload", settings.dump_release_tag, str(asset), "--repo",
+        _run(["gh", "release", "upload", settings.shared_key_release_tag, str(asset), "--repo",
               settings.dump_release_repo, "--clobber"], what="upload the shared keys")
     finally:
         asset.unlink(missing_ok=True)
     published = ", ".join(k for k, v in values.items() if v)
-    typer.echo(f"{SECRETS_ASSET} ({published}) published to release {settings.dump_release_tag} of "
+    typer.echo(f"{SECRETS_ASSET} ({published}) published to release {settings.shared_key_release_tag} of "
                f"{settings.dump_release_repo}; collaborators get it on their next `swiss-grounding setup`")
 
 
@@ -251,13 +249,15 @@ def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do 
     """Download the prebuilt database, verify it, restore it, and pre-download the local models."""
     ensure_env_file(repo_root())
     settings = load_settings()
-    directory = dump_dir()
+    # One folder per release, so parts of an earlier release never mix in. The manifest is always fetched
+    # anew and names the parts; parts already in the folder (e.g. copied from a USB stick) are kept, and a
+    # wrong one fails the checksum.
+    directory = dump_dir() / settings.dump_release_tag
     directory.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
-    # Parts already in data/dump (e.g. copied from a USB stick) are kept; a wrong one fails the checksum.
-    _gh_download(settings, MANIFEST_NAME)
-    _gh_download(settings, "corpus.dump.part*")
+    _gh_download(settings, directory, MANIFEST_NAME, clobber=True)
     manifest = _json_module.loads((directory / MANIFEST_NAME).read_text())
+    _gh_download(settings, directory, *(part["name"] for part in manifest["parts"]))
     verify_parts(directory, manifest)
     dump = join_parts(directory, manifest, directory / "corpus.dump")
     _compose("up", "-d", "--wait", "db")
@@ -274,6 +274,10 @@ def setup_cmd(skip_models: bool = typer.Option(False, "--skip-models", help="do 
     if not skip_models:
         from swiss_grounding.app import build_query_provider, build_reranker
         from swiss_grounding.serving.reranker import detect_device
-        build_query_provider(settings).embed(["warm up"])
+        if settings.serving_index == "openai-3l" and not settings.openai_api_key:
+            typer.echo("OPENAI_API_KEY is not set: add it to .env before serving; every question is embedded with "
+                       "OpenAI's text-embedding-3-large")
+        else:
+            build_query_provider(settings).embed(["warm up"])
         build_reranker(settings, detect_device()).score("warm up", ["warm up"])
-        typer.echo("bge-m3 and the reranker are downloaded")
+        typer.echo("the reranker is downloaded and the query embedder is ready")

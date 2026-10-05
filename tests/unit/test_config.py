@@ -121,15 +121,17 @@ def test_the_openai_index_needs_an_openai_key(monkeypatch):
 SERVING_ENV = ("RERANKER_MODEL", "SERVING_INDEX", "QUERY_EMBEDDER", "OPENAI_API_KEY", "RERANK_CANDIDATES")
 
 
-def test_serving_defaults_are_keyless(monkeypatch):
+def test_serving_defaults_load_without_a_key(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgresql://x/y")
     for name in SERVING_ENV:   # the integration session fixture sets some of these
         monkeypatch.delenv(name, raising=False)
     from swiss_grounding.config import Settings
     s = Settings(_env_file=None)
     assert s.rerank_candidates_cpu == 20
-    assert s.serving_index == "bge-m3"
-    assert s.query_embedder == "auto"      # real bge-m3; "fake" only in tests
+    assert s.serving_index == "openai-3l"  # the published database has OpenAI vectors only
+    assert s.query_embedder == "auto"      # "fake" only in tests
+    assert s.dump_release_tag == "corpus-full-sources-described-2026-09-25"
+    assert s.shared_key_release_tag == "corpus-latest"
     assert s.reranker_model == "auto"
     assert s.rerank_candidates == 30
     assert s.local_candidate_quota == 10
@@ -145,9 +147,11 @@ def test_openai_serving_index_needs_a_key(monkeypatch):
         monkeypatch.delenv(name, raising=False)
     import pytest
 
+    from swiss_grounding.app import build_query_provider
     from swiss_grounding.config import Settings
+    settings = Settings(_env_file=None, serving_index="openai-3l")   # loads: commands that never search need no key
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
-        Settings(_env_file=None, serving_index="openai-3l")
+        build_query_provider(settings)
 
 
 def test_translation_settings_default_to_every_language_and_no_key(monkeypatch):
